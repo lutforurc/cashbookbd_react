@@ -465,6 +465,9 @@ const ROUTES = {
   // two tabs, because both are asked at the same moment of the morning and a
   // second screen would be a second place to pick a branch and a date.
   hotel_reports: '/hotel/reports',
+  // Ended stays that still owe -- bill-wise due. Its own screen and menu entry:
+  // it is the list somebody works down, not a tab of figures to read.
+  hotel_booking_due: '/hotel/booking-due',
   // The property over time -- the month at a glance, and the tape chart the
   // desk reads for gaps. Its own screen: the availability grid answers a
   // question about two dates, and neither of these could be asked of it.
@@ -483,11 +486,14 @@ const ROUTES = {
   // above it made the first thing on screen the one thing nobody came to read.
   // ?kind=issue | opening | adjust picks which entry it makes.
   hotel_amenity_issue_new: '/hotel/amenity-issue/new',
-  // Buying what the hotel is furnished with -- beds, chairs, a generator.
-  // ⚠️ DESIGN ONLY so far: the form is drawn, nothing is saved.
+  // Buying what the hotel is furnished with -- beds, chairs, a generator. It
+  // saves an ordinary cash payment voucher (see AssetPurchaseController).
   hotel_asset_purchase: '/hotel/assets/purchase',
-  // Paying a supplier or a person from cash or bank.
-  // ⚠️ DESIGN ONLY so far: the screen is drawn, nothing is saved.
+  // Paying a supplier or a person from cash or bank, and its mirror. They keep
+  // their hotel URLs but are general Transaction features now, each behind its
+  // own key -- transaction.payment.create / transaction.received.create. No
+  // Hotel permission is asked for, so a shop that never ran a hotel can still be
+  // given the receipt and payment books.
   hotel_payment_entry: '/hotel/payment-entry',
   hotel_received_entry: '/hotel/received-entry',
 

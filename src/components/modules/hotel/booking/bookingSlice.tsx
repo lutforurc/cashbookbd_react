@@ -427,6 +427,30 @@ export const folioDiscount = createAsyncThunk<
 });
 
 /**
+ * Forgive some or all of what a guest left owing after check-out.
+ *
+ * ⚠️ NOT folioDiscount. A stay that has ended is not re-priced; this raises a
+ * voucher of its own (Dr Hotel Discount Allowed, Cr Advance Against Booking)
+ * and lowers the outstanding. A reason is required. Answers with the whole
+ * folio, like every other write here.
+ */
+export const folioWriteOff = createAsyncThunk<
+  { message: string; data: any },
+  { id: number; amount: number; reason: string },
+  { rejectValue: string }
+>('hotelBooking/folioWriteOff', async ({ id, ...payload }, { rejectWithValue }) => {
+  try {
+    const res = await httpService.post(`${API_HOTEL_FOLIO_URL}/${id}/writeoff`, payload);
+    if (res.data?.success === true) {
+      return { message: res.data?.message || 'Written off', data: unwrap(res) };
+    }
+    return rejectWithValue(res.data?.message || 'Could not write the balance off');
+  } catch (error: any) {
+    return rejectWithValue(said(error, 'Could not write the balance off'));
+  }
+});
+
+/**
  * Whose name the bill is made out to (§40) -- the guest's employer, usually.
  *
  * ⚠️ NOT WHO PAYS. That is billTransfer below, and it moves money with a
@@ -854,7 +878,7 @@ const bookingSlice = createSlice({
     // type is registered twice, so a thunk may appear in exactly one of these
     // lists. These answer with the WHOLE folio and replace it; the ones below
     // throw the availability list away instead.
-    [folioBill, folioCharge, folioReceive, folioDiscount, folioBillName].forEach((thunk: any) => {
+    [folioBill, folioCharge, folioReceive, folioDiscount, folioWriteOff, folioBillName].forEach((thunk: any) => {
       builder
         .addCase(thunk.pending, (state: any) => {
           state.saving = true;

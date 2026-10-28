@@ -168,6 +168,7 @@ import AllotmentScreen from './components/modules/hotel/booking/AllotmentScreen'
 import FolioScreen from './components/modules/hotel/booking/FolioScreen';
 import CheckOutScreen from './components/modules/hotel/booking/CheckOutScreen';
 import HotelReports from './components/modules/hotel/reports/HotelReports';
+import BookingDueReport from './components/modules/hotel/reports/BookingDueReport';
 import HotelCalendar from './components/modules/hotel/calendar/HotelCalendar';
 import HousekeepingBoard from './components/modules/hotel/housekeeping/HousekeepingBoard';
 import AmenityIssue from './components/modules/hotel/amenity/AmenityIssue';
@@ -916,6 +917,21 @@ function App() {
               <Route path={routes.hotel_reports} element={<HotelReports />} />
             </Route>
             {/*
+              Booking-wise due. On hotel.booking.view, like the API route it
+              reads: the desk that can open a folio can see who is still owing.
+            */}
+            <Route
+              element={
+                <RequirePermission
+                  permissions={userPermissions}
+                  anyOf={['hotel.booking.view']}
+                  loading={permissionsLoading}
+                />
+              }
+            >
+              <Route path={routes.hotel_booking_due} element={<BookingDueReport />} />
+            </Route>
+            {/*
               The property over time -- the month, and the tape chart.
 
               ⚠️ On hotel.booking.view, the SAME permission the availability
@@ -955,13 +971,15 @@ function App() {
               <Route path={routes.hotel_amenity_issue_new} element={<AmenityIssueForm />} />
             </Route>
             {/*
-              Buying what the hotel is furnished with. ⚠️ DESIGN ONLY — the form
-              is drawn and nothing is saved.
+              Buying what the hotel is furnished with -- beds, chairs, a
+              generator. It saves an ordinary cash payment voucher (see
+              AssetPurchaseController); CASH only so far, with bank and credit
+              still to come.
 
               ⚠️ Gated on the Hotel menu's own permission list rather than on a
               new one, so what the menu offers and what the route allows cannot
-              drift apart while the screen is only being looked at. When it is
-              wired for real it wants a permission of its own.
+              drift apart. It wants a permission of its own once the bank and
+              credit halves are built.
             */}
             <Route
               element={

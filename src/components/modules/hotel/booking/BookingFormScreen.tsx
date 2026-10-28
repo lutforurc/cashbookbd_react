@@ -10,12 +10,11 @@ import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import InputElement from '../../../utils/fields/InputElement';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
-import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
 import httpService from '../../../services/httpService';
-import { API_HOTEL_GUEST_URL, API_HOTEL_PARTY_URL } from '../../../services/apiRoutes';
+import { API_HOTEL_GUEST_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
 import PropertyGrid from '../PropertyGrid';
 import {
@@ -145,32 +144,6 @@ const holdLength = (hours?: number): string => {
   const days = hours / 24;
 
   return days === 1 ? 'a day' : `${days} days`;
-};
-
-/**
- * The companies this property already has on its customer list.
- *
- * ⚠️ A DROPDOWN, NEVER A TYPED NAME, and that is the whole reason it is
- * here. Typed, "ABC Traders" and "ABC traders" are two companies to every
- * query ever written afterwards, and nobody can say which is the real one. It
- * answers a party ID, so the question the desk actually asks -- who from this
- * company stayed, on which nights, and what is still owed -- has one thing to
- * group by.
- *
- * ⚠️ It answers `cust_party_infos.id`, which is what `billed_to_party_id`
- * points at. The chart dropdowns elsewhere in this app answer coa4 ids and are
- * NOT interchangeable with it.
- */
-const findParties = async (typed: string) => {
-  const res = await httpService.get(API_HOTEL_PARTY_URL, { params: { q: typed } });
-  const rows = res?.data?.data?.data ?? res?.data?.data ?? [];
-
-  return (Array.isArray(rows) ? rows : []).map((party: any) => ({
-    value: String(party.id),
-    label: party.name,
-    label_2: party.mobile || '',
-    label_3: party.idfr_code || '',
-  }));
 };
 
 const blankBooking = () => ({

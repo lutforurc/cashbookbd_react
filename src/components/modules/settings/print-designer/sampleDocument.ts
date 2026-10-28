@@ -181,6 +181,7 @@ export const HOTEL_BILL_SAMPLE: DocumentData = {
     bill_rounding: 0.5,
     bill_rounded: 21602,
     bill_paid: 10000,
+    bill_written_off: 0,
     bill_due: 11602,
     line_count: 5,
   },

@@ -6,6 +6,7 @@ import { FiArrowLeft, FiLogOut } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
+import ToggleSwitch from '../../../utils/fields/ToggleSwitch';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import Table from '../../../utils/others/Table';
@@ -94,6 +95,9 @@ const CheckOutScreen = () => {
   const [departure, setDeparture] = useState<string>(today());
   const [party, setParty] = useState<any>(null);
   const [reason, setReason] = useState('');
+  // Bill-wise due: leave the balance on the booking instead of naming a party.
+  // On by default: where the branch allows it, bill-wise due is the normal way out.
+  const [leaveOwing, setLeaveOwing] = useState(true);
   const [asking, setAsking] = useState(false);
 
   /**
@@ -145,7 +149,12 @@ const CheckOutScreen = () => {
   // Already on the booking, so a corporate stay taken on the telephone does not
   // have to be looked up again at the desk.
   const alreadyBilledTo = booking?.billed_to_party_id;
-  const needsParty = closing && balance > 0 && !party && !alreadyBilledTo;
+  // The server's answer: bill-wise branch, the permission, a balance that is there.
+  const canLeaveOwing = !!plan?.can_checkout_due;
+  const leavingOwing = canLeaveOwing && leaveOwing && !party;
+  const needsParty = closing && balance > 0 && !party && !alreadyBilledTo && !leavingOwing;
+  // Who let them go, and why, is the whole record of a balance left on a booking.
+  const needsReason = leavingOwing && !alreadyBilledTo && !reason.trim();
 
   /**
    * Tick a room on or off.
@@ -230,6 +239,7 @@ const CheckOutScreen = () => {
         setPicked(null);
         setParty(null);
         setReason('');
+        setLeaveOwing(true);
 
         return;
       }
@@ -562,9 +572,29 @@ const CheckOutScreen = () => {
             />
           </div>
 
+          {canLeaveOwing && !alreadyBilledTo ? (
+            <div className="mt-3">
+              <ToggleSwitch
+                id="leave_owing"
+                name="leave_owing"
+                checked={leaveOwing && !party}
+                disabled={!!party}
+                onChange={(e) => setLeaveOwing(e.target.checked)}
+                labelClassName="text-sm font-medium text-black dark:text-white"
+                label={`${money(balance)} owing on this booking`}
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                The guest leaves without paying. The balance stays on the booking and can be
+                collected, billed to a party or written off from its folio. A reason is needed.
+              </p>
+            </div>
+          ) : null}
+
           <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
-            Settle it on the folio instead if the guest is paying now. A balance cannot be
-            left against nobody — there would be no account to chase it on.
+            Settle it on the folio instead if the guest is paying now.{' '}
+            {canLeaveOwing
+              ? 'Or leave it owing on the booking, with a reason.'
+              : 'A balance cannot be left against nobody — there would be no account to chase it on.'}
           </p>
         </div>
       ) : null}
@@ -603,7 +633,7 @@ const CheckOutScreen = () => {
         <InputElement
           id="checkout_reason"
           name="reason"
-          label="Note (optional)"
+          label={leavingOwing ? 'Reason for leaving it owing' : 'Note (optional)'}
           placeholder="Left a day early — family emergency"
           value={reason}
           onChange={(e: any) => setReason(e.target.value)}
@@ -633,8 +663,9 @@ const CheckOutScreen = () => {
           // cannot fix from this screen: the chart has no heads to post to.
           disabled={
             needsParty
+            || needsReason
             || (closing && balance < 0)
-            || !plan.rooms_leaving
+            || (!closing && !plan.rooms_leaving)
             || !!plan.chart_missing?.length
           }
         />
@@ -642,7 +673,11 @@ const CheckOutScreen = () => {
           <span className="ml-3 text-xs text-gray-500 dark:text-gray-400">
             Name the party carrying the balance first.
           </span>
-        ) : !plan.rooms_leaving ? (
+        ) : needsReason ? (
+          <span className="ml-3 text-xs text-gray-500 dark:text-gray-400">
+            Say why the guest is leaving with a balance.
+          </span>
+        ) : !closing && !plan.rooms_leaving ? (
           // The button is dead and the reason is not on the screen otherwise:
           // every room ticked has already been let go.
           <span className="ml-3 text-xs text-gray-500 dark:text-gray-400">
@@ -736,6 +771,11 @@ const CheckOutScreen = () => {
                 The stay goes on in {plan.rooms_staying}{' '}
                 {plan.rooms_staying === 1 ? 'room' : 'rooms'}, so nothing is settled
                 today. {money(balance)} stands on the bill.
+              </span>
+            ) : balance > 0 && leavingOwing && !alreadyBilledTo ? (
+              <span className="mt-2 block">
+                {money(balance)} will stay <strong className="text-black dark:text-white">owing on this booking</strong>,
+                to be collected, billed to a party or written off later.
               </span>
             ) : balance > 0 ? (
               <span className="mt-2 block">

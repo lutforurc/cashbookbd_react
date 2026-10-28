@@ -217,6 +217,8 @@ interface branchItem {
    * was made at; this only changes what the NEXT line is worked out as.
    */
   hotel_vat_mode: string;
+  /** 'customer' (default): a balance at check-out goes to a party. 'bill': it may stay on the booking. */
+  hotel_due_mode: string;
   salutation_male: string;
   salutation_female: string;
   salutation_other: string;
@@ -735,6 +737,7 @@ const AddBranch = () => {
     hotel_registration_terms: '',
     // The way every property has billed so far: the rate is before tax.
     hotel_vat_mode: 'exclusive',
+    hotel_due_mode: 'customer',
     salutation_male: '',
     salutation_female: '',
     salutation_other: '',
@@ -1017,6 +1020,7 @@ const AddBranch = () => {
         // value written by another version cannot leave the screen in a mode it
         // does not know how to bill.
         hotel_vat_mode: metaTextOr(b.hotel_vat_mode, 'exclusive') === 'inclusive' ? 'inclusive' : 'exclusive',
+        hotel_due_mode: metaTextOr(b.hotel_due_mode, 'customer') === 'bill' ? 'bill' : 'customer',
         salutation_male: b.salutation_male ? String(b.salutation_male) : '',
         salutation_female: b.salutation_female ? String(b.salutation_female) : '',
         salutation_other: b.salutation_other ? String(b.salutation_other) : '',
@@ -1125,6 +1129,7 @@ const AddBranch = () => {
   // saved by another version, or not saved at all, lands on the behaviour it
   // already has rather than on one it was never set up for.
   const hotelVatMode = String(formData?.hotel_vat_mode || '') === 'inclusive' ? 'inclusive' : 'exclusive';
+  const hotelDueMode = String(formData?.hotel_due_mode || '') === 'bill' ? 'bill' : 'customer';
 
   // A form may only be chosen by someone who may open it: the four separate
   // cash/bank forms on their own create permission, and each unified entry on
@@ -2936,6 +2941,52 @@ const AddBranch = () => {
                       those rates as whole prices from that day on — so a property that means to go
                       on collecting the same money must raise its rate card first.
                     </p>
+
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Due Setup
+                    </h4>
+
+                    {/* Same trick as VAT Setup: the radio's name IS the meta key and
+                        what is saved is the id, never the label. */}
+                    <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                      {[
+                        {
+                          id: 'customer',
+                          label: 'Customer-wise due',
+                          blurb: 'A balance at check-out must be taken or billed to a party. The default.',
+                        },
+                        {
+                          id: 'bill',
+                          label: 'Bill-wise due',
+                          blurb:
+                            'With the Check-out With Due permission, a guest may leave owing. The balance stays on the booking and is collected, billed to a party or written off later.',
+                        },
+                      ].map((mode) => (
+                        <label
+                          key={mode.id}
+                          className={`flex cursor-pointer items-start gap-2 rounded-xs border p-3 transition ${
+                            hotelDueMode === mode.id
+                              ? 'border-primary bg-primary/5'
+                              : 'border-[rgb(var(--c-border))] hover:border-primary'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="hotel_due_mode"
+                            value={mode.id}
+                            checked={hotelDueMode === mode.id}
+                            onChange={handleOnChange}
+                            className="mt-0.5"
+                          />
+                          <span className="min-w-0 text-sm">
+                            <strong className="block text-black dark:text-white">{mode.label}</strong>
+                            <span className="mt-0.5 block text-xs leading-snug text-gray-500 dark:text-gray-400">
+                              {mode.blurb}
+                            </span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
 
                     <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       What the guest signs

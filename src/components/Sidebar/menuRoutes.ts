@@ -161,6 +161,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.hotel_setup,
     routes.hotel_bookings,
     routes.hotel_reports,
+    routes.hotel_booking_due,
     routes.hotel_calendar,
     routes.hotel_housekeeping,
     routes.hotel_amenity_issue,

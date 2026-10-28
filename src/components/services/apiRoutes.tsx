@@ -1107,6 +1107,9 @@ export const API_HOTEL_GUEST_URL = `${API_BASE_URL}/hotel-setup/bookings/guest`;
 // drawer the money went into if nobody said.
 export const API_HOTEL_TILL_URL = `${API_BASE_URL}/hotel-setup/bookings/folio/tills`;
 
+// Checked-out bookings that still owe, and what is held on open ones (bill-wise due).
+export const API_HOTEL_BOOKING_DUE_URL = `${API_BASE_URL}/hotel-setup/reports/booking-due`;
+
 // What cancelling a booking would do to the money, before it is done — how much
 // is held, whether it has been billed (which forbids cancelling at all), and
 // which tills a refund could come out of.

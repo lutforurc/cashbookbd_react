@@ -239,6 +239,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Hotel Payment Entry', path: routes.hotel_payment_entry, group: 'Transaction', permissions: ['transaction.payment.create'], when: 'unifiedPayment' },
   { title: 'Hotel Received Entry', path: routes.hotel_received_entry, group: 'Transaction', permissions: ['transaction.received.create'], when: 'unifiedReceived' },
   { title: 'Hotel Reports', path: routes.hotel_reports, group: 'Hotel', permissions: ['hotel.report.view'] },
+  { title: 'Booking-wise Due', path: routes.hotel_booking_due, group: 'Hotel', keywords: ['hotel due', 'guest owes', 'outstanding'], permissions: ['hotel.booking.view'] },
   { title: 'Hotel Setup', path: routes.hotel_setup, group: 'Hotel', keywords: ['rooms', 'halls', 'floors', 'room types', 'shift'], permissions: ['hotel.building.view', 'hotel.floor.view', 'hotel.room.type.view', 'hotel.resource.view'] },
 
   { title: 'Product Statement', path: routes.product_statement, group: 'Products', permissions: ['products.view'] },

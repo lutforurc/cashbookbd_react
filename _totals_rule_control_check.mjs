@@ -164,13 +164,41 @@ check('a condition naming a line that is not on this paper is satisfied', () => 
 
 check('nothing in the shipped defaults carries a condition', () => {
   // ⚠️ Opt-in is the whole point -- "many users can use it, and the rest can work
-  // without it". One `hideUnlessShown:` in the file is the type declaration; a
-  // second would be a default template quietly pairing two lines for everybody.
-  const declarations = (tpl.match(/hideUnlessShown\??:/g) || []).length;
+  // without it". Every shipped default is a template builder -- `const x = ():
+  // PrintTemplate => ({...})` -- and none of them may pair two of its lines with
+  // a condition, or every branch that never opened the designer would find its
+  // paper quietly changed.
+  //
+  // ⚠️ READ THE BUILDER BODIES, NOT THE WHOLE FILE. The key is named in three
+  // places: the type (`hideUnlessShown?:`), the round-trip normaliser that
+  // rebuilds a SAVED item (`hideUnlessShown:` beside `typeof item.hideUnlessShown`),
+  // and -- wrongly -- a default template. Counting matches across the file counted
+  // the normaliser as a shipped default. The builders are the defaults; slice them
+  // out and look only there.
+  const builders = [...tpl.matchAll(/^const (\w+) = \(\): PrintTemplate =>/gm)]
+    .map((match) => ({ name: match[1], at: match.index }));
+
+  assert.ok(
+    builders.length >= 5,
+    'the default template builders are gone from printTemplate.ts',
+  );
+
+  // From the first builder to the first normaliser is only builders and the
+  // PRESETS lists that name them -- neither PRESETS nor anything else in that
+  // span carries an item, so a condition anywhere inside it is a default's.
+  const defaultsEnd = tpl.indexOf('\nconst infoItems');
+  assert.ok(
+    defaultsEnd > builders[builders.length - 1].at,
+    'the default templates do not end before the normalisers',
+  );
+
+  const defaults = tpl.slice(builders[0].at, defaultsEnd);
+  const conditioned = (defaults.match(/hideUnlessShown\s*:/g) || []).length;
+
   assert.equal(
-    declarations,
-    1,
-    `the shipped defaults set a condition on ${declarations - 1} line(s) -- every untouched paper would change`,
+    conditioned,
+    0,
+    `${conditioned} shipped default template(s) pair two lines with a condition -- every untouched paper would change`,
   );
 });
 
@@ -326,8 +354,15 @@ check('the totals picker still offers a standalone Line, on every paper', () => 
 });
 
 check('every purchase screen prints through the designer’s paper', () => {
+  // ⚠️ `printAs(purchaseRef` -- an optional chooser callback is allowed. The
+  // purchase cases grew one on purpose: the hotel's Accounts Transaction screen
+  // numbers in the 4-/9- series yet keeps no purchase master, so the server
+  // marks those lines `item_purchase_lines` and the callback picks the item
+  // paper instead (see VoucherPrintRegistry). The saved purchase layout is still
+  // the default, so what this guards -- that a purchase voucher prints on the
+  // designer's paper, not on some other one -- still holds.
   assert.ok(
-    /case '4':\s+case '9':\s+printAs\(purchaseRef\);/.test(registry),
+    /case '4':\s+case '9':\s+printAs\(purchaseRef/.test(registry),
     'a purchase voucher now prints on something other than the saved layout',
   );
   assert.ok(

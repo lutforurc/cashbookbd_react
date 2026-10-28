@@ -8,8 +8,6 @@ import {
   FiEdit2,
   FiHome,
   FiPlus,
-  FiRefreshCcw,
-  FiRefreshCw,
   FiSave,
   FiTrash2,
 } from 'react-icons/fi';
@@ -66,8 +64,6 @@ interface PaymentItem {
   accountName: string;
   remarks: string;
   amount: string | number;
-  purchaseOrderNumber?: string; // Add this line
-  purchaseOrderText?: string; // Add this line
   currentProduct?: { [key: string]: any } | null; // Allow null
   // এই row-এর টাকা কোন tracked Product-এর বিপরীতে। legacy transaction
   // table-এ যায় না — শুধু transaction_product_maps-এ যায়।
@@ -181,7 +177,6 @@ const TilesCashPayment = () => {
       setSaveButtonLoading(false);
       return;
     }
-    // Update the tableData with the selected purchaseOrderNumber from formData
     const updatedTableData = tableData.map((row) => {
       // Update only rows related to the current formData if necessary
       if (row.id === formData.id) {
@@ -343,7 +338,6 @@ const TilesCashPayment = () => {
       trackedProductId: product?.trackedProductId ?? null,
     }));
 
-    setIsUpdating(true);
     setIsUpdating(true);
     setUpdateId(productIndex);
   };

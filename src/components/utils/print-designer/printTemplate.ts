@@ -880,11 +880,13 @@ export type FieldDef = {
    * always did.
    *
    *   money    a figure with thousand separators
+   *   money2   the same, always to two decimals whatever the branch's
+   *            decimal_places says -- hotel papers, where 156.52 is not 157
    *   date     DD/MM/YYYY, the way the desk reads a date
    *   words    the figure at `from`, spelled out
    *   percent  a rate as somebody says it -- "15%", "7.5%"
    */
-  format?: 'money' | 'date' | 'words' | 'percent';
+  format?: 'money' | 'money2' | 'date' | 'words' | 'percent';
   /** For `format: 'words'` -- which key holds the figure to spell. */
   from?: string;
 };
@@ -1226,34 +1228,37 @@ export const HOTEL_BILL_FIELDS: FieldDef[] = [
   { key: 'bill_date', name: 'Bill Date', group: 'bill', format: 'date' },
   ...HOTEL_STAY_FIELDS,
 
-  { key: 'bill_base', name: 'Room & Charges', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_base', name: 'Room & Charges', group: 'bill', numeric: true, format: 'money2' },
   // ⚠️ WHAT CAME OFF, and it comes off the GROSS -- after the service charge
   // and the VAT, which are both worked out on the room and charges. A guest
   // handed a bill for less than the tariff has to be able to see the
   // subtraction; a bill that quietly shows smaller rents cannot be checked
   // against the rate card.
-  { key: 'bill_discount', name: 'Discount', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_discount', name: 'Discount', group: 'bill', numeric: true, format: 'money2' },
   // Gross less discount, before the single rounding. `bill_rounded` is what is
   // actually asked for.
-  { key: 'bill_net', name: 'Net (before rounding)', group: 'bill', numeric: true, format: 'money' },
-  { key: 'bill_service_charge', name: 'Service Charge', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_net', name: 'Net (before rounding)', group: 'bill', numeric: true, format: 'money2' },
+  { key: 'bill_service_charge', name: 'Service Charge', group: 'bill', numeric: true, format: 'money2' },
   // ⚠️ On the BILL this is right and required -- the tax falls due here.
-  { key: 'bill_vat', name: 'VAT', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_vat', name: 'VAT', group: 'bill', numeric: true, format: 'money2' },
   // ⚠️ RATE BY RATE, as a sentence: "15% on 3,000.00 = 450.00; 5% on 800.00 =
   // 40.00". One bill carries several rates -- an air-conditioned room at 15%,
   // dinner at 5% -- and a single VAT figure cannot be checked by the guest's
   // accountant or by an officer. Empty on a bill with one rate, where the line
   // above already says it.
   { key: 'bill_vat_summary', name: 'VAT By Rate', group: 'bill' },
-  { key: 'bill_gross', name: 'Total (exact)', group: 'bill', numeric: true, format: 'money' },
-  { key: 'bill_rounding', name: 'Rounding', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_gross', name: 'Total (exact)', group: 'bill', numeric: true, format: 'money2' },
+  { key: 'bill_rounding', name: 'Rounding', group: 'bill', numeric: true, format: 'money2' },
   // What is actually asked for at the counter.
-  { key: 'bill_rounded', name: 'Grand Total', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_rounded', name: 'Grand Total', group: 'bill', numeric: true, format: 'money2' },
   { key: 'bill_words', name: 'Grand Total In Words', group: 'bill', format: 'words', from: 'bill_rounded' },
-  { key: 'bill_paid', name: 'Paid', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_paid', name: 'Paid', group: 'bill', numeric: true, format: 'money2' },
+  // A balance forgiven after check-out (bill-wise due). Comes off what is owed
+  // like Paid does, so Grand Total - Paid - Written off = Balance Due.
+  { key: 'bill_written_off', name: 'Written Off', group: 'bill', numeric: true, format: 'money2' },
   // Negative means the hotel is holding money over the bill, which is the
   // ordinary state of a booking with an advance and no nights billed yet.
-  { key: 'bill_due', name: 'Balance Due', group: 'bill', numeric: true, format: 'money' },
+  { key: 'bill_due', name: 'Balance Due', group: 'bill', numeric: true, format: 'money2' },
   { key: 'line_count', name: 'Number of Lines', group: 'bill', numeric: true },
 ];
 
@@ -1299,10 +1304,10 @@ export const HOTEL_BILL_LINE_FIELDS: FieldDef[] = [
   { key: 'room_facilities', name: 'Room Facilities', group: 'folio' },
   { key: 'room_description', name: 'Room Description', group: 'folio' },
   { key: 'quantity', name: 'Quantity', group: 'folio', numeric: true },
-  { key: 'unit_rate', name: 'Rate', group: 'folio', numeric: true, format: 'money' },
-  { key: 'base_amount', name: 'Amount', group: 'folio', numeric: true, format: 'money' },
+  { key: 'unit_rate', name: 'Rate', group: 'folio', numeric: true, format: 'money2' },
+  { key: 'base_amount', name: 'Amount', group: 'folio', numeric: true, format: 'money2' },
   { key: 'service_charge_rate', name: 'Service %', group: 'folio', numeric: true, format: 'percent' },
-  { key: 'service_charge_amount', name: 'Service Charge', group: 'folio', numeric: true, format: 'money' },
+  { key: 'service_charge_amount', name: 'Service Charge', group: 'folio', numeric: true, format: 'money2' },
   // ⚠️ THE RATE, NOT THE MONEY, is what a line is best at saying. One bill
   // carries several -- 15% on an air-conditioned room, 7.5% on a fan one, 5% on
   // dinner -- and the guest's question is which rate applied to what. The money
@@ -1310,8 +1315,8 @@ export const HOTEL_BILL_LINE_FIELDS: FieldDef[] = [
   // checked; per line it never would be, because the VAT falls on the service
   // charge as well and 393.75 is not 15% of 2,500.
   { key: 'vat_rate', name: 'VAT %', group: 'folio', numeric: true, format: 'percent' },
-  { key: 'vat_amount', name: 'VAT', group: 'folio', numeric: true, format: 'money' },
-  { key: 'line_total', name: 'Line Total', group: 'folio', numeric: true, format: 'money' },
+  { key: 'vat_amount', name: 'VAT', group: 'folio', numeric: true, format: 'money2' },
+  { key: 'line_total', name: 'Line Total', group: 'folio', numeric: true, format: 'money2' },
 ];
 
 /**
@@ -1334,7 +1339,7 @@ export const HOTEL_RECEIPT_FIELDS: FieldDef[] = [
 
   { key: 'payment_no', name: 'Receipt No', group: 'receipt' },
   { key: 'payment_date', name: 'Receipt Date', group: 'receipt', format: 'date' },
-  { key: 'receipt_amount', name: 'Amount', group: 'receipt', numeric: true, format: 'money' },
+  { key: 'receipt_amount', name: 'Amount', group: 'receipt', numeric: true, format: 'money2' },
   { key: 'receipt_words', name: 'Amount In Words', group: 'receipt', format: 'words', from: 'receipt_amount' },
   // ⚠️ "Received" or "Refund". A refund is stored positive, so without this
   // word on the paper the two receipts are indistinguishable.
@@ -1344,7 +1349,7 @@ export const HOTEL_RECEIPT_FIELDS: FieldDef[] = [
   { key: 'reference', name: 'Cheque / Txn No', group: 'receipt' },
   { key: 'payment_notes', name: 'Remarks', group: 'receipt' },
   // The guest's running position, which is what they usually ask about next.
-  { key: 'advance_held', name: 'Total Held To Date', group: 'receipt', numeric: true, format: 'money' },
+  { key: 'advance_held', name: 'Total Held To Date', group: 'receipt', numeric: true, format: 'money2' },
 ];
 
 /**
@@ -1498,7 +1503,7 @@ export const PURCHASE_INVOICE_FIELD_CATALOG: FieldDef[] = [
   // Which paper this is
   { key: 'vr_no', name: 'Voucher No', group: 'voucher' },
   { key: 'vr_date', name: 'Date', group: 'voucher', format: 'date' },
-  { key: 'order_number', name: 'Order Number', group: 'voucher' },
+  { key: 'order_number', name: 'Purchase Order', group: 'voucher' },
   { key: 'delivery_location', name: 'Delivery Location', group: 'voucher' },
   { key: 'vehicle_no', name: 'Vehicle No', group: 'transport' },
   // ⚠️ THE SAME FOUR THE SALES INVOICE CARRIES, because they are the same four
@@ -3033,6 +3038,9 @@ const hotelBill = (): PrintTemplate => ({
         // the catalogue -- a property that wants the amount spelled out adds it
         // back in the designer -- it is simply not on the bill as it ships.
         { field: 'bill_paid', label: 'Paid' },
+        // Only on a bill that had a balance forgiven after check-out; the
+        // nought on every other bill is hidden.
+        { field: 'bill_written_off', label: 'Written off', hideIfEmpty: true },
         // And again: what was paid comes off what is owed.
         { field: 'bill_due', label: 'Balance Due', ruleAbove: true },
       ],
@@ -3221,6 +3229,10 @@ const salesInvoice = (): PrintTemplate => ({
         { field: 'vr_date', label: 'Date' },
         { field: 'manual_address', label: 'Address', hideIfEmpty: true },
         { field: 'notes', label: 'Notes', hideIfEmpty: true },
+        // Hidden when the sale has none, so a trade that never types one keeps
+        // the paper it had.
+        { field: 'vehicle_no', label: 'Vehicle No', hideIfEmpty: true },
+        { field: 'order_number', label: 'Sales Order', hideIfEmpty: true },
         { field: 'manual_voucher_no', label: 'Manual Voucher No', hideIfEmpty: true },
         { field: 'manual_voucher_date', label: 'Manual Voucher Date', hideIfEmpty: true },
         { field: 'manual_challan_no', label: 'Manual Challan No', hideIfEmpty: true },
@@ -3388,6 +3400,7 @@ const purchaseInvoice = (): PrintTemplate => ({
         { field: 'vr_date', label: 'Date' },
         { field: 'manual_address', label: 'Address', hideIfEmpty: true },
         { field: 'notes', label: 'Notes', hideIfEmpty: true },
+        { field: 'order_number', label: 'Purchase Order', hideIfEmpty: true },
         { field: 'manual_voucher_no', label: 'Manual Voucher No', hideIfEmpty: true },
         { field: 'manual_voucher_date', label: 'Manual Voucher Date', hideIfEmpty: true },
         { field: 'manual_challan_no', label: 'Manual Challan No', hideIfEmpty: true },
