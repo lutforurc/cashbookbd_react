@@ -6,6 +6,7 @@ import { FiArrowLeft, FiLogOut } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
+import ToggleSwitch from '../../../utils/fields/ToggleSwitch';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import Table from '../../../utils/others/Table';
@@ -95,7 +96,8 @@ const CheckOutScreen = () => {
   const [party, setParty] = useState<any>(null);
   const [reason, setReason] = useState('');
   // Bill-wise due: leave the balance on the booking instead of naming a party.
-  const [leaveOwing, setLeaveOwing] = useState(false);
+  // On by default: where the branch allows it, bill-wise due is the normal way out.
+  const [leaveOwing, setLeaveOwing] = useState(true);
   const [asking, setAsking] = useState(false);
 
   /**
@@ -237,7 +239,7 @@ const CheckOutScreen = () => {
         setPicked(null);
         setParty(null);
         setReason('');
-        setLeaveOwing(false);
+        setLeaveOwing(true);
 
         return;
       }
@@ -571,22 +573,21 @@ const CheckOutScreen = () => {
           </div>
 
           {canLeaveOwing && !alreadyBilledTo ? (
-            <label className="mt-3 flex cursor-pointer items-start gap-2 text-sm text-black dark:text-white">
-              <input
-                type="checkbox"
-                className="mt-0.5"
-                checked={leaveOwing}
+            <div className="mt-3">
+              <ToggleSwitch
+                id="leave_owing"
+                name="leave_owing"
+                checked={leaveOwing && !party}
                 disabled={!!party}
                 onChange={(e) => setLeaveOwing(e.target.checked)}
+                labelClassName="text-sm font-medium text-black dark:text-white"
+                label={`${money(balance)} owing on this booking`}
               />
-              <span>
-                Leave {money(balance)} owing on this booking
-                <span className="block text-xs text-gray-500 dark:text-gray-400">
-                  The guest leaves without paying. The balance stays on the booking and can be
-                  collected, billed to a party or written off from its folio. A reason is needed.
-                </span>
-              </span>
-            </label>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                The guest leaves without paying. The balance stays on the booking and can be
+                collected, billed to a party or written off from its folio. A reason is needed.
+              </p>
+            </div>
           ) : null}
 
           <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
@@ -664,7 +665,7 @@ const CheckOutScreen = () => {
             needsParty
             || needsReason
             || (closing && balance < 0)
-            || !plan.rooms_leaving
+            || (!closing && !plan.rooms_leaving)
             || !!plan.chart_missing?.length
           }
         />
@@ -676,7 +677,7 @@ const CheckOutScreen = () => {
           <span className="ml-3 text-xs text-gray-500 dark:text-gray-400">
             Say why the guest is leaving with a balance.
           </span>
-        ) : !plan.rooms_leaving ? (
+        ) : !closing && !plan.rooms_leaving ? (
           // The button is dead and the reason is not on the screen otherwise:
           // every room ticked has already been let go.
           <span className="ml-3 text-xs text-gray-500 dark:text-gray-400">
