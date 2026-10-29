@@ -52,6 +52,9 @@ import {
   API_CHART_OF_ACCOUNTS_DDL_L4_URL,
   API_TRADING_PURCHASE_SUGGESTIONS_URL,
 } from '../../../services/apiRoutes';
+import SalesBalanceSummary, {
+  usePreviousBalance,
+} from '../../../utils/components/SalesBalanceSummary';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { getPurchaseTypeForVoucher } from '../../../utils/utils-functions/voucherEditNavigation';
 import { getDdlProduct } from '../../product/productSlice';
@@ -755,6 +758,14 @@ const TradingBusinessPurchase = () => {
     0,
   );
 
+  // A saved bill is part of the supplier's balance, so a new voucher number
+  // refreshes the Previous Balance line.
+  const previousBalance = usePreviousBalance(
+    formData.account,
+    formData.mtmId,
+    purchase?.data?.vr_no,
+  );
+
 
   const addProduct = () => {
  if (!validateProductData(productData)) return;
@@ -1392,71 +1403,15 @@ const TradingBusinessPurchase = () => {
               </datalist>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-0">
-              <div className="mt-4 ">
-                <p className="text-sm font-bold dark:text-[rgb(var(--c-text))]">
-                  Total Tk. {thousandSeparator(totalAmount)}
-                </p>
+              <div className="col-span-full">
+                <SalesBalanceSummary
+                  kind="purchase"
+                  previousBalance={previousBalance}
+                  billAmount={totalAmount}
+                  discount={Number(formData.discountAmt) || 0}
+                  received={Number(formData.paymentAmt) || 0}
+                />
               </div>
-              {hasPermission(permissions, 'sales.edit') && (
-                <>
-                  {/* ⚠️ THE TYPE BOX BELONGS TO THE SEARCH BESIDE IT. What it
-                      says is only ever read by searchInvoice() below -- "look
-                      this number up as a paid purchase or as a due one" -- and
-                      on this shop there is no search box to press. The Ledger's
-                      Edit answers the same question from the number itself
-                      (getPurchaseTypeForVoucher in searchInvoice), which is how
-                      a voucher opened from the Purchase Ledger has always been
-                      resolved. Another trade, with its search box, keeps it. */}
-                  {!isTilesBranch && (
-                  <div className="mt-2">
-                    <DropdownCommon
- id="saleType"
- name="saleType"
- onChange={handlePurchaseType}
- defaultValue={productData?.variance_type || ''}
- data={PurchaseType}
- className="w-full "
-                    />
-                  </div>
-                  )}
-                  {/* ⚠️ NO SEARCH BOX ON THE TILES AND SANITARY SHOP, AND THE
-                      VOUCHER STILL OPENS FOR EDIT. What the box did is pull a
-                      saved invoice up by its number; the desk gets there from
-                      the Ledger's own Edit button, which lands here carrying the
-                      number and is answered by useVoucherAutoEditSearch above --
-                      the search state and searchInvoice() are untouched, only
-                      the box is gone. Another trade keeps the box. */}
-                  {!isTilesBranch && (
-                  <>
-                    <div className="relative mt-2">
-                      <div className="w-full ">
-                        <InputOnly
-                          id="search"
-                          value={search}
-                          name="search"
-                          placeholder={'Search Invoice'}
-                          label={''}
-                          className={'py-1 w-full bg-white'}
-                          onChange={(e) => setSearch(e.target.value)}
-                          onKeyDown={(e) => handleInputKeyDown(e, 'btnSearch')} // Pass the next field's ID
-                        />
-                      </div>
-                      <ButtonLoading
-                        id="btnSearch"
-                        name="btnSearch"
-                        onClick={searchInvoice}
-                        buttonLoading={buttonLoading}
-                        label=""
-                        className="whitespace-nowrap bg-transparent! text-center mr-0 py-2 -mt-6 absolute -right-2 top-6 background-red-500 pr-2! pl-2!"
-                        icon={
-                          <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg ml-2  mr-2" />
-                        }
-                      />
-                    </div>
-                  </>
-                  )}
-                </>
-              )}
             </div>
 
             {/* One product for the whole invoice, picked by hand. It sits below

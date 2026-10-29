@@ -37,6 +37,9 @@ import { PurchaseType } from '../../../../common/dropdownData.tsx';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import SalesBalanceSummary, {
+  usePreviousBalance,
+} from '../../../utils/components/SalesBalanceSummary';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { getPurchaseTypeForVoucher } from '../../../utils/utils-functions/voucherEditNavigation';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
@@ -417,6 +420,14 @@ const ElectronicsBusinessPurchase = () => {
     0,
   );
 
+  // A saved bill is part of the supplier's balance, so a new voucher number
+  // refreshes the Previous Balance line.
+  const previousBalance = usePreviousBalance(
+    formData.account,
+    formData.mtmId,
+    purchase?.data?.vr_no,
+  );
+
   useEffect(() => {
     const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
     const isCashSupplier = Number(formData.account) === 17;
@@ -770,52 +781,15 @@ const ElectronicsBusinessPurchase = () => {
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')} // Pass the next field's ID
               />
-              <div className="flex items-end mb-2">
-                <p className="text-xs font-bold dark:text-[rgb(var(--c-text))]">
-                  Total Tk. {thousandSeparator(totalAmount)}
-                </p>
+              <div className="col-span-full">
+                <SalesBalanceSummary
+                  kind="purchase"
+                  previousBalance={previousBalance}
+                  billAmount={totalAmount}
+                  discount={Number(formData.discountAmt) || 0}
+                  received={Number(formData.paymentAmt) || 0}
+                />
               </div>
-              {hasPermission(permissions, 'purchase.edit') && (
-                <>
-                  <div className="relative ">
-                    <DropdownCommon
- id="saleType"
- name="saleType"
- onChange={handlePurchaseType}
- defaultValue={productData?.variance_type || ''}
- data={PurchaseType}
- className="w-full "
-                    />
-                  </div>
-                  <>
-                    <div className="relative">
-                      <div className="w-full ">
-                        <InputOnly
-                          id="search"
-                          value={search}
-                          name="search"
-                          placeholder={'Search Invoice'}
-                          label={''}
-                          className={'py-1 w-full bg-white'}
-                          onChange={(e) => setSearch(e.target.value)}
-                          onKeyDown={(e) => handleInputKeyDown(e, 'btnSearch')} // Pass the next field's ID
-                        />
-                      </div>
-                      <ButtonLoading
-                        id="btnSearch"
-                        name="btnSearch"
-                        onClick={searchInvoice}
-                        buttonLoading={buttonLoading}
-                        label=""
-                        className="whitespace-nowrap bg-transparent! text-center mr-0 py-2 -mt-6 absolute -right-2 top-6 background-red-500 pr-2! pl-2!"
-                        icon={
-                          <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg ml-2  mr-2" />
-                        }
-                      />
-                    </div>
-                  </>
-                </>
-              )}
             </div>
           </div>
         </div>

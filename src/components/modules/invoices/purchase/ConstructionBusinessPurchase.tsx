@@ -42,6 +42,9 @@ import useCtrlS from '../../../utils/hooks/useCtrlS.ts';
 import QuickCustomerModal from '../sales/QuickCustomerModal';
 import httpService from '../../../services/httpService';
 import { API_TRADING_PURCHASE_SUGGESTIONS_URL } from '../../../services/apiRoutes';
+import SalesBalanceSummary, {
+  usePreviousBalance,
+} from '../../../utils/components/SalesBalanceSummary';
 import useVoucherAutoEditSearch from '../../../utils/hooks/useVoucherAutoEditSearch';
 import { getPurchaseTypeForVoucher } from '../../../utils/utils-functions/voucherEditNavigation';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
@@ -347,6 +350,14 @@ const ConstructionBusinessPurchase = () => {
   const totalAmount = formData.products.reduce(
     (sum, row) => sum + Number(row.qty) * Number(row.price),
     0,
+  );
+
+  // A saved bill is part of the supplier's balance, so a new voucher number
+  // refreshes the Previous Balance line.
+  const previousBalance = usePreviousBalance(
+    formData.account,
+    formData.mtmId,
+    purchase?.data?.vr_no,
   );
 
   // Process `purchase.data` when it updates
@@ -860,11 +871,14 @@ const ConstructionBusinessPurchase = () => {
                   }
                 }}
               />
-              <div className="grid grid-cols-1 md:gap-x-1 -mb-1">
-                <span>Total Tk. </span>
-                <span className="text-xs font-bold dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Math.floor(totalAmount))}
-                </span>
+              <div className="col-span-full">
+                <SalesBalanceSummary
+                  kind="purchase"
+                  previousBalance={previousBalance}
+                  billAmount={totalAmount}
+                  discount={Number(formData.discountAmt) || 0}
+                  received={Number(formData.paymentAmt) || 0}
+                />
               </div>
             </div>
           </div>
@@ -872,52 +886,6 @@ const ConstructionBusinessPurchase = () => {
 
         <div className="">
           <div className="grid grid-cols-1 gap-y-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {hasPermission(permissions, 'purchase.edit') && (
-                <>
-                  <div className="relative">
-                    <div className="w-full ">
-                      <DropdownCommon
- id={'voucher_type'}
- name={'voucher_type'}
- label={'Select Invoice Type'}
- className=""
- onChange={handleChangeVoucherType}
- data={voucherTypes}
-                      />
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="">
-                      Search Invoice
-                    </label>
-                    <div className="w-full ">
-                      <InputOnly
-                        id="search"
-                        value={search}
-                        name="search"
-                        placeholder={'Search Invoice'}
-                        label={''}
-                        className={'py-1 w-full'}
-                        onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={(e) => handleInputKeyDown(e, 'btnSearch')} // Pass the next field's ID
-                      />
-                    </div>
-                    <ButtonLoading
-                      id="btnSearch"
-                      name="btnSearch"
-                      onClick={searchInvoice}
-                      buttonLoading={buttonLoading}
-                      label=""
-                      className="whitespace-nowrap bg-transparent! text-center mr-0 py-2 absolute -right-1 top-6 background-red-500 pr-2! pl-2!"
-                      icon={
-                        <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg ml-2  mr-2" />
-                      }
-                    />
-                  </div>
-                </>
-              )}
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]" htmlFor="">

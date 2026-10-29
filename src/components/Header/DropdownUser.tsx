@@ -69,7 +69,7 @@ const DropdownUser = () => {
     let cancelled = false;
 
     httpService
-      .get(API_ALL_DDL_BRANCH_URL)
+      .get(`${API_ALL_DDL_BRANCH_URL}?own_company=1`)
       .then((res) => {
         if (cancelled) return;
         const list = res.data?.success ? res.data?.data?.data : null;
