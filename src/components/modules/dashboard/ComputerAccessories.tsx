@@ -31,6 +31,8 @@ import {
 import { CardTitle, DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
 import RangeCashCard from './RangeCashCard';
 import BranchRollCallCard from './BranchRollCallCard';
+import InterBranchTransfersCard from './InterBranchTransfersCard';
+import routes from '../../services/appRoutes';
 
 /*
  * ⚠️ ONE ITEM PER TILE, NOT ONE PER ROW. The four KPI tiles sit in one band, and
@@ -48,6 +50,7 @@ const NORMAL_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'kpi-vouchers', title: 'Today Vouchers' },
   { id: 'summary', title: 'Balance Summary' },
   { id: 'summary-range', title: 'Cash Book (Range)' },
+  { id: 'inter-branch-transfers', title: 'Inter-Branch Transfers' },
   { id: 'due-aging', title: 'Receivable Ageing' },
   { id: 'payable-aging', title: 'Payable Ageing' },
   { id: 'low-stock', title: 'Low Stock' },
@@ -201,6 +204,19 @@ const ComputerAccessories = () => {
             }
             if (widget.id === 'summary-range') {
               return <RangeCashCard key={widget.id} cash={cash} rowClass={cardRowClass} href={links.cashBook} />;
+            }
+
+            if (widget.id === 'inter-branch-transfers') {
+              return (
+                <div className="col-span-full min-w-0" key={widget.id}>
+                  <InterBranchTransfersCard
+                    branchId={branchId}
+                    tick={tick}
+                    href={routes.inter_branch}
+                    canAct={view.viewingOwn}
+                  />
+                </div>
+              );
             }
 
             if (widget.id === 'due-aging') {

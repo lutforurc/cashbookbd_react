@@ -1047,6 +1047,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+
+                          {(hasPermission(permissions, 'interbranch.transfer.view')
+                            || hasPermission(permissions, 'interbranch.transfer.receive')) && (
+                            <li style={subSlot('transaction', 'accounts/inter-branch')}>
+                              <NavLink
+                                to={routes.inter_branch}
+                                className={subMenuLinkClass}
+                              >
+                                Inter-Branch Transfers
+                              </NavLink>
+                            </li>
+                          )}
                         </ul>
                       </div>
                     </React.Fragment>

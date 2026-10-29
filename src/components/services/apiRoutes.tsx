@@ -491,6 +491,15 @@ export const API_HEAD_OFFICE_CASH_PAYMENT_UPDATE_URL = `${API_BASE_URL}/accounts
 // Journal url
 export const API_JOURNAL_STORE_URL = `${API_BASE_URL}/accounts/journal/store`;
 
+// Inter-Branch money transfer. There is no sending endpoint: a transfer is
+// recorded from the payment voucher that carries it. These are the tracking,
+// receiving and dashboard reads.
+export const API_INTERBRANCH_TRANSFER_INCOMING_URL = `${API_BASE_URL}/inter-branch/transfer/incoming`;
+export const API_INTERBRANCH_TRANSFER_OUTGOING_URL = `${API_BASE_URL}/inter-branch/transfer/outgoing`;
+export const API_INTERBRANCH_TRANSFER_RECEIVE_URL = `${API_BASE_URL}/inter-branch/transfer/receive`;
+export const API_INTERBRANCH_TRANSFER_ACCOUNTS_URL = `${API_BASE_URL}/inter-branch/transfer/accounts`;
+export const API_INTERBRANCH_TRANSFER_DASHBOARD_URL = `${API_BASE_URL}/dashboard/inter-branch-transfers`;
+
 
 // Bank Received url
 export const API_BANK_RECEIVED_URL = `${API_BASE_URL}/general/bank/received`;

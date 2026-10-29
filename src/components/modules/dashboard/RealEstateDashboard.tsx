@@ -35,6 +35,7 @@ import {
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
 import BranchRollCallCard from './BranchRollCallCard';
+import InterBranchTransfersCard from './InterBranchTransfersCard';
 // money(), count(), share(), CARD, CARD_HEAD and Tile moved to the shared kit so
 // the trading dashboard cannot drift away from this one on how a taka is
 // written. Nothing here changed but where they are read from.
@@ -97,6 +98,7 @@ const REAL_ESTATE_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'installments', title: 'Installments' },
   { id: 'balance', title: 'Cash Book' },
   { id: 'balance-range', title: 'Cash Book (Range)' },
+  { id: 'inter-branch-transfers', title: 'Inter-Branch Transfers' },
 ];
 
 
@@ -213,6 +215,15 @@ const RealEstateDashboard = () => {
 
   const renderWidget = (id: string): React.ReactNode => {
     switch (id) {
+      case 'inter-branch-transfers':
+        return (
+          <InterBranchTransfersCard
+            branchId={branchId}
+            tick={tick}
+            href={routes.inter_branch}
+            canAct={view.viewingOwn}
+          />
+        );
       case 'sales-booked':
         return (
           sales &&

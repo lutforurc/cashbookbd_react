@@ -29,6 +29,8 @@ import DueAgingCard from './DueAgingCard';
 import BalanceSummaryCard from './BalanceSummaryCard';
 import RangeCashCard from './RangeCashCard';
 import BranchRollCallCard from './BranchRollCallCard';
+import InterBranchTransfersCard from './InterBranchTransfersCard';
+import routes from '../../services/appRoutes';
 import MonthlyPurchaseSalesChart from './MonthlyPurchaseSalesChart';
 import DailySalesChart from './DailySalesChart';
 import DailyPurchaseChart from './DailyPurchaseChart';
@@ -110,6 +112,7 @@ const TRADING_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'profit-margin', title: 'Margin' },
   { id: 'dues-balance', title: 'Cash Book' },
   { id: 'dues-balance-range', title: 'Cash Book (Range)' },
+  { id: 'inter-branch-transfers', title: 'Inter-Branch Transfers' },
   { id: 'dues-receivable', title: 'Receivable Ageing' },
   { id: 'dues-payable', title: 'Payable Ageing' },
   { id: 'dues-net', title: 'Net Position' },
@@ -406,6 +409,15 @@ const TradingDashboard = () => {
         />
       );
     switch (id) {
+      case 'inter-branch-transfers':
+        return (
+          <InterBranchTransfersCard
+            branchId={branchId}
+            tick={tick}
+            href={routes.inter_branch}
+            canAct={view.viewingOwn}
+          />
+        );
       case 'stock-value':
         return (
           stock &&

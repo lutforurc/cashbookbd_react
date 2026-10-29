@@ -92,6 +92,10 @@ const ROUTES = {
 
   journal: '/accounts/journal',
 
+  // Inter-Branch money transfers: the Incoming / Outgoing views. There is no
+  // sending route -- a transfer is opened by a payment voucher, not a screen.
+  inter_branch: '/accounts/inter-branch',
+
   // Role Routes
   role_list: '/role/role-list',
   role_ddl_list: '/role/ddl-role-list',

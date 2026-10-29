@@ -21,6 +21,10 @@ export const MENU_PERMISSIONS = {
     // being handed the Hotel module or the cash/bank screens.
     'transaction.received.create',
     'transaction.payment.create',
+    // Inter-Branch money transfers. No "send" key: transfers are recorded from
+    // the payment forms, which carry their own create permissions.
+    'interbranch.transfer.view',
+    'interbranch.transfer.receive',
   ],
   invoice: ['purchase.create', 'sales.create', 'labour.invoice.create', 'delivery.view'],
   labour_items: ['labour.category.view', 'labour.item.view'],

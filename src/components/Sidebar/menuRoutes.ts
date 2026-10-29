@@ -34,6 +34,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.installment_list,
     routes.employee_loan,
     '/accounts/journal',
+    routes.inter_branch,
   ],
   'invoice': [
     '/invoice/purchase',

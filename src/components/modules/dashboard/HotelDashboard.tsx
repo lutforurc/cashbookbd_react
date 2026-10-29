@@ -38,6 +38,7 @@ import {
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
 import BranchRollCallCard from './BranchRollCallCard';
+import InterBranchTransfersCard from './InterBranchTransfersCard';
 import { CardTitle, DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
 
 /**
@@ -95,6 +96,7 @@ const HOTEL_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'takings', title: 'Money Taken This Month' },
   { id: 'balance', title: 'Cash Book' },
   { id: 'balance-range', title: 'Cash Book (Range)' },
+  { id: 'inter-branch-transfers', title: 'Inter-Branch Transfers' },
 ];
 
 const asText = (date: Date) => {
@@ -336,6 +338,15 @@ const HotelDashboard = () => {
 
   const renderWidget = (id: string): React.ReactNode => {
     switch (id) {
+      case 'inter-branch-transfers':
+        return (
+          <InterBranchTransfersCard
+            branchId={branchId}
+            tick={tick}
+            href={routes.inter_branch}
+            canAct={view.viewingOwn}
+          />
+        );
       case 'tonight-inhouse':
         return (
           (counts || tonight || rooms) &&

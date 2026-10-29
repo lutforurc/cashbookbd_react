@@ -73,6 +73,7 @@ import CustomerSalesReport from './components/modules/reports/customer-sales/Cus
 import BankReceivedIndex from './components/modules/transactions/bankreceived/BankReceivedIndex';
 import BankPaymentIndex from './components/modules/transactions/bankpayment/BankPaymentIndex';
 import Journal from './components/modules/transactions/journal/Journal';
+import InterBranchTransfers from './components/modules/inter-branch-transfer/InterBranchTransfers';
 import Dayclose from './components/modules/dayclose/Dayclose';
 import Orders from './components/modules/orders/Orders';
 import AddOrder from './components/modules/orders/AddOrder';
@@ -1020,6 +1021,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['journal.create']} loading={permissionsLoading} />}>
               <Route path={routes.journal} element={<Journal />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['interbranch.transfer.view', 'interbranch.transfer.receive']} loading={permissionsLoading} />}>
+              <Route path={routes.inter_branch} element={<InterBranchTransfers user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create', 'inventory.transfer.create', 'product.transfer.create', 'purchase.create', 'branch.issue.create']} loading={permissionsLoading} />}>
               <Route path={routes.branch_transfer} element={<BranchTransfer />} />

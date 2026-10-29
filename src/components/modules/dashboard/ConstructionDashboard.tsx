@@ -51,6 +51,8 @@ import {
 } from './dashboardRange';
 import RangeCashCard from './RangeCashCard';
 import BranchRollCallCard from './BranchRollCallCard';
+import InterBranchTransfersCard from './InterBranchTransfersCard';
+import routes from '../../services/appRoutes';
 import { CardTitle, DASHBOARD_FADE } from './dashboardKit';
 import { Link } from 'react-router-dom';
 import { Button } from '../../../pages/UiElements/CustomButtons';
@@ -70,6 +72,7 @@ const CONSTRUCTION_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'kpi-vouchers', title: 'Today Vouchers' },
   { id: 'summary', title: 'Balance Summary' },
   { id: 'summary-range', title: 'Cash Book (Range)' },
+  { id: 'inter-branch-transfers', title: 'Inter-Branch Transfers' },
   { id: 'top-purchase', title: 'Top Purchase' },
   { id: 'receive-details', title: 'Receive Details' },
   { id: 'charts', title: 'Charts' },
@@ -351,6 +354,16 @@ const ConstructionDashboard = () => {
         {isWidgetVisible('all-branches') ? (
           <div className="col-span-full min-w-0" style={{ order: widgetOrder('all-branches') }}>
             <BranchRollCallCard tick={tick} rowClass={listRowClass} />
+          </div>
+        ) : null}
+        {isWidgetVisible('inter-branch-transfers') ? (
+          <div className="col-span-full min-w-0" style={{ order: widgetOrder('inter-branch-transfers') }}>
+            <InterBranchTransfersCard
+              branchId={view.viewBranchId}
+              tick={tick}
+              href={routes.inter_branch}
+              canAct={view.viewingOwn}
+            />
           </div>
         ) : null}
         {orderedWidgets.filter(widget => isWidgetVisible(widget.id)).map(widget => {
