@@ -5,9 +5,10 @@ import SelectOption from '../../utils/utils-functions/SelectOption';
 import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Pagination from '../../utils/utils-functions/Pagination';
 import Loader from '../../../common/Loader';
-import { FiCheckSquare, FiClock, FiEdit2, FiPlus, FiTrash, FiTrash2, FiX } from 'react-icons/fi';
+import { FiCheckSquare, FiClock, FiDownload, FiEdit2, FiPlus, FiTrash, FiTrash2, FiX } from 'react-icons/fi';
+import * as XLSX from 'xlsx';
 import httpService from '../../services/httpService';
-import { API_PRODUCT_HISTORY_URL } from '../../services/apiRoutes';
+import { API_PRODUCT_HISTORY_URL, API_PRODUCT_LIST_URL } from '../../services/apiRoutes';
 import SearchInput from '../../utils/fields/SearchInput';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table, { SortChoice, SortDirection } from '../../utils/others/Table';
@@ -28,6 +29,13 @@ import { useReactToPrint } from 'react-to-print';
 import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
 import { Textarea } from '../../utils/fields/FormControls';
 import { isBranchSettingOn } from '../../utils/userFeatureSettings';
+import {
+  PRODUCT_OPENING_COL_WIDTHS,
+  PRODUCT_OPENING_HEADINGS,
+  PRODUCT_OPENING_SHEET,
+  productOpeningImportRows,
+} from './productOpeningTemplate';
+import { flattenProductPayload, productListFromResponse } from './productListPayload';
 
 const isGroupRow = (row: any) => row?.__type === 'CAT_HEADER';
 
@@ -87,26 +95,13 @@ const buildCategoryWiseRows = (rows: any[], preserveOrder = false) => {
   return out;
 };
 
-// ✅ API response কে flat rows এ normalize করবে (paginate vs showAll)
-const normalizeProductRows = (apiState: any) => {
-  const raw = apiState?.data?.data;
-
-  // ✅ flat paginate response
-  if (Array.isArray(raw) && raw.length > 0 && !raw[0]?.items) {
-    return raw;
-  }
-
-  // ✅ grouped showAll response: [{category, items:[]}, ...]
-  if (Array.isArray(raw) && raw.length > 0 && Array.isArray(raw[0]?.items)) {
-    const flat: any[] = [];
-    raw.forEach((group: any) => {
-      if (Array.isArray(group.items)) flat.push(...group.items);
-    });
-    return flat;
-  }
-
-  return [];
-};
+/**
+ * ✅ API state কে flat rows এ normalize করবে (paginate vs showAll) -- both
+ * response shapes are read in productListPayload, the same module the Excel
+ * export uses, so the table and the sheet cannot disagree about what a row is.
+ */
+const normalizeProductRows = (apiState: any) =>
+  flattenProductPayload(apiState?.data?.data);
 
 const Product = (user: any) => {
   const product = useSelector((state: any) => state.product);
@@ -295,6 +290,9 @@ const Product = (user: any) => {
 
   const [fontSize, setFontSize] = useState<number>(12);
   const [rowsPerPage, setRowsPerPage] = useState<number>(0);
+  // The Excel download asks the API for the whole filtered catalogue, so a slow
+  // answer must not be asked for twice by a second click.
+  const [exportLoading, setExportLoading] = useState(false);
 
   /* ================= INIT ================= */
   useEffect(() => {
@@ -1206,6 +1204,65 @@ const Product = (user: any) => {
     documentTitle: 'Product Stock',
   });
 
+  /**
+   * The catalogue as a Product Opening Import sheet.
+   *
+   * ⚠️ THE SAME SHEET THE IMPORT SCREEN HANDS OUT, not a look-alike: the
+   * headings, their order, their widths and the sheet's name all come from
+   * productOpeningTemplate, so a file downloaded here goes straight back into
+   * Products -> Opening Import.
+   *
+   * ⚠️ EVERY product the filters match, not the page on screen. The list pages
+   * ten rows at a time and a sheet of ten would read as a whole catalogue;
+   * `per_page: 0` is the API's own "show all" (getProducts, $showAll).
+   */
+  const handleExcelExport = async () => {
+    if (exportLoading) return;
+    setExportLoading(true);
+
+    try {
+      const response = await httpService.get(API_PRODUCT_LIST_URL, {
+        params: {
+          page: 1,
+          per_page: 0,
+          category_id: categoryId ?? '',
+          brand_id: brandId ?? '',
+          group_id: groupId ?? '',
+          search: appliedSearch,
+          // The order the screen is showing, when it has chosen one.
+          ...(sortBy ? { sort_by: sortBy, sort_dir: sortDir } : {}),
+        },
+      });
+
+      // The whole HTTP body, so the envelope's two levels are read in one place
+      // (productListPayload) instead of being counted here.
+      const products = productListFromResponse(response?.data);
+
+      if (!products.length) {
+        toast.info('No products to export.');
+        return;
+      }
+
+      const worksheet = XLSX.utils.aoa_to_sheet([
+        [...PRODUCT_OPENING_HEADINGS],
+        ...productOpeningImportRows(products),
+      ]);
+      worksheet['!cols'] = PRODUCT_OPENING_COL_WIDTHS.map((wch) => ({ wch }));
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, PRODUCT_OPENING_SHEET);
+
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      XLSX.writeFile(workbook, `product-opening-${stamp}.xlsx`);
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || error?.message || 'Could not export the product list.',
+      );
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   return (
     <div>
       <HelmetTitle title="Product List" />
@@ -1319,6 +1376,18 @@ const Product = (user: any) => {
               Reset
             </Button>
             <PrintButton onClick={handlePrint} label="Print" className="ml-2" />
+
+            {/* The catalogue as the Opening Import sheet -- the same file the
+                import screen hands out, filled in, so a download here can be
+                edited and fed straight back through Products -> Opening Import. */}
+            <ButtonLoading
+              onClick={handleExcelExport}
+              buttonLoading={exportLoading}
+              label="Excel"
+              icon={<FiDownload />}
+              className="ml-2 whitespace-nowrap"
+              title="Download the whole product list as a Product Opening Import sheet"
+            />
 
             {/* Beside Print, at Print's own size, rather than in a cell of
                 its own beside a full-width filter group -- that cell was a

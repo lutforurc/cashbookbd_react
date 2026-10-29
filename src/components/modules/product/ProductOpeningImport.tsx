@@ -16,6 +16,11 @@ import {
 import { getCategoryDdl } from '../category/categorySlice';
 import { isBranchSettingOn } from '../../utils/userFeatureSettings';
 import { FIELD_TEXTAREA, FIELD_TRANSPARENT, fieldClass } from '../../../theme/fieldStyles';
+import {
+  PRODUCT_OPENING_COL_WIDTHS,
+  PRODUCT_OPENING_HEADINGS,
+  PRODUCT_OPENING_SHEET,
+} from './productOpeningTemplate';
 
 /**
  * Opening stock from an Excel sheet.
@@ -32,19 +37,14 @@ import { FIELD_TEXTAREA, FIELD_TRANSPARENT, fieldClass } from '../../../theme/fi
  * deleted there afterwards.
  */
 
-/** The sheet's headings, in the owner's order. sl_no is the owner's own count and is not saved. */
-const SHEET_HEADINGS = [
-  'sl_no',
-  'brand_name',
-  'group',
-  'category',
-  'code',
-  'product_name',
-  'unit',
-  'purchase_price',
-  'sales_price',
-  'stock',
-];
+/**
+ * The sheet's headings, in the owner's order. sl_no is the owner's own count and is not saved.
+ *
+ * ⚠️ OWNED BY productOpeningTemplate SO THE TEMPLATE AND THE PRODUCT LIST'S
+ * EXPORT CANNOT DRIFT. This screen hands the headings out; the list fills the
+ * same headings with the catalogue.
+ */
+const SHEET_HEADINGS = PRODUCT_OPENING_HEADINGS;
 
 type Field =
   | 'brand_name'
@@ -210,9 +210,9 @@ const ProductOpeningImport = () => {
 
   const downloadFormat = () => {
     const worksheet = XLSX.utils.aoa_to_sheet([SHEET_HEADINGS]);
-    worksheet['!cols'] = [8, 16, 14, 14, 14, 36, 10, 14, 14, 10].map((wch) => ({ wch }));
+    worksheet['!cols'] = PRODUCT_OPENING_COL_WIDTHS.map((wch) => ({ wch }));
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Product Opening');
+    XLSX.utils.book_append_sheet(workbook, worksheet, PRODUCT_OPENING_SHEET);
     XLSX.writeFile(workbook, 'product-opening-import-format.xlsx');
   };
 
