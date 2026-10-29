@@ -123,6 +123,45 @@ export const getBalanceCreditValue = (row: LedgerWithProductRow) => {
   return purchaseValue + creditValue;
 };
 
+/**
+ * The account's own posted debit / credit for a voucher -- the figure the plain
+ * Ledger walks.
+ *
+ * ⚠️ THE RUNNING BALANCE IS WALKED FROM THESE, NOT FROM THE DISPLAY FIGURES.
+ * getBalanceDebitValue / getBalanceCreditValue above fold the voucher's money
+ * legs and the bill's total onto the line, which is the right thing for the
+ * Debit and Credit COLUMNS a reader is looking at -- but for a bill carrying a
+ * discount it is MORE than the account was actually posted (the discount sits
+ * on its own head, 23 off a sale and 40 off a purchase), so walking the display
+ * figures put the closing balance out by every discount. The plain Ledger sums
+ * these posted lines and nothing else, so these are the only figures the two
+ * reports can agree on.
+ *
+ * A server too old to send posted_debit / posted_credit falls back to the
+ * display figures, which is the balance this report always walked.
+ */
+const hasPostedAmount = (value: unknown) =>
+  value !== undefined &&
+  value !== null &&
+  value !== '' &&
+  Number.isFinite(Number(value));
+
+export const getPostedDebitValue = (row: LedgerWithProductRow) => {
+  if (isOpeningRow(row)) return getDisplayedDebitValue(row);
+
+  return hasPostedAmount(row?.posted_debit)
+    ? Number(row?.posted_debit)
+    : getBalanceDebitValue(row);
+};
+
+export const getPostedCreditValue = (row: LedgerWithProductRow) => {
+  if (isOpeningRow(row)) return getDisplayedCreditValue(row);
+
+  return hasPostedAmount(row?.posted_credit)
+    ? Number(row?.posted_credit)
+    : getBalanceCreditValue(row);
+};
+
 export const getCashAmount = (
   row: LedgerWithProductRow,
   key: 'debit' | 'credit',
@@ -245,9 +284,11 @@ export const buildRowsWithRunningBalance = (
     };
     const displayedReceived = getDisplayedReceivedValue(normalizedRow);
     const displayedPayment = getDisplayedPaymentValue(normalizedRow);
+    // ⚠️ The account's posted movement, so the closing figure matches the plain
+    // Ledger. See getPostedDebitValue.
     runningBalance +=
-      getBalanceDebitValue(normalizedRow) -
-      getBalanceCreditValue(normalizedRow);
+      getPostedDebitValue(normalizedRow) -
+      getPostedCreditValue(normalizedRow);
 
     return {
       ...normalizedRow,

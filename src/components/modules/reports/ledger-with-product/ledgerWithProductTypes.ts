@@ -29,6 +29,13 @@ export type LedgerWithProductRow = {
   payment?: number | string;
   debit?: number | string;
   credit?: number | string;
+  /**
+   * The account's own posted debit / credit for this voucher -- the lines the
+   * plain Ledger walks. The running balance reads these; the Debit / Credit
+   * COLUMNS keep reading the display figures. See getPostedDebitValue.
+   */
+  posted_debit?: number | string;
+  posted_credit?: number | string;
   balance?: number | string;
   displayed_received?: number;
   displayed_payment?: number;
