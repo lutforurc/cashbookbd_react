@@ -346,7 +346,10 @@ const LabourLedger = (user: any) => {
       </div>
 
       <div className="overflow-y-auto">
-        {ledgerData.isLoading && <Loader />}
+        {/* ⚠️ THE SLICE SAYS `loading`, NOT `isLoading` -- reading the wrong key
+            left the spinner permanently invisible and printed "No data found"
+            while the request was still in flight. */}
+        {ledgerData.loading && <Loader />}
         {Object.keys(tableData).length > 0 ? (
           Object.entries(tableData).map(([branchName, groupData]) => {
             const branchTotal = Object.values(groupData)
@@ -442,7 +445,7 @@ const LabourLedger = (user: any) => {
               </div>
             );
           })
-        ) : !ledgerData.isLoading ? (
+        ) : !ledgerData.loading ? (
           <div className="mt-4 overflow-x-auto rounded-md border border-[rgb(var(--c-border))] shadow-sm">
             <div className="min-w-[640px] bg-white dark:bg-gray-800">
               <div className="flex h-20 items-center justify-center text-sm text-gray-500 dark:text-gray-400">

@@ -47,7 +47,11 @@ const initialState: LabourLedgerState = {
 export const getLabourItems = createAsyncThunk<LabourItem[], void, { rejectValue: ErrorResponse }>('getLabourItems/fetch', async (_, { rejectWithValue }) => {
   try {
     const { data } = await httpService.get(API_LABOUR_ITEMS_URL);
-    return data;
+    // ⚠️ THE ENDPOINT ANSWERS WRAPPED -- { success, data: { data: [...] } }.
+    // Returning the whole body left `labourItems` an object, so the screen's
+    // `labourItems.length` was undefined and the first item was never selected.
+    const payload = data?.data?.data ?? data?.data ?? data;
+    return Array.isArray(payload) ? payload : [];
   } catch (error) {
     return rejectWithValue({message: 'Failed to fetch Labour Items'});
   }
