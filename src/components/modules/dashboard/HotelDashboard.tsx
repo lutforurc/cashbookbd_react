@@ -39,6 +39,7 @@ import {
 import RangeCashCard from './RangeCashCard';
 import BranchRollCallCard from './BranchRollCallCard';
 import InterBranchTransfersCard from './InterBranchTransfersCard';
+import { interBranchDashboardVisible } from '../../utils/userFeatureSettings';
 import { CardTitle, DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
 
 /**
@@ -212,7 +213,11 @@ const HotelDashboard = () => {
     reset,
   } = useDashboardCustomization(
     `cashbook-hotel-dashboard:${me?.id || 'user'}:${branchId || 'branch'}`,
-    HOTEL_DASHBOARD_WIDGETS.filter((w) => w.id !== 'all-branches' || view.isHeadOffice),
+    HOTEL_DASHBOARD_WIDGETS.filter(
+      (w) =>
+        (w.id !== 'all-branches' || view.isHeadOffice) &&
+        (w.id !== 'inter-branch-transfers' || interBranchDashboardVisible(settings)),
+    ),
     {
       dashboardKey: 'hotel',
       branchId,

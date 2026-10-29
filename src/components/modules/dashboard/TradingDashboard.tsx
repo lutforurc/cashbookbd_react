@@ -31,6 +31,7 @@ import RangeCashCard from './RangeCashCard';
 import BranchRollCallCard from './BranchRollCallCard';
 import InterBranchTransfersCard from './InterBranchTransfersCard';
 import routes from '../../services/appRoutes';
+import { interBranchDashboardVisible } from '../../utils/userFeatureSettings';
 import MonthlyPurchaseSalesChart from './MonthlyPurchaseSalesChart';
 import DailySalesChart from './DailySalesChart';
 import DailyPurchaseChart from './DailyPurchaseChart';
@@ -149,6 +150,7 @@ const TradingDashboard = () => {
   );
   const summary = useSelector((state: any) => state.dashboard?.summary);
   const me = useSelector((state: any) => state.auth?.me);
+  const settings = useSelector((state: any) => state.settings);
   const permissions =
     useSelector((state: any) => state.settings?.data?.permissions) ?? [];
 
@@ -182,7 +184,10 @@ const TradingDashboard = () => {
         hasPermission(permissions, permission),
     );
   const widgets = TRADING_DASHBOARD_WIDGETS.filter(
-    (w) => isPermitted(w.id) && (w.id !== 'all-branches' || view.isHeadOffice),
+    (w) =>
+      isPermitted(w.id) &&
+      (w.id !== 'all-branches' || view.isHeadOffice) &&
+      (w.id !== 'inter-branch-transfers' || interBranchDashboardVisible(settings)),
   );
 
   const [payload, setPayload] = useState<any>(null);

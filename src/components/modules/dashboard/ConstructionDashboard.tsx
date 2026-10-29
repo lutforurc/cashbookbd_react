@@ -53,6 +53,7 @@ import RangeCashCard from './RangeCashCard';
 import BranchRollCallCard from './BranchRollCallCard';
 import InterBranchTransfersCard from './InterBranchTransfersCard';
 import routes from '../../services/appRoutes';
+import { interBranchDashboardVisible } from '../../utils/userFeatureSettings';
 import { CardTitle, DASHBOARD_FADE } from './dashboardKit';
 import { Link } from 'react-router-dom';
 import { Button } from '../../../pages/UiElements/CustomButtons';
@@ -147,7 +148,11 @@ const ConstructionDashboard = () => {
     reset,
   } = useDashboardCustomization(
     `cashbook-construction-dashboard:${me?.id || 'user'}:${viewBranchId || 'branch'}`,
-    CONSTRUCTION_DASHBOARD_WIDGETS.filter((w) => w.id !== 'all-branches' || view.isHeadOffice),
+    CONSTRUCTION_DASHBOARD_WIDGETS.filter(
+      (w) =>
+        (w.id !== 'all-branches' || view.isHeadOffice) &&
+        (w.id !== 'inter-branch-transfers' || interBranchDashboardVisible(settings)),
+    ),
     {
       dashboardKey: 'construction',
       branchId: viewBranchId,
@@ -356,7 +361,7 @@ const ConstructionDashboard = () => {
             <BranchRollCallCard tick={tick} rowClass={listRowClass} />
           </div>
         ) : null}
-        {isWidgetVisible('inter-branch-transfers') ? (
+        {interBranchDashboardVisible(settings) && isWidgetVisible('inter-branch-transfers') ? (
           <div className="col-span-full min-w-0" style={{ order: widgetOrder('inter-branch-transfers') }}>
             <InterBranchTransfersCard
               branchId={view.viewBranchId}

@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import routes from '../../services/appRoutes';
 import {
   getPermissions,
@@ -10,7 +10,7 @@ import {
   updateRolePermissions,
 } from './userManagementSlice';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
+import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import { formatRoleNameForCashBook } from '../../utils/utils-functions/formatRoleName';
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import { toast } from 'react-toastify';
@@ -43,15 +43,45 @@ const smsPermissionLabels: Record<string, string> = {
   'branch.sms.purchase.update': 'Purchase SMS',
 };
 
+/**
+ * Readable labels for the Inter-Branch Transfer group.
+ *
+ * Everything else on this screen derives its label from the permission name;
+ * these read better spelled out, and they are the four controls the group is
+ * meant to show. "Show on dashboard" is a permission of its own, independent
+ * of View, Receive and Reverse Receipt.
+ */
+const permissionLabelOverrides: Record<string, string> = {
+  'interbranch.transfer.view': 'View Inter-Branch Transfers',
+  'interbranch.transfer.receive': 'Receive Transfer',
+  'interbranch.transfer.reverse': 'Reverse Transfer',
+  'inter_branch.receipt.reverse': 'Reverse Receipt',
+  'interbranch.transfer.dashboard': 'Show on dashboard',
+};
+
 const Roles = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const rolesPermissions = useSelector((state: any) => state.userManagement);
   const auth = useSelector((state: any) => state.auth);
   const [roles, setRoles] = useState<Role[]>([]);
+  // The themed Select wants {id, name}; the roles already carry both.
+  const roleOptions = useMemo(
+    () => roles.map((role) => ({ id: role.id, name: role.name })),
+    [roles],
+  );
+  const rolesLoading = Boolean(rolesPermissions?.loading) && roles.length === 0;
+  const rolesError = roles.length === 0 ? (rolesPermissions?.error || null) : null;
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  // Which role the loaded `selectedPermissions` belong to. Update reads the
+  // whole set, so it must never run while this is still the previous role --
+  // see handleUpdatePermissions.
+  const [loadedPermissionsRoleId, setLoadedPermissionsRoleId] = useState<number | null>(null);
+  // The role whose permissions are in flight. The slice does not echo the id
+  // back, so this is how the arriving payload is attributed to the right role.
+  const pendingRoleIdRef = useRef<number | null>(null);
   const [roleId, setRoleId] = useState<number>(0);
   const [updating, setUpdating] = useState(false);
   const [addingRole, setAddingRole] = useState(false);
@@ -133,7 +163,9 @@ const Roles = () => {
   useEffect(() => {
     if (!selectedRole) return;
 
+    pendingRoleIdRef.current = selectedRole.id;
     setSelectedPermissions([]);
+    setLoadedPermissionsRoleId(null);
     dispatch(getSelectedPermissions(selectedRole.id) as any);
   }, [dispatch, selectedRole]);
 
@@ -142,13 +174,16 @@ const Roles = () => {
       setSelectedPermissions(
         rolesPermissions.selectedPermissions.data.data.map((p: any) => p.name)
       );
+      setLoadedPermissionsRoleId(pendingRoleIdRef.current);
     }
   }, [rolesPermissions.selectedPermissions?.data?.data]);
 
-  const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const nextRoleId = parseInt(event.target.value);
+  const handleRoleChange = (option: any) => {
+    const nextRoleId = Number(option?.value);
+    if (!nextRoleId) return;
+
     setRoleId(nextRoleId);
-    const role = roles.find((r) => r.id === nextRoleId);
+    const role = roles.find((r) => Number(r.id) === nextRoleId);
     setSelectedRole(role || null);
   };
 
@@ -190,6 +225,13 @@ const Roles = () => {
     if (updating) return;
     if (!selectedRole) return toast.info('No role selected');
     if (isReadonlyRole) return toast.info('Plan role permissions cannot be changed. Only company custom roles are editable.');
+    // The server REPLACES the role's whole set, so an Update before the role's
+    // own permissions have loaded would send just the few toggles on screen and
+    // wipe every other assignment. Wait for the load.
+    // Number(): role ids may arrive as strings from the API.
+    if (Number(loadedPermissionsRoleId) !== Number(roleId)) {
+      return toast.info('This role’s permissions are still loading. Try again in a moment.');
+    }
     const selectedPermissionIds = permissions
       .filter((permission) => selectedPermissions.includes(permission.name))
       .map((permission) => permission.id);
@@ -220,15 +262,37 @@ const Roles = () => {
         )}
       </div>
 
-      <div className="overflow-y-auto">
-        <DropdownCommon
- className="px-2"
- name="name"
- onChange={handleRoleChange}
- label="Roles"
- data={roles}
- value={roleId ? String(roleId) : undefined}
+      <div>
+        <label className="mb-1 block text-left text-sm text-black dark:text-white">Roles</label>
+
+        <CategoryDropdown
+          categoryDdl={roleOptions}
+          value={roleId ? String(roleId) : undefined}
+          onChange={handleRoleChange}
+          placeholder={
+            rolesLoading
+              ? 'Loading roles…'
+              : rolesError
+                ? 'Could not load roles'
+                : roles.length === 0
+                  ? 'No roles available'
+                  : 'Select Role'
+          }
+          isSearchable={roles.length > 7}
+          isDisabled={rolesLoading || Boolean(rolesError) || roles.length === 0}
+          ariaLabel="Roles"
+          menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+          maxMenuHeight={240}
+          className="w-full max-w-sm"
         />
+
+        {rolesError ? (
+          <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{rolesError}</p>
+        ) : rolesLoading ? (
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Loading roles…</p>
+        ) : roles.length === 0 ? (
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">No roles available for this company.</p>
+        ) : null}
       </div>
 
       <div className="text-sm mt-6">
@@ -292,7 +356,11 @@ const Roles = () => {
                 {perms.map((perm) => (
                   <ToggleSwitch
                     key={perm.id}
-                    label={smsPermissionLabels[perm.name] || formatRoleNameForCashBook(perm.name)}
+                    label={
+                      permissionLabelOverrides[perm.name] ||
+                      smsPermissionLabels[perm.name] ||
+                      formatRoleNameForCashBook(perm.name)
+                    }
                     checked={selectedPermissions.includes(perm.name)}
                     disabled={isReadonlyRole}
                     preserveCheckedColorWhenDisabled

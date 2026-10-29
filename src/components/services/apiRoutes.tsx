@@ -497,6 +497,7 @@ export const API_JOURNAL_STORE_URL = `${API_BASE_URL}/accounts/journal/store`;
 export const API_INTERBRANCH_TRANSFER_INCOMING_URL = `${API_BASE_URL}/inter-branch/transfer/incoming`;
 export const API_INTERBRANCH_TRANSFER_OUTGOING_URL = `${API_BASE_URL}/inter-branch/transfer/outgoing`;
 export const API_INTERBRANCH_TRANSFER_RECEIVE_URL = `${API_BASE_URL}/inter-branch/transfer/receive`;
+export const API_INTERBRANCH_TRANSFER_REVERSE_URL = `${API_BASE_URL}/inter-branch/transfer/reverse`;
 export const API_INTERBRANCH_TRANSFER_ACCOUNTS_URL = `${API_BASE_URL}/inter-branch/transfer/accounts`;
 export const API_INTERBRANCH_TRANSFER_DASHBOARD_URL = `${API_BASE_URL}/dashboard/inter-branch-transfers`;
 

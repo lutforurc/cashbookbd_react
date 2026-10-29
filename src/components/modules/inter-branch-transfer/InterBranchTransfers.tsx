@@ -15,7 +15,9 @@ import Pagination from '../../utils/utils-functions/Pagination';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { hasPermission } from '../../utils/permissionChecker';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { formatDayMonthYear, chartDateTime } from '../../utils/utils-functions/formatDate';
 import ReceiveTransferModal, { ReceivableTransfer } from './ReceiveTransferModal';
+import ReverseTransferModal, { ReversibleTransfer } from './ReverseTransferModal';
 
 type Tab = 'incoming' | 'outgoing';
 
@@ -25,20 +27,28 @@ const STATUS_OPTIONS = [
   { value: '2', label: 'Received' },
 ];
 
-const StatusBadge = ({ status, label }: { status: number; label?: string }) => {
-  const received = Number(status) === 2;
-  return (
-    <span
-      className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-        received
-          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-          : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-      }`}
-    >
-      {label || (received ? 'Received' : 'Pending Receive')}
-    </span>
-  );
+const STATUS_LABELS: Record<number, string> = {
+  1: 'Pending Receive',
+  2: 'Received',
+  3: 'Cancelled',
+  4: 'Reversed',
 };
+
+const STATUS_STYLES: Record<number, string> = {
+  2: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+  3: 'bg-slate-200 text-slate-600 dark:bg-gray-700 dark:text-slate-300',
+  4: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
+};
+
+const StatusBadge = ({ status, label }: { status: number; label?: string }) => (
+  <span
+    className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+      STATUS_STYLES[status] ?? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+    }`}
+  >
+    {label || STATUS_LABELS[status] || '-'}
+  </span>
+);
 
 /**
  * Incoming and Outgoing inter-branch money transfers.
@@ -52,6 +62,9 @@ const InterBranchTransfers = ({ user }: any) => {
   const settings = useSelector((state: any) => state.settings);
   const permissions = settings?.data?.permissions ?? [];
   const canReceive = hasPermission(permissions, 'interbranch.transfer.receive');
+  const canReverse = hasPermission(permissions, 'interbranch.transfer.reverse');
+  // The receipt-only reversal has its own key; receiving does not imply it.
+  const canReverseReceipt = hasPermission(permissions, 'inter_branch.receipt.reverse');
 
   const [tab, setTab] = useState<Tab>('incoming');
   const [rows, setRows] = useState<any[]>([]);
@@ -66,6 +79,9 @@ const InterBranchTransfers = ({ user }: any) => {
   const [toDate, setToDate] = useState<Date | null>(null);
 
   const [receiveTarget, setReceiveTarget] = useState<ReceivableTransfer | null>(null);
+  const [reverseTarget, setReverseTarget] = useState<
+    (ReversibleTransfer & { scope: 'receipt' | 'full' }) | null
+  >(null);
 
   const url = tab === 'incoming' ? API_INTERBRANCH_TRANSFER_INCOMING_URL : API_INTERBRANCH_TRANSFER_OUTGOING_URL;
 
@@ -125,7 +141,7 @@ const InterBranchTransfers = ({ user }: any) => {
     {
       key: 'payment_date',
       header: 'Payment Date',
-      render: (row: any) => row.payment_date || '-',
+      render: (row: any) => formatDayMonthYear(row.payment_date),
     },
     {
       key: 'amount',
@@ -153,7 +169,7 @@ const InterBranchTransfers = ({ user }: any) => {
           {
             key: 'received_at',
             header: 'Received Date/Time',
-            render: (row: any) => row.received_at || '-',
+            render: (row: any) => (row.received_at ? chartDateTime(row.received_at) : '-'),
           },
           {
             key: 'vouchers',
@@ -170,38 +186,89 @@ const InterBranchTransfers = ({ user }: any) => {
     {
       key: 'status',
       header: 'Status',
-      render: (row: any) => <StatusBadge status={row.status} label={row.status_label} />,
+      render: (row: any) => (
+        <div>
+          <StatusBadge status={row.status} label={row.status_label} />
+          {Number(row.status) === 4 && row.reversal_reason ? (
+            <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+              {row.reversal_reason}
+              {row.reversed_by_name ? ` — ${row.reversed_by_name}` : ''}
+              {row.reversed_at ? `, ${formatDayMonthYear(row.reversed_at)}` : ''}
+            </p>
+          ) : null}
+          {Number(row.status) === 1 && row.last_event?.event === 'receipt_reversed' ? (
+            <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+              Receipt reversed {formatDayMonthYear(row.last_event.at)}
+              {row.last_event.user_name ? ` by ${row.last_event.user_name}` : ''}
+              {row.last_event.branch_name ? ` (${row.last_event.branch_name})` : ''}
+              {row.last_event.reason ? ` — ${row.last_event.reason}` : ''}
+            </p>
+          ) : null}
+        </div>
+      ),
     },
-    ...(tab === 'incoming'
-      ? [
-          {
-            key: 'action',
-            header: 'Action',
-            render: (row: any) =>
-              Number(row.status) === 1 && canReceive ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setReceiveTarget({
-                      id: row.id,
-                      reference: row.reference,
-                      amount: row.amount,
-                      from_branch_id: row.from_branch_id,
-                      from_branch_name: row.from_branch_name,
-                      payment_date: row.payment_date,
-                      note: row.note,
-                    })
-                  }
-                  className="inline-flex items-center gap-1 rounded-sm bg-primary px-2.5 py-1 text-xs font-medium text-white transition hover:opacity-90"
-                >
-                  <FiCheckSquare className="text-sm" /> Receive
-                </button>
-              ) : (
-                <span className="text-xs text-slate-400">—</span>
-              ),
-          },
-        ]
-      : []),
+    {
+      key: 'action',
+      header: 'Action',
+      render: (row: any) => {
+        const isPending = Number(row.status) === 1;
+        const isReceived = Number(row.status) === 2;
+        const showReceive = tab === 'incoming' && isPending && canReceive;
+        // Incoming = Reverse Receipt (its own key); outgoing = Reverse Transfer.
+        const showReverse = isReceived && (tab === 'outgoing' ? canReverse : canReverseReceipt);
+
+        if (!showReceive && !showReverse) {
+          return <span className="text-xs text-slate-400">—</span>;
+        }
+
+        return (
+          <div className="flex items-center gap-2">
+            {showReceive ? (
+              <button
+                type="button"
+                onClick={() =>
+                  setReceiveTarget({
+                    id: row.id,
+                    reference: row.reference,
+                    amount: row.amount,
+                    from_branch_id: row.from_branch_id,
+                    from_branch_name: row.from_branch_name,
+                    payment_date: row.payment_date,
+                    note: row.note,
+                  })
+                }
+                className="inline-flex items-center gap-1 rounded-sm bg-primary px-2.5 py-1 text-xs font-medium text-white transition hover:opacity-90"
+              >
+                <FiCheckSquare className="text-sm" /> Receive
+              </button>
+            ) : null}
+            {showReverse ? (
+              <button
+                type="button"
+                onClick={() =>
+                  setReverseTarget({
+                    id: row.id,
+                    reference: row.reference,
+                    amount: row.amount,
+                    from_branch_name: row.from_branch_name,
+                    to_branch_name: row.to_branch_name,
+                    payment_date: row.payment_date,
+                    receipt_date: row.receipt_date,
+                    received_by_name: row.received_by_name,
+                    // The sending branch undoes the whole transfer; the
+                    // destination undoes only its own receipt.
+                    scope: tab === 'outgoing' ? 'full' : 'receipt',
+                  })
+                }
+                className="inline-flex items-center gap-1 rounded-sm border border-rose-300 px-2.5 py-1 text-xs font-medium text-rose-600 transition hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300 dark:hover:bg-rose-900/20"
+              >
+                <FiRotateCcw className="text-sm" /> {tab === 'outgoing' ? 'Reverse Transfer' : 'Reverse Receipt'}
+              </button>
+            ) : null}
+          </div>
+        );
+      },
+    },
   ];
 
   const tabClass = (value: Tab) =>
@@ -321,6 +388,15 @@ const InterBranchTransfers = ({ user }: any) => {
         transfer={receiveTarget}
         onClose={() => setReceiveTarget(null)}
         onReceived={() => load()}
+      />
+
+      <ReverseTransferModal
+        // Remount per transfer, so a reason typed for one never carries to the next.
+        key={reverseTarget?.id ?? 'none'}
+        transfer={reverseTarget}
+        scope={reverseTarget?.scope ?? 'full'}
+        onClose={() => setReverseTarget(null)}
+        onReversed={() => load()}
       />
     </div>
   );

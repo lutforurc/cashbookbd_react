@@ -33,6 +33,30 @@ export const isBranchSettingOn = (settings: any, key: string): boolean =>
   settingOn(settings?.data?.branch?.[key]);
 
 /**
+ * Whether the dashboard draws the Inter-Branch Transfers section.
+ *
+ * ROLE-SCOPED, and a permission of its own: the "Show on dashboard" box under
+ * Inter-Branch Transfer in Role Management. It is not implied by View, Receive
+ * or Reverse, and turning it off touches nothing but this one section -- no
+ * records, no accounting, no other menu.
+ *
+ * A role sees the section when it holds BOTH the underlying read permission
+ * (interbranch.transfer.view) and this one. A Super Admin holds '*'.
+ */
+export const interBranchDashboardVisible = (settings: any): boolean => {
+  const names = (settings?.data?.permissions ?? []).map((entry: any) =>
+    typeof entry === 'string' ? entry : entry?.name,
+  );
+
+  if (names.includes('*')) return true;
+
+  return (
+    names.includes('interbranch.transfer.view') &&
+    names.includes('interbranch.transfer.dashboard')
+  );
+};
+
+/**
  * A branch's preferred existing form for one category, as chosen on Branch
  * Setup -- the invoice categories and the cash/bank ones alike.
  *

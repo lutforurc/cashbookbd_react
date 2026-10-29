@@ -36,6 +36,7 @@ import {
 import RangeCashCard from './RangeCashCard';
 import BranchRollCallCard from './BranchRollCallCard';
 import InterBranchTransfersCard from './InterBranchTransfersCard';
+import { interBranchDashboardVisible } from '../../utils/userFeatureSettings';
 // money(), count(), share(), CARD, CARD_HEAD and Tile moved to the shared kit so
 // the trading dashboard cannot drift away from this one on how a taka is
 // written. Nothing here changed but where they are read from.
@@ -132,7 +133,11 @@ const RealEstateDashboard = () => {
     reset,
   } = useDashboardCustomization(
     `cashbook-real-estate-dashboard:${me?.id || 'user'}:${branchId || 'branch'}`,
-    REAL_ESTATE_DASHBOARD_WIDGETS.filter((w) => w.id !== 'all-branches' || view.isHeadOffice),
+    REAL_ESTATE_DASHBOARD_WIDGETS.filter(
+      (w) =>
+        (w.id !== 'all-branches' || view.isHeadOffice) &&
+        (w.id !== 'inter-branch-transfers' || interBranchDashboardVisible(settings)),
+    ),
     {
       dashboardKey: 'real-estate',
       branchId,

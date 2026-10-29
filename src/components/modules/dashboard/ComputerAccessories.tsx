@@ -33,6 +33,7 @@ import RangeCashCard from './RangeCashCard';
 import BranchRollCallCard from './BranchRollCallCard';
 import InterBranchTransfersCard from './InterBranchTransfersCard';
 import routes from '../../services/appRoutes';
+import { interBranchDashboardVisible } from '../../utils/userFeatureSettings';
 
 /*
  * ⚠️ ONE ITEM PER TILE, NOT ONE PER ROW. The four KPI tiles sit in one band, and
@@ -65,6 +66,7 @@ const NORMAL_DASHBOARD_WIDGETS: DashboardWidget[] = [
 
 const ComputerAccessories = () => {
   const me = useSelector((s: any) => s.auth?.me);
+  const settings = useSelector((s: any) => s.settings);
   const { purchaseSales } = useSelector((state) => state.charts);
   const dispatch = useDispatch();
   // The branch on the page: the user's own, or the one a head office picked.
@@ -115,7 +117,11 @@ const ComputerAccessories = () => {
     reset,
   } = useDashboardCustomization(
     `cashbook-normal-dashboard:${me?.id || 'user'}:${branchId || 'branch'}`,
-    NORMAL_DASHBOARD_WIDGETS.filter((w) => w.id !== 'all-branches' || view.isHeadOffice),
+    NORMAL_DASHBOARD_WIDGETS.filter(
+      (w) =>
+        (w.id !== 'all-branches' || view.isHeadOffice) &&
+        (w.id !== 'inter-branch-transfers' || interBranchDashboardVisible(settings)),
+    ),
     {
       dashboardKey: 'normal',
       branchId,

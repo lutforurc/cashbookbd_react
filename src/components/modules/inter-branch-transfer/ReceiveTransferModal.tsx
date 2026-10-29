@@ -6,6 +6,7 @@ import httpService from '../../services/httpService';
 import { API_INTERBRANCH_TRANSFER_ACCOUNTS_URL, API_INTERBRANCH_TRANSFER_RECEIVE_URL } from '../../services/apiRoutes';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { formatDayMonthYear } from '../../utils/utils-functions/formatDate';
 
 export type ReceivableTransfer = {
   id: number;
@@ -111,7 +112,7 @@ const ReceiveTransferModal = ({ transfer, onClose, onReceived }: Props) => {
             </div>
             <div>
               <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Payment Date</p>
-              <p className="font-semibold">{transfer.payment_date || '-'}</p>
+              <p className="font-semibold">{formatDayMonthYear(transfer.payment_date)}</p>
             </div>
             <div>
               <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Amount</p>

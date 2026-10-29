@@ -8,6 +8,20 @@ interface CategoryDropdownProps {
   className?: string;
   value?: string | number | null;
   placeholder?: string;
+  /**
+   * Render the open menu into this element. A card with `overflow-hidden`
+   * would otherwise clip a react-select menu to the card's box; passing
+   * document.body lets the panel follow the theme and stay above the page.
+   */
+  menuPortalTarget?: HTMLElement | null;
+  /** A short fixed list does not need a search box; keyboard nav still works. */
+  isSearchable?: boolean;
+  /** Accessible name for the control. */
+  ariaLabel?: string;
+  /** Cap the open panel and let it scroll instead of growing without bound. */
+  maxMenuHeight?: number;
+  /** Shut the control while its options are loading or unavailable. */
+  isDisabled?: boolean;
 }
 
 const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
@@ -16,6 +30,11 @@ const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   className,
   value,
   placeholder = 'Select Category...',
+  menuPortalTarget = null,
+  isSearchable = true,
+  ariaLabel,
+  maxMenuHeight,
+  isDisabled = false,
 }) => {
   const [selectedOption, setSelectedOption] = useState<any>(null);
 
@@ -67,11 +86,19 @@ useEffect(() => {
       onChange={handleChange}
       options={options}
       placeholder={placeholder}
-      isSearchable
+      isSearchable={isSearchable}
+      isDisabled={isDisabled}
+      aria-label={ariaLabel}
+      menuPortalTarget={menuPortalTarget ?? undefined}
+      menuPosition={menuPortalTarget ? 'fixed' : 'absolute'}
+      menuPlacement="auto"
+      {...(maxMenuHeight ? { maxMenuHeight } : {})}
       className={`block text-sm bg-transparent outline-none dark:bg-boxdark dark:border-gray-600 dark:placeholder-gray-400 dark:text-[rgb(var(--c-text))] dark:focus:ring-blue-500 dark:focus:border-blue-500 ${className}`}
       styles={withFieldHeight({
         // The one height, in the units react-select understands.
         control: (base) => ({ ...base, minHeight: FIELD_HEIGHT_REM }),
+        // Above the dashboard content when the menu is portalled to the body.
+        menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
       })}
       classNames={{
         control: (state) =>

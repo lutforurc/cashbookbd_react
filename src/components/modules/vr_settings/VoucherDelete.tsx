@@ -60,8 +60,8 @@ const VoucherDelete = () => {
           setAlreadyDeletedMsg(response?.error?.message || `${voucherNo} was already deleted earlier.`);
           return;
         } else {
-          // API error message safely read
-          toast.error(response?.error?.message || "Failed to delete voucher");
+          // API error message safely read; notFound() puts it at the top level.
+          toast.error(response?.error?.message || response?.message || "Failed to delete voucher");
         }
 
       } else {
@@ -87,7 +87,7 @@ const VoucherDelete = () => {
         toast.success((result.payload as any)?.error?.message || `${voucherNo} deleted`);
         setVoucherNo("");
       } else {
-        toast.error((result.payload as any)?.error?.message || "Failed to delete voucher");
+        toast.error((result.payload as any)?.error?.message || (result.payload as any)?.message || "Failed to delete voucher");
       }
     } catch (error) {
       toast.error("Something went wrong");
