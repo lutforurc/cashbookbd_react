@@ -41,9 +41,9 @@ import {
   API_HEAD_OFFICE_CASH_RECEIVED_APPROVE_URL,
   API_PRINT_TEMPLATE_URL,
 } from '../../../services/apiRoutes';
-import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
+import { hasAnyPermission, hasPermission } from '../../../Sidebar/permissionUtils';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
-import { hasPermission } from '../../../utils/permissionChecker';
+import { canEditVoucherRow } from '../../../utils/utils-functions/voucherEditPermission';
 import {
   buildVoucherAutoEditState,
   getCombinedVoucherOpenState,
@@ -135,12 +135,6 @@ const Ledger = (user: any) => {
   const userPermissions = settings?.data?.permissions || [];
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
   const canRemoveApproval = hasPermission(userPermissions, 'remove.approval');
-  const canEditVoucher = hasAnyPermission(userPermissions, [
-    'sales.edit',
-    'cash.received.edit',
-    'cash.payment.edit',
-    'purchase.edit',
-  ]);
 
   const getLedgerRowName = (row: any) => {
     if (String(row?.name || '').trim().toLowerCase() !== 'balance') {
@@ -580,6 +574,10 @@ const Ledger = (user: any) => {
       render: (row: any) => {
         const voucherId = getVoucherId(row);
         const isApproved = Number(row?.is_approved ?? 0) === 1;
+        // ⚠️ THE EDIT PERMISSION FOLLOWS THE ROW'S OWN VOUCHER TYPE, not one
+        // generic edit right, and a type with no update endpoint (a journal)
+        // gets none at all. The server enforces both halves.
+        const mayEditRow = canEditVoucherRow(userPermissions, row);
         const canShowApproveAction = canApproveCashbook && !!row?.vr_no && voucherId > 0;
         const canShowRemoveApprovalAction = canRemoveApproval && !!row?.vr_no && voucherId > 0 && isApproved;
         return (
@@ -591,8 +589,8 @@ const Ledger = (user: any) => {
             removingApprovalId={removingApprovalId}
             canShowApproveAction={canShowApproveAction}
             canShowRemoveApprovalAction={canShowRemoveApprovalAction}
-            canShowEditAction={canEditVoucher && !isApproved}
-            canEditVoucher={canEditVoucher}
+            canShowEditAction={mayEditRow && !isApproved}
+            canEditVoucher={mayEditRow}
             confirmInline
             onApprove={handleApproveClick}
             onRemoveApproval={handleRemoveApprovalClick}

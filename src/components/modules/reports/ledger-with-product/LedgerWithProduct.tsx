@@ -43,8 +43,8 @@ import {
   useVoucherPrint,
   VoucherActionButtons,
 } from '../../vouchers';
-import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
-import { hasPermission } from '../../../utils/permissionChecker';
+import { hasAnyPermission, hasPermission } from '../../../Sidebar/permissionUtils';
+import { canEditVoucherRow } from '../../../utils/utils-functions/voucherEditPermission';
 import {
   buildVoucherAutoEditState,
   getEditableVoucherNo,
@@ -205,12 +205,6 @@ const LedgerWithProduct = (user: any) => {
   const userPermissions = settings?.data?.permissions || [];
   const canApproveCashbook = hasAnyPermission(userPermissions, ['cashbook.approved']);
   const canRemoveApproval = hasPermission(userPermissions, 'remove.approval');
-  const canEditVoucher = hasAnyPermission(userPermissions, [
-    'sales.edit',
-    'cash.received.edit',
-    'cash.payment.edit',
-    'purchase.edit',
-  ]);
   const { removingApprovalId, removeVoucherApproval, getVoucherId } =
     useRemoveVoucherApproval();
   const [modalTitle, setModalTitle] = useState('Notice');
@@ -1119,6 +1113,9 @@ const LedgerWithProduct = (user: any) => {
       render: (row: any) => {
         const voucherId = getVoucherId(row);
         const isApproved = Number(row?.is_approved ?? 0) === 1;
+        // ⚠️ THE EDIT PERMISSION FOLLOWS THE ROW'S OWN VOUCHER TYPE, the same
+        // rule the plain Ledger applies and the server enforces.
+        const mayEditRow = canEditVoucherRow(userPermissions, row);
 
         return (
           <VoucherActionButtons
@@ -1131,8 +1128,8 @@ const LedgerWithProduct = (user: any) => {
             canShowRemoveApprovalAction={
               canRemoveApproval && !!row?.vr_no && voucherId > 0 && isApproved
             }
-            canShowEditAction={canEditVoucher && !isApproved}
-            canEditVoucher={canEditVoucher}
+            canShowEditAction={mayEditRow && !isApproved}
+            canEditVoucher={mayEditRow}
             confirmInline
             onApprove={handleApproveClick}
             onRemoveApproval={handleRemoveApprovalClick}
