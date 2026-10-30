@@ -16,6 +16,7 @@ import {
 } from '../../services/apiRoutes';
 import { extractApiErrorMessage } from '../user/userSlice';
 import routes from '../../services/appRoutes';
+import { clearReportFilters } from '../../../features/authReducer';
 
 /**
  * Move this login to another branch.
@@ -96,6 +97,13 @@ const SwitchBranch: React.FC = () => {
       }
 
       toast.success(data.message || 'Working branch changed.');
+      // Nothing chosen on the old branch may follow the user here: the reports'
+      // saved filters, and the branch a head office's dashboard was last
+      // looking at (dashboardRange's `cashbook-dashboard:<user>:branch`).
+      clearReportFilters();
+      Object.keys(window.localStorage)
+        .filter((key) => key.startsWith('cashbook-dashboard:') && key.endsWith(':branch'))
+        .forEach((key) => window.localStorage.removeItem(key));
       window.location.href = routes.dashboard;
     } catch (err: any) {
       setFormError(

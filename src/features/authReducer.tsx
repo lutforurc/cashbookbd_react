@@ -62,6 +62,19 @@ export const removeData = () => {
   Cookies.remove('laravel_session');
   Cookies.remove('XSRF-TOKEN');
   localStorage.removeItem('settings');
+  clearReportFilters();
+};
+
+/**
+ * The reports keep their last filters -- branch included -- in sessionStorage,
+ * which outlives a reload, a branch switch and a logout. Left there, the next
+ * report opens on a branch the user has left, or on another user's. Every one
+ * of their keys says "filter"; nothing else in sessionStorage does.
+ */
+export const clearReportFilters = () => {
+  Object.keys(window.sessionStorage)
+    .filter((key) => key.includes('filter'))
+    .forEach((key) => window.sessionStorage.removeItem(key));
 };
 
 // actions
