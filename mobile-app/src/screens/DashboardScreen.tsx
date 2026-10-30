@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Linking,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -9,6 +11,7 @@ import {
 } from 'react-native';
 import { Button } from '../components/Button';
 import { StatCard } from '../components/StatCard';
+import { ACCOUNT_DELETION_URL } from '../config/api';
 import { useAuth } from '../context/AuthContext';
 import { DashboardData, dashboardService } from '../services/dashboardService';
 import { colors } from '../theme/colors';
@@ -119,6 +122,22 @@ export const DashboardScreen = () => {
               </View>
             ))}
           </View>
+
+          {/* Settings → Account → Request Account Deletion. Opens the PUBLIC web
+              page, so it works the same on every app build and needs no
+              reinstall; the page explains what is deleted and verifies identity
+              before anything is removed. */}
+          <Text style={styles.sectionTitle}>Account</Text>
+          <Pressable
+            accessibilityRole="link"
+            onPress={() => Linking.openURL(ACCOUNT_DELETION_URL)}
+            style={styles.accountRow}
+          >
+            <Text style={styles.accountText}>Request Account Deletion</Text>
+            <Text style={styles.accountHint}>
+              Opens the CashBookBD deletion request page
+            </Text>
+          </Pressable>
         </>
       )}
     </ScrollView>
@@ -218,5 +237,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     textAlign: 'center',
+  },
+  accountRow: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 16,
+  },
+  accountText: {
+    color: colors.primaryDark,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  accountHint: {
+    color: colors.muted,
+    fontSize: 12,
+    marginTop: 4,
   },
 });

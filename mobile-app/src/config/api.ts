@@ -22,6 +22,14 @@ export const API_REMOTE_URL = trimTrailingSlash(
 export const API_BASE_URL = `${API_REMOTE_URL}/api`;
 export const API_CSRF_COOKIES = `${API_REMOTE_URL}/sanctum/csrf-cookie`;
 
+// The web application's own base. The account-deletion request page lives here
+// and is PUBLIC: it opens in the browser, needs no second install, and is the
+// same page the website footer and the store listing link to.
+export const WEB_BASE_URL = trimTrailingSlash(
+  process.env.EXPO_PUBLIC_WEB_URL || 'https://app.cashbookbd.com',
+);
+export const ACCOUNT_DELETION_URL = `${WEB_BASE_URL}/account-deletion`;
+
 export const endpoints = {
   login: `${API_BASE_URL}/login`,
   me: `${API_BASE_URL}/me`,

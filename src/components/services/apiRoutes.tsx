@@ -1364,3 +1364,15 @@ export const API_COMPANY_SCHEME_MARK_URL = `${API_BASE_URL}/company-scheme/mark`
 export const API_COMPANY_SCHEME_SALE_STORE_URL = `${API_BASE_URL}/company-scheme/sale/store`;
 export const API_COMPANY_SCHEME_SALE_EDIT_URL = `${API_BASE_URL}/company-scheme/sale/edit`;
 export const API_COMPANY_SCHEME_SALE_UPDATE_URL = `${API_BASE_URL}/company-scheme/sale/update`;
+
+// Account / company deletion requests.
+//   ...REQUEST_URL  PUBLIC -- a visitor with no account sends here.
+//   ...CONTEXT_URL  the signed-in prefill + whether this user may ask for the
+//                   whole company.
+//   ...SUBMIT_URL   the signed-in submission.
+//   ...ADMIN_*      the platform-operator review console.
+export const API_ACCOUNT_DELETION_REQUEST_URL = `${API_BASE_URL}/account-deletion/request`;
+export const API_ACCOUNT_DELETION_CONTEXT_URL = `${API_BASE_URL}/account-deletion/context`;
+export const API_ACCOUNT_DELETION_SUBMIT_URL = `${API_BASE_URL}/account-deletion/submit`;
+export const API_ACCOUNT_DELETION_ADMIN_LIST_URL = `${API_BASE_URL}/admin/account-deletions`;
+export const API_ACCOUNT_DELETION_ADMIN_DETAIL_URL = `${API_BASE_URL}/admin/account-deletions`;

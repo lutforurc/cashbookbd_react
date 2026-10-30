@@ -27,6 +27,12 @@ const ROUTES = {
   highlight_rules: '/admin/highlight-rules',
   reseller_dashboard: '/reseller/dashboard',
 
+  // Account / company deletion. The request page is public (a root route); the
+  // review console is a platform-operator screen.
+  account_deletion_request: '/account-deletion',
+  account_deletion_admin: '/admin/account-deletions',
+  account_deletion_admin_detail: '/admin/account-deletions/:id',
+
   // Customer Login
   customerLogin: '/customer/login',
   customerHome: '/customer',

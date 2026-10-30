@@ -283,6 +283,9 @@ import RequireUserQuota from './components/auth/RequireUserQuota';
 import RequireBranchQuota from './components/auth/RequireBranchQuota';
 import ResellerAdmin from './components/modules/reseller/ResellerAdmin';
 import ResellerDashboard from './components/modules/reseller/ResellerDashboard';
+import AccountDeletionRequest from './pages/AccountDeletion/AccountDeletionRequest';
+import AccountDeletionList from './components/modules/account-deletion/AccountDeletionList';
+import AccountDeletionDetail from './components/modules/account-deletion/AccountDeletionDetail';
 
 /*
  * There is no exempt-company list here any more, and its absence is the point.
@@ -389,6 +392,11 @@ function App() {
               {/* Platform operator (company 1) admin tools — gated to match sidebar/dropdown menus */}
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['subscription.history']} loading={permissionsLoading} />}>
                 <Route path={routes.subscription_admin} element={<SubscriptionAdmin />} />
+                {/* Deletion requests are a platform-operator concern, on the
+                    same gate as the subscription console. The API's
+                    platform.admin is what actually protects the data. */}
+                <Route path={routes.account_deletion_admin} element={<AccountDeletionList />} />
+                <Route path={routes.account_deletion_admin_detail} element={<AccountDeletionDetail />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['subscription.plans']} loading={permissionsLoading} />}>
                 <Route path={routes.subscription_plan_list} element={<SubscriptionPlanList />} />
@@ -1481,6 +1489,9 @@ function App() {
 
           {/* Public Routes */}
           <Route path={routes.login} element={<SignIn />} />
+          {/* Public and app-install-free: reached with no token, and the entry
+              point a store / website links to. */}
+          <Route path={routes.account_deletion_request} element={<AccountDeletionRequest />} />
           <Route path={routes.forgot_password} element={<ForgotPassword />} />
           <Route path={routes.public_register} element={<PublicRegistration />} />
           <Route path={routes.public_register_otp} element={<PublicRegistrationOtp />} />

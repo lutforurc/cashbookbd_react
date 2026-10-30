@@ -293,6 +293,18 @@ const DropdownUser = () => {
                 My Devices
               </Link>
             </li>
+            {/* Settings → Account → Request Account Deletion. The page itself is
+                public; opening it from here is the signed-in entry point, and it
+                prefills from the session and offers company-wide deletion only
+                to the owner the backend recognises. */}
+            <li>
+              <Link
+                to={routes.account_deletion_request}
+                className="flex items-center pl-9 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+              >
+                Request Account Deletion
+              </Link>
+            </li>
             {me && (
               <li>
                 <Link
@@ -310,6 +322,16 @@ const DropdownUser = () => {
                   className="flex items-center pl-9 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
                 >
                   Subscription History
+                </Link>
+              </li>
+            )}
+            {hasPermission(permissions, 'subscription.history') && (
+              <li>
+                <Link
+                  to={routes.account_deletion_admin}
+                  className="flex items-center pl-9 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+                >
+                  Deletion Requests
                 </Link>
               </li>
             )}
