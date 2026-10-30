@@ -10,6 +10,7 @@ import {
   fieldClass,
 } from '../../../theme/fieldStyles';
 import { Input } from './FormControls';
+import { NEGATIVE_VALUE_MESSAGE, isNegativeNumeric } from '../utils-functions/nonNegative';
 
 interface InputElementProps {
   id?: string;
@@ -85,6 +86,25 @@ const InputElement: React.FC<InputElementProps> = ({
     ? 'native-date-time-input'
     : '';
 
+  /*
+   * A field holding a negative number says so against itself, here, rather than
+   * at save time.
+   *
+   * ⚠️ IT ASKS THE VALUE, NOT THE `type`. Most of this app's money boxes are
+   * plain text inputs -- "Received Amount", "Discount Amount", a service charge
+   * -- because they only ever hold digits; only a few declare `type="number"`.
+   * Keying the rule off `type` left exactly those boxes silent, which is how a
+   * form came to show the error under Quantity and none under the received
+   * amount beside it. What decides it is whether the whole value READS as a
+   * negative number: "14-261000019", a date and a phone number carry hyphens and
+   * are not numbers, so they are untouched, while "-60000" is caught whatever
+   * the box calls itself.
+   *
+   * A disabled box is left alone -- it is showing a figure, not taking one, and
+   * the rule is over what a person may ENTER.
+   */
+  const negative = !disabled && isNegativeNumeric(value);
+
   // Where the bubble is on screen, or null when it is not shown. Measured from
   // the field at the moment of hover rather than laid out beside it: drawn into
   // the body, the bubble is no longer inside whatever the field is inside, so a
@@ -151,7 +171,11 @@ const InputElement: React.FC<InputElementProps> = ({
           min={min}
           max={max}
           step={step}
-          className={fieldClass(size, `w-full ${nativeDateTimeClass} ${className}`)}
+          aria-invalid={negative || undefined}
+          className={fieldClass(
+            size,
+            `w-full ${nativeDateTimeClass} ${negative ? 'border-danger' : ''} ${className}`,
+          )}
           style={{
             ...(type === 'number'
               ? {
@@ -163,6 +187,12 @@ const InputElement: React.FC<InputElementProps> = ({
         />
 
       </div>
+
+      {negative ? (
+        <p role="alert" className="mt-1 text-sm text-danger">
+          {NEGATIVE_VALUE_MESSAGE}
+        </p>
+      ) : null}
 
       {title && bubble
         ? createPortal(

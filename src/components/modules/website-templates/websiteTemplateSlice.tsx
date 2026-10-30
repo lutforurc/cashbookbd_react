@@ -104,11 +104,20 @@ export const fetchTemplateSchema = async (): Promise<TemplateSchema> => {
   return response?.data;
 };
 
+/*
+ * ⚠️ THE BUILDER IS THE ONE PLACE A NEGATIVE NUMBER IS A DESIGN VALUE, not a
+ * figure. A theme holds spacing, offsets and radii, and a negative letter
+ * spacing is correct there. It is named explicitly, so the no-negative gate in
+ * httpService (and the matching RejectNegativeNumbers on the server) can tell
+ * it apart from a money or quantity box -- this is the only such opt-out.
+ */
+const DESIGN_SURFACE = { allowNegativeValues: true } as const;
+
 export const createWebsiteTemplate = (payload: { name: string; duplicate_of?: number }) =>
-  httpService.post(API_ADMIN_WEBSITE_TEMPLATES_URL, payload);
+  httpService.post(API_ADMIN_WEBSITE_TEMPLATES_URL, payload, DESIGN_SURFACE);
 
 export const updateWebsiteTemplate = (id: number | string, payload: Record<string, unknown>) =>
-  httpService.put(`${API_ADMIN_WEBSITE_TEMPLATES_URL}/${id}`, payload);
+  httpService.put(`${API_ADMIN_WEBSITE_TEMPLATES_URL}/${id}`, payload, DESIGN_SURFACE);
 
 export const duplicateWebsiteTemplate = (id: number | string) =>
   httpService.post(`${API_ADMIN_WEBSITE_TEMPLATES_URL}/${id}/duplicate`);

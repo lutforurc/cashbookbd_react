@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import { API_BASE_URL, API_LOGIN_URL, API_CSRF_COOKIES } from './apiRoutes';
 import { getDeviceId } from './deviceId';
+import { NEGATIVE_VALUE_MESSAGE, findNegativePath } from '../utils/utils-functions/nonNegative';
 
 const AUTH_TOKEN_COOKIE = '_trio_lead_token';
 
@@ -24,6 +25,38 @@ httpService.interceptors.request.use(function (config) {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    /*
+     * ⚠️ THE SECOND HALF OF THE NO-NEGATIVE RULE, and the half a field cannot
+     * give: a form that never renders through InputElement -- a hand-built
+     * table row, a modal, a payload assembled in a reducer -- would otherwise
+     * slip past the inline error and reach the server. Nothing carrying a
+     * negative number leaves the browser.
+     *
+     * The server refuses the same thing independently
+     * (App\Http\Middleware\RejectNegativeNumbers); this is here so the clerk
+     * hears about it at once instead of after a round trip. A caller with a
+     * genuinely signed body may opt out with `allowNegativeValues` on the
+     * request config. Cancelled, not failed, so the network-error toast stays
+     * quiet -- see the response interceptor below.
+     */
+    const method = (config.method || 'get').toLowerCase();
+    const carriesBody = method === 'post' || method === 'put' || method === 'patch';
+
+    if (carriesBody && !(config as any).allowNegativeValues) {
+        const negativeField = findNegativePath(config.data);
+
+        if (negativeField) {
+            const refusal = new axios.CanceledError(NEGATIVE_VALUE_MESSAGE);
+            (refusal as any).toastReported = true;
+            (refusal as any).negativeField = negativeField;
+
+            toast.error(NEGATIVE_VALUE_MESSAGE, { toastId: 'negative-value' });
+
+            return Promise.reject(refusal);
+        }
+    }
+
     return config;
 });
 
