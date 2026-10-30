@@ -65,7 +65,10 @@ const normalizeListPayload = (payload: any): BranchReceivedListPayload => {
 
 export const getBranchReceived = createAsyncThunk<BranchReceivedListPayload, any, { rejectValue: string }>('branchReceived/getBranchReceived', async (params = {}, thunkAPI) => {
   try {
-    const res = await httpService.get(API_BRANCH_RECEIVED_LIST_URL, params);
+    // ⚠️ `{ params }`, NOT `params` -- see the note in
+    // warehouseTransferSlice.ts: axios' second argument is the request config,
+    // so the page size, page number and search never reached the server.
+    const res = await httpService.get(API_BRANCH_RECEIVED_LIST_URL, { params });
     const responseData = res.data;
 
     if (responseData?.success) {

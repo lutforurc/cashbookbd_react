@@ -79,7 +79,14 @@ export const getBranchTransfers = createAsyncThunk<
   { rejectValue: string }
 >('branchTransfer/getBranchTransfers', async (params = {}, thunkAPI) => {
   try {
-    const res = await httpService.get(API_BRANCH_TRANSFER_LIST_URL, params);
+    // ⚠️ `{ params }`, NOT `params`. axios' second argument is the request
+    // CONFIG; handing it the params object meant `page`, `perPage`, `search`
+    // and `transfer_type` were never sent as a query string at all. The list
+    // therefore came back unpaged (a bare array, so the pager had no
+    // `last_page` to draw from) and unfiltered (receives were listed beside
+    // the issues, and the search box did nothing). Same shape every other
+    // slice in the app already uses.
+    const res = await httpService.get(API_BRANCH_TRANSFER_LIST_URL, { params });
     const responseData = res.data;
 
     if (responseData?.success) {
