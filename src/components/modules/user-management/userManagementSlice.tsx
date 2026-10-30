@@ -38,6 +38,8 @@ interface RoleState {
   storePermission: any; // You can define a type if needed
   updatePermission: any; // You can define a type if needed
   error: string | null;
+  // The newest getSelectedPermissions request; an older one landing late is dropped.
+  selectedPermissionsRequestId?: string;
 }
 
 interface ErrorResponse {
@@ -307,11 +309,16 @@ const userManagementSlice = createSlice({
       })
 
       // getSelectedPermissions
-      .addCase(getSelectedPermissions.pending, (state) => {
+      .addCase(getSelectedPermissions.pending, (state, action) => {
         state.loading = true;
         state.error = null;
+        state.selectedPermissionsRequestId = action.meta.requestId;
       })
       .addCase(getSelectedPermissions.fulfilled, (state, action) => {
+        // Switching roles fast puts two requests in flight. Role Update sends
+        // the whole set, so the previous role's late answer must never be
+        // shown as the current role's.
+        if (action.meta.requestId !== state.selectedPermissionsRequestId) return;
         state.loading = false;
         state.selectedPermissions = action.payload;
       })
