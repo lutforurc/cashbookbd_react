@@ -51,6 +51,7 @@ import {
 import SoldUnitListPrint from "./SoldUnitListPrint";
 import SaleNomineeModal from "./SaleNomineeModal";
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+import Pagination from "../../../utils/utils-functions/Pagination";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { Input } from '../../../utils/fields/FormControls';
 
@@ -59,6 +60,9 @@ const cellBase = "border border-stroke px-2 py-1.5 dark:border-strokedark";
 
 /** 1.5 MB, the same ceiling SaleDocumentController enforces. */
 const MAX_DOCUMENT_BYTES = 1.5 * 1024 * 1024;
+
+/** Five buyers a page, as the report is asked to read. */
+const CUSTOMERS_PER_PAGE = 5;
 
 const SoldUnitList: React.FC = () => {
   const dispatch = useDispatch<any>();
@@ -151,6 +155,31 @@ const SoldUnitList: React.FC = () => {
     [customers, soldUnits?.totals]
   );
 
+  /*
+   * Five buyers a page, oldest purchase first.
+   *
+   * ⚠️ THE PAGE IS cut HERE, NOT FETCHED. The report is read whole on purpose:
+   * the summary cards, the grand total on the foot of the table and the printed
+   * sheet all need every buyer the filters matched, and asking the server for one
+   * page would leave the sheet printing five buyers and a total covering all of
+   * them. So the list is sliced for the table only, and the page numbers run over
+   * the order the server sent -- the buyer's earliest purchase, oldest first --
+   * which is the same order on every page.
+   */
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(customers.length / CUSTOMERS_PER_PAGE));
+  const firstCustomerIndex = (page - 1) * CUSTOMERS_PER_PAGE;
+  const pageCustomers = customers.slice(
+    firstCustomerIndex,
+    firstCustomerIndex + CUSTOMERS_PER_PAGE
+  );
+
+  // A search or a reset can leave fewer buyers than the page being looked at;
+  // without this the table would sit empty on a page that no longer exists.
+  useEffect(() => {
+    if (page > totalPages) setPage(1);
+  }, [page, totalPages]);
+
   const projectOptions = useMemo(
     () => [
       { id: "", name: "All Projects" },
@@ -201,6 +230,8 @@ const SoldUnitList: React.FC = () => {
     setDateTo(null);
     setQ("");
     setDueOnly(false);
+    // Back to the first page: the reload will answer with a different set.
+    setPage(1);
     loadData({
       project_id: undefined,
       building_id: undefined,
@@ -673,7 +704,11 @@ const SoldUnitList: React.FC = () => {
         </label>
 
         <ButtonLoading
-          onClick={() => loadData()}
+          onClick={() => {
+            // A new search starts at the first page of its own results.
+            setPage(1);
+            loadData();
+          }}
           buttonLoading={false}
           label="Search"
           className="mr-0 whitespace-nowrap text-center"
@@ -750,7 +785,11 @@ const SoldUnitList: React.FC = () => {
               </tr>
             )}
 
-            {customers.map((customer, customerIndex) => {
+            {pageCustomers.map((customer, index) => {
+              // The buyer's number ON THE REPORT, not on the page: with five a
+              // page the serial carries on from 6, and the colour a buyer is
+              // given is theirs on the printed sheet too.
+              const customerIndex = firstCustomerIndex + index;
               const color = customerColor(customerIndex).border;
               const tint = customerColor(customerIndex).tint;
               const sales = customer.units.map((unit) => ({
@@ -1173,6 +1212,16 @@ const SoldUnitList: React.FC = () => {
           )}
         </table>
       </div>
+
+      {/* Five buyers a page. The grand total above stays over the whole set --
+          the pager moves the table, not the report. */}
+      {totalPages > 1 ? (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          handlePageChange={setPage}
+        />
+      ) : null}
 
       {/* PRINT */}
       <div className="hidden">
