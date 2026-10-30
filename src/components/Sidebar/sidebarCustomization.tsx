@@ -391,6 +391,7 @@ export const SIDEBAR_SUB_DEFAULTS: Record<string, string[]> = {
     'reports/group-report',
     'divider:rsale:Purchase & Sales',
     'reports/purchase-ledger',
+    'reports/tiles-purchase',
     'reports/sales-ledger',
     'reports/purchase-return-ledger',
     'reports/sales-return-ledger',

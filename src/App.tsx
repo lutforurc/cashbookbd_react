@@ -67,6 +67,7 @@ import DueList from './components/modules/reports/duelist/DueList';
 import CatWiseInOut from './components/modules/reports/catwiseinout/CatWiseInOut';
 import EditUser from './components/modules/user/EditUser';
 import PurchaseLedger from './components/modules/reports/purchaseledger/PurchaseLedger';
+import TilesPurchaseReport from './components/modules/reports/tiles-purchase/TilesPurchaseReport';
 import SalesLedger from './components/modules/reports/salesledger/SalesLedger';
 import ReturnLedger from './components/modules/reports/returnledger/ReturnLedger';
 import CustomerSalesReport from './components/modules/reports/customer-sales/CustomerSalesReport';
@@ -1184,6 +1185,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.ledger']} loading={permissionsLoading} />}>
               <Route path={routes.purchase_ledger} element={<PurchaseLedger user={me} />} />
+              {/* Tiles purchase report: the purchase invoices read the way the
+                  shop's Excel sheet reads them. Demo data for now. */}
+              <Route path={routes.report_tiles_purchase} element={<TilesPurchaseReport />} />
               {/* The return ledger under the permission of the ledger it sits
                   beneath: it is the same book read the other way, and a role
                   that may open one may open both. Same rule on the sales side. */}

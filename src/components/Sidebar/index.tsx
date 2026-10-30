@@ -114,6 +114,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'report_godown_stock', title: "Godown Stock" },
     { id: 'reports/cat-wise/in-out', title: "Cat-wise In\/Out" },
     { id: 'reports/purchase-ledger', title: "Purchase Ledger" },
+    { id: 'reports/tiles-purchase', title: "Tiles Purchase" },
     { id: 'reports/sales-ledger', title: "Sales Ledger" },
     // Declared in this order so the two returns sit under the Sales Ledger they
     // are read beside, not at the foot of the menu.
@@ -1877,6 +1878,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Purchase Ledger
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'purchase.ledger') && (
+                            <li style={subSlot('reports', 'reports/tiles-purchase')}>
+                              <NavLink
+                                to={routes.report_tiles_purchase}
+                                className={subMenuLinkClass}
+                              >
+                                Tiles Purchase
                               </NavLink>
                             </li>
                           )}
