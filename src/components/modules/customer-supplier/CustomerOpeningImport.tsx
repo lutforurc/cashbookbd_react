@@ -10,7 +10,7 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import httpService from '../../services/httpService';
 import {
   API_CUSTOMER_OPENING_IMPORT_CHECK_URL,
-  API_CUSTOMER_OPENING_IMPORT_ROW_URL,
+  API_CUSTOMER_OPENING_IMPORT_SAVE_URL,
 } from '../../services/apiRoutes';
 import { isBranchSettingOn } from '../../utils/userFeatureSettings';
 import { FIELD_TEXTAREA, FIELD_TRANSPARENT, fieldClass } from '../../../theme/fieldStyles';
@@ -64,7 +64,7 @@ const FIELDS: { key: Field; header: string; className: string; numeric?: boolean
 const HEADING_ALIASES: Record<Field, string[]> = {
   name: ['name', 'customername', 'partyname', 'customer', 'party'],
   type: ['type', 'partytype', 'customertype'],
-  mobile: ['mobile', 'phone', 'contactnumber', 'contactno', 'cell'],
+  mobile: ['mobile', 'mobilenumber', 'phone', 'contactnumber', 'contactno', 'cell'],
   customer_number: ['customernumber', 'customerno', 'idfrcode', 'code', 'accountcode', 'ledgercode'],
   address: ['address', 'manualaddress', 'location'],
   ledger_page: ['ledgerpage', 'ledgerpageno', 'ledgerpagenumber', 'ledger', 'page'],
@@ -78,6 +78,7 @@ type SheetRow = Record<Field, string>;
 interface CheckResult {
   status: 'new' | 'existing' | 'error';
   errors: string[];
+  warnings?: { message: string; blocking: boolean }[];
   notes: string[];
   creates: string[];
   party_name: string | null;
@@ -237,13 +238,40 @@ const CustomerOpeningImport = () => {
       );
       setStale(false);
 
-      const bad = results.filter((result, index) => !rows[index]?.saved && result?.status === 'error').length;
-      if (bad) {
-        toast.warn(`${bad} row(s) need fixing before Ok.`);
-      } else {
-        toast.success('Every row is ready. Press Ok to save.');
+      // Toast/result rendering is isolated from the request above. A toast API
+      // problem here must never be reported as "the sheet could not be checked"
+      // — the sheet was already checked and the row results are already stored.
+      try {
+        const blocking: { row: number; result: CheckResult }[] = [];
+        const warnedRows: { row: number; result: CheckResult }[] = [];
+
+        results.forEach((result, index) => {
+          if (rows[index]?.saved) return;
+
+          if (result?.status === 'error') {
+            blocking.push({ row: index + 1, result });
+          } else if (result?.warnings?.some((warning) => !warning.blocking)) {
+            warnedRows.push({ row: index + 1, result });
+          }
+        });
+
+        if (blocking.length) {
+          const firstConflict = blocking[0].result.errors?.[0] ?? 'a conflicting row';
+          toast.error(
+            `Import blocked by ${blocking.length} row(s) — rows ${blocking.map(({ row }) => row).join(', ')}. ${firstConflict}`,
+          );
+        } else if (warnedRows.length) {
+          toast.warning(
+            `Sheet checked successfully. ${warnedRows.length} customer ${warnedRows.length === 1 ? 'row' : 'rows'} have mobile-number warnings. You can still import.`,
+          );
+        } else {
+          toast.success('Sheet checked successfully. Ready to import.');
+        }
+      } catch (notificationError) {
+        console.error('Customer opening import check toast failed', notificationError);
       }
     } catch (error: any) {
+      console.error('Customer opening import check request failed', error);
       toast.error(error?.response?.data?.message || 'The sheet could not be checked.');
     } finally {
       setChecking(false);
@@ -252,37 +280,40 @@ const CustomerOpeningImport = () => {
 
   const runSave = async () => {
     const queue = rows.filter((row) => !row.saved);
-    let failed = 0;
 
     setSaving({ done: 0, total: queue.length });
 
-    for (const [index, row] of queue.entries()) {
-      let outcome: Partial<GridRow>;
+    try {
+      const res = await httpService.post(API_CUSTOMER_OPENING_IMPORT_SAVE_URL, {
+        rows: queue.map((row) => row.data),
+      });
+      const body = res?.data;
 
-      try {
-        const res = await httpService.post(API_CUSTOMER_OPENING_IMPORT_ROW_URL, {
-          row: row.data,
-        });
-        const body = res?.data;
-
-        outcome = body?.success
-          ? { saved: true, voucherNo: body?.data?.data?.opening_vr_no ?? null, saveError: undefined }
-          : { saveError: body?.message || 'This row could not be saved.' };
-      } catch (error: any) {
-        outcome = { saveError: error?.response?.data?.message || 'This row could not be saved.' };
+      if (!body?.success) {
+        toast.error(body?.message || 'The import could not be saved.');
+        setSaving(null);
+        return;
       }
 
-      if (outcome.saveError) failed += 1;
-      setRows((prev) => prev.map((item) => (item.id === row.id ? { ...item, ...outcome } : item)));
-      setSaving({ done: index + 1, total: queue.length });
-    }
-
-    setSaving(null);
-
-    if (failed) {
-      toast.error(`${failed} row(s) were not saved. Fix them and press Ok again.`);
-    } else {
+      const saved: any[] = body?.data?.data ?? [];
+      setRows((prev) =>
+        prev.map((item) => {
+          const queuedIndex = queue.findIndex((row) => row.id === item.id);
+          if (queuedIndex < 0 || item.saved) return item;
+          const outcome = saved[queuedIndex];
+          return {
+            ...item,
+            saved: true,
+            voucherNo: outcome?.opening_vr_no ?? null,
+            saveError: undefined,
+          };
+        }),
+      );
+      setSaving(null);
       toast.success(`${queue.length} customer(s) saved.`);
+    } catch (error: any) {
+      setSaving(null);
+      toast.error(error?.response?.data?.message || 'The import could not be saved.');
     }
   };
 
@@ -293,6 +324,13 @@ const CustomerOpeningImport = () => {
   const count = (status: CheckResult['status']) =>
     pending.filter((row) => row.check?.status === status).length;
   const openingValue = rows.reduce((sum, row) => sum + toNumber(row.data.opening), 0);
+
+  const renderWarnings = (warnings?: { message: string; blocking: boolean }[]) =>
+    (warnings ?? []).map((warning) => (
+      <div key={warning.message} className={`text-xs ${warning.blocking ? 'text-red-500' : 'text-amber-600'}`}>
+        {warning.message}
+      </div>
+    ));
 
   const statusCell = (row: GridRow) => {
     if (row.saved) {
@@ -309,7 +347,14 @@ const CustomerOpeningImport = () => {
       return <span className="text-gray-500">{stale ? 'Changed — press Check' : 'Not checked'}</span>;
     }
     if (row.check.status === 'error') {
-      return <span className="text-red-500">{row.check.errors.join(' ')}</span>;
+      return (
+        <div>
+          {row.check.errors.map((error) => (
+            <div key={error} className="text-red-500">{error}</div>
+          ))}
+          {renderWarnings(row.check.warnings)}
+        </div>
+      );
     }
 
     return (
@@ -324,11 +369,24 @@ const CustomerOpeningImport = () => {
             Will create — {row.check.creates.join(', ')}
           </div>
         )}
-        {row.check.notes.map((note) => (
-          <div key={note} className="text-xs text-amber-600">
-            {note}
-          </div>
-        ))}
+        {row.check.notes.map((note) => {
+          // "Its opening is replaced: 21900 becomes 121900." -- old figure and new figure in their own colours.
+          const replaced = note.match(/^(.*?: )(.*) becomes (.*)\.$/);
+          return (
+            <div key={note} className="text-xs text-amber-600">
+              {replaced ? (
+                <>
+                  {replaced[1]}
+                  <span className="font-semibold text-red-500">{replaced[2]}</span> becomes{' '}
+                  <span className="font-semibold text-green-600">{replaced[3]}</span>.
+                </>
+              ) : (
+                note
+              )}
+            </div>
+          );
+        })}
+        {renderWarnings(row.check.warnings)}
       </div>
     );
   };
@@ -346,12 +404,13 @@ const CustomerOpeningImport = () => {
       <div className="rounded-sm p-4 shadow-default">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <p className="max-w-2xl text-sm text-gray-600 dark:text-gray-300">
-            A row is matched by its customer number, else by its mobile, else by its exact name. A
-            name the books do not have is made into a customer — type, mobile, address and ledger
-            page are used for that. On a customer that already exists only the opening and the
-            ledger page are written; leave the ledger page blank to keep the page the list has.
-            Write the page as your book has it, e.g. "Page # 01, Ledger # 12". A positive opening
-            is what the customer owes; enter a minus when the books owe them.
+            A row is matched by its customer number, else by its name and mobile together — a name
+            or a mobile alone never matches. A row that matches nobody is made into a customer —
+            type, mobile, address and ledger page are used for that. On a customer that already
+            exists only the opening and the ledger page are written; leave the ledger page blank
+            to keep the page the list has. Write the page as your book has it, e.g. "Page # 01,
+            Ledger # 12". A positive opening is what the customer owes; enter a minus when the
+            books owe them.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <ButtonLoading

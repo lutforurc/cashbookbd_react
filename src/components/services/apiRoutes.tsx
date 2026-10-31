@@ -165,8 +165,9 @@ export const API_CUSTOMER_BASE_URL = `${API_BASE_URL}/customer`;
 export const API_CUSTOMER_FROM_UI_URL = `${API_BASE_URL}/contact/customer/update/ui/`;
 // Drops the opening balance and sends its journal voucher to the trash.
 export const API_CUSTOMER_OPENING_DELETE_URL = `${API_BASE_URL}/contact/customer/opening-balance/delete/`;
-// Opening balances from an Excel sheet: check every row, then save one per call.
+// Opening balances from an Excel sheet: check every row, then save the whole batch.
 export const API_CUSTOMER_OPENING_IMPORT_CHECK_URL = `${API_BASE_URL}/contact/customer/opening-import/check`;
+export const API_CUSTOMER_OPENING_IMPORT_SAVE_URL = `${API_BASE_URL}/contact/customer/opening-import/save`;
 export const API_CUSTOMER_OPENING_IMPORT_ROW_URL = `${API_BASE_URL}/contact/customer/opening-import/row`;
 
 // Settings url

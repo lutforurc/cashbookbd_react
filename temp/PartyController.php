@@ -1168,70 +1168,106 @@ class PartyController extends Controller
             return notFound('There are no rows to check.');
         }
 
-        // Within the sheet itself: a number or a name twice is one customer
-        // told two openings, and which of the two survived would depend on the
-        // order the rows happened to be saved in.
-        $rowsByNumber = [];
-        $rowsByName   = [];
-        foreach ($rows as $index => $row) {
-            $number = strtolower($this->importText($row['customer_number'] ?? ''));
-            $name   = strtolower($this->importText($row['name'] ?? ''));
+        $validation = $this->partyOpeningImportValidation($rows);
 
-            if ($number !== '') {
-                $rowsByNumber[$number][] = $index + 1;
-            }
-            if ($name !== '') {
-                $rowsByName[$name][] = $index + 1;
-            }
-        }
-
-        $results = [];
-        foreach ($rows as $index => $row) {
-            $result = $this->resolvePartyOpeningImportRow((array) $row, false);
-            $number = strtolower($this->importText($row['customer_number'] ?? ''));
-            $name   = strtolower($this->importText($row['name'] ?? ''));
-            $others = fn(array $list) => implode(', ', array_diff($list, [$index + 1]));
-
-            if ($number !== '' && count($rowsByNumber[$number]) > 1) {
-                $result['errors'][] = 'The same customer number is on row ' . $others($rowsByNumber[$number]) . '.';
-            } elseif ($number === '' && $name !== '' && count($rowsByName[$name]) > 1) {
-                $result['errors'][] = 'Row ' . $others($rowsByName[$name]) . ' has the same name; give each its customer number.';
-            }
-
-            $results[] = [
-                'status'     => $result['errors'] ? 'error' : $result['status'],
-                'errors'     => $result['errors'],
-                'notes'      => $result['notes'],
-                'creates'    => $result['creates'],
-                'party_name' => $result['party'] ? $result['party']->name : null,
-            ];
-        }
-
-        // The plan's cap, before a single row is saved. Counted from the rows
-        // that would CREATE a customer -- a row matching one the books already
-        // have adds nothing to the list and is not metered -- and refused whole,
-        // because a sheet that only half fits is not half imported.
-        $newRows = count(array_filter($results, fn($row) => $row['status'] === 'new'));
+        $newRows = count(array_filter($validation['results'], fn($row) => $row['status'] === 'new'));
 
         if ($refusal = app(SubscriptionLimitService::class)
             ->customerQuotaRefusal(Auth::user()->company_id, $newRows, 'imported')) {
             return notFound($refusal, 200);
         }
 
-        return foundData($results);
+        return foundData($validation['results']);
     }
 
-    /** Save one row of the sheet: the customer, when the row is a new one, and its opening balance. */
+    public function apiPartyOpeningImportSave(Request $request)
+    {
+        if ($refusal = $this->partyOpeningImportRefusal()) {
+            return $refusal;
+        }
+
+        $rows = is_array($request->rows) ? array_values($request->rows) : [];
+
+        if (!$rows) {
+            return notFound('There are no rows to save.');
+        }
+
+        $validation = $this->partyOpeningImportValidation($rows);
+
+        if ($validation['has_blocking']) {
+            return notFound($this->partyOpeningImportBlockingMessage($validation['results']), 200);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $saved = [];
+
+            foreach ($rows as $row) {
+                $result = $this->resolvePartyOpeningImportRow((array) $row, true);
+
+                if ($result['errors']) {
+                    DB::rollBack();
+                    return notFound(implode(' ', $result['errors']));
+                }
+
+                $party     = $result['party'];
+                $voucherNo = null;
+
+                $page = $this->importText($row['ledger_page'] ?? '');
+
+                if ($page !== '' && (string) $this->partyLedgerPage($party->id) !== $page) {
+                    $this->writePartyLedgerPage($party->id, $page);
+                }
+
+                if ($result['opening'] !== null) {
+                    $posted    = $this->openingBalance->sync($party, (float) $result['opening']);
+                    $voucherNo = $posted['vr_no'] ?? null;
+                }
+
+                $saved[] = [
+                    'status'        => $result['status'],
+                    'party_id'      => the_hash($party->id),
+                    'opening_vr_no' => $voucherNo,
+                ];
+            }
+
+            DB::commit();
+
+            return foundData($saved, count($saved) . ' customer(s) saved.');
+        } catch (\RuntimeException $e) {
+            DB::rollBack();
+            return notFound($e->getMessage(), 422);
+        } catch (\Exception $e) {
+            rethrowIfPeriodClosed($e);
+            DB::rollBack();
+            Log::error('Party opening import batch failed', [
+                'rows'  => $rows,
+                'error' => $e->getMessage(),
+            ]);
+
+            return notFound('The import could not be saved. Please try again.');
+        }
+    }
+
     public function apiPartyOpeningImportRow(Request $request)
     {
         if ($refusal = $this->partyOpeningImportRefusal()) {
             return $refusal;
         }
 
+        $row = (array) $request->row;
+
+        $validation = $this->partyOpeningImportValidation([$row]);
+
+        if ($validation['has_blocking']) {
+            return notFound($this->partyOpeningImportBlockingMessage($validation['results']), 200);
+        }
+
         DB::beginTransaction();
 
         try {
-            $result = $this->resolvePartyOpeningImportRow((array) $request->row, true);
+            $result = $this->resolvePartyOpeningImportRow($row, true);
 
             if ($result['errors']) {
                 DB::rollBack();
@@ -1241,20 +1277,13 @@ class PartyController extends Controller
             $party     = $result['party'];
             $voucherNo = null;
 
-            // The sheet's ledger page, when it carries one. Blank leaves the
-            // page the list has, and a page already written is left alone
-            // rather than deleted and put back for nothing.
-            $page = $this->importText($request->row['ledger_page'] ?? '');
+            $page = $this->importText($row['ledger_page'] ?? '');
 
             if ($page !== '' && (string) $this->partyLedgerPage($party->id) !== $page) {
                 $this->writePartyLedgerPage($party->id, $page);
             }
 
             if ($result['opening'] !== null) {
-                // The very service the customer list and the Add/Edit form go
-                // through, so the figure is stored and its journal voucher
-                // raised exactly as if it had been typed on either of them --
-                // and can be corrected or deleted from the list afterwards.
                 $posted    = $this->openingBalance->sync($party, (float) $result['opening']);
                 $voucherNo = $posted['vr_no'] ?? null;
             }
@@ -1267,20 +1296,144 @@ class PartyController extends Controller
                 'opening_vr_no' => $voucherNo,
             ], $party->name . ' saved.');
         } catch (\RuntimeException $e) {
-            // A closed year, an approved voucher, a branch with no day-close:
-            // each carries a sentence worth showing as it is.
             DB::rollBack();
             return notFound($e->getMessage(), 422);
         } catch (\Exception $e) {
             rethrowIfPeriodClosed($e);
             DB::rollBack();
             Log::error('Party opening import row failed', [
-                'row'   => $request->row,
+                'row'   => $row,
                 'error' => $e->getMessage(),
             ]);
 
             return notFound('This row could not be saved. Please try again.');
         }
+    }
+
+    private function partyOpeningImportValidation(array $rows): array
+    {
+        $rowsByNumber     = [];
+        $rowsByNameMobile = [];
+        $rowsByMobile     = [];
+
+        foreach ($rows as $index => $row) {
+            $number = strtolower($this->importText($row['customer_number'] ?? ''));
+            $name   = strtolower($this->importText($row['name'] ?? ''));
+            $mobile = $this->importMobile($row['mobile'] ?? '');
+
+            if ($number !== '') {
+                $rowsByNumber[$number][] = $index + 1;
+            }
+            if ($name !== '' && $mobile !== '') {
+                $rowsByNameMobile[$name . "\0" . $mobile][] = $index + 1;
+            }
+            if ($mobile !== '') {
+                $rowsByMobile[$mobile][] = ['row' => $index + 1, 'name' => $name];
+            }
+        }
+
+        $results     = [];
+        $hasBlocking = false;
+        $hasWarnings = false;
+        $mobileCache = [];
+
+        foreach ($rows as $index => $row) {
+            $result   = $this->resolvePartyOpeningImportRow((array) $row, false);
+            $number   = strtolower($this->importText($row['customer_number'] ?? ''));
+            $name     = strtolower($this->importText($row['name'] ?? ''));
+            $mobile   = $this->importMobile($row['mobile'] ?? '');
+            $others   = fn(array $list) => implode(', ', array_diff($list, [$index + 1]));
+            $errors   = $result['errors'];
+            $warnings = [];
+
+            if ($number !== '' && count($rowsByNumber[$number]) > 1) {
+                $errors[] = 'The same customer number is on row ' . $others($rowsByNumber[$number]) . '.';
+            }
+
+            if ($name !== '' && $mobile !== '' && count($rowsByNameMobile[$name . "\0" . $mobile]) > 1) {
+                $errors[] = 'Row ' . $others($rowsByNameMobile[$name . "\0" . $mobile]) . ' has the same customer name and mobile number. Resolve the duplicate before importing.';
+            }
+
+            if ($mobile !== '' && $name !== '') {
+                $sameMobileDifferentName = [];
+                foreach ($rowsByMobile[$mobile] as $entry) {
+                    if ($entry['row'] !== $index + 1 && $entry['name'] !== '' && $entry['name'] !== $name) {
+                        $sameMobileDifferentName[] = $entry['row'];
+                    }
+                }
+                if ($sameMobileDifferentName) {
+                    $warnings[] = [
+                        'message'  => 'This mobile number is also used in row(s) ' . implode(', ', $sameMobileDifferentName) . ' by a customer with a different name. You can still import this customer.',
+                        'blocking' => false,
+                    ];
+                }
+            }
+
+            $numberParty = $result['party'] ?? null;
+
+            if ($name !== '' && $mobile !== '') {
+                $nameMobileMatches = $this->existingPartiesByNameMobile($name, $mobile, $mobileCache);
+
+                foreach ($nameMobileMatches as $existing) {
+                    if ($numberParty && (int) $existing->id === (int) $numberParty->id) {
+                        continue;
+                    }
+
+                    $errors[] = 'Row ' . ($index + 1) . ' has the same customer name and mobile number as existing customer '
+                        . $existing->name . ' (' . ($existing->mobile ?: 'no mobile') . '). Resolve the duplicate before importing.';
+                }
+            }
+
+            if ($mobile !== '' && $name !== '') {
+                $differentNameMobileMatches = $this->existingPartiesByMobileDifferentName($name, $mobile, $mobileCache);
+
+                foreach ($differentNameMobileMatches as $existing) {
+                    if ($numberParty && (int) $existing->id === (int) $numberParty->id) {
+                        continue;
+                    }
+
+                    $warnings[] = [
+                        'message'  => 'This mobile number is also used by ' . $existing->name . ' (' . ($existing->mobile ?: 'no mobile') . ') with a different name. You can still import this customer.',
+                        'blocking' => false,
+                    ];
+                }
+            }
+
+            $blocked = !empty($errors);
+            if ($blocked) {
+                $hasBlocking = true;
+            }
+            if (!empty($warnings)) {
+                $hasWarnings = true;
+            }
+
+            $results[] = [
+                'status'     => $blocked ? 'error' : $result['status'],
+                'errors'     => $errors,
+                'warnings'   => $warnings,
+                'notes'      => $result['notes'],
+                'creates'    => $result['creates'],
+                'party_name' => $result['party'] ? $result['party']->name : null,
+            ];
+        }
+
+        return [
+            'results'      => $results,
+            'has_blocking' => $hasBlocking,
+            'has_warnings' => $hasWarnings,
+        ];
+    }
+
+    private function partyOpeningImportBlockingMessage(array $results): string
+    {
+        $rows = [];
+        foreach ($results as $index => $result) {
+            if (($result['status'] ?? null) === 'error' && !empty($result['errors'])) {
+                $rows[] = $index + 1;
+            }
+        }
+
+        return 'Import blocked: ' . count($rows) . ' row(s) have conflicts — rows ' . implode(', ', $rows) . '. Fix them and check again.';
     }
 
     /** Why the opening import cannot run here at all, or null when it can. */
@@ -1322,12 +1475,12 @@ class PartyController extends Controller
      * nothing was refused is a missing customer made. Check and Ok both come
      * here, which is what keeps Ok from doing anything Check did not show.
      *
-     * A row is matched by its customer number, else by its mobile, else by its
-     * exact name -- and where several customers answer to it there is no
-     * telling which one is meant, so the row is refused rather than guessed at.
-     * Only two things are written on a customer that already exists: its
-     * opening, and the ledger page when the sheet carries one. The rest of its
-     * record is left as the list has it.
+     * Only an explicit customer number adopts an existing customer; a row
+     * without one is a new customer. Name and mobile are never used to guess at
+     * an existing customer here -- those fields are checked separately against
+     * the sheet and the database for duplicates. On a customer that already
+     * exists only two things are written: its opening, and the ledger page when
+     * the sheet carries one. The rest of its record is left as the list has it.
      */
     private function resolvePartyOpeningImportRow(array $row, bool $write): array
     {
@@ -1363,26 +1516,27 @@ class PartyController extends Controller
             $errors[] = self::LEDGER_PAGE_MESSAGE;
         }
 
-        $matches = $this->matchParties($number, $mobile, $name);
+        // Only an explicit customer number adopts an existing customer. A name
+        // or mobile alone never does -- that is what stops the import from
+        // merging two different customers who happen to share one field.
+        if ($number !== '') {
+            $matches = $this->matchPartiesByNumber($number);
 
-        if ($matches->count() > 1) {
-            $errors[] = 'More than one customer answers to "'
-                . ($number !== '' ? $number : ($mobile !== '' ? $mobile : $name))
-                . '"; give the row a customer number.';
-        } elseif ($matches->count() === 1) {
-            $party = $matches->first();
+            if ($matches->count() > 1) {
+                $errors[] = 'More than one customer answers to "' . $number . '"; give the row a customer number.';
+            } elseif ($matches->count() === 1) {
+                $party = $matches->first();
 
-            if ((float) $party->openingbalance !== 0.0) {
-                $notes[] = 'Its opening is replaced: ' . $party->openingbalance . ' becomes ' . $opening . '.';
-            }
+                if ((float) $party->openingbalance !== 0.0) {
+                    $notes[] = 'Its opening is replaced: ' . $party->openingbalance . ' becomes ' . $opening . '.';
+                }
 
-            // A page refused above is not also promised: the row is refused,
-            // and the sentence beside it is the one that matters.
-            if ($page !== '' && $pageOk) {
-                $current = $this->partyLedgerPage($party->id);
+                if ($page !== '' && $pageOk) {
+                    $current = $this->partyLedgerPage($party->id);
 
-                if ((string) $current !== $page) {
-                    $notes[] = 'Its ledger page is replaced: ' . ($current ?: '(blank)') . ' becomes ' . $page . '.';
+                    if ((string) $current !== $page) {
+                        $notes[] = 'Its ledger page is replaced: ' . ($current ?: '(blank)') . ' becomes ' . $page . '.';
+                    }
                 }
             }
         }
@@ -1487,35 +1641,42 @@ class PartyController extends Controller
     }
 
     /**
-     * The customers one row could be about: by its customer number, else by its
-     * mobile, else by its exact name -- the first of the three that finds
-     * anybody. At most two come back, which is enough to tell "one" from
-     * "several".
+     * The base query for every customer lookup in this import: the current
+     * company's active customers, narrowed to the branch unless the branch
+     * shares its customers.
      */
-    private function matchParties(string $number, string $mobile, string $name)
+    private function partyScopeQuery()
     {
         $user   = Auth::user();
-        // Not $this->branch: the constructor passes Auth::user() to Branch::find(),
-        // which Eloquent reads as a list of ids and answers with a collection.
         $branch = Branch::find($user->branch_id);
 
-        $query = PartyInfo::query()
+        return PartyInfo::query()
             ->where('status', '1')
             ->where('company_id', $user->company_id)
-            // The customers the list itself shows: another branch's are out of
-            // sight unless the branch shares them.
             ->when(
                 (int) ($branch->share_customer_with_other_branch ?? 0) === 0,
                 fn($q) => $q->where('branch_id', (int) ($branch->id ?? $user->branch_id))
             );
+    }
 
-        if ($number !== '') {
-            return (clone $query)->where('idfr_code', $number)->limit(2)->get();
+    /** The existing customers an explicit customer number can adopt. */
+    private function matchPartiesByNumber(string $number)
+    {
+        return (clone $this->partyScopeQuery())->where('idfr_code', $number)->limit(2)->get();
+    }
+
+    /** Existing customers whose mobile matches, cached per normalized digits. */
+    private function existingPartiesByMobile(string $mobile, array &$cache = [])
+    {
+        $digits = preg_replace('/\D+/', '', $mobile);
+        $key    = $digits !== '' ? $digits : $mobile;
+
+        if (array_key_exists($key, $cache)) {
+            return $cache[$key];
         }
 
-        if ($mobile !== '') {
-            $digits = preg_replace('/\D+/', '', $mobile);
-            $found  = (clone $query)->where(function ($q) use ($mobile, $digits) {
+        $parties = (clone $this->partyScopeQuery())
+            ->where(function ($q) use ($mobile, $digits) {
                 $q->where('mobile', $mobile);
 
                 if ($digits !== '') {
@@ -1524,18 +1685,26 @@ class PartyController extends Controller
                         [$digits]
                     );
                 }
-            })->limit(2)->get();
+            })
+            ->limit(50)
+            ->get();
 
-            if ($found->isNotEmpty()) {
-                return $found;
-            }
-        }
+        return $cache[$key] = $parties;
+    }
 
-        if ($name !== '') {
-            return (clone $query)->whereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower($name)])->limit(2)->get();
-        }
+    /** Existing customers with the same normalized name and mobile. */
+    private function existingPartiesByNameMobile(string $name, string $mobile, array &$cache = [])
+    {
+        return $this->existingPartiesByMobile($mobile, $cache)
+            ->filter(fn($party) => strtolower($this->importText($party->name ?? '')) === $name);
+    }
 
-        return collect();
+    /** Existing customers with the same mobile but a different name. */
+    private function existingPartiesByMobileDifferentName(string $name, string $mobile, array &$cache = [])
+    {
+        return $this->existingPartiesByMobile($mobile, $cache)
+            ->filter(fn($party) => $this->importText($party->name ?? '') !== ''
+                && strtolower($this->importText($party->name ?? '')) !== $name);
     }
 
     /** The party type a sheet row names; the default when it names none. */
@@ -1556,6 +1725,16 @@ class PartyController extends Controller
     private function importText($value): string
     {
         return trim(preg_replace('/\s+/', ' ', (string) $value));
+    }
+
+    /**
+     * A sheet cell as the mobile number the books match by: its digits only,
+     * so "01711 223344" and "01711223344" are one mobile. The same reading
+     * existingPartiesByMobile() makes of a mobile.
+     */
+    private function importMobile($value): string
+    {
+        return preg_replace('/\D+/', '', $this->importText($value));
     }
 
     /** A sheet cell as a number, thousands commas allowed; null when it is not one. */
