@@ -147,22 +147,22 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
             <table className="w-full table-fixed border-collapse">
               <thead className="bg-gray-100">
                 <tr>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-12 text-center">Sl</th>
+                  <th style={{ fontSize: fs }} className={`border border-gray-900 py-2 px-2 text-center ${showAgeing ? "w-[5%]" : "w-12"}`}>Sl</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 text-left">Member Info</th>
                   {showArea ? (
-                    <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-20 text-center">Area</th>
+                    <th style={{ fontSize: fs }} className={`border border-gray-900 py-2 px-2 text-center ${showAgeing ? "w-[7%]" : "w-20"}`}>Area</th>
                   ) : null}
-                  <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-24 text-right">Debit</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-24 text-right">Credit</th>
+                  <th style={{ fontSize: fs }} className={`border border-gray-900 py-2 px-2 text-right ${showAgeing ? "w-[9%]" : "w-24"}`}>Debit</th>
+                  <th style={{ fontSize: fs }} className={`border border-gray-900 py-2 px-2 text-right ${showAgeing ? "w-[9%]" : "w-24"}`}>Credit</th>
                   {showAgeing ? (
-                    <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-24 text-center">Last Paid</th>
+                    <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-[10%] text-center">Last Paid</th>
                   ) : null}
                   {showAgeing
                     ? BUCKETS.map((label) => (
                         <th
                           key={label}
                           style={{ fontSize: fs }}
-                          className="border border-gray-900 py-2 px-2 w-20 text-right"
+                          className="border border-gray-900 py-2 px-2 w-[8%] text-right"
                         >
                           {label === '90+' ? '90+ d' : label}
                         </th>
