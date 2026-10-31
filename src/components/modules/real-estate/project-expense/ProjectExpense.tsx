@@ -7,6 +7,7 @@ import { FiEdit2, FiHome, FiPlus, FiSave, FiSearch, FiTrash2, FiX } from 'react-
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
 import InputOnly from '../../../utils/fields/InputOnly';
+import RemarkAutocomplete from '../../../utils/fields/RemarkAutocomplete';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
@@ -17,6 +18,7 @@ import {
   API_PROJECT_EXPENSE_BUILDINGS_DDL_URL,
   API_PROJECT_EXPENSE_EDIT_URL,
   API_PROJECT_EXPENSE_PROJECTS_DDL_URL,
+  API_PROJECT_EXPENSE_REMARKS_SUGGESTIONS_URL,
   API_PROJECT_EXPENSE_STORE_URL,
   API_PROJECT_EXPENSE_UPDATE_URL,
 } from '../../../services/apiRoutes';
@@ -219,6 +221,14 @@ const ProjectExpense = () => {
 
     return payloadOf(response) || [];
   };
+
+  const fetchRemarkSuggestions = useCallback(async (query: string): Promise<string[]> => {
+    const response = await httpService.get(API_PROJECT_EXPENSE_REMARKS_SUGGESTIONS_URL, {
+      params: { q: query },
+    });
+
+    return payloadOf(response) || [];
+  }, []);
 
   const handleProjectChange = (value: string) => {
     const id = value ? Number(value) : '';
@@ -623,21 +633,16 @@ const ProjectExpense = () => {
               </Select>
             </div>
 
-            <InputElement
+            <RemarkAutocomplete
               id="remarks"
               name="remarks"
               label="Enter Remarks"
               placeholder="Enter Remarks"
               className={FIELD_HEIGHT}
-              autoComplete="off"
               value={form.remarks}
-              onChange={(e) => setForm((prev) => ({ ...prev, remarks: e.target.value }))}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  focusField('amount');
-                }
-              }}
+              onChange={(value) => setForm((prev) => ({ ...prev, remarks: value }))}
+              onEnter={() => focusField('amount')}
+              fetchSuggestions={fetchRemarkSuggestions}
             />
 
             <InputElement

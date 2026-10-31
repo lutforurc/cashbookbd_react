@@ -867,6 +867,7 @@ export const API_PROJECT_EXPENSE_BUILDINGS_DDL_URL = `${API_BASE_URL}/real-estat
 export const API_PROJECT_EXPENSE_STORE_URL = `${API_BASE_URL}/real-estate/project-expense/store`;
 export const API_PROJECT_EXPENSE_EDIT_URL = `${API_BASE_URL}/real-estate/project-expense/edit`;
 export const API_PROJECT_EXPENSE_UPDATE_URL = `${API_BASE_URL}/real-estate/project-expense/update`;
+export const API_PROJECT_EXPENSE_REMARKS_SUGGESTIONS_URL = `${API_BASE_URL}/real-estate/project-expense/remarks/suggestions`;
 
 // Project income — a cash receipt that says which project and which building
 // earned the money. The mirror of project expense, and its own screen rather
@@ -877,6 +878,7 @@ export const API_PROJECT_INCOME_BUILDINGS_DDL_URL = `${API_BASE_URL}/real-estate
 export const API_PROJECT_INCOME_STORE_URL = `${API_BASE_URL}/real-estate/project-income/store`;
 export const API_PROJECT_INCOME_EDIT_URL = `${API_BASE_URL}/real-estate/project-income/edit`;
 export const API_PROJECT_INCOME_UPDATE_URL = `${API_BASE_URL}/real-estate/project-income/update`;
+export const API_PROJECT_INCOME_REMARKS_SUGGESTIONS_URL = `${API_BASE_URL}/real-estate/project-income/remarks/suggestions`;
 
 // Project purchase — material bought for a project and its buildings. One
 // Purchase ledger line per building, so a building can be asked what it cost.
