@@ -21,6 +21,8 @@ export type DueListDocumentOptions = {
   endDate?: Date | string | null;
   /** The branch switch due_list_with_address, as the screen read it. */
   showAddress: boolean;
+  /** The branch switch due_list_show_area: off, the area code prints empty. */
+  showArea: boolean;
   /** The screen's Ageing switch: off, the paper says nothing about ages. */
   showAgeing: boolean;
   mobileFormat?: string | null;
@@ -55,6 +57,7 @@ export const toDueListDocumentData = ({
   rows,
   endDate,
   showAddress,
+  showArea,
   showAgeing,
   mobileFormat,
   branchName,
@@ -86,7 +89,7 @@ export const toDueListDocumentData = ({
       mobile,
       manual_address: address,
       ledger_page: row?.ledger_page ?? '',
-      area_code: row?.area_id ?? '',
+      area_code: showArea ? row?.area_id ?? '' : '',
       debit: Number(row?.debit ?? 0),
       credit: Number(row?.credit ?? 0),
       ...(showAgeing

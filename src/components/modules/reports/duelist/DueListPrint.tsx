@@ -94,6 +94,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
     // The setting is text: '0' is what "off" looks like, and a bare `&&` reads
     // that as true. Asked properly, so the printed report matches the screen.
     const showAddress = isBranchSettingOn(settings, 'due_list_with_address');
+    const showArea = isBranchSettingOn(settings, 'due_list_show_area');
 
     return (
       <div ref={ref} className="p-8 text-gray-900 print-root">
@@ -147,8 +148,10 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
               <thead className="bg-gray-100">
                 <tr>
                   <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-12 text-center">Sl</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2">Member Info</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-20 text-center">Area</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 text-left">Member Info</th>
+                  {showArea ? (
+                    <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-20 text-center">Area</th>
+                  ) : null}
                   <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-24 text-right">Debit</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 py-2 px-2 w-24 text-right">Credit</th>
                   {showAgeing ? (
@@ -183,15 +186,20 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                         {showAddress && (row.mobile?.length ?? 0) > 10 && (
                           <>
                             <div className="text-xs">{formatMobile(row.mobile, mobileFormat)}</div>
-                            <div className="text-xs">{row.manual_address}</div>
+                             
                             {/* <div className="text-xs">{row.ledger_page}</div> */}
                           </>
                         )}
+                        {showAddress && row.manual_address && (
+                          <div className="text-xs">{row.manual_address}</div>
+                        )}
                       </td>
                       {/* Area */}
-                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
-                        {row.area_id || "-"}
-                      </td>
+                      {showArea ? (
+                        <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-center">
+                          {row.area_id || "-"}
+                        </td>
+                      ) : null}
 
                       {/* Debit */}
                       <td
@@ -254,7 +262,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                 ) : (
                   <tr>
                     <td
-                      colSpan={showAgeing ? 10 : 5}
+                      colSpan={(showAgeing ? 10 : 5) - (showArea ? 0 : 1)}
                       className="border border-gray-900 px-3 py-6 text-center text-gray-500"
                     >
                       No data found
@@ -276,7 +284,7 @@ const DueListPrint = React.forwardRef<HTMLDivElement, Props>(
                 <tfoot>
                   <tr className="font-bold">
                     <td
-                      colSpan={3}
+                      colSpan={showArea ? 3 : 2}
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-1 text-right"
                     >

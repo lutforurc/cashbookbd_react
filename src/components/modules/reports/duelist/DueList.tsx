@@ -58,6 +58,9 @@ const DueList = (user: any) => {
   // as true -- which is why the mobile number and address were on the report
   // with the branch switch turned off.
   const showAddress = isBranchSettingOn(settings, 'due_list_with_address');
+  // Branch Setup -> "Area Show in Due List?". The API sends 1 when the branch
+  // never saved it, so the column stays where it always was until turned off.
+  const showArea = isBranchSettingOn(settings, 'due_list_show_area');
 
   /**
    * How old the money is, beside how much of it there is.
@@ -242,7 +245,7 @@ const DueList = (user: any) => {
   const footerRows: TableFooterCell[][] = displayRows.length
     ? [
         [
-          { label: 'Grand Total', colSpan: 4, className: 'text-right' },
+          { label: 'Grand Total', colSpan: showArea ? 4 : 3, className: 'text-right' },
           { label: money(footerTotals.debit), className: 'text-right' },
           { label: money(footerTotals.credit), className: 'text-right' },
           ...(showAgeing
@@ -410,17 +413,21 @@ const DueList = (user: any) => {
       headerClass: 'text-center',
       cellClass: 'text-center',
     },
-    {
-      key: 'area_id',
-      header: 'Area Code',
-      headerClass: 'text-center',
-      cellClass: 'text-center',
-      render: (row: any) => (
-        <>
-          <p>{row.area_id ? row.area_id : '-'}</p>
-        </>
-      )
-    },
+    ...(showArea
+      ? [
+          {
+            key: 'area_id',
+            header: 'Area Code',
+            headerClass: 'text-center',
+            cellClass: 'text-center',
+            render: (row: any) => (
+              <>
+                <p>{row.area_id ? row.area_id : '-'}</p>
+              </>
+            ),
+          },
+        ]
+      : []),
     {
       key: 'debit',
       header: 'Debit',
@@ -606,6 +613,7 @@ const DueList = (user: any) => {
         rows,
         endDate,
         showAddress,
+        showArea,
         showAgeing,
         mobileFormat,
         branchName: branch?.name,

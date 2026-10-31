@@ -191,6 +191,7 @@ interface branchItem {
   need_demo_tutorial: boolean;
   need_customer_contact_person: boolean;
   due_list_with_address: boolean;
+  due_list_show_area: boolean;
   need_relation_info: boolean;
   need_customer_mother_name: boolean;
   need_customer_sex: boolean;
@@ -721,6 +722,7 @@ const AddBranch = () => {
     need_demo_tutorial: false,
     need_customer_contact_person: false,
     due_list_with_address: false,
+    due_list_show_area: true,
     need_relation_info: false,
     need_customer_mother_name: false,
     need_customer_sex: false,
@@ -1008,6 +1010,7 @@ const AddBranch = () => {
         need_demo_tutorial: toBooleanFlag(b.need_demo_tutorial),
         need_customer_contact_person: toBooleanFlag(b.need_customer_contact_person),
         due_list_with_address: toBooleanFlag(b.due_list_with_address),
+        due_list_show_area: toBooleanFlag(b.due_list_show_area),
         // A pattern, not a flag: `false` is what an unset meta reads as, and
         // that would put the word "false" in the box.
         mobile_number_format: b.mobile_number_format ? String(b.mobile_number_format) : '',
@@ -2208,20 +2211,36 @@ const AddBranch = () => {
                         checked={Boolean(formData.use_bangla)}
                         onChange={(checked) => handleToggleFieldChange('use_bangla', checked)}
                       />
-                      {/* Unlike the switches above, this one does not add a field to
-                        the customer form -- it decides what the Due List prints.
-                        It sits here all the same: what it prints is the customer's
-                        own address and mobile, so it is looked for with the rest
-                        of the customer's particulars rather than among the
-                        operational switches. */}
-                      <FormToggleField
-                        label="Report Due List with Address?"
-                        description="Prints each party's address and mobile beside the name on the Due List, so the sheet can be worked from in the field."
-                        checked={Boolean(formData.due_list_with_address)}
-                        onChange={(checked) =>
-                          handleToggleFieldChange('due_list_with_address', checked)
-                        }
-                      />
+                      {/* Unlike the switches above, these two do not add a field to
+                        the customer form -- they decide what the Due List prints.
+                        They sit here all the same: what they print is the
+                        customer's own address, mobile and area, so they are looked
+                        for with the rest of the customer's particulars rather than
+                        among the operational switches. Boxed together because
+                        both answer one question: what the Due List shows. */}
+                      <div className="rounded border border-[rgb(var(--c-border))] p-2 md:col-span-2">
+                        <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                          Due List
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                          <FormToggleField
+                            label="Report Due List with Address?"
+                            description="Prints each party's address and mobile beside the name on the Due List, so the sheet can be worked from in the field."
+                            checked={Boolean(formData.due_list_with_address)}
+                            onChange={(checked) =>
+                              handleToggleFieldChange('due_list_with_address', checked)
+                            }
+                          />
+                          <FormToggleField
+                            label="Area Show in Due List?"
+                            description="Shows the Area Code column on the Due List, on screen and on paper."
+                            checked={Boolean(formData.due_list_show_area)}
+                            onChange={(checked) =>
+                              handleToggleFieldChange('due_list_show_area', checked)
+                            }
+                          />
+                        </div>
+                      </div>
 
                       {/* Not a switch, so it says what it does by showing it: the
                         line underneath is the pattern applied to a real number,
