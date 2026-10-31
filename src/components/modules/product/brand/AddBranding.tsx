@@ -110,7 +110,7 @@ const AddBranding = () => {
         const response = await dispatch(saveBrand(formData)).unwrap();
           toast.success(response.message || 'Manufacturer saved successfully');
         } catch (err: any) {
-          toast.error(err?.message || 'Failed to save manufacturer');
+          toast.error(typeof err === 'string' ? err : err?.message || 'Failed to save manufacturer');
         } finally {
          setButtonLoading(false);
         }

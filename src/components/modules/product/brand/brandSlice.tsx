@@ -76,9 +76,14 @@ export const fetchBrands = createAsyncThunk<any, { search?: string; page?: numbe
 export const saveBrand = createAsyncThunk<any, Partial<Brand>, { rejectValue: string }>('brand/saveBrand', async (payload, thunkAPI) => {
   try {
     const res = await httpService.post(API_BRAND_SAVE_URL, payload);
+    // A refusal ("The name has already been taken.") rides HTTP 201 like a
+    // success; unread, the form toasted it green and nothing was saved.
+    if (res.data?.success === false) {
+      return thunkAPI.rejectWithValue(res.data?.message || 'Failed to save brand');
+    }
     return res.data;
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err?.message || 'Failed to save brand');
+    return thunkAPI.rejectWithValue(err?.response?.data?.message || err?.message || 'Failed to save brand');
   }
 }
 );
