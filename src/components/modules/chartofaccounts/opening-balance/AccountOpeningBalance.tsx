@@ -226,6 +226,7 @@ const AccountOpeningBalance = () => {
             type="number"
             step="0.01"
             placeholder="Opening"
+            allowNegative
             disabled={!canEdit || !row.is_active}
             value={draftOf(row)}
             className="text-right w-32"

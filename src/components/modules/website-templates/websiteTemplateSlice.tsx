@@ -109,7 +109,9 @@ export const fetchTemplateSchema = async (): Promise<TemplateSchema> => {
  * figure. A theme holds spacing, offsets and radii, and a negative letter
  * spacing is correct there. It is named explicitly, so the no-negative gate in
  * httpService (and the matching RejectNegativeNumbers on the server) can tell
- * it apart from a money or quantity box -- this is the only such opt-out.
+ * it apart from a money or quantity box. The only other opt-out is a party's
+ * or money account's opening balance (customerSlice, accountOpeningSlice,
+ * CustomerOpeningImport).
  */
 const DESIGN_SURFACE = { allowNegativeValues: true } as const;
 

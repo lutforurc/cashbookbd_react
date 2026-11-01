@@ -15,7 +15,7 @@
  * reaches it is pinned statically alongside.
  */
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 
 import {
   NEGATIVE_VALUE_MESSAGE,
@@ -129,9 +129,28 @@ check('the shared numeric field shows the inline message', () => {
   // ⚠️ It must ask the VALUE, not the `type`: most money boxes on this app are
   // plain text inputs, and keying off type left them silent.
   assert.ok(
-    /const negative = !disabled && isNegativeNumeric\(value\)/.test(field),
+    /const negative = !disabled && !allowNegative && isNegativeNumeric\(value\)/.test(field),
     'InputElement no longer flags every negative value (it must not depend on type="number")',
   );
+});
+
+check('only party and account opening boxes opt out (owner, 2026-11-02)', () => {
+  const allowed = new Set([
+    'src/components/modules/chartofaccounts/opening-balance/AccountOpeningBalance.tsx',
+    'src/components/modules/customer-supplier/CustomerSupplier.tsx',
+    'src/components/modules/customer-supplier/AddCustomerSupplier.tsx',
+    'src/components/modules/customer-supplier/EditCustomerSupplier.tsx',
+  ]);
+  const walk = (dir) =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory() ? walk(`${dir}/${e.name}`) : e.name.endsWith('.tsx') ? [`${dir}/${e.name}`] : [],
+    );
+  for (const file of walk('src/components/modules')) {
+    // The JSX prop: on a line of its own, or `allowNegative={...}`.
+    if (/^\s*allowNegative(\s*=\s*\{[^}]*\})?\s*$/m.test(read(file))) {
+      assert.ok(allowed.has(file), `${file} lets a box hold a negative`);
+    }
+  }
 });
 
 check('no save leaves the browser with a negative in it', () => {

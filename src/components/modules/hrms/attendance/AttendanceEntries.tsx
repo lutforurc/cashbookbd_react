@@ -1126,6 +1126,7 @@ const AttendanceEntries = ({ user }: any) => {
         confirmLabel="Fill Range"
         onCancel={() => setRangeConfirm(false)}
         onConfirm={handleRangeSubmit}
+        className="bg-blue-600"
       />
 
       <ConfirmModal

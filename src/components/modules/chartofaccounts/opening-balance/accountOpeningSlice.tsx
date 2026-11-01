@@ -82,7 +82,10 @@ export const updateAccountOpening = createAsyncThunk<
   try {
     const response = await httpService.post(
       `${API_ACCOUNT_OPENING_UPDATE_URL}${id}`,
-      { openingbalance }
+      { openingbalance },
+      // A money account may open overdrawn; the server allows a negative here
+      // on `openingbalance` only (RejectNegativeNumbers).
+      { allowNegativeValues: true }
     );
 
     const refused = refusal(response, 'Opening balance could not be saved');

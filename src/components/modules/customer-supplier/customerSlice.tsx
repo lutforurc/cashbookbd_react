@@ -142,9 +142,16 @@ export const getCustomer = createAsyncThunk<PaginatedCustomerResponse, CustomerR
     });
   }
 });
+/*
+ * A party's opening may be negative (a supplier we owe, a customer's advance),
+ * so these requests skip the client's no-negative gate. The server still
+ * refuses a negative in any field but `openingbalance` (RejectNegativeNumbers).
+ */
+const SIGNED_OPENING = { allowNegativeValues: true } as const;
+
 export const storeCustomer = createAsyncThunk<any, StoreCustomerPayload, { rejectValue: ErrorResponse }>('customer/store', async (payload, { rejectWithValue }) => {
   try {
-    const { data } = await httpService.post(API_STORE_CUSTOMER_URL, payload);
+    const { data } = await httpService.post(API_STORE_CUSTOMER_URL, payload, SIGNED_OPENING);
 
     // A refusal (the plan's customer limit, a closed year) comes back as HTTP
     // 200 with success:false. Returning it as-is would resolve unwrap(), so the
@@ -186,7 +193,8 @@ export const updateCustomerFromEdit = createAsyncThunk<
     try {
       const response = await httpService.post(
         `${API_CONTACT_UPDATE_URL}${id}`,
-        data
+        data,
+        SIGNED_OPENING
       );
 
       return response.data;
@@ -204,7 +212,7 @@ export const updateCustomerFromEdit = createAsyncThunk<
 export const updateCustomerFromUI = createAsyncThunk<{ message: string }, { id: number; data: any }, { rejectValue: string }>("employee/updateEmployeeFromUI",
   async ({ id, data }, thunkAPI) => {
     try {
-      const response = await httpService.post(`${API_CUSTOMER_FROM_UI_URL}${id}`, data);
+      const response = await httpService.post(`${API_CUSTOMER_FROM_UI_URL}${id}`, data, SIGNED_OPENING);
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(

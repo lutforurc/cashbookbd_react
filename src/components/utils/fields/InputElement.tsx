@@ -53,6 +53,12 @@ interface InputElementProps {
    * through `className`. Left off, the field keeps the size it has always had.
    */
   size?: FieldSize;
+  /**
+   * Lets this box hold a negative number without the red refusal. Only for a
+   * party's or money account's opening balance, where a negative is a credit;
+   * the server allows it on exactly those fields (RejectNegativeNumbers).
+   */
+  allowNegative?: boolean;
 }
 
 const InputElement: React.FC<InputElementProps> = ({
@@ -81,6 +87,7 @@ const InputElement: React.FC<InputElementProps> = ({
   step,
   description,
   size,
+  allowNegative = false,
 }) => {
   const nativeDateTimeClass = ['date', 'time', 'datetime-local', 'month'].includes(type)
     ? 'native-date-time-input'
@@ -103,7 +110,7 @@ const InputElement: React.FC<InputElementProps> = ({
    * A disabled box is left alone -- it is showing a figure, not taking one, and
    * the rule is over what a person may ENTER.
    */
-  const negative = !disabled && isNegativeNumeric(value);
+  const negative = !disabled && !allowNegative && isNegativeNumeric(value);
 
   // Where the bubble is on screen, or null when it is not shown. Measured from
   // the field at the moment of hover rather than laid out beside it: drawn into

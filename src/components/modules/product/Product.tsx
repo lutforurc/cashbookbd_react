@@ -600,6 +600,13 @@ const Product = (user: any) => {
 
     if (!payload.product_id || !payload.branch_id) return;
 
+    // A negative opening is taken only on the customer screens and Account
+    // Opening Balance; the server refuses it here too.
+    if (Number(payload.qty) < 0 || Number(payload.rate) < 0) {
+      toast.error('Qty and Rate cannot be negative.');
+      return;
+    }
+
     try {
       const result: any = await dispatch(updateProductQtyRate(payload) as any);
 
@@ -822,6 +829,7 @@ const Product = (user: any) => {
             type="number"
             className="text-right w-16"
             placeholder="Qty"
+            min={0}
             value={editedRows[row.product_id]?.qty ?? row.qty ?? row.openingbalance ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'qty', e.target.value)}
           // ✅ onBlur removed (auto-save বন্ধ)
@@ -840,6 +848,7 @@ const Product = (user: any) => {
           <InputElement
             type="number"
             placeholder="Rate"
+            min={0}
             className="text-right w-20"
             value={editedRows[row.product_id]?.rate ?? row.purchase ?? ''}
             onChange={(e) => handleProductInputChange(row.product_id, 'rate', e.target.value)}

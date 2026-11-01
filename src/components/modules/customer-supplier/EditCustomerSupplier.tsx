@@ -796,6 +796,7 @@ const EditCustomerSupplier = () => {
                 <InputElement
                   id="openingbalance"
                   name="openingbalance"
+                  allowNegative
                   type="number"
                   step="0.01"
                   value={formik.values.openingbalance}

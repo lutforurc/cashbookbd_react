@@ -924,6 +924,7 @@ const CustomerSupplier = () => {
         <InputElement
           type="number"   // 🔥 FIX HERE
           placeholder="Opening"
+          allowNegative
           value={editedRows[row.id]?.openingbalance ?? row.openingbalance ?? ""}
           className="text-right w-20"
           onChange={(e) =>

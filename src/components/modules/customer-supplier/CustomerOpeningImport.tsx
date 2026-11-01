@@ -13,6 +13,10 @@ import {
   API_CUSTOMER_OPENING_IMPORT_SAVE_URL,
 } from '../../services/apiRoutes';
 import { isBranchSettingOn } from '../../utils/userFeatureSettings';
+
+// A party's opening may be negative; the server allows it on `rows.*.opening`
+// only and still refuses a negative in any other column (RejectNegativeNumbers).
+const SIGNED_OPENING = { allowNegativeValues: true } as const;
 import { FIELD_TEXTAREA, FIELD_TRANSPARENT, fieldClass } from '../../../theme/fieldStyles';
 
 /**
@@ -220,9 +224,11 @@ const CustomerOpeningImport = () => {
       // Every row goes, saved ones too, so a row number in a message is the
       // number in the grid's # column and a name already saved above counts
       // as a repeat.
-      const res = await httpService.post(API_CUSTOMER_OPENING_IMPORT_CHECK_URL, {
-        rows: rows.map((row) => row.data),
-      });
+      const res = await httpService.post(
+        API_CUSTOMER_OPENING_IMPORT_CHECK_URL,
+        { rows: rows.map((row) => row.data) },
+        SIGNED_OPENING,
+      );
       const body = res?.data;
 
       if (!body?.success) {
@@ -284,9 +290,11 @@ const CustomerOpeningImport = () => {
     setSaving({ done: 0, total: queue.length });
 
     try {
-      const res = await httpService.post(API_CUSTOMER_OPENING_IMPORT_SAVE_URL, {
-        rows: queue.map((row) => row.data),
-      });
+      const res = await httpService.post(
+        API_CUSTOMER_OPENING_IMPORT_SAVE_URL,
+        { rows: queue.map((row) => row.data) },
+        SIGNED_OPENING,
+      );
       const body = res?.data;
 
       if (!body?.success) {
