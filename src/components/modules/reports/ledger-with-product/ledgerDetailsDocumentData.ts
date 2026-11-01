@@ -60,7 +60,7 @@ const dateText = (value?: Date | string | null) =>
  * onto a second line and read as a second remark.
  */
 const descriptionFirstLine = (row: LedgerWithProductRow) => {
-  const name = String(row?.transaction_name ?? '').trim();
+  const name = String(row?.cash_transaction_type || row?.transaction_name || '').trim();
   const item = String(row?.sales_item_name ?? '').trim();
 
   return [name, item ? `(${item})` : ''].filter(Boolean).join(' ');

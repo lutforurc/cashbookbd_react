@@ -445,7 +445,9 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                             style={{ fontSize: fs }}
                             className="border border-black px-2 py-2 text-left"
                           >
-                            {row.vehicle_no || '-'}
+                            {String(row.vehicle_no ?? '').trim().toLowerCase() === 'cash'
+                              ? `Cash ${receivedOrPaymentText}`
+                              : row.vehicle_no || '-'}
                           </td>
                         ) : (
                           <>

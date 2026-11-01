@@ -52,7 +52,10 @@ export const toOrderTransactionDocumentData = ({
     voucher_no: row?.challanNo ?? '',
     voucher_date: dateText(row?.challanDate),
     detail_lines: Array.isArray(row?.detailLines) ? row.detailLines : [],
-    vehicle_no: row?.vehicleNo === '-' ? '' : row?.vehicleNo ?? '',
+    vehicle_no:
+      String(row?.vehicleNo ?? '').trim().toLowerCase() === 'cash'
+        ? `Cash ${receivedLabel}`
+        : row?.vehicleNo === '-' ? '' : row?.vehicleNo ?? '',
     // Blank rather than 0 on a row with no product line -- a receipt against
     // the order -- so the cell prints the dash the bespoke sheet prints.
     qty: row?.hasLineDetail ? num(row?.quantity) : 0,

@@ -70,6 +70,8 @@ const NON_VOUCHER_NAMES = new Set([
  * falls on.
  */
 const getLedgerRowName = (row: any) => {
+  if (row?.cash_transaction_type) return row.cash_transaction_type;
+
   if (String(row?.name || '').trim().toLowerCase() !== 'balance') {
     return row?.name || '';
   }

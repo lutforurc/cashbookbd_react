@@ -47,6 +47,8 @@ const SUMMARY_ROW_NAMES = new Set([
 ]);
 
 const getLedgerRowName = (row: LedgerRow) => {
+  if (row?.cash_transaction_type) return row.cash_transaction_type;
+
   if (String(row?.name || '').trim().toLowerCase() !== 'balance') {
     return row?.name || '';
   }
@@ -257,11 +259,6 @@ const LedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                               {row?.vr_date && formatDate(dayjs(row?.vr_date).format('YYYY-MM-DD'))}
                               {/* { row?.vr_date } */}
                             </div>
-                            {row?.cash_transaction_type ? (
-                              <div className={`text-left text-[${fs}px]`}>
-                                {row.cash_transaction_type}
-                              </div>
-                            ) : null}
                           </td>
                           <td
                             style={{ fontSize: fs }}

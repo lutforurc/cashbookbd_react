@@ -394,6 +394,8 @@ const orderDocumentData = (order: any): DocumentData => {
 
   let runningDue = 0;
 
+  const { received_label } = orderTypeWords(order?.order_type);
+
   const products = rows.map((row) => {
     const qty = toNumber(row?.weight);
     const price = toNumber(row?.rate);
@@ -405,6 +407,10 @@ const orderDocumentData = (order: any): DocumentData => {
 
     return {
       ...row,
+      vehicle_no:
+        String(row?.vehicle_no ?? '').trim().toLowerCase() === 'cash'
+          ? `Cash ${received_label}`
+          : row?.vehicle_no,
       qty,
       price,
       amount,
