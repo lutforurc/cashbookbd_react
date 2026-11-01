@@ -44,10 +44,15 @@ import {
  *
  * ⚠️ KIND 2 — A VOUCHER THAT DOES NOT BALANCE. Its debits and credits differ,
  * so EVERY report that reads the ledger is out by that amount, and it lands in
- * the Balance Sheet's Difference row. There is no button for these: one of the
- * amounts on the voucher is simply wrong, and only a human knows which one.
- * Live case: `3-261000002` (Cash Dr 1,660 + Sales Discount Dr 3 / Sales Cr
- * 1,660) — ৳3.
+ * the Balance Sheet's Difference row. Most have no button: one of the amounts on
+ * the voucher is simply wrong, and only a human knows which one.
+ *
+ * ⚠️ ONE SHAPE IS FIXABLE, and the API says so with `fixable`. A walk-in cash
+ * sale with a discount used to be saved with Sales credited the NET instead of
+ * the invoice total (Cash Dr 4,750 + Sales Discount Dr 18 / Sales Cr 4,750), so
+ * the voucher was out by exactly the discount. The invoice header holds the real
+ * total, so Fix raises that one Sales line to it and nothing else. The cause is
+ * fixed in `AccountService::processCashTransaction`; these rows are the old ones.
  *
  * ⚠️ KIND 3 IS GONE, REMOVED 2026-10-10. It listed trading heads holding an
  * entry on the side the Profit & Loss never read — the one-sided read in the
@@ -71,7 +76,7 @@ const MISMATCH_TYPES: Record<string, { label: string; help: string }> = {
   },
   unbalanced: {
     label: 'Unbalanced',
-    help: 'Debit and credit are not equal — every report is off by this amount',
+    help: 'Debit and credit are not equal — every report is off by this amount. Fix is offered for a walk-in sale whose Sales line was credited the net instead of the invoice total',
   },
 };
 
@@ -110,7 +115,7 @@ const ReportMismatch = () => {
     setFixingId(row.id);
 
     try {
-      const res = await httpService.post(API_REPORT_MISMATCH_FIX_URL, { id: row.id });
+      const res = await httpService.post(API_REPORT_MISMATCH_FIX_URL, { id: row.id, type: row.type });
 
       if (res?.data?.success === false) {
         toast.error(res?.data?.error?.message || 'Could not be fixed');
@@ -203,20 +208,25 @@ const ReportMismatch = () => {
       header: 'Action',
       width: '150px',
       render: (row: any) =>
-        row.type === 'company_missing' ? (
+        row.type === 'company_missing' || (row.type === 'unbalanced' && row.fixable) ? (
           <ButtonLoading
             size="sm"
             variant="primary"
             label="Fix"
-            title="Put this voucher under the company its branch belongs to"
+            title={
+              row.type === 'unbalanced'
+                ? 'Credit Sales with the invoice total so this voucher balances'
+                : 'Put this voucher under the company its branch belongs to'
+            }
             buttonLoading={fixingId === row.id}
             disabled={fixingId !== null}
             onClick={() => setConfirmRow(row)}
             className={`rounded ${ROW_ACTION_BUTTON_CLASS}`}
           />
         ) : (
-          // Not a tagging mistake — an amount on the voucher is wrong, and
-          // nothing here can guess which, so no button.
+          // Not a tagging mistake and not the walk-in sale shape — an amount
+          // on the voucher is wrong, and nothing here can guess which, so no
+          // button.
           <span
             className="text-xs text-bodydark2"
             title={MISMATCH_TYPES[row.type]?.help}
@@ -241,9 +251,10 @@ const ReportMismatch = () => {
             <span className="font-medium">No Company</span> — Profit &amp; Loss counts the voucher,
             the Balance Sheet does not. <span className="font-medium">Unbalanced</span> — debit and
             credit are not equal, so every report is off by that amount.{' '}
-            <span className="font-medium">Fix</span> is offered for the first kind only, because
-            only that one can be settled without a judgement call; no amount, date, voucher number
-            or posting line is touched.
+            <span className="font-medium">Fix</span> is offered where no judgement call is needed: a
+            voucher with no company, and a walk-in sale whose Sales line was credited the net
+            instead of the invoice total. The first changes only the company; the second changes
+            only that one Sales amount. No date or voucher number is touched.
           </p>
         </div>
 
@@ -296,7 +307,11 @@ const ReportMismatch = () => {
         onConfirm={repair}
         message={
           <div className="text-base leading-7 text-slate-700 dark:text-slate-200">
-            <div>This voucher will be put under the company its branch belongs to:</div>
+            <div>
+              {confirmRow?.type === 'unbalanced'
+                ? 'The Sales line of this voucher will be credited with the invoice total, so the voucher balances:'
+                : 'This voucher will be put under the company its branch belongs to:'}
+            </div>
             <div className="mt-2 border border-[rgb(var(--c-border))] px-3 py-2 text-sm">
               <div>
                 Voucher: <span className="font-bold">{confirmRow?.vr_no}</span>
@@ -304,10 +319,17 @@ const ReportMismatch = () => {
               <div>Date: {formatDate(confirmRow?.vr_date)}</div>
               <div>Branch: {confirmRow?.branch_name}</div>
               <div>Amount: {thousandSeparator(confirmRow?.amount, 0)}</div>
+              {confirmRow?.type === 'unbalanced' && (
+                <div>
+                  Sales credit: {thousandSeparator(confirmRow?.fix_from, 2)} →{' '}
+                  <span className="font-bold">{thousandSeparator(confirmRow?.fix_to, 2)}</span>
+                </div>
+              )}
             </div>
             <div className="mt-2 text-sm">
-              No amount, date, voucher number or posting line changes. The voucher simply stops
-              belonging to no company.
+              {confirmRow?.type === 'unbalanced'
+                ? 'Only that one Sales amount changes. The cash taken, the discount, the date and the voucher number stay as they are.'
+                : 'No amount, date, voucher number or posting line changes. The voucher simply stops belonging to no company.'}
             </div>
           </div>
         }
