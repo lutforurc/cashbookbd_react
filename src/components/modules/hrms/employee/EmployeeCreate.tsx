@@ -54,6 +54,7 @@ class EmployeeFormModel {
       attendance_policy_id: '',
       default_shift_id: '',
       overtime_eligible: '0',
+      manual_attendance: '1',
       daily_wage: '',
       ot_rate: '',
       standard_work_minutes: '480',
@@ -210,6 +211,7 @@ const EmployeeCreate = ({ user }: any) => {
       default_shift_id: formData.default_shift_id || null,
       attendance_shift_id: formData.default_shift_id || null,
       overtime_eligible: Number(formData.overtime_eligible || 0),
+      manual_attendance: Number(formData.manual_attendance ?? 1),
       daily_wage: formData.daily_wage || '0',
       ot_rate: formData.ot_rate || '0',
       standard_work_minutes: formData.standard_work_minutes || '480',
@@ -452,6 +454,15 @@ const EmployeeCreate = ({ user }: any) => {
             onChange={handleOnSelectChange}
             className="bg-transparent"
             value={formData.overtime_eligible?.toString() ?? '0'}
+            data={yesNo}
+          />
+          <DropdownCommon
+            id="manual_attendance"
+            name="manual_attendance"
+            label="Show in Manual Attendance"
+            onChange={handleOnSelectChange}
+            className="bg-transparent"
+            value={formData.manual_attendance?.toString() ?? '1'}
             data={yesNo}
           />
           <InputElement

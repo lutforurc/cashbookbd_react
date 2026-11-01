@@ -888,6 +888,7 @@ const AttendanceEntries = ({ user }: any) => {
               value={form.employee_id ? { value: form.employee_id, label: form.employee_name || `Employee #${form.employee_id}` } : null}
               onSelect={handleEmployeeSelect}
               searchParams={{
+                for_manual_attendance: 1,
                 branch_id: form.branch_id,
                 shift_id: form.shift_id,
                 employment_type: form.employment_type,

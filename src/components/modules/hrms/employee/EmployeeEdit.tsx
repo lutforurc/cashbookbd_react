@@ -64,6 +64,7 @@ class EmployeeFormModel {
       attendance_policy_id: '',
       default_shift_id: '',
       overtime_eligible: '0',
+      manual_attendance: '1',
       daily_wage: '',
       ot_rate: '',
       standard_work_minutes: '480',
@@ -143,6 +144,7 @@ const EmployeeEdit = ({ user }: any) => {
       attendance_policy_id: emp.attendance_policy_id || '',
       default_shift_id: emp.default_shift_id || emp.attendance_shift_id || '',
       overtime_eligible: String(emp.overtime_eligible ?? 0),
+      manual_attendance: String(emp.manual_attendance ?? 1),
       daily_wage: emp.daily_wage || '',
       ot_rate: emp.ot_rate || '',
       standard_work_minutes: emp.standard_work_minutes || '480',
@@ -201,6 +203,7 @@ const EmployeeEdit = ({ user }: any) => {
       default_shift_id: formData.default_shift_id || null,
       attendance_policy_id: formData.attendance_policy_id || null,
       overtime_eligible: Number(formData.overtime_eligible || 0),
+      manual_attendance: Number(formData.manual_attendance ?? 1),
     };
 
     try {
@@ -449,6 +452,15 @@ const EmployeeEdit = ({ user }: any) => {
  onChange={handleOnSelectChange}
  className="bg-transparent"
  value={formData.overtime_eligible?.toString() ?? '0'}
+ data={yesNo}
+          />
+          <DropdownCommon
+ id="manual_attendance"
+ name="manual_attendance"
+ label="Show in Manual Attendance"
+ onChange={handleOnSelectChange}
+ className="bg-transparent"
+ value={formData.manual_attendance?.toString() ?? '1'}
  data={yesNo}
           />
           <InputElement
