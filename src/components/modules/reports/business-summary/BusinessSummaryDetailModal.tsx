@@ -5,7 +5,7 @@ import { Button } from "../../../../pages/UiElements/CustomButtons";
 import httpService from "../../../services/httpService";
 import { API_REPORT_BUSINESS_SUMMARY_DETAIL_URL } from "../../../services/apiRoutes";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
-import type { BusinessGroupRow, BusinessMonthInfo } from "./BusinessSummaryGrid";
+import type { BusinessGroupRow, BusinessMonthInfo } from "./businessSummaryData";
 
 type DetailItem = {
   coa4_id: number | null;

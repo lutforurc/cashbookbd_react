@@ -1,119 +1,41 @@
-import React from "react";
-import PadPrinting from "../../../utils/utils-functions/PadPrinting";
-import PrintFooter from "../../../utils/utils-functions/PrintFooter";
-import PrintStyles from "../../../utils/utils-functions/PrintStyles";
-import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
-import BusinessSummaryGrid, { buildBlocks } from "./BusinessSummaryGrid";
-import type { BusinessSummaryData, Line } from "./BusinessSummaryGrid";
+import React from 'react';
+import PadPrinting from '../../../utils/utils-functions/PadPrinting';
+import PrintFooter from '../../../utils/utils-functions/PrintFooter';
+import PrintStyles from '../../../utils/utils-functions/PrintStyles';
+import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { businessBlocks, businessSections, sectionTotals } from './businessSummaryData';
+import type { BusinessLine, BusinessMonthValue, BusinessSummaryData } from './businessSummaryData';
 
 type Props = {
-  data: BusinessSummaryData | null;
-  branchName?: string;
+  title?: string;
   /** The months asked for, as the screen shows them: "Jan-26 to Dec-26". */
   period?: string;
-  title?: string;
+  data: BusinessSummaryData | null;
   rowsPerPage?: number;
   fontSize?: number;
-  /** The column widths measured at this font size, from the screen. */
-  measured?: ColumnMeasure | null;
-};
-
-// A4 landscape with PrintStyles' narrow margins, in CSS pixels (96 per inch).
-// Content width: 297mm less 5mm + 4mm margins and 4mm + 4mm gutters.
-export const PAGE_CONTENT_WIDTH_PX = 1050;
-// Content height: 210mm less 6mm + 5mm margins and 1mm slack, less the 8mm
-// padding above a page -- 190mm.
-const PAGE_CONTENT_HEIGHT_PX = 718;
-// What sits on a page besides the table, set high on purpose: the letterhead
-// (its height depends on the branch's pad), the title block and the footer. A
-// page that leaves a little empty is only untidy; one that runs over is wrong.
-const RESERVED_PX = 130 + 70 + 34;
-
-/**
- * The width one month (Opening + Closing) and the fixed columns need at this
- * type size, from the widest figures in the report.
- */
-export const columnWidths = (lines: Line[], fs: number) => {
-  let widest = 0;
-  let longestName = 0;
-
-  lines.forEach((line) => {
-    if (line.kind === "section") return;
-    const values =
-      line.kind === "group"
-        ? Object.values(line.row.months ?? {})
-        : Object.values(line.values ?? {});
-    const name = line.kind === "group" ? line.row.name : line.label;
-    longestName = Math.max(longestName, name.length);
-    values.forEach((v) => {
-      widest = Math.max(
-        widest,
-        thousandSeparator(v.opening).length,
-        thousandSeparator(v.closing).length
-      );
-    });
-  });
-
-  // Measured on the printed sheet: a figure such as 12,54,21,763 sets at about
-  // 0.41em a character (the commas are narrow). Half an em leaves room to spare.
-  const charPx = fs * 0.5;
-  const numberCell = Math.max(widest, 7) * charPx + 15;
-  const nameCell = Math.max(longestName * charPx + 15, 120);
-
-  return { fixed: 40 + nameCell, perMonth: 2 * numberCell };
 };
 
 /**
- * How many months fit one sheet's width at this type size, and so how many
- * sheets the months are dealt out across.
+ * Cut the running list into pages of `capacity` lines without splitting a
+ * section when it can be helped: a section that does not fit what is left of a
+ * page starts the next one whole, and only a section longer than a page is cut.
+ * No capacity keeps the whole report on one page, as Group Report does.
  */
-export type ColumnMeasure = { fixed: number; perMonth: number };
-
-export const sheetPlan = (
-  data: BusinessSummaryData | null,
-  fs: number,
-  measured?: ColumnMeasure | null
-) => {
-  const months = data?.months.length ?? 0;
-  // The widths the table really takes, measured off a copy set at this size,
-  // when the screen has one; the estimate otherwise.
-  const { fixed, perMonth } =
-    measured && measured.perMonth > 0
-      ? measured
-      : columnWidths(data ? buildBlocks(data).flat() : [], fs);
-  const perSheet = Math.max(1, Math.floor((PAGE_CONTENT_WIDTH_PX * 0.98 - fixed) / perMonth));
-  const sheets = Math.max(1, Math.ceil(months / perSheet));
-
-  return { perSheet: Math.ceil(months / sheets) || perSheet, sheets };
-};
-
-/**
- * Cut the report into pages without splitting a section when it can be helped:
- * a section that does not fit what is left of a page starts the next one whole,
- * and only a section longer than a page is cut across pages.
- */
-const paginate = (blocks: Line[][], capacity: number): Line[][] => {
+const paginate = (blocks: BusinessLine[][], capacity: number): BusinessLine[][] => {
   if (capacity <= 0) return [blocks.flat()];
 
-  const pages: Line[][] = [];
-  let current: Line[] = [];
+  const pages: BusinessLine[][] = [];
+  let current: BusinessLine[] = [];
 
   blocks.forEach((block) => {
     if (current.length + block.length <= capacity) {
       current = current.concat(block);
       return;
     }
-
     if (current.length) {
       pages.push(current);
       current = [];
     }
-
-    if (block.length <= capacity) {
-      current = block;
-      return;
-    }
-
     for (let i = 0; i < block.length; i += capacity) {
       const slice = block.slice(i, i + capacity);
       if (i + capacity >= block.length) {
@@ -125,92 +47,185 @@ const paginate = (blocks: Line[][], capacity: number): Line[][] => {
   });
 
   if (current.length) pages.push(current);
+  return pages.length ? pages : [[]];
+};
 
-  return pages;
+// The printable width of an A4 landscape sheet under PrintStyles' margins and
+// the page's own gutters, in CSS px: 297mm less 10mm + 8mm margins and 8mm +
+// 8mm gutters.
+const SHEET_WIDTH_PX = 994;
+const DESCRIPTION_WIDTH_PX = 180;
+
+// A figure's column: wide enough for the longest figure the report holds at
+// this type size (about 0.46em a character, the commas being narrow) plus the
+// cell's padding and rules. Group Report's own floor of 44px is kept while the
+// months fit with it; twelve months of 24 columns do not, and then it goes.
+const valueColumnWidth = (widestChars: number, fontSize: number, floor = 44) =>
+  Math.max(floor, widestChars * fontSize * 0.46 + 10);
+
+const columnFloor = (months: number) =>
+  DESCRIPTION_WIDTH_PX + months * 2 * 44 <= SHEET_WIDTH_PX * 0.98 ? 44 : 0;
+
+const widestFigure = (data: BusinessSummaryData | null) =>
+  businessSections(data).reduce((widest, section) => {
+    const values = [
+      ...section.rows.flatMap((row) => Object.values(row.months ?? {})),
+      ...Object.values(data ? sectionTotals(data, section.key) : {}),
+    ];
+    return values.reduce(
+      (w, v) => Math.max(w, thousandSeparator(v.opening).length, thousandSeparator(v.closing).length),
+      widest,
+    );
+  }, 7);
+
+/**
+ * ⚠️ EVERY MONTH ON ONE LINE, the owner's rule: whatever run of months is asked
+ * for prints across one sheet's width, never carried onto a second sheet. The
+ * chosen type size is kept when they fit at it and lowered only as far as they
+ * need when they do not. The table is laid out fixed and full width, so any
+ * room left over is shared out across the columns and no strip is left blank
+ * on the right.
+ */
+export const printFontSize = (data: BusinessSummaryData | null, wanted: number) => {
+  const months = data?.months.length ?? 0;
+  const widestChars = widestFigure(data);
+  const floor = columnFloor(months);
+  const available = SHEET_WIDTH_PX * 0.98;
+  let fs = wanted;
+  while (fs > 3 && DESCRIPTION_WIDTH_PX + months * 2 * valueColumnWidth(widestChars, fs, floor) > available) {
+    fs = Math.round((fs - 0.1) * 10) / 10;
+  }
+  return fs;
 };
 
 const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ data, branchName, period, title = "Business Summary", rowsPerPage = 0, fontSize, measured }, ref) => {
-    // Twenty-six columns on one landscape sheet, so the type starts small.
-    const wantedFs = Number.isFinite(fontSize) && Number(fontSize) > 0 ? Number(fontSize) : 8;
+  ({ title = 'Business Summary', period, data, rowsPerPage = 0, fontSize }, ref) => {
+    const wanted = Number.isFinite(fontSize) && Number(fontSize) > 0 ? Number(fontSize) : 9;
+    const months = data?.months ?? [];
+    const fs = printFontSize(data, wanted);
+    const valueWidth = `${valueColumnWidth(widestFigure(data), fs, columnFloor(months.length))}px`;
 
-    // ⚠️ THE OPERATOR'S TYPE SIZE IS THE TYPE SIZE. It is never lowered to make
-    // the months fit -- a bigger number has to print bigger. Months that do not
-    // fit one sheet's width at this size are dealt out across further sheets
-    // instead (Description repeated on each), the same count on every sheet.
-    //
-    // ⚠️ A TABLE WIDER THAN THE SHEET MAY NOT REACH THE BROWSER either: Chrome
-    // answers a page that overflows sideways by shrinking the WHOLE page, and
-    // the footer, pinned to the foot of a page box that has just been scaled
-    // down, rises with it (139.7mm of a 210mm sheet, measured with twelve
-    // months). The table is clipped to its box below, so that cannot start.
-    const fs = wantedFs;
-    const rowPx = fs * 1.5 + 9;
-    const autoCapacity = Math.max(
-      5,
-      Math.floor(((PAGE_CONTENT_HEIGHT_PX - RESERVED_PX - 2 * rowPx) / rowPx) * 0.95)
-    );
-    const capacity = Number(rowsPerPage) > 0 ? Number(rowsPerPage) : autoCapacity;
+    // Assets, Liabilities and Equity run on in one table, as on the screen.
+    const pages = data ? paginate(businessBlocks(data), rowsPerPage) : [];
 
-    const allMonths = data?.months ?? [];
-    const { perSheet: sheetSize, sheets: sheetCount } = sheetPlan(data, fs, measured);
+    const cell = 'border border-gray-900 px-1 py-1';
+    const figure = (v: BusinessMonthValue | undefined, field: 'opening' | 'closing') =>
+      v ? thousandSeparator(v[field]) : '-';
 
-    const pages: Array<{ lines: Line[]; data: BusinessSummaryData; monthRange: string }> = [];
-    if (data) {
-      for (let i = 0; i < sheetCount; i++) {
-        const slice = allMonths.slice(i * sheetSize, (i + 1) * sheetSize);
-        if (!slice.length) continue;
-        const sliceData: BusinessSummaryData = { ...data, months: slice };
-        const monthRange = sheetCount > 1 ? `${slice[0].label} to ${slice[slice.length - 1].label}` : "";
-        paginate(buildBlocks(sliceData), capacity).forEach((lines) =>
-          pages.push({ lines, data: sliceData, monthRange })
+    const drawLine = (line: BusinessLine, index: number) => {
+      if (line.kind === 'section') {
+        return (
+          <tr key={`section-${line.title}-${index}`} className="avoid-break bg-gray-100">
+            <td colSpan={1 + months.length * 2} style={{ fontSize: fs }} className={`${cell} font-bold`}>
+              {line.title}
+            </td>
+          </tr>
         );
       }
-    }
+
+      if (line.kind === 'group') {
+        const row = line.row;
+        return (
+          <tr key={`${row.side}-${row.name}`} className="avoid-break align-top">
+            <td style={{ fontSize: fs }} className={cell}>{row.name}</td>
+            {months.map((month) => (
+              <React.Fragment key={`${row.name}-${month.month}`}>
+                <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(row.months?.[month.month], 'opening')}</td>
+                <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(row.months?.[month.month], 'closing')}</td>
+              </React.Fragment>
+            ))}
+          </tr>
+        );
+      }
+
+      return (
+        <tr key={`total-${line.label}-${index}`} className="avoid-break font-bold">
+          <td style={{ fontSize: fs }} className={`${cell} text-right`}>{line.label}</td>
+          {months.map((month) => (
+            <React.Fragment key={`${line.label}-${month.month}`}>
+              <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(line.values[month.month], 'opening')}</td>
+              <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(line.values[month.month], 'closing')}</td>
+            </React.Fragment>
+          ))}
+        </tr>
+      );
+    };
 
     return (
-      <div ref={ref} className="p-4 text-gray-900 print-root">
-        <PrintStyles orientation="landscape" narrowMargins />
+      <div ref={ref} className="print-root p-8 text-sm text-gray-900">
+        <PrintStyles orientation="landscape" />
+        <style>
+          {`
+            @media print {
+              .business-summary-print-page {
+                min-height: var(--print-page-height) !important;
+              }
+            }
+          `}
+        </style>
 
-        {pages.map((page, pageIndex) => (
-          // ⚠️ A FIXED HEIGHT AND THE FOOT PINNED TO IT. The page is exactly one
-          // sheet tall and its footer is positioned against the bottom of that
-          // box, so the software line sits at the foot of every sheet whatever
-          // the rows above it do -- never in the middle of one.
-          <div
-            key={pageIndex}
-            className="print-page"
-            style={{
-              position: "relative",
-              height: "var(--print-page-height)",
-              breakAfter: pageIndex !== pages.length - 1 ? "page" : undefined,
-            }}
-          >
+        {data && pages.length && pages[0].length ? pages.map((pageLines, pageNumber) => (
+          <div key={pageNumber} className="print-page business-summary-print-page">
             <PadPrinting />
-
-            <div className="mb-3">
-              <h1 className="text-center text-xl font-bold">{title}</h1>
-              <div className="mt-1 text-xs">
-                {branchName ? <span className="mr-4"><span className="font-semibold">Branch:</span> {branchName}</span> : null}
-                <span><span className="font-semibold">Period:</span> {period ?? "-"}</span>
-                {page.monthRange ? <span className="ml-4"><span className="font-semibold">Months:</span> {page.monthRange}</span> : null}
+            <div className="">
+              <h1 className="text-center text-2xl font-bold">{title}</h1>
+              <div className="flex items-center justify-end gap-4 text-xs">
+                <div className="text-right">
+                  <span className="font-semibold">Period:</span> {period || '-'}
+                </div>
               </div>
             </div>
 
-            <div style={{ overflow: "hidden", width: "100%" }}>
-              <BusinessSummaryGrid data={page.data} lines={page.lines} print fontSize={fs} />
+            <div className="w-full overflow-hidden">
+              <table className="w-full table-fixed border-collapse">
+                <colgroup>
+                  <col style={{ width: `${DESCRIPTION_WIDTH_PX}px` }} />
+                  {months.map((month) => (
+                    <React.Fragment key={`${month.month}-cols`}>
+                      <col style={{ width: valueWidth }} />
+                      <col style={{ width: valueWidth }} />
+                    </React.Fragment>
+                  ))}
+                </colgroup>
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th rowSpan={2} style={{ fontSize: fs }} className={`${cell} text-left align-middle`}>
+                      Description
+                    </th>
+                    {months.map((month) => (
+                      <th key={month.month} colSpan={2} style={{ fontSize: fs }} className={`${cell} text-center`}>
+                        {month.label}
+                      </th>
+                    ))}
+                  </tr>
+                  <tr>
+                    {months.map((month) => (
+                      <React.Fragment key={`${month.month}-head`}>
+                        <th style={{ fontSize: fs }} className={`${cell} text-center`}>Opening</th>
+                        <th style={{ fontSize: fs }} className={`${cell} text-center`}>Closing</th>
+                      </React.Fragment>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>{pageLines.map(drawLine)}</tbody>
+              </table>
             </div>
 
-            <div style={{ position: "absolute", left: "4mm", right: "4mm", bottom: 0 }}>
-              <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} />
-            </div>
+            <PrintFooter page={pageNumber + 1} total={pages.length} fontSize={fs} />
+
+            {pageNumber !== pages.length - 1 && <div className="page-break" />}
           </div>
-        ))}
+        )) : (
+          <div className="print-page business-summary-print-page">
+            <PadPrinting />
+            <h1 className="text-center text-2xl font-bold">{title}</h1>
+            <div className="mt-6 text-center text-sm text-gray-500">No data found</div>
+          </div>
+        )}
       </div>
     );
-  }
+  },
 );
 
-BusinessSummaryPrint.displayName = "BusinessSummaryPrint";
-
+BusinessSummaryPrint.displayName = 'BusinessSummaryPrint';
 export default BusinessSummaryPrint;
