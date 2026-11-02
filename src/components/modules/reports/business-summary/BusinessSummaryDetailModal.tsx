@@ -17,7 +17,6 @@ type DetailItem = {
 
 type Props = {
   branchId: number;
-  year: number;
   months: BusinessMonthInfo[];
   group: BusinessGroupRow;
   onClose: () => void;
@@ -25,9 +24,9 @@ type Props = {
 
 const EMPTY_TOTAL = { opening: 0, movement: 0, closing: 0 };
 
-const BusinessSummaryDetailModal = ({ branchId, year, months, group, onClose }: Props) => {
+const BusinessSummaryDetailModal = ({ branchId, months, group, onClose }: Props) => {
   // Opens on the latest month the report shows.
-  const [month, setMonth] = useState<number>(months[months.length - 1]?.month ?? 1);
+  const [month, setMonth] = useState<string>(months[months.length - 1]?.month ?? "");
   const [items, setItems] = useState<DetailItem[]>([]);
   const [total, setTotal] = useState(EMPTY_TOTAL);
   const [loading, setLoading] = useState(false);
@@ -42,8 +41,8 @@ const BusinessSummaryDetailModal = ({ branchId, year, months, group, onClose }: 
       try {
         const response = await httpService.post(API_REPORT_BUSINESS_SUMMARY_DETAIL_URL, {
           branch_id: branchId,
-          year,
-          month,
+          year: months.find((m) => m.month === month)?.year,
+          month: months.find((m) => m.month === month)?.month_no,
           side: group.side,
           group: group.name,
         });
@@ -69,7 +68,7 @@ const BusinessSummaryDetailModal = ({ branchId, year, months, group, onClose }: 
     return () => {
       cancelled = true;
     };
-  }, [branchId, year, month, group.side, group.name]);
+  }, [branchId, month, months, group.side, group.name]);
 
   const th = "border border-[rgb(var(--c-border))] px-2 py-1.5";
   const td = "border border-[rgb(var(--c-border))] px-2 py-1";
@@ -90,7 +89,7 @@ const BusinessSummaryDetailModal = ({ branchId, year, months, group, onClose }: 
           <div className="ml-auto flex items-center gap-2">
             <select
               value={month}
-              onChange={(e) => setMonth(Number(e.target.value))}
+              onChange={(e) => setMonth(e.target.value)}
               className="rounded border border-[rgb(var(--c-border))] bg-white px-2 py-1 text-sm dark:bg-gray-700"
               aria-label="Month"
             >

@@ -1,7 +1,14 @@
 import React from "react";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 
-export type BusinessMonthInfo = { month: number; label: string; started: boolean };
+/** One month of the report. `month` is its key, "YYYY-MM" -- a range may cross a year end. */
+export type BusinessMonthInfo = {
+  month: string;
+  year: number;
+  month_no: number;
+  label: string;
+  started: boolean;
+};
 export type BusinessMonthValue = { opening: number; closing: number };
 export type BusinessGroupRow = {
   side: string;
@@ -9,7 +16,8 @@ export type BusinessGroupRow = {
   months: Record<string, BusinessMonthValue>;
 };
 export type BusinessSummaryData = {
-  year: number;
+  start_month: string;
+  end_month: string;
   months: BusinessMonthInfo[];
   sections: {
     assets: BusinessGroupRow[];
@@ -137,12 +145,12 @@ const BusinessSummaryGrid: React.FC<Props> = ({ data, lines: given, print = fals
     <table className="w-auto border-collapse" style={style}>
       <thead className={head}>
         <tr>
-          <th rowSpan={2} className={`${cell} w-10 text-center`}>SL</th>
-          <th rowSpan={2} className={`${cell} text-left whitespace-nowrap`}>
+          <th rowSpan={2} data-col="fixed" className={`${cell} w-10 text-center`}>SL</th>
+          <th rowSpan={2} data-col="fixed" className={`${cell} text-left whitespace-nowrap`}>
             Description
           </th>
           {months.map((m) => (
-            <th key={m.month} colSpan={2} className={`${cell} text-center`}>
+            <th key={m.month} colSpan={2} data-col="month" className={`${cell} text-center`}>
               {m.label}
             </th>
           ))}

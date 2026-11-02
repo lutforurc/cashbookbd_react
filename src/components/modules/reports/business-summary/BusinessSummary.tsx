@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { useReactToPrint } from "react-to-print";
@@ -16,6 +16,7 @@ import { API_REPORT_BUSINESS_SUMMARY_URL } from "../../../services/apiRoutes";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import BusinessSummaryGrid from "./BusinessSummaryGrid";
 import BusinessSummaryPrint, { sheetPlan } from "./BusinessSummaryPrint";
+import type { ColumnMeasure } from "./BusinessSummaryPrint";
 import BusinessSummaryDetailModal from "./BusinessSummaryDetailModal";
 import type { BusinessSummaryData, BusinessGroupRow } from "./BusinessSummaryGrid";
 
@@ -28,8 +29,10 @@ const BusinessSummary = (user: any) => {
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
-  // The report is for a calendar year; the picker is a date and its year is what counts.
-  const [yearDate, setYearDate] = useState<Date | null>(null);
+  // A run of months, twelve at the most; each picker is a date and only its
+  // month and year count.
+  const [startMonth, setStartMonth] = useState<Date | null>(null);
+  const [endMonth, setEndMonth] = useState<Date | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<BusinessSummaryData | null>(null);
@@ -37,7 +40,7 @@ const BusinessSummary = (user: any) => {
   const [fontSize, setFontSize] = useState<number>(8);
   const [filterOpen, setFilterOpen] = useState(false);
   const [detailGroup, setDetailGroup] = useState<BusinessGroupRow | null>(null);
-  const [lastRun, setLastRun] = useState<{ branchName: string; year: number } | null>(null);
+  const [lastRun, setLastRun] = useState<{ branchName: string; period: string } | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -62,7 +65,9 @@ const BusinessSummary = (user: any) => {
         .map((str: string) => Number(str.trim()));
 
       if (Number.isFinite(year) && year >= 1900 && year <= 2100) {
-        setYearDate(new Date(year, (month || 1) - 1, day || 1));
+        // January of the working year to the working month.
+        setStartMonth(new Date(year, 0, 1));
+        setEndMonth(new Date(year, (month || 1) - 1, day || 1));
       }
     }
   }, [
@@ -88,12 +93,24 @@ const BusinessSummary = (user: any) => {
       return;
     }
 
-    if (!yearDate) {
-      alert("Please select year");
+    if (!startMonth || !endMonth) {
+      alert("Please select start month and end month");
       return;
     }
 
-    const year = dayjs(yearDate).year();
+    const from = dayjs(startMonth).startOf("month");
+    const to = dayjs(endMonth).startOf("month");
+    const span = to.diff(from, "month") + 1;
+
+    if (span < 1) {
+      alert("End month cannot be before start month");
+      return;
+    }
+
+    if (span > 12) {
+      alert("Start month to end month can be 12 months at the most");
+      return;
+    }
 
     setButtonLoading(true);
     setError(null);
@@ -101,7 +118,8 @@ const BusinessSummary = (user: any) => {
     try {
       const response = await httpService.post(API_REPORT_BUSINESS_SUMMARY_URL, {
         branch_id: Number(branchId),
-        year,
+        start_month: from.format("YYYY-MM"),
+        end_month: to.format("YYYY-MM"),
       });
 
       const payload = response?.data;
@@ -111,7 +129,10 @@ const BusinessSummary = (user: any) => {
       }
 
       setData(payload?.data?.data ?? payload?.data ?? null);
-      setLastRun({ branchName: selectedBranchName, year });
+      setLastRun({
+        branchName: selectedBranchName,
+        period: `${from.format("MMM-YY")} to ${to.format("MMM-YY")}`,
+      });
       setFilterOpen(false);
     } catch (err: any) {
       setData(null);
@@ -137,7 +158,26 @@ const BusinessSummary = (user: any) => {
   };
 
   // The print keeps the chosen type size; months that do not fit a sheet's width at that size go on further sheets.
-  const plan = sheetPlan(data, fontSize);
+  // ⚠️ MEASURED, NOT GUESSED. A copy of the printed table is laid out off the
+  // screen at the print's font size, and its real column widths decide how many
+  // months share a sheet. An estimate either wastes half the sheet or lets the
+  // last month run off the paper.
+  const measureRef = useRef<HTMLDivElement>(null);
+  const [measured, setMeasured] = useState<ColumnMeasure | null>(null);
+
+  useLayoutEffect(() => {
+    const root = measureRef.current;
+    if (!root || !data) {
+      setMeasured(null);
+      return;
+    }
+    const width = (el: Element) => el.getBoundingClientRect().width;
+    const fixed = Array.from(root.querySelectorAll('[data-col="fixed"]')).reduce((sum, el) => sum + width(el), 0);
+    const perMonth = Math.max(0, ...Array.from(root.querySelectorAll('[data-col="month"]')).map(width));
+    setMeasured(perMonth > 0 ? { fixed: Math.ceil(fixed), perMonth: Math.ceil(perMonth) } : null);
+  }, [data, fontSize]);
+
+  const plan = sheetPlan(data, fontSize, measured);
   const monthsSplit = !!data && plan.sheets > 1;
 
   const labelClass = "mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200";
@@ -158,13 +198,25 @@ const BusinessSummary = (user: any) => {
       </div>
 
       <div>
-        <label className={labelClass}>Year</label>
+        <label className={labelClass}>Start Month</label>
         <InputDatePicker
-          selectedDate={yearDate}
-          setSelectedDate={setYearDate}
-          setCurrentDate={setYearDate}
-          year
-          placeholder="Select year"
+          selectedDate={startMonth}
+          setSelectedDate={setStartMonth}
+          setCurrentDate={setStartMonth}
+          month
+          placeholder="Select start month"
+          className="w-full"
+        />
+      </div>
+
+      <div>
+        <label className={labelClass}>End Month</label>
+        <InputDatePicker
+          selectedDate={endMonth}
+          setSelectedDate={setEndMonth}
+          setCurrentDate={setEndMonth}
+          month
+          placeholder="Select end month"
           className="w-full"
         />
       </div>
@@ -244,7 +296,7 @@ const BusinessSummary = (user: any) => {
             </div>
           ) : (
             <div className="flex flex-wrap items-end gap-3">
-              <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-2 xl:max-w-2xl">
+              <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3 xl:max-w-4xl">
                 {fields}
               </div>
               <div className="flex items-end gap-2">
@@ -272,7 +324,7 @@ const BusinessSummary = (user: any) => {
             <BusinessSummaryGrid data={data} fontSize={12} onGroupClick={setDetailGroup} />
           ) : (
             <div className="px-3 py-8 text-center text-sm text-slate-500 dark:text-slate-300">
-              No report data found. Select the branch and year, then click Apply.
+              No report data found. Select the branch, start month and end month, then click Apply.
             </div>
           )}
         </div>
@@ -280,11 +332,20 @@ const BusinessSummary = (user: any) => {
         {detailGroup && data && lastRun ? (
           <BusinessSummaryDetailModal
             branchId={Number(branchId)}
-            year={lastRun.year}
             months={data.months}
             group={detailGroup}
             onClose={() => setDetailGroup(null)}
           />
+        ) : null}
+
+        {data ? (
+          <div
+            ref={measureRef}
+            aria-hidden="true"
+            style={{ position: "absolute", left: -100000, top: 0, visibility: "hidden", pointerEvents: "none" }}
+          >
+            <BusinessSummaryGrid data={data} print fontSize={Number(fontSize) || 8} />
+          </div>
         ) : null}
 
         <div className="hidden">
@@ -292,9 +353,10 @@ const BusinessSummary = (user: any) => {
             ref={printRef}
             data={data}
             branchName={lastRun?.branchName}
-            year={lastRun?.year}
+            period={lastRun?.period}
             rowsPerPage={Number(rowsPerPage)}
             fontSize={Number(fontSize)}
+            measured={measured}
           />
         </div>
       </div>

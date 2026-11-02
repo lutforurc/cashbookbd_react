@@ -9,10 +9,13 @@ import type { BusinessSummaryData, Line } from "./BusinessSummaryGrid";
 type Props = {
   data: BusinessSummaryData | null;
   branchName?: string;
-  year?: number | string;
+  /** The months asked for, as the screen shows them: "Jan-26 to Dec-26". */
+  period?: string;
   title?: string;
   rowsPerPage?: number;
   fontSize?: number;
+  /** The column widths measured at this font size, from the screen. */
+  measured?: ColumnMeasure | null;
 };
 
 // A4 landscape with PrintStyles' narrow margins, in CSS pixels (96 per inch).
@@ -51,7 +54,9 @@ export const columnWidths = (lines: Line[], fs: number) => {
     });
   });
 
-  const charPx = fs * 0.68;
+  // Measured on the printed sheet: a figure such as 12,54,21,763 sets at about
+  // 0.41em a character (the commas are narrow). Half an em leaves room to spare.
+  const charPx = fs * 0.5;
   const numberCell = Math.max(widest, 7) * charPx + 15;
   const nameCell = Math.max(longestName * charPx + 15, 120);
 
@@ -62,10 +67,21 @@ export const columnWidths = (lines: Line[], fs: number) => {
  * How many months fit one sheet's width at this type size, and so how many
  * sheets the months are dealt out across.
  */
-export const sheetPlan = (data: BusinessSummaryData | null, fs: number) => {
+export type ColumnMeasure = { fixed: number; perMonth: number };
+
+export const sheetPlan = (
+  data: BusinessSummaryData | null,
+  fs: number,
+  measured?: ColumnMeasure | null
+) => {
   const months = data?.months.length ?? 0;
-  const { fixed, perMonth } = columnWidths(data ? buildBlocks(data).flat() : [], fs);
-  const perSheet = Math.max(1, Math.floor((PAGE_CONTENT_WIDTH_PX * 0.95 - fixed) / perMonth));
+  // The widths the table really takes, measured off a copy set at this size,
+  // when the screen has one; the estimate otherwise.
+  const { fixed, perMonth } =
+    measured && measured.perMonth > 0
+      ? measured
+      : columnWidths(data ? buildBlocks(data).flat() : [], fs);
+  const perSheet = Math.max(1, Math.floor((PAGE_CONTENT_WIDTH_PX * 0.98 - fixed) / perMonth));
   const sheets = Math.max(1, Math.ceil(months / perSheet));
 
   return { perSheet: Math.ceil(months / sheets) || perSheet, sheets };
@@ -114,7 +130,7 @@ const paginate = (blocks: Line[][], capacity: number): Line[][] => {
 };
 
 const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ data, branchName, year, title = "Business Summary", rowsPerPage = 0, fontSize }, ref) => {
+  ({ data, branchName, period, title = "Business Summary", rowsPerPage = 0, fontSize, measured }, ref) => {
     // Twenty-six columns on one landscape sheet, so the type starts small.
     const wantedFs = Number.isFinite(fontSize) && Number(fontSize) > 0 ? Number(fontSize) : 8;
 
@@ -137,7 +153,7 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
     const capacity = Number(rowsPerPage) > 0 ? Number(rowsPerPage) : autoCapacity;
 
     const allMonths = data?.months ?? [];
-    const { perSheet: sheetSize, sheets: sheetCount } = sheetPlan(data, fs);
+    const { perSheet: sheetSize, sheets: sheetCount } = sheetPlan(data, fs, measured);
 
     const pages: Array<{ lines: Line[]; data: BusinessSummaryData; monthRange: string }> = [];
     if (data) {
@@ -176,7 +192,7 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
               <h1 className="text-center text-xl font-bold">{title}</h1>
               <div className="mt-1 text-xs">
                 {branchName ? <span className="mr-4"><span className="font-semibold">Branch:</span> {branchName}</span> : null}
-                <span><span className="font-semibold">Year:</span> {year ?? "-"}</span>
+                <span><span className="font-semibold">Period:</span> {period ?? "-"}</span>
                 {page.monthRange ? <span className="ml-4"><span className="font-semibold">Months:</span> {page.monthRange}</span> : null}
               </div>
             </div>
