@@ -172,6 +172,7 @@ const ROUTES = {
   profit_loss: '/reports/profit-loss',
   product_profit_loss: '/reports/product-profit-loss',
   product_profit_summary: '/reports/product-profit-summary',
+  business_summary: '/reports/business-summary',
   product_ledger_data: '/reports/product-ledger-data',
   product_statement: '/product/product-statement',
   bank_information: '/reports/bank-information',

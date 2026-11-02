@@ -21,12 +21,14 @@ interface DatePickerProps {
   label?: string; // Label for the date picker component
   placeholder?: string; // Placeholder text for the date picker input
   month?: boolean; // Show month/year picker instead of date picker
+  /** A year alone (2025, 2026) -- for reports kept by calendar year. */
+  year?: boolean;
   /** Also pick a time — for fields that schedule something, not just date it. */
   showTime?: boolean;
   disabled?: boolean;
 }
 
-const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder, month = false, showTime = false, disabled = false }) => {
+const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder, month = false, year = false, showTime = false, disabled = false }) => {
   const datePickerRef = React.useRef<ReactDatePicker>(null);
   const safeSelectedDate =
     selectedDate instanceof Date && !Number.isNaN(selectedDate.getTime()) ? selectedDate : null;
@@ -99,7 +101,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         onChange={handleDateChange} // Update state when a new date is selected
         onFocus={openCalendar}
         onInputClick={openCalendar}
-        dateFormat={month ? 'MMM yyyy' : showTime ? 'dd/MM/yyyy HH:mm' : 'dd/MM/yyyy'} // Format for the date
+        dateFormat={year ? 'yyyy' : month ? 'MMM yyyy' : showTime ? 'dd/MM/yyyy HH:mm' : 'dd/MM/yyyy'} // Format for the date
         showTimeSelect={showTime}
         timeFormat="HH:mm"
         timeIntervals={15}
@@ -107,21 +109,23 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         peekNextMonth
         placeholderText={placeholder ? placeholder : 'Enter Valid date'}
         wrapperClassName="w-full"
-        popperClassName={month ? 'cashbook-month-picker-popper' : 'cashbook-date-picker-popper'}
-        calendarClassName={month ? 'cashbook-month-picker' : undefined}
+        popperClassName={month ? 'cashbook-month-picker-popper' : year ? 'cashbook-year-picker-popper' : 'cashbook-date-picker-popper'}
+        calendarClassName={month ? 'cashbook-month-picker' : year ? 'cashbook-year-picker' : undefined}
         dropdownMode="select"
         onKeyDown={handleKeyDown}
         shouldCloseOnSelect
         disabled={disabled}
         className={`${FIELD_BASE} pl-3 ${className}`}
         showMonthYearPicker={month}
-        showMonthDropdown={!month}
-        showYearDropdown
+        showYearPicker={year}
+        showMonthDropdown={!month && !year}
+        showYearDropdown={!year}
       />
       <style>
         {`
             .cashbook-date-picker-popper,
-            .cashbook-month-picker-popper {
+            .cashbook-month-picker-popper,
+            .cashbook-year-picker-popper {
               z-index: 9999;
             }
 
@@ -145,6 +149,8 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
             .dark .react-datepicker__day-name,
             .dark .react-datepicker__day,
             .dark .react-datepicker__month-text,
+            .dark .react-datepicker__year-text,
+            .dark .react-datepicker-year-header,
             .dark .react-datepicker__time-name {
               color: rgb(var(--c-gray-200));
             }
@@ -156,7 +162,8 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
             }
 
             .dark .react-datepicker__day:hover,
-            .dark .react-datepicker__month-text:hover {
+            .dark .react-datepicker__month-text:hover,
+            .dark .react-datepicker__year-text:hover {
               background-color: rgb(var(--c-form-strokedark));
               color: rgb(var(--c-white));
             }
@@ -164,13 +171,16 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
             .dark .react-datepicker__day--selected,
             .dark .react-datepicker__day--keyboard-selected,
             .dark .react-datepicker__month-text--selected,
-            .dark .react-datepicker__month-text--keyboard-selected {
+            .dark .react-datepicker__month-text--keyboard-selected,
+            .dark .react-datepicker__year-text--selected,
+            .dark .react-datepicker__year-text--keyboard-selected {
               background-color: rgb(var(--c-blue-500));
               color: rgb(var(--c-white));
             }
 
             .dark .react-datepicker__day--today,
-            .dark .react-datepicker__month-text--today {
+            .dark .react-datepicker__month-text--today,
+            .dark .react-datepicker__year-text--today {
               font-weight: 700;
               color: rgb(var(--c-blue-300));
             }
@@ -266,6 +276,55 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
               padding: 7px 0;
               border-radius: 4px;
             }
+
+            /* The year list: three to a row in large, easy-to-hit cells, the
+               month picker's treatment, so the choice reads as a choice and not
+               as a column of small print. */
+            .cashbook-year-picker {
+              width: 340px;
+              border-radius: 4px;
+              font-size: 16px;
+            }
+
+            .cashbook-year-picker .react-datepicker__year--container {
+              width: 100%;
+            }
+
+            .cashbook-year-picker .react-datepicker__header {
+              padding: 12px 0 10px;
+            }
+
+            .cashbook-year-picker .react-datepicker-year-header {
+              font-size: 18px;
+              font-weight: 700;
+            }
+
+            .cashbook-year-picker .react-datepicker__year {
+              margin: 12px 16px 16px;
+            }
+
+            .cashbook-year-picker .react-datepicker__year-wrapper {
+              display: grid;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 10px;
+              max-width: none;
+            }
+
+            .cashbook-year-picker .react-datepicker__year-text {
+              width: auto;
+              margin: 0;
+              padding: 12px 0;
+              border-radius: 6px;
+              font-size: 17px;
+              font-weight: 500;
+              text-align: center;
+              cursor: pointer;
+            }
+
+            .cashbook-year-picker .react-datepicker__year-text--selected,
+            .cashbook-year-picker .react-datepicker__year-text--keyboard-selected {
+              font-weight: 700;
+            }
           `}
       </style>
     </div>

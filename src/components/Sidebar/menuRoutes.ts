@@ -77,6 +77,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.bank_information,
     routes.connected_member,
     routes.balance_sheet,
+    routes.business_summary,
     routes.trial_balance_level3,
     routes.trial_balance_level4,
     routes.expense_report,

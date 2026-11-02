@@ -231,6 +231,7 @@ import ImeiStock from './components/modules/reports/imei-stock/ImeiStock';
 import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 import ProductProfitLoss from './components/modules/reports/product-profit-loss/ProductProfitLoss';
 import ProductProfitSummary from './components/modules/reports/product-profit-summary/ProductProfitSummary';
+import BusinessSummary from './components/modules/reports/business-summary/BusinessSummary';
 import ProductLedgerData from './components/modules/reports/product-ledger-data/ProductLedgerData';
 import ProductStatement from './components/modules/reports/product-statement/ProductStatement';
 import DateWiseInOut from './components/modules/reports/date-wise-in-out/DateWiseInOut';
@@ -1141,6 +1142,9 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'balancesheet.view']} loading={permissionsLoading} />}>
               <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['business.summary']} loading={permissionsLoading} />}>
+              <Route path={routes.business_summary} element={<BusinessSummary user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'trial.balance.l3']} loading={permissionsLoading} />}>
               <Route path={routes.trial_balance_level3} element={<TrialBalanceLevel3 user={me} />} />

@@ -95,6 +95,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'bank_information', title: "Bank Information" },
     { id: 'connected_member', title: "Connected Member" },
     { id: 'balance_sheet', title: "Balance Sheet" },
+    { id: 'business_summary', title: "Business Summary" },
     { id: 'trial_balance_level3', title: "Trial Balance Group" },
     { id: 'trial_balance_level4', title: "Trial Balance Details" },
     { id: 'expense_report', title: "Expense Report" },
@@ -1680,6 +1681,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Balance Sheet
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'business.summary') && (
+                            <li style={subSlot('reports', 'business_summary')}>
+                              <NavLink
+                                to={routes.business_summary}
+                                className={subMenuLinkClass}
+                              >
+                                Business Summary
                               </NavLink>
                             </li>
                           )}

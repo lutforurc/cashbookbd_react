@@ -81,6 +81,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Bank Book', path: routes.report_bankbook, group: 'Reports', permissions: ['cashbook.view', 'bank.book'] },
   { title: 'Profit Loss', path: routes.profit_loss, group: 'Reports', permissions: ['cashbook.view', 'profit.loss'] },
   { title: 'Balance Sheet', path: routes.balance_sheet, group: 'Reports', permissions: ['cashbook.view', 'balancesheet.view'] },
+  { title: 'Business Summary', path: routes.business_summary, group: 'Reports', permissions: ['business.summary'] },
   { title: 'Trial Balance Level 3', path: routes.trial_balance_level3, group: 'Reports', permissions: ['cashbook.view', 'trial.balance.l3'] },
   { title: 'Trial Balance Level 4', path: routes.trial_balance_level4, group: 'Reports', permissions: ['cashbook.view', 'trial.balance.l4'] },
   { title: 'Bank Information', path: routes.bank_information, group: 'Reports', permissions: ['bank.information'] },

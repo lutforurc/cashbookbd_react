@@ -419,6 +419,7 @@ export const SIDEBAR_SUB_DEFAULTS: Record<string, string[]> = {
     'product_profit_loss',
     'product_profit_summary',
     'balance_sheet',
+    'business_summary',
     'trial_balance_level3',
     'trial_balance_level4',
     'expense_report',

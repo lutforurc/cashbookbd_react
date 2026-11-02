@@ -53,6 +53,7 @@ export const MENU_PERMISSIONS = {
     'group.report',
     'mitch.match',
     'productwise.profit',
+    'business.summary',
     // The referrer report is only ever reached through this menu, so its own
     // permission has to open the parent group too.
     'sales.referrer',
