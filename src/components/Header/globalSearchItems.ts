@@ -86,6 +86,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Bank Information', path: routes.bank_information, group: 'Reports', permissions: ['bank.information'] },
   { title: 'Connected Member', path: routes.connected_member, group: 'Reports', permissions: ['connected.member.view'] },
   { title: 'Product Profit Loss', path: routes.product_profit_loss, group: 'Reports', permissions: ['productwise.profit'] },
+  { title: 'Product Profit Summary', path: routes.product_profit_summary, group: 'Reports', permissions: ['productwise.profit'] },
   { title: 'Customer Supplier Statement', path: routes.customer_supplier_statement, group: 'Reports', permissions: ['ledger.customer', 'ledger.details'] },
   { title: 'Due Installments', path: routes.due_installment_list, group: 'Reports', permissions: ['installment.create'], when: 'installmentTrade' },
   { title: 'Employee Installments', path: routes.employee_wise_installment, group: 'Reports', permissions: ['installment.create'], when: 'installmentTrade' },

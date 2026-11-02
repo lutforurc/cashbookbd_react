@@ -230,6 +230,7 @@ import ClosingStockReport from './components/modules/reports/closing-stock/Closi
 import ImeiStock from './components/modules/reports/imei-stock/ImeiStock';
 import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
 import ProductProfitLoss from './components/modules/reports/product-profit-loss/ProductProfitLoss';
+import ProductProfitSummary from './components/modules/reports/product-profit-summary/ProductProfitSummary';
 import ProductLedgerData from './components/modules/reports/product-ledger-data/ProductLedgerData';
 import ProductStatement from './components/modules/reports/product-statement/ProductStatement';
 import DateWiseInOut from './components/modules/reports/date-wise-in-out/DateWiseInOut';
@@ -1161,6 +1162,7 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['productwise.profit']} loading={permissionsLoading} />}>
               <Route path={routes.product_profit_loss} element={<ProductProfitLoss user={me} />} />
+              <Route path={routes.product_profit_summary} element={<ProductProfitSummary user={me} />} />
             </Route>
             {/* Both names are real permissions. The sidebar offers this screen on
                 'ledger.details' (the one named for it), so the guard has to admit

@@ -91,6 +91,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'cash_bank_received_payment', title: "Cash &amp; Bank Summary" },
     { id: 'profit_loss', title: "Profit Loss" },
     { id: 'product_profit_loss', title: "Product Profit Loss" },
+    { id: 'product_profit_summary', title: "Product Profit Summary" },
     { id: 'bank_information', title: "Bank Information" },
     { id: 'connected_member', title: "Connected Member" },
     { id: 'balance_sheet', title: "Balance Sheet" },
@@ -1635,6 +1636,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Product Profit Loss
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {hasPermission(permissions, 'productwise.profit') && (
+                            <li style={subSlot('reports', 'product_profit_summary')}>
+                              <NavLink
+                                to={routes.product_profit_summary}
+                                className={subMenuLinkClass}
+                              >
+                                Product Profit Summary
                               </NavLink>
                             </li>
                           )}

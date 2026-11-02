@@ -73,6 +73,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.cash_bank_received_payment,
     routes.profit_loss,
     routes.product_profit_loss,
+    routes.product_profit_summary,
     routes.bank_information,
     routes.connected_member,
     routes.balance_sheet,
