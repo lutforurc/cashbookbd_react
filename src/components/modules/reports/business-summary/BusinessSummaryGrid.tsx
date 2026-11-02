@@ -73,26 +73,46 @@ const diffTotals = (
   return out;
 };
 
-export const buildLines = (data: BusinessSummaryData): Line[] => {
-  const lines: Line[] = [];
+/**
+ * The report's lines, grouped the way a page may be cut: one block per section
+ * (its heading, its groups and its total), with the closing totals riding in the
+ * last block so they never stand alone on a sheet of their own.
+ *
+ * ⚠️ NO SECOND "TOTAL ASSETS". The Assets section already closes on it, and a
+ * report states a figure once. Nor a "Total Liabilities + Equity": on a sheet
+ * that balances it is the Total Assets figure again. What is added is only the
+ * Difference, the one line that says whether the two sides agree.
+ */
+export const buildBlocks = (data: BusinessSummaryData): Line[][] => {
+  const blocks: Line[][] = [];
   let sl = 0;
 
   SECTIONS.forEach(({ key, label }) => {
     const rows = data.sections?.[key] ?? [];
     if (!rows.length) return;
-    lines.push({ kind: "section", label });
-    rows.forEach((row) => lines.push({ kind: "group", sl: ++sl, row }));
-    lines.push({ kind: "total", label: `Total ${label}`, values: sumTotals(data, [key]) });
+
+    const block: Line[] = [{ kind: "section", label }];
+    rows.forEach((row) => block.push({ kind: "group", sl: ++sl, row }));
+    block.push({ kind: "total", label: `Total ${label}`, values: sumTotals(data, [key]) });
+    blocks.push(block);
   });
 
   const assets = sumTotals(data, ["assets"]);
   const liabEquity = sumTotals(data, ["liabilities", "equity"]);
-  lines.push({ kind: "total", label: "Total Assets", values: assets, strong: true });
-  lines.push({ kind: "total", label: "Total Liabilities + Equity", values: liabEquity, strong: true });
-  lines.push({ kind: "total", label: "Difference", values: diffTotals(assets, liabEquity) });
+  const closing: Line[] = [
+    { kind: "total", label: "Difference", values: diffTotals(assets, liabEquity) },
+  ];
 
-  return lines;
+  if (blocks.length) {
+    blocks[blocks.length - 1].push(...closing);
+  } else {
+    blocks.push(closing);
+  }
+
+  return blocks;
 };
+
+export const buildLines = (data: BusinessSummaryData): Line[] => buildBlocks(data).flat();
 
 const BusinessSummaryGrid: React.FC<Props> = ({ data, lines: given, print = false, fontSize = 11, onGroupClick }) => {
   if (!data) return null;
@@ -112,11 +132,13 @@ const BusinessSummaryGrid: React.FC<Props> = ({ data, lines: given, print = fals
     started && v ? thousandSeparator(v[field]) : "";
 
   return (
-    <table className="w-full border-collapse" style={{ ...style, minWidth: print ? undefined : 2200 }}>
+    // Each column as wide as its own figures and no wider: the table is not
+    // stretched to the page, so a month with small numbers stays narrow.
+    <table className="w-auto border-collapse" style={style}>
       <thead className={head}>
         <tr>
           <th rowSpan={2} className={`${cell} w-10 text-center`}>SL</th>
-          <th rowSpan={2} className={`${cell} text-left`} style={{ minWidth: print ? undefined : 200 }}>
+          <th rowSpan={2} className={`${cell} text-left whitespace-nowrap`}>
             Description
           </th>
           {months.map((m) => (
@@ -151,7 +173,7 @@ const BusinessSummaryGrid: React.FC<Props> = ({ data, lines: given, print = fals
             return (
               <tr key={`g-${idx}`} className="avoid-break">
                 <td className={`${cell} text-center`}>{line.sl}</td>
-                <td className={cell}>
+                <td className={`${cell} whitespace-nowrap`}>
                   {onGroupClick ? (
                     <button
                       type="button"
@@ -177,7 +199,7 @@ const BusinessSummaryGrid: React.FC<Props> = ({ data, lines: given, print = fals
 
           return (
             <tr key={`t-${idx}`} className={`avoid-break font-bold ${line.strong ? head : ""}`}>
-              <td colSpan={2} className={`${cell} text-left`}>{line.label}</td>
+              <td colSpan={2} className={`${cell} text-left whitespace-nowrap`}>{line.label}</td>
               {months.map((m) => (
                 <React.Fragment key={m.month}>
                   <td className={num}>{value(line.values[m.month], "opening", m.started)}</td>

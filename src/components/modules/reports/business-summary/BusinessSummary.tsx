@@ -15,7 +15,7 @@ import httpService from "../../../services/httpService";
 import { API_REPORT_BUSINESS_SUMMARY_URL } from "../../../services/apiRoutes";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import BusinessSummaryGrid from "./BusinessSummaryGrid";
-import BusinessSummaryPrint from "./BusinessSummaryPrint";
+import BusinessSummaryPrint, { sheetPlan } from "./BusinessSummaryPrint";
 import BusinessSummaryDetailModal from "./BusinessSummaryDetailModal";
 import type { BusinessSummaryData, BusinessGroupRow } from "./BusinessSummaryGrid";
 
@@ -136,6 +136,10 @@ const BusinessSummary = (user: any) => {
     setFontSize(Number.isNaN(value) ? 8 : value);
   };
 
+  // The print keeps the chosen type size; months that do not fit a sheet's width at that size go on further sheets.
+  const plan = sheetPlan(data, fontSize);
+  const monthsSplit = !!data && plan.sheets > 1;
+
   const labelClass = "mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200";
   const hasData = !!data && (
     data.sections.assets.length + data.sections.liabilities.length + data.sections.equity.length > 0
@@ -249,6 +253,12 @@ const BusinessSummary = (user: any) => {
               </div>
             </div>
           )}
+
+          {monthsSplit ? (
+            <div className="mt-3 rounded border border-amber-400 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100">
+              At font size {fontSize}, {plan.perSheet} months fit one sheet, so the print runs {plan.sheets} sets of sheets. Lower the font size to fit more months on each.
+            </div>
+          ) : null}
 
           {error ? (
             <div className="mt-4 border border-red-500/60 bg-red-950/40 px-4 py-3 text-sm text-red-100">
