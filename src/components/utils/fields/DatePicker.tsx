@@ -276,55 +276,55 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
               padding: 7px 0;
               border-radius: 4px;
             }
-
-            /* The year list: three to a row in large, easy-to-hit cells, the
-               month picker's treatment, so the choice reads as a choice and not
-               as a column of small print. */
-            .cashbook-year-picker {
-              width: 340px;
-              border-radius: 4px;
-              font-size: 16px;
-            }
-
-            .cashbook-year-picker .react-datepicker__year--container {
-              width: 100%;
-            }
-
-            .cashbook-year-picker .react-datepicker__header {
-              padding: 12px 0 10px;
-            }
-
-            .cashbook-year-picker .react-datepicker-year-header {
-              font-size: 18px;
-              font-weight: 700;
-            }
-
-            .cashbook-year-picker .react-datepicker__year {
-              margin: 12px 16px 16px;
-            }
-
-            .cashbook-year-picker .react-datepicker__year-wrapper {
-              display: grid;
-              grid-template-columns: repeat(3, minmax(0, 1fr));
-              gap: 10px;
-              max-width: none;
-            }
-
-            .cashbook-year-picker .react-datepicker__year-text {
-              width: auto;
-              margin: 0;
-              padding: 12px 0;
-              border-radius: 6px;
-              font-size: 17px;
-              font-weight: 500;
-              text-align: center;
-              cursor: pointer;
-            }
-
-            .cashbook-year-picker .react-datepicker__year-text--selected,
-            .cashbook-year-picker .react-datepicker__year-text--keyboard-selected {
-              font-weight: 700;
-            }
+
+            /* The year list: three to a row in large, easy-to-hit cells, the
+               month picker's treatment, so the choice reads as a choice and not
+               as a column of small print. */
+            .cashbook-year-picker {
+              width: 340px;
+              border-radius: 4px;
+              font-size: 16px;
+            }
+
+            .cashbook-year-picker .react-datepicker__year--container {
+              width: 100%;
+            }
+
+            .cashbook-year-picker .react-datepicker__header {
+              padding: 12px 0 10px;
+            }
+
+            .cashbook-year-picker .react-datepicker-year-header {
+              font-size: 18px;
+              font-weight: 700;
+            }
+
+            .cashbook-year-picker .react-datepicker__year {
+              margin: 12px 16px 16px;
+            }
+
+            .cashbook-year-picker .react-datepicker__year-wrapper {
+              display: grid;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 10px;
+              max-width: none;
+            }
+
+            .cashbook-year-picker .react-datepicker__year-text {
+              width: auto;
+              margin: 0;
+              padding: 12px 0;
+              border-radius: 6px;
+              font-size: 17px;
+              font-weight: 500;
+              text-align: center;
+              cursor: pointer;
+            }
+
+            .cashbook-year-picker .react-datepicker__year-text--selected,
+            .cashbook-year-picker .react-datepicker__year-text--keyboard-selected {
+              font-weight: 700;
+            }
           `}
       </style>
     </div>
