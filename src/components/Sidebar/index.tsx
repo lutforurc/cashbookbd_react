@@ -90,6 +90,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'audit_trail', title: "Audit Trail" },
     { id: 'cash_bank_received_payment', title: "Cash &amp; Bank Summary" },
     { id: 'profit_loss', title: "Profit Loss" },
+    { id: 'profit_loss_date_wise', title: "Profit Loss (Date Wise)" },
     { id: 'product_profit_loss', title: "Product Profit Loss" },
     { id: 'product_profit_summary', title: "Product Profit Summary" },
     { id: 'bank_information', title: "Bank Information" },
@@ -1626,6 +1627,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Profit Loss
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {/* The same account read a day at a time, directly
+                              under the report it slices -- the same permission
+                              as the entry above, so whoever may read the period
+                              may read its days. */}
+                          {hasPermission(permissions, 'profit.loss') && (
+                            <li style={subSlot('reports', 'profit_loss_date_wise')}>
+                              <NavLink
+                                to={routes.profit_loss_date_wise}
+                                className={subMenuLinkClass}
+                              >
+                                Profit Loss (Date Wise)
                               </NavLink>
                             </li>
                           )}

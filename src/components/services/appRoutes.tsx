@@ -170,6 +170,8 @@ const ROUTES = {
   report_bankbook: '/reports/bankbook',
   cash_bank_received_payment: '/reports/cash-bank-received-payment',
   profit_loss: '/reports/profit-loss',
+  // The same trading account a day at a time, under the report it belongs beside.
+  profit_loss_date_wise: '/reports/profit-loss-date-wise',
   product_profit_loss: '/reports/product-profit-loss',
   product_profit_summary: '/reports/product-profit-summary',
   business_summary: '/reports/business-summary',

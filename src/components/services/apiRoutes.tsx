@@ -393,6 +393,9 @@ export const API_REPORT_GROUP_SETUP_URL = `${API_BASE_URL}/reports/group-report/
 
 // Profit Loss url
 export const API_REPORT_PROFIT_LOSS_URL = `${API_BASE_URL}/reports/profit-loss`;
+// The same trading account a day at a time: per-date purchase, sales and the
+// difference between them. Same heads and scope as the report above.
+export const API_REPORT_PROFIT_LOSS_DATE_WISE_URL = `${API_BASE_URL}/reports/profit-loss-date-wise`;
 export const API_REPORT_PROFIT_LOSS_EXPENSE_SUMMARY_URL = `${API_BASE_URL}/reports/profit-loss-expense-summary`;
 export const API_REPORT_PRODUCT_PROFIT_LOSS_URL = `${API_BASE_URL}/reports/product-profit-loss`;
 export const API_REPORT_PRODUCT_PROFIT_SUMMARY_URL = `${API_BASE_URL}/reports/product-profit-summary`;

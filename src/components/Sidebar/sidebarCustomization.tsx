@@ -416,6 +416,7 @@ export const SIDEBAR_SUB_DEFAULTS: Record<string, string[]> = {
     'reports/mitch-match',
     'divider:rfin:Financial Statements',
     'profit_loss',
+    'profit_loss_date_wise',
     'product_profit_loss',
     'product_profit_summary',
     'balance_sheet',

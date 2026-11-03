@@ -229,6 +229,7 @@ import ProductStockIndex from './components/modules/reports/productstock/Product
 import ClosingStockReport from './components/modules/reports/closing-stock/ClosingStockReport';
 import ImeiStock from './components/modules/reports/imei-stock/ImeiStock';
 import ProfitLoss from './components/modules/reports/profit-loss/ProfitLoss';
+import ProfitLossDateWise from './components/modules/reports/profit-loss/ProfitLossDateWise';
 import ProductProfitLoss from './components/modules/reports/product-profit-loss/ProductProfitLoss';
 import ProductProfitSummary from './components/modules/reports/product-profit-summary/ProductProfitSummary';
 import BusinessSummary from './components/modules/reports/business-summary/BusinessSummary';
@@ -1139,6 +1140,7 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'profit.loss']} loading={permissionsLoading} />}>
               <Route path={routes.profit_loss} element={<ProfitLoss user={me} />} />
+              <Route path={routes.profit_loss_date_wise} element={<ProfitLossDateWise user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'balancesheet.view']} loading={permissionsLoading} />}>
               <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />

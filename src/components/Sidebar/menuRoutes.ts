@@ -72,6 +72,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.audit_trail,
     routes.cash_bank_received_payment,
     routes.profit_loss,
+    routes.profit_loss_date_wise,
     routes.product_profit_loss,
     routes.product_profit_summary,
     routes.bank_information,
