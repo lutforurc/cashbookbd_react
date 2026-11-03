@@ -14,6 +14,7 @@ import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 import Table from "../../../utils/others/Table";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
+import dateRangeError from "../../../utils/utils-functions/dateRangeError";
 
 import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchProfitLossDateWise } from "./profitLossDateWiseSlice";
@@ -52,8 +53,8 @@ const ProfitLossDateWise = (user: any) => {
     setBranchId(Number(user?.user?.branch_id) || null);
   }, []);
 
-  // The reading year: January to the branch's transaction date, the same window
-  // the Profit & Loss account opens on.
+  // The month so far: its first day to the branch's transaction date, since a
+  // run may not span more than 31 days.
   useEffect(() => {
     const protectedData = branchDdlData?.protectedData;
     if (!protectedData) return;
@@ -69,7 +70,7 @@ const ProfitLossDateWise = (user: any) => {
 
         if (isNaN(year) || year < 1900 || year > 2100) return;
 
-        setStartDate(new Date(year, 0, 1));
+        setStartDate(new Date(year, month - 1, 1));
         setEndDate(new Date(year, month - 1, day));
       } catch {
         /* an unreadable date leaves the pickers empty for the reader to set. */
@@ -80,6 +81,8 @@ const ProfitLossDateWise = (user: any) => {
   const handleRun = () => {
     if (!branchId) return alert("Branch select করুন");
     if (!startDate || !endDate) return alert("Start/End Date দিন");
+    const rangeError = dateRangeError(startDate, endDate);
+    if (rangeError) return alert(rangeError);
 
     dispatch(
       fetchProfitLossDateWise({

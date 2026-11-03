@@ -150,8 +150,8 @@ const BusinessSummary = () => {
     const transactionDate = protectedData.transactionDate;
     if (transactionDate) {
       const [day, month, year] = transactionDate.split('/').map(Number);
-      // January of the working year to the working month.
-      setStartMonth(new Date(year, 0, 1));
+      // The working month alone; the reader widens it, twelve months at most.
+      setStartMonth(new Date(year, month - 1, 1));
       setEndMonth(new Date(year, month - 1, day));
     }
   }, [branchDdlData?.protectedData, me?.branch_id]);

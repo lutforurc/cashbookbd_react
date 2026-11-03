@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
+import dateRangeError from "../../../utils/utils-functions/dateRangeError";
 import { useDispatch, useSelector } from "react-redux";
 import { useReactToPrint } from "react-to-print";
 import { FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
@@ -210,9 +211,9 @@ const ProductProfitLoss = (user: any) => {
           return;
         }
 
-        const currentDate = new Date(year, month - 1, day);
-        setStartDate(currentDate);
-        setEndDate(currentDate);
+        // The month so far: a run may not span more than 31 days.
+        setStartDate(new Date(year, month - 1, 1));
+        setEndDate(new Date(year, month - 1, day));
       } catch {
         // Ignore invalid seed date and let the user choose manually.
       }
@@ -254,6 +255,12 @@ const ProductProfitLoss = (user: any) => {
 
     if (!startDate || !endDate) {
       alert("Please select start and end date");
+      return;
+    }
+
+    const rangeError = dateRangeError(startDate, endDate);
+    if (rangeError) {
+      alert(rangeError);
       return;
     }
 
