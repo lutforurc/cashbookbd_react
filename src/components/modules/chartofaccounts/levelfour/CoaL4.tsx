@@ -163,7 +163,7 @@ const CoaL4 = () => {
         {
             key: 'serial',
             header: 'Sl. No.', 
-            headerClass: 'text-center',
+            headerClass: 'text-center w-20',
             cellClass: 'text-center',
         },
         {
