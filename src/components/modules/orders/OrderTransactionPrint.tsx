@@ -51,6 +51,8 @@ export type PrintTransactionRow = {
   vr_no?: string;
   date?: string;
   vehicle_no?: string;
+  /** The voucher's remark on a money row, e.g. "IBBL-47". */
+  remarks?: string;
   weight?: number | string;
   unit?: string;
   rate?: number | string;
@@ -448,6 +450,7 @@ const OrderTransactionPrint = React.forwardRef<HTMLDivElement, Props>(
                             {String(row.vehicle_no ?? '').trim().toLowerCase() === 'cash'
                               ? `Cash ${receivedOrPaymentText}`
                               : row.vehicle_no || '-'}
+                            {String(row.remarks ?? '').trim() ? ` (${String(row.remarks).trim()})` : ''}
                           </td>
                         ) : (
                           <>

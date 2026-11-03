@@ -173,6 +173,7 @@ const normalizeOrderPrintRow = (row: any, index: number, fallbackUnit?: string) 
     pickFirstValue([row], ['date', 'invoice_date', 'inv_date', 'vr_date', 'delivery_date', 'trx_date']) ?? '-',
   vehicle_no:
     pickFirstValue([row], ['vehicle_no', 'truck_no', 'lorry_no', 'transport_no', 'car_no']) ?? '-',
+  remarks: pickFirstValue([row], ['remarks']) ?? '',
   weight:
     pickFirstValue([row], ['weight', 'delivery_qty', 'qty', 'quantity', 'trx_quantity', 'order_qty', 'net_weight']) ?? 0,
   unit:
@@ -405,12 +406,16 @@ const orderDocumentData = (order: any): DocumentData => {
 
     runningDue += amount - received;
 
+    const remarks = String(row?.remarks ?? '').trim();
+    const head =
+      String(row?.vehicle_no ?? '').trim().toLowerCase() === 'cash'
+        ? `Cash ${received_label}`
+        : row?.vehicle_no;
+
     return {
       ...row,
-      vehicle_no:
-        String(row?.vehicle_no ?? '').trim().toLowerCase() === 'cash'
-          ? `Cash ${received_label}`
-          : row?.vehicle_no,
+      // "Cash Received (IBBL-47)" -- the same words the plain print uses.
+      vehicle_no: remarks ? `${head} (${remarks})` : head,
       qty,
       price,
       amount,
