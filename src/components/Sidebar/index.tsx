@@ -1633,10 +1633,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {/* The same account read a day at a time, directly
-                              under the report it slices -- the same permission
-                              as the entry above, so whoever may read the period
-                              may read its days. */}
-                          {hasPermission(permissions, 'profit.loss') && (
+                              under the report it slices. Its own key, granted
+                              to nobody by default -- assigned to a role to show. */}
+                          {hasPermission(permissions, 'profit.loss.date.wise') && (
                             <li style={subSlot('reports', 'profit_loss_date_wise')}>
                               <NavLink
                                 to={routes.profit_loss_date_wise}
@@ -1647,7 +1646,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {hasPermission(permissions, 'profit.loss') && (
+                          {hasPermission(permissions, 'monthly.statement') && (
                             <li style={subSlot('reports', 'monthly_statement')}>
                               <NavLink
                                 to={routes.monthly_statement}

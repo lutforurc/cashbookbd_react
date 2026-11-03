@@ -1141,7 +1141,13 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'profit.loss']} loading={permissionsLoading} />}>
               <Route path={routes.profit_loss} element={<ProfitLoss user={me} />} />
+            </Route>
+            {/* Each on its own key, granted to nobody by default: a company
+                switches them on by assigning the key to a role. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['profit.loss.date.wise']} loading={permissionsLoading} />}>
               <Route path={routes.profit_loss_date_wise} element={<ProfitLossDateWise user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['monthly.statement']} loading={permissionsLoading} />}>
               <Route path={routes.monthly_statement} element={<MonthlyStatement user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'balancesheet.view']} loading={permissionsLoading} />}>
