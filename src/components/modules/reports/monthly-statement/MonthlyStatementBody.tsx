@@ -3,8 +3,6 @@ import { MonthlyStatementData, StatementLine } from "./monthlyStatementSlice";
 
 type Props = {
   data: MonthlyStatementData;
-  /** The paper copy: black borders and no theme colours. */
-  print?: boolean;
   fontSize?: number;
 };
 
@@ -14,22 +12,20 @@ const fmt = (n: number) => thousandSeparator(Number(n) || 0);
 const fmtSigned = (n: number) => (Number(n) < 0 ? `(${fmt(Math.abs(n))})` : fmt(n));
 
 /**
- * The statement itself, drawn once for the screen and the printed sheet alike,
- * so the two can never disagree about a line.
+ * The statement as the screen shows it. The printed sheet has a layout of its
+ * own -- see MonthlyStatementPrint -- and reads the same figures.
  */
-const MonthlyStatementBody = ({ data, print = false, fontSize }: Props) => {
+const MonthlyStatementBody = ({ data, fontSize }: Props) => {
   const fs = fontSize ? { fontSize } : undefined;
 
-  const border = print ? "border-gray-900" : "border-[rgb(var(--c-border))]";
-  const text = print ? "text-gray-900" : "text-[rgb(var(--c-text))]";
-  const band = print
-    ? `border ${border} bg-gray-100`
-    : `border ${border} bg-[rgb(var(--c-table-head))]`;
+  const border = "border-[rgb(var(--c-border))]";
+  const text = "text-[rgb(var(--c-text))]";
+  const band = `border ${border} bg-[rgb(var(--c-table-head))]`;
 
   const Band = ({ label, value, className = "" }: { label: string; value?: string; className?: string }) => (
-    <div style={fs} className={`${band} ${className} px-3 py-1.5 text-center font-semibold uppercase`}>
-      {label}
-      {value !== undefined ? `: ${value}` : ""}
+    <div style={fs} className={`${band} ${className} flex justify-center gap-3 px-3 py-1.5 font-semibold`}>
+      <span>{label}</span>
+      {value !== undefined ? <span className="tabular-nums">{value}</span> : null}
     </div>
   );
 
@@ -44,13 +40,13 @@ const MonthlyStatementBody = ({ data, print = false, fontSize }: Props) => {
       <div className="flex-1 py-1.5">
         {lines.map((line) => (
           <div key={line.key} style={fs} className="flex justify-between gap-3 py-0.5">
-            <span>{line.title}:</span>
+            <span>{line.title}</span>
             <span className="font-semibold tabular-nums">{fmt(line.amount)}</span>
           </div>
         ))}
       </div>
       <div style={fs} className={`${band} flex justify-between px-3 py-1.5 font-bold`}>
-        <span>{totalLabel}:</span>
+        <span>{totalLabel}</span>
         <span className="tabular-nums">{fmt(total)}</span>
       </div>
     </div>
@@ -62,27 +58,27 @@ const MonthlyStatementBody = ({ data, print = false, fontSize }: Props) => {
 
   return (
     <div className={`${text} space-y-3`}>
-      <Band label="Opening Cash in Hand" value={fmtSigned(cash.opening)} />
+      <Band label="Cash in Hand (Opening)" value={fmtSigned(cash.opening)} />
 
       {/* ⚠️ CASH IN HAND ONLY, so the two sides close the till:
-          Opening + Total Credit - Total Debit = Closing. */}
-      <div className="grid gap-6 md:grid-cols-2 print:grid-cols-2">
-        <Side title="Credit" lines={cash.credit} totalLabel="Total Credit Amount" total={cash.total_credit} />
-        <Side title="Debit" lines={cash.debit} totalLabel="Total Debit Amount" total={cash.total_debit} />
+          Opening + Total Receipts - Total Payments = Closing. */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Side title="Cash Receipts" lines={cash.credit} totalLabel="Total Receipts" total={cash.total_credit} />
+        <Side title="Cash Payments" lines={cash.debit} totalLabel="Total Payments" total={cash.total_debit} />
       </div>
 
-      <Band label="Closing Cash in Hand" value={fmtSigned(cash.closing)} />
+      <Band label="Cash in Hand (Closing)" value={fmtSigned(cash.closing)} />
 
       {/* Business that moved no cash: shown so the period is seen whole, and
           added to neither side -- counted, the closing would miss the till by
           exactly the credit business of the period. */}
       {hasMemo ? (
         <div>
-          <Band label="Non-Cash Transactions (not in cash totals)" />
-          <div className="grid gap-x-6 py-1.5 md:grid-cols-2 print:grid-cols-2">
+          <Band label="Credit Transactions (No Cash Movement)" />
+          <div className="grid gap-x-6 py-1.5 md:grid-cols-2">
             {memo.map((line) => (
               <div key={line.key} style={fs} className="flex justify-between gap-3 py-0.5">
-                <span>{line.title}:</span>
+                <span>{line.title}</span>
                 <span className="font-semibold tabular-nums">{fmt(line.amount)}</span>
               </div>
             ))}
@@ -93,7 +89,7 @@ const MonthlyStatementBody = ({ data, print = false, fontSize }: Props) => {
       {/* The bank beside the till, never inside it. */}
       {bank.rows.length > 0 ? (
         <div>
-          <Band label="Bank" />
+          <Band label="Bank Accounts" />
           <table className="w-full border-collapse" style={fs}>
             <thead>
               <tr className="font-semibold">
@@ -131,22 +127,22 @@ const MonthlyStatementBody = ({ data, print = false, fontSize }: Props) => {
       {/* ⚠️ THE PROFIT & LOSS ACCOUNT FOR THE SAME RANGE, read, not re-derived:
           Total Sales Profit is its Gross Profit, Net Profit/Loss its Net. */}
       <Band
-        label="Total Sales Profit"
+        label="Gross Profit"
         value={fmtSigned(profit.gross_profit)}
-        className={print ? "" : "bg-gray-300! dark:bg-gray-600!"}
+        className="bg-gray-300! dark:bg-gray-600!"
       />
       {Number(profit.other_income) !== 0 ? (
-        <Band label="Total Others Income" value={fmt(profit.other_income)} />
+        <Band label="Other Income" value={fmt(profit.other_income)} />
       ) : null}
       <Band
-        label="Total Expenses"
+        label="Expenses"
         value={fmt(profit.expenses)}
-        className={print ? "" : "bg-red-300! dark:bg-red-900/60!"}
+        className="bg-red-300! dark:bg-red-900/60!"
       />
       <Band
         label={net < 0 ? "Net Loss" : "Net Profit"}
         value={fmtSigned(net)}
-        className={print ? "" : net < 0 ? "bg-red-300! dark:bg-red-900/60!" : "bg-green-300! dark:bg-green-900/60!"}
+        className={net < 0 ? "bg-red-300! dark:bg-red-900/60!" : "bg-green-300! dark:bg-green-900/60!"}
       />
     </div>
   );
