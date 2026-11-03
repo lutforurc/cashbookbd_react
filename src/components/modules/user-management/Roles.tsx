@@ -151,14 +151,19 @@ const Roles = () => {
     const nextRoles = uniqueRoles.filter((role) => role?.id && role?.name);
     setRoles(nextRoles);
 
+    // Open on the signed-in user's own role; the list is alphabetical, so
+    // nextRoles[0] is just whichever name sorts first.
+    const ownRole = nextRoles.find((role) => Number(role.id) === Number(auth?.me?.role_id));
+    const initialRole = ownRole || nextRoles[0];
+
     if (nextRoles.length === 1) {
-      setRoleId(nextRoles[0].id);
-      setSelectedRole(nextRoles[0]);
+      setRoleId(initialRole.id);
+      setSelectedRole(initialRole);
     } else if (!selectedRole && nextRoles.length > 0) {
-      setRoleId(nextRoles[0].id);
-      setSelectedRole(nextRoles[0]);
+      setRoleId(initialRole.id);
+      setSelectedRole(initialRole);
     }
-  }, [rolesPermissions.roles, selectedRole]);
+  }, [rolesPermissions.roles, selectedRole, auth?.me?.role_id]);
 
   useEffect(() => {
     if (!selectedRole) return;
