@@ -183,6 +183,9 @@ const ROUTES = {
   balance_sheet: '/reports/balance-sheet',
   trial_balance_level3: '/reports/trialbalance-level3',
   trial_balance_level4: '/reports/trialbalance-level4',
+  // The two statements that sit below Trial Balance Details in the menu.
+  cash_flow_statement: '/reports/cash-flow-statement',
+  general_ledger: '/reports/general-ledger',
   expense_report: '/reports/expense-report',
   customer_supplier_statement: '/reports/ledger-with-product',
   report_due_list: '/reports/due-list',

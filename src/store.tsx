@@ -84,6 +84,8 @@ import balanceSheetSlice from './components/modules/reports/balance-sheet/balanc
 import trialBalanceLevel3Slice from './components/modules/reports/trial-balance-level3/trialBalanceLevel3Slice';
 import expenseReportSlice from './components/modules/reports/expense-report/expenseReportSlice';
 import trialBalanceLevel4Slice from './components/modules/reports/trial-balance-level4/trialBalanceLevel4Slice';
+import cashFlowStatementSlice from './components/modules/reports/cash-flow-statement/cashFlowStatementSlice';
+import generalLedgerSlice from './components/modules/reports/general-ledger/generalLedgerSlice';
 import ledgerWithProductSlice from './components/modules/reports/ledger-with-product/ledgerWithProductSlice';
 import salesSummarySlice from './components/modules/reports/sales-summary/salesSummarySlice';
 import unitSalePaymentsSlice from './components/modules/real-estate/checks/unitSalePaymentsSlice';
@@ -128,6 +130,8 @@ const store = configureStore({
     trialBalanceLevel3: trialBalanceLevel3Slice,
     expenseReport: expenseReportSlice,
     trialBalanceLevel4: trialBalanceLevel4Slice,
+    cashFlowStatement: cashFlowStatementSlice,
+    generalLedger: generalLedgerSlice,
     customerSupplierStatement: ledgerWithProductSlice,
     ledger: ledgerReducer,
     labourLedger: labourLedgerSlice,

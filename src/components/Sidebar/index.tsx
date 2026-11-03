@@ -100,6 +100,8 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'business_summary', title: "Business Summary" },
     { id: 'trial_balance_level3', title: "Trial Balance Group" },
     { id: 'trial_balance_level4', title: "Trial Balance Details" },
+    { id: 'cash_flow_statement', title: "Cash Flow Statement" },
+    { id: 'general_ledger', title: "General Ledger" },
     { id: 'expense_report', title: "Expense Report" },
     { id: 'reports/due-installments', title: "Due Installments" },
     { id: 'reports/employee-installment', title: "Employee Installments" },
@@ -1740,6 +1742,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Trial Balance Details
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'cash.flow.statement') && (
+                            <li style={subSlot('reports', 'cash_flow_statement')}>
+                              <NavLink
+                                to={routes.cash_flow_statement}
+                                className={subMenuLinkClass}
+                              >
+                                Cash Flow Statement
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'general.ledger') && (
+                            <li style={subSlot('reports', 'general_ledger')}>
+                              <NavLink
+                                to={routes.general_ledger}
+                                className={subMenuLinkClass}
+                              >
+                                General Ledger
                               </NavLink>
                             </li>
                           )}

@@ -86,6 +86,8 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Business Summary', path: routes.business_summary, group: 'Reports', permissions: ['business.summary'] },
   { title: 'Trial Balance Level 3', path: routes.trial_balance_level3, group: 'Reports', permissions: ['cashbook.view', 'trial.balance.l3'] },
   { title: 'Trial Balance Level 4', path: routes.trial_balance_level4, group: 'Reports', permissions: ['cashbook.view', 'trial.balance.l4'] },
+  { title: 'Cash Flow Statement', path: routes.cash_flow_statement, group: 'Reports', keywords: ['cash flow', 'operating activities', 'investing', 'financing'], permissions: ['cash.flow.statement'] },
+  { title: 'General Ledger', path: routes.general_ledger, group: 'Reports', keywords: ['ledger', 'accounts head', 'all accounts'], permissions: ['general.ledger'] },
   { title: 'Bank Information', path: routes.bank_information, group: 'Reports', permissions: ['bank.information'] },
   { title: 'Connected Member', path: routes.connected_member, group: 'Reports', permissions: ['connected.member.view'] },
   { title: 'Product Profit Loss', path: routes.product_profit_loss, group: 'Reports', permissions: ['productwise.profit'] },

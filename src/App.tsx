@@ -242,6 +242,8 @@ import ConnectedMember from './components/modules/reports/connected-member/Conne
 import BalanceSheet from './components/modules/reports/balance-sheet/BalanceSheet';
 import TrialBalanceLevel3 from './components/modules/reports/trial-balance-level3/TrialBalanceLevel3';
 import TrialBalanceLevel4 from './components/modules/reports/trial-balance-level4/TrialBalanceLevel4';
+import CashFlowStatement from './components/modules/reports/cash-flow-statement/CashFlowStatement';
+import GeneralLedger from './components/modules/reports/general-ledger/GeneralLedger';
 import ExpenseReport from './components/modules/reports/expense-report/ExpenseReport';
 import GodownStockReport from './components/modules/reports/godown-stock/GodownStockReport';
 import SalesSummaryReport from './components/modules/reports/sales-summary/SalesSummaryReport';
@@ -1161,6 +1163,15 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'trial.balance.l4']} loading={permissionsLoading} />}>
               <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />
+            </Route>
+            {/* The two statements below Trial Balance Details. Each on its own
+                key, granted to nobody by default: a company switches them on by
+                assigning the key to a role, exactly like the monthly statement. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cash.flow.statement']} loading={permissionsLoading} />}>
+              <Route path={routes.cash_flow_statement} element={<CashFlowStatement user={me} />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['general.ledger']} loading={permissionsLoading} />}>
+              <Route path={routes.general_ledger} element={<GeneralLedger user={me} />} />
             </Route>
             {/* The Expense Report reads the trial balance shape narrowed to the
                 expense heads. Offered on its own 'expense.report' permission, the

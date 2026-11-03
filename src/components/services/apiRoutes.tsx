@@ -416,6 +416,11 @@ export const API_REPORT_TRIAL_BALANCE_LEVEL3_URL = `${API_BASE_URL}/reports/tria
 export const API_REPORT_TRIAL_BALANCE_WRITE_OFF_URL = `${API_BASE_URL}/reports/trialbalance-level3-write-off`;
 // Trial Balance Details url
 export const API_REPORT_TRIAL_BALANCE_LEVEL4_URL = `${API_BASE_URL}/reports/trialbalance-level4`;
+// Cash Flow Statement url -- the indirect-method statement under Trial Balance Details
+export const API_REPORT_CASH_FLOW_STATEMENT_URL = `${API_BASE_URL}/reports/cash-flow-statement`;
+// General Ledger url -- one Accounts Head, or all of them, under the same menu
+export const API_REPORT_GENERAL_LEDGER_URL = `${API_BASE_URL}/reports/general-ledger`;
+export const API_REPORT_GENERAL_LEDGER_ACCOUNTS_URL = `${API_BASE_URL}/reports/general-ledger/accounts`;
 // Expense Report url
 export const API_REPORT_EXPENSE_URL = `${API_BASE_URL}/reports/expense-report`;
 // Expense Report details url

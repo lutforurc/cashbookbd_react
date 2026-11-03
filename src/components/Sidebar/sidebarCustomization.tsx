@@ -424,6 +424,8 @@ export const SIDEBAR_SUB_DEFAULTS: Record<string, string[]> = {
     'business_summary',
     'trial_balance_level3',
     'trial_balance_level4',
+    'cash_flow_statement',
+    'general_ledger',
     'expense_report',
   ],
   'branch-transfer': [

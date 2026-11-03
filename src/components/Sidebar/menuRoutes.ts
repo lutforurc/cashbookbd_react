@@ -82,6 +82,8 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.business_summary,
     routes.trial_balance_level3,
     routes.trial_balance_level4,
+    routes.cash_flow_statement,
+    routes.general_ledger,
     routes.expense_report,
     '/reports/due-installments',
     '/reports/employee-installment',

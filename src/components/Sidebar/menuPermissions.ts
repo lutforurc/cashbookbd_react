@@ -46,6 +46,10 @@ export const MENU_PERMISSIONS = {
     // permission that shows the entry has to open the parent group too --
     // otherwise a user holding just this one never sees Reports at all.
     'expense.report',
+    // Same rule for the two statements under Trial Balance Details: either key
+    // alone has to open the Reports menu, or the screen it gates is unreachable.
+    'cash.flow.statement',
+    'general.ledger',
     'product.stock.view',
     'product.in.out',
     'purchase.ledger',
