@@ -417,6 +417,7 @@ export const SIDEBAR_SUB_DEFAULTS: Record<string, string[]> = {
     'divider:rfin:Financial Statements',
     'profit_loss',
     'profit_loss_date_wise',
+    'monthly_statement',
     'product_profit_loss',
     'product_profit_summary',
     'balance_sheet',

@@ -79,6 +79,7 @@ import unitSaleSlice from './components/modules/real-estate/sales/unitSaleSlice'
 import electronicsPurchaseSlice from './components/modules/invoices/purchase/electronicsPurchaseSlice';
 import profitLossSlice from './components/modules/reports/profit-loss/profitLossSlice';
 import profitLossDateWiseReducer from './components/modules/reports/profit-loss/profitLossDateWiseSlice';
+import monthlyStatementReducer from './components/modules/reports/monthly-statement/monthlyStatementSlice';
 import balanceSheetSlice from './components/modules/reports/balance-sheet/balanceSheetSlice';
 import trialBalanceLevel3Slice from './components/modules/reports/trial-balance-level3/trialBalanceLevel3Slice';
 import expenseReportSlice from './components/modules/reports/expense-report/expenseReportSlice';
@@ -122,6 +123,7 @@ const store = configureStore({
     bankBook: bankBookReducer,
     profitLoss: profitLossSlice,
     profitLossDateWise: profitLossDateWiseReducer,
+    monthlyStatement: monthlyStatementReducer,
     balanceSheet: balanceSheetSlice,
     trialBalanceLevel3: trialBalanceLevel3Slice,
     expenseReport: expenseReportSlice,

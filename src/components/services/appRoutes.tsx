@@ -172,6 +172,7 @@ const ROUTES = {
   profit_loss: '/reports/profit-loss',
   // The same trading account a day at a time, under the report it belongs beside.
   profit_loss_date_wise: '/reports/profit-loss-date-wise',
+  monthly_statement: '/reports/monthly-statement',
   product_profit_loss: '/reports/product-profit-loss',
   product_profit_summary: '/reports/product-profit-summary',
   business_summary: '/reports/business-summary',

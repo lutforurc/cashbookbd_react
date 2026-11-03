@@ -81,6 +81,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Bank Book', path: routes.report_bankbook, group: 'Reports', permissions: ['cashbook.view', 'bank.book'] },
   { title: 'Profit Loss', path: routes.profit_loss, group: 'Reports', permissions: ['cashbook.view', 'profit.loss'] },
   { title: 'Profit Loss (Date Wise)', path: routes.profit_loss_date_wise, group: 'Reports', keywords: ['profit loss date wise', 'daily profit loss', 'date wise purchase sales'], permissions: ['cashbook.view', 'profit.loss'] },
+  { title: 'Monthly Statement', path: routes.monthly_statement, group: 'Reports', keywords: ['monthly statement', 'cash in hand', 'cash sales due sales', 'sales profit'], permissions: ['profit.loss'] },
   { title: 'Balance Sheet', path: routes.balance_sheet, group: 'Reports', permissions: ['cashbook.view', 'balancesheet.view'] },
   { title: 'Business Summary', path: routes.business_summary, group: 'Reports', permissions: ['business.summary'] },
   { title: 'Trial Balance Level 3', path: routes.trial_balance_level3, group: 'Reports', permissions: ['cashbook.view', 'trial.balance.l3'] },
