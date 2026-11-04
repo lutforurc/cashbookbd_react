@@ -11,7 +11,8 @@ title: "Manufacturing Phase 1 — কাজের অবস্থা ও অন�
 - কোড লিখেছে Command Code; প্রতিটা ধাপ Claude Code মিলিয়ে দেখেছে।
 - ধাপ ১-এ নতুন ফর্ম মাত্র দুটো: **Production Entry** আর **Production Sales Return**। ক্রয়, খরচ/মজুরি, বিক্রি আর Branch Transfer আগের ফর্মেই চলে।
 - আগের ফর্মে একটাই অনুমোদিত বদল: **Item opening stock পরিমাণ দুই দশমিকে** নেয়।
-- P&L, আগের কোনো এন্ট্রি ফর্ম, `productValidation`, `StockCostLayers`, `VoucherModificationController`: কিছুই বদলায়নি।
+- আগের কোনো এন্ট্রি ফর্ম, `productValidation`, `StockCostLayers`, `VoucherModificationController`: কিছুই বদলায়নি।
+- P&L-এ একটাই অনুমোদিত বদল, ক-২ #১২ "গ" (৪ নভেম্বর ২০২৬): production-এ বণ্টন করা খরচ COGS-এর **Direct Acquisition Costs** লাইনে যায়, আর একই অঙ্ক Production Cost খরচের group থেকে বাদ যায়। Gross profit আসল দেখায়, net profit বদলায় না, কোনো ledger লেখা হয় না। বিস্তারিত §৪-ক।
 
 ## ২. কোড কোথায়
 
@@ -54,7 +55,9 @@ git -C <backend-folder> checkout Manufacturing-API
 | `app/Http/Controllers/Production/` | `ProductionController`, `ProductionReportController`, `ProductionSalesReturnController` |
 | `routes/api.php` | `/api/production/*` (নিচে) |
 | `app/Http/Controllers/Products/ItemController.php` | opening stock qty ও মোট টাকা দুই দশমিকে (অনুমোদিত বদল) |
-| `app/Http/Controllers/Reports/ReportsController.php` | `productLedgerData()` ও `productStatementData()`-এ production শাখা যোগ, `Schema::hasTable('production_master')` দিয়ে সুরক্ষিত; আগের ছয় শাখা অপরিবর্তিত |
+| `app/Http/Controllers/Reports/ReportsController.php` | `productLedgerData()` ও `productStatementData()`-এ production শাখা যোগ, `Schema::hasTable('production_master')` দিয়ে সুরক্ষিত; আগের ছয় শাখা অপরিবর্তিত। "গ": `profitLossData()` নতুন key `production_cost` পাঠায় (`productionCostData()`); পণ্যভিত্তিক লাভের Adjustment আর `apiProfitLossDateWise()` সেটা ধরে |
+| `app/Http/Controllers/Reports/MonthlyStatementController.php`, `CashFlowStatementController.php` | "গ": একই নিয়মে gross profit / COGS |
+| `resources/views/reports/newreports/profit_loss_print.blade.php` | "গ": পুরনো print-এ "Direct Acquisition Costs (production)" লাইন |
 
 API (সবই permission + branch-এর `manufactur_control` দিয়ে বন্ধ):
 
@@ -71,6 +74,7 @@ API (সবই permission + branch-এর `manufactur_control` দিয়ে �
 | `src/components/Sidebar/index.tsx`, `menuPermissions.ts`, `menuRoutes.ts` | "Production" মেনু গ্রুপ (Requisition আর Real Estate-এর মাঝে) |
 | `src/App.tsx`, `services/appRoutes.tsx`, `services/apiRoutes.tsx`, `store.tsx` | route, endpoint, slice যোগ |
 | `modules/product/AddProduct.tsx`, `Product.tsx` | opening qty input-এ `step="0.01"` |
+| `modules/reports/profit-loss/ProfitLoss.tsx`, `profitLossNotes.ts` | "গ": `directAcquisitionCosts = production_cost.total`, খরচের group থেকে বাদ; note ৩-এর লেখা অঙ্ক থাকলে বদলায় |
 
 পাতার ঠিকানা: `/production/entry`, `/production/sales-return`, `/production/register`, `/production/costing/:id`।
 
@@ -125,18 +129,61 @@ php artisan route:clear
 | `production_master` না থাকলেও Product Ledger/Statement চলে | পাস |
 | Vite build | পাস |
 
+## ৪-ক. Gross profit: সিদ্ধান্ত "গ" (৪ নভেম্বর ২০২৬)
+
+**কেন:** P&L-এর trading অংশ শুধু ক্রয়, বিক্রি, ফেরত আর stock পড়ে। মজুরি বসে নিচে, খরচের তালিকায়। Production মজুরিকে তৈরি মালের দামে (closing stock-এ) ঢোকায়, কিন্তু "ক্রয়"-এ ঢোকায় না। তাই "ক"-তে gross profit মজুরির পুরো টাকা বেশি দেখাত (worked example-এ ৪,৩৫৮, আসল ১,২৯৮), যদিও net profit ঠিক থাকত। "খ" (স্বয়ংক্রিয় Journal দিয়ে মজুরিকে Purchase-এ সরানো) বাদ, কারণ তাতে Purchase-এর অঙ্কে মজুরি মেশে আর ledger লিখতে হয়।
+
+**"গ" কী করে:** কোনো ledger লেখে না। শুধু রিপোর্টে এক অঙ্ক দুই জায়গায় বসায়: COGS-এর "Direct Acquisition Costs"-এ যোগ, আর Production Cost খরচের group থেকে বাদ।
+
+**অঙ্কটা কীভাবে আসে** (`ReportsController::productionCostData()`):
+
+- শুধু `PROD_EXPENSE_*` head (Factory Labour, Packing Labour, Factory Transport)। অফিস খরচ আর 197/199 (Purchase Transportation, Unloading) সরে না।
+- Batch `posted`, বণ্টন `active` (বা পুরনো সারিতে NULL)। Reverse করা batch বাদ।
+- Production-এর তারিখ আর খরচের voucher-এর তারিখ দুটোই P&L-এর range-এর মধ্যে, একই branch ও company, voucher live (`status = 1`, `is_closing = 0`)।
+- প্রতি খরচের সারিতে `LEAST(বণ্টিত টাকা, সারির বর্তমান debit)`, তাই voucher পরে কমালে বেশি সরে না।
+- প্রতি group-এ সীমা: সেই group-এর net (debit − credit, ০-এর নিচে নয়)। ফলে যত যোগ হয় ঠিক তত বাদ যায়, net profit কখনো বদলায় না। (প্রথম সংস্করণে এই সীমা ছিল না; group-এ সংশোধনী credit থাকলে net profit কমে যেত। ধরা পড়ে ঠিক করা হয়েছে।)
+- টেবিল না থাকলে বা production না থাকলে অঙ্ক ০। তখন সব রিপোর্ট আগের মতো হুবহু।
+
+**কোথায় কোথায় লাগানো:** gross profit যে ছয় জায়গায় আলাদা করে হিসাব হয়, সবগুলোতে একই নিয়ম: P&L স্ক্রিন ও print (`ProfitLoss.tsx`), পুরনো Blade print, Monthly Statement, Cash Flow, পণ্যভিত্তিক লাভের Adjustment, দিনভিত্তিক P&L। কোনো জায়গা বাদ পড়লেও সেখানে net profit ঠিক থাকে, শুধু gross profit "ক"-এর মতো দেখায়।
+
+**বাকি রাখা:** `apiProfitLossExpenseSummary()` (খরচের group-এ ক্লিক করলে head-এর বিস্তারিত) আগের মতো পুরো head দেখায়; Production Cost group আংশিক কমলে বিস্তারিতের যোগফল group-এর লাইনের চেয়ে বেশি দেখাবে। ইচ্ছে করে বদলানো হয়নি।
+
+**যাচাই** (Command Code, `myappsaasdatabase`-এ company 1 / branch 11-এ worked example transaction-এর ভিতরে বানিয়ে আসল controller চালিয়ে roll back; কোনো সারি থেকে যায়নি; Claude Code diff মিলিয়ে দেখেছে):
+
+| অবস্থা | আগে: gross / খরচ / net | পরে: gross / খরচ / net | সরানো অঙ্ক |
+| --- | --- | --- | --- |
+| Worked example | ৪,৩৫৮ / ৩,০৬০ / ১,২৯৮ | ১,২৯৮ / ০ / ১,২৯৮ | ৩,০৬০ |
+| Batch reverse / বণ্টন released | ৪,৩৫৮ / ৩,০৬০ / ১,২৯৮ | একই | ০ |
+| Range production-এর তারিখের আগে শেষ | ৪,৩৫৮ / ৩,০৬০ / ১,২৯৮ | একই | ০ |
+| খরচের voucher ৩,০৬০ → ২,০০০ | ৪,৩৫৮ / ২,০০০ / ২,৩৫৮ | ২,৩৫৮ / ০ / ২,৩৫৮ | ২,০০০ |
+| বণ্টন ৫,০০০, voucher-এ ৩,০৬০ | ৪,৩৫৮ / ৩,০৬০ / ১,২৯৮ | ১,২৯৮ / ০ / ১,২৯৮ | ৩,০৬০ |
+| অফিস head-এ খরচ (PROD_EXPENSE নয়) | ৪,৩৫৮ / ৩,০৬০ / ১,২৯৮ | একই | ০ |
+| Group-এ ৩,০৬০ credit (net ০) | ৪,৩৫৮ / ০ / ৪,৩৫৮ | একই | ০ |
+| Group-এ ১,০০০ credit (net ২,০৬০) | ৪,৩৫৮ / ২,০৬০ / ২,২৯৮ | ২,২৯৮ / ০ / ২,২৯৮ | ২,০৬০ |
+
+- Worked example-এ বাকি রিপোর্ট: Monthly Statement COGS ৭,৭০২, gross ১,২৯৮; Cash Flow COGS ৭,৭০২, reconciles; দিনভিত্তিক P&L লাভ ১,২৯৮; TB ৩০,০০০ = ৩০,০০০; BS ২১,২৯৮ = ২১,২৯৮।
+- Production নেই এমন branch আর production টেবিল নেই এমন DB: P&L, Monthly, Cash Flow, দিনভিত্তিক, Balance Sheet-এর JSON আগে-পরে হুবহু এক।
+- Blade print: অঙ্ক থাকলে "Direct Acquisition Costs (production)" লাইন আসে, Production Cost লাইন যায়; reverse করলে উল্টো।
+- `php -l` পাস, `npm run build` exit 0।
+- Commit: API `ae55724e`, React `56d63a9f`, দুটোই push করা।
+
 ## ৫. যা বাকি
 
 ### যাচাই
 
-- Production ছাড়া ব্রাঞ্চে আগের মাসের P&L / Balance Sheet / Product Ledger সংখ্যা ধরে আগে-পরে তুলনা করা হয়নি। কোড দেখে নিরাপদ: P&L-এ বদল নেই, আর production-এর সারি না থাকলে নতুন শাখা কিছু আনে না।
+- Production ছাড়া ব্রাঞ্চে P&L / Monthly / Cash Flow / দিনভিত্তিক / Balance Sheet আগে-পরে হুবহু এক (§৪-ক)। Product Ledger-এর আগে-পরে তুলনা এখনো হয়নি।
+- "গ"-এর সংখ্যা Command Code-এর বানানো fixture-এ যাচাই; branch 11-এর আসল test data (অন্য কম্পিউটারের `krishibitandatabase`)-তে P&L একবার খুলে gross ১,২৯৮ আর net ১,২৯৮ মিলিয়ে দেখা বাকি।
 - একই company-র ভিতরে অন্য branch-এর API call আলাদা করে পরীক্ষা হয়নি (অন্য company-রটা হয়েছে)।
 - নিজে মেনু খুলে পুরো ক্রম UI দিয়ে একবার চালানো।
 
+### সিদ্ধান্ত হয়ে গেছে (৪ নভেম্বর ২০২৬)
+
+- **ক-২ #১২ (gross profit):** **"গ"**, §৪-ক দেখুন। বানানো ও push করা।
+- **ক-২ #১৩ (ফেরতের দাম):** গ্রাহককে টাকা ফেরত বিক্রির দামে (ledger আজকের মতোই), ফেরত মাল stock-এ original বিক্রির FIFO খরচে। নতুন Production Sales Return ফর্ম এটাই করে; কোনো বদল লাগেনি।
+
 ### মালিক / ক্লায়েন্টের কাছ থেকে
 
-- **ক-২ #১২ (gross profit):** সিদ্ধান্ত **"গ"** (৪ নভেম্বর ২০২৬)। Production কোনো ledger লেখে না। P&L-এর Cost of Goods Sold-এ allocated production cost "Direct Acquisition Costs" লাইনে যোগ হয়, আর একই অঙ্ক Production Cost expense group থেকে বাদ যায়; gross profit আসল, net profit অপরিবর্তিত।
-- **ক-২ #১৩ (ফেরতের দাম):** সিদ্ধান্ত (৪ নভেম্বর ২০২৬): গ্রাহককে বিক্রির দামে ফেরত (ledger আজকের মতোই), ফেরত মাল original বিক্রির FIFO খরচে stock-এ। নতুন Production Sales Return ফর্ম এটাই করে; পুরনো Sales Return ফর্ম এই কাজে বদলাবে না।
+- **পুরনো Sales Return ফর্ম:** এটা ফেরত মাল stock-এ ফেরতের টাকার দামে ঢোকায় (যেমন ২০০, খরচ ১৭১.১৬), আর `(int)` দিয়ে ভগ্নাংশ কাটে; সব branch-এ লাভ বাড়িয়ে দেখায় (v4 গ-৪)। আলাদা কাজ হিসেবে ঠিক হবে কি না, সিদ্ধান্ত বাকি।
 - **ক্লায়েন্ট DB-তে query (v4 গ-৯):** পুরনো Manufacturing module-এর ব্যবহার, id-গুলো, unit/net contents। এখনো চালানো হয়নি।
 - ক-২ #৬ (expiry), #১০ (VAT), #১১ (কাঁচামালের উৎস, গুদাম)।
 
@@ -154,6 +201,7 @@ php artisan route:clear
 2. `php artisan patch:add-unit-type` → `permission:cache-reset` → `route:clear`।
 3. শুধু Manufacturing ব্রাঞ্চে "Control Manufacture?" চালু, দরকারি role-কে `production.*` permission।
 4. Patch না চালালেও Product Ledger/Statement ভাঙবে না, কিন্তু Production মেনু কাজ করবে না।
+5. "গ"-এর জন্য আলাদা patch লাগে না। Phase 1-এর patch না চালানো ক্লায়েন্টে `production_cost` ০ আসে, P&L আগের মতোই।
 
 ## ৬. Command Code-এর সঙ্গে কাজের নিয়ম
 
