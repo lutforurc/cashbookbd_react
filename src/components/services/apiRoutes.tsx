@@ -323,6 +323,33 @@ export const API_PRODUCT_IN_REASON_STORE_URL = `${API_BASE_URL}/product-in/reaso
 export const API_PRODUCT_IN_REASON_UPDATE_URL = `${API_BASE_URL}/product-in/reason/update`;
 export const API_PRODUCT_IN_REASON_DESTROY_URL = `${API_BASE_URL}/product-in/reason/destroy`;
 
+// Production (Manufacturing) Routes (উৎপাদন)
+// A batch: inputs taken out of stock and one output put back. Unlike a write-off
+// or a receipt, the stock moves at POST (`/post`), not at save -- a draft moves
+// nothing -- and `/reverse` takes it back. The list, the posting and the two
+// reports all live under one prefix.
+export const API_PRODUCTION_LIST_URL = `${API_BASE_URL}/production/list`;
+export const API_PRODUCTION_DETAILS_URL = `${API_BASE_URL}/production/details`;
+// The posted expense lines a batch may be costed from (Factory Labour and the
+// like), with how much of each is still free.
+export const API_PRODUCTION_ALLOCATABLE_URL = `${API_BASE_URL}/production/allocatable-expenses`;
+// How much of a product is on hand at a date, for the input rows.
+export const API_PRODUCTION_STOCK_URL = `${API_BASE_URL}/production/available-stock`;
+export const API_PRODUCTION_STORE_URL = `${API_BASE_URL}/production/store`;
+export const API_PRODUCTION_UPDATE_URL = `${API_BASE_URL}/production/update`;
+// The act that moves stock: `${URL}/${id}`.
+export const API_PRODUCTION_POST_URL = `${API_BASE_URL}/production/post`;
+export const API_PRODUCTION_REVERSE_URL = `${API_BASE_URL}/production/reverse`;
+export const API_PRODUCTION_DESTROY_URL = `${API_BASE_URL}/production/destroy`;
+// The two reports: the register (list) and batch costing (detail).
+export const API_PRODUCTION_REGISTER_URL = `${API_BASE_URL}/production/report/register`;
+export const API_PRODUCTION_COSTING_URL = `${API_BASE_URL}/production/report/costing`;
+// Production Sales Return -- the ordinary return's ledger rows, but the goods go
+// back at the ORIGINAL sale's cost rather than the price they were sold at.
+export const API_PRODUCTION_SALES_RETURN_STORE_URL = `${API_BASE_URL}/production/sales-return/store`;
+export const API_PRODUCTION_SALES_RETURN_EDIT_URL = `${API_BASE_URL}/production/sales-return/edit`;
+export const API_PRODUCTION_SALES_RETURN_UPDATE_URL = `${API_BASE_URL}/production/sales-return/update`;
+
 // Chart of Accounts
 // COAL1
 export const API_COAL1_LIST_URL = `${API_BASE_URL}/coal1/coal1-list`;

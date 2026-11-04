@@ -64,6 +64,11 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'labour_category', title: "Category" },
     { id: 'labour_item', title: "Item" },
   ],
+  'production': [
+    { id: 'production_entry', title: "Production Entry" },
+    { id: 'production_sales_return', title: "Production Sales Return" },
+    { id: 'production_register', title: "Production Register" },
+  ],
   'branch-transfer': [
     { id: 'branch_transfer', title: "Branch Issue" },
     { id: 'branch_received', title: "Branch Receive" },
@@ -302,6 +307,7 @@ export const SIDEBAR_MENUS = [
   { id: 'product_tracking', title: 'Product Tracking' },
   { id: 'company_scheme', title: 'Company Scheme' },
   { id: 'requisition', title: 'Requisition' },
+  { id: 'production', title: 'Production' },
   { id: 'real-estate', title: 'Real Estate' },
   { id: 'hotel', title: 'Hotel' },
   { id: 'asset', title: 'Assets' },
@@ -2379,6 +2385,85 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Receipts
+                              </NavLink>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
+
+              {/* Production (Manufacturing). Two doors, both must be open: the
+                  user holds one of the Production keys, AND the branch has its
+                  Manufacture switch on. The switch is what keeps the whole
+                  feature out of the way on every ordinary branch -- the
+                  permission alone would put it in front of an owner who granted
+                  it everywhere. */}
+              {hasMenuPermission(permissions, 'production') &&
+                Number(settings?.data?.branch?.manufactur_control) === 1 && (
+                <SidebarLinkGroup
+                  activeCondition={isMenuActive('production', pathname)}
+                  menuId="production"
+                  style={menuSlot('production')}
+                  open={openMenu === 'production'}
+                  handleClick={() => handleMenuClick('production')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('production', pathname) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
+                          }`}
+
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiTool />
+                        Production
+                        <FiChevronRight
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
+                            }`}
+                        />
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {hasPermission(permissions, 'production.create') && (
+                            <li style={subSlot('production', 'production_entry')}>
+                              <NavLink
+                                to={routes.production_entry}
+                                className={subMenuLinkClass}
+                              >
+                                Production Entry
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'production.create') && (
+                            <li style={subSlot('production', 'production_sales_return')}>
+                              <NavLink
+                                to={routes.production_sales_return}
+                                className={subMenuLinkClass}
+                              >
+                                Production Sales Return
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'production.report.view') && (
+                            <li style={subSlot('production', 'production_register')}>
+                              <NavLink
+                                to={routes.production_register}
+                                className={subMenuLinkClass}
+                              >
+                                Production Register
                               </NavLink>
                             </li>
                           )}

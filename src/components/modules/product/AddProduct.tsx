@@ -824,6 +824,7 @@ const AddProduct = () => {
                 id="opening_qty"
                 name="opening_qty"
                 type="number"
+                step="0.01"
                 min={0}
                 value={formData.opening_qty ? formData.opening_qty.toString() : ''}
                 placeholder={'Enter Quantity'}

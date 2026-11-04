@@ -140,6 +140,14 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.requisition_create,
     routes.requisition_comparison,
   ],
+  'production': [
+    routes.production_entry,
+    routes.production_sales_return,
+    routes.production_register,
+    // Reached from a row on the register rather than from the menu itself, but
+    // listed so the Production menu stays open and marked while it is on screen.
+    routes.production_costing,
+  ],
   'real-estate': [
     '/admin/check-register',
     routes.unit_payment_list,
