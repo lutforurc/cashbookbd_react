@@ -44,6 +44,7 @@ import httpService from '../../../services/httpService';
 import { API_HOTEL_FOLIO_URL, API_HOTEL_PARTY_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
 import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
+import { trxDateToIso } from '../../../utils/utils-functions/transactionDate';
 import { money } from '../setupHelpers';
 import MoveRoomDialog from './MoveRoomDialog';
 import {
@@ -374,6 +375,17 @@ const FolioScreen = () => {
   const loading = useSelector((state: any) => state.hotelBooking.loading);
   const saving = useSelector((state: any) => state.hotelBooking.saving);
   const tills = useSelector((state: any) => state.hotelBooking.tills);
+
+  /**
+   * The branch's open TRANSACTION date (`trx_dt`), not today's system date.
+   *
+   * ⚠️ The books stay on the transaction date until day close advances it, so a
+   * receipt defaulted to the calendar date posts into a day the branch has not
+   * reached -- and the voucher it writes is dated there too (`vr_date` follows
+   * `payment_date`). Falls back to today only while settings is still loading.
+   */
+  const trxDt = useSelector((state: any) => state.settings?.data?.trx_dt);
+  const trxDate = trxDateToIso(trxDt) || today();
 
   const bill = useSelector((state: any) => state.hotelBooking.bill);
 
@@ -1358,7 +1370,7 @@ const FolioScreen = () => {
               // sitting in the box reads as a figure somebody meant.
               amount: balance > 0 ? balance.toFixed(2) : '',
               method: 'cash',
-              payment_date: today(),
+              payment_date: trxDate,
               reference: '',
               // The first till on the list, which on a property with one
               // drawer is the only one and saves a decision nobody has.
