@@ -7,7 +7,7 @@ import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import { Select } from '../../utils/fields/FormControls';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
-import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionItemsDropdown';
+import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import WarehouseDropdown from '../../utils/utils-functions/WarehouseDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import httpService from '../../services/httpService';
@@ -24,7 +24,7 @@ import {
   updateProduction,
 } from './productionSlice';
 
-type Option = { value: string; label: string; label_2?: string; label_3?: string };
+type Option = { value: string; label: string; label_2?: string; label_3?: string; label_5?: string };
 
 type InputLine = {
   id: number;
@@ -37,6 +37,8 @@ type InputLine = {
 
 const emptyInput = { productId: '', productName: '', unit: '', godownId: '', qty: '' };
 
+type Tab = 'output' | 'inputs' | 'costs' | 'batches';
+
 const today = () => {
   const d = new Date();
   return d.toISOString().slice(0, 10);
@@ -47,7 +49,11 @@ const today = () => {
  *
  * A DRAFT moves nothing; POST is the act that takes the inputs off the shelf,
  * puts the output on it and freezes what it cost. There is no ledger entry --
- * the larger closing stock carries the cost (owner's decision #12, option "ক").
+ * the larger closing stock carries the cost, and the P&L reads the allocated
+ * part as a direct acquisition cost (owner's decision #12, option "গ").
+ *
+ * The form is split into tabs; every field lives in the one `form` state, so
+ * switching tabs never loses what was typed.
  *
  * Costs are worked out by the server (FIFO layers, allocated expense) and are
  * never typed except as the choice of which expense line to spend.
@@ -60,6 +66,7 @@ const ProductionEntry = () => {
   const batches: any[] = Array.isArray(production?.data) ? production.data : [];
 
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState<Tab>('output');
   const [line, setLine] = useState({ ...emptyInput });
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
   const [allocatable, setAllocatable] = useState<any[]>([]);
@@ -97,10 +104,9 @@ const ProductionEntry = () => {
   // The expense lines a batch dated this day may be costed from. Re-read when
   // the date changes, because the server only offers the batch's own month.
   useEffect(() => {
-    dispatch(
-      getProductionAllocatable({ date: form.productionDate }, (response: any) => {
-        if (response?.success) setAllocatable(Array.isArray(response.data) ? response.data : []);
-      }) as any,
+    // The thunk takes no callback -- its rows come back as the action payload.
+    dispatch(getProductionAllocatable({ date: form.productionDate })).then((action: any) =>
+      setAllocatable(Array.isArray(action?.payload) ? action.payload : []),
     );
   }, [dispatch, form.productionDate]);
 
@@ -149,7 +155,7 @@ const ProductionEntry = () => {
       ...p,
       productId: option?.value || '',
       productName: option?.label || '',
-      unit: option?.label_3 || '',
+      unit: option?.label_5 || '',
     }));
   };
 
@@ -241,17 +247,23 @@ const ProductionEntry = () => {
       .map(([sourceId, amount]) => ({ source_acc_detail_id: Number(sourceId), amount: Number(amount) })),
   });
 
-  const validate = () => {
-    if (!form.productionDate) return 'Production date is required.';
-    if (!form.outputProductId) return 'Choose the product this batch makes.';
-    if (!form.outputQty || Number(form.outputQty) <= 0) return 'Enter the good output quantity.';
-    if (!form.inputs.length) return 'Add at least one input.';
+  // Each problem names the tab its field is on, so a save refused for a field
+  // on a hidden tab opens that tab instead of leaving the clerk to hunt for it.
+  const validate = (): { message: string; tab: Tab } | null => {
+    if (!form.productionDate) return { message: 'Production date is required.', tab };
+    if (!form.outputProductId) return { message: 'Choose the product this batch makes.', tab: 'output' };
+    if (!form.outputQty || Number(form.outputQty) <= 0)
+      return { message: 'Enter the good output quantity.', tab: 'output' };
+    if (!form.inputs.length) return { message: 'Add at least one input.', tab: 'inputs' };
     return null;
   };
 
   const save = () => {
     const problem = validate();
-    if (problem) return toast.error(problem);
+    if (problem) {
+      setTab(problem.tab);
+      return toast.error(problem.message);
+    }
     setSaving(true);
     const payload = buildPayload();
     const done = (response: any) => {
@@ -273,7 +285,7 @@ const ProductionEntry = () => {
 
   const openBatch = (id: number) => {
     dispatch(
-      getProductionDetails(id, (response: any) => {
+      getProductionDetails({ id, callback: (response: any) => {
         if (!response?.success) return toast.error(response?.message || 'Could not open the batch');
         const m = response.data?.master ?? {};
         const inputs: any[] = response.data?.inputs ?? [];
@@ -305,8 +317,9 @@ const ProductionEntry = () => {
           allocations: allocMap,
         });
         setEditing({ id: Number(m.id), batchRef: m.batch_ref || '' });
+        setTab('output');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      }) as any,
+      } }) as any,
     );
   };
 
@@ -358,6 +371,14 @@ const ProductionEntry = () => {
     return `inline-block rounded px-2 py-0.5 text-xs font-medium ${map[status] || ''}`;
   };
 
+  const allocationCount = Object.values(form.allocations).filter((v) => Number(v) > 0).length;
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'output', label: 'Output' },
+    { key: 'inputs', label: `Inputs (${form.inputs.length})` },
+    { key: 'costs', label: `Wastage & Expense${allocationCount ? ` (${allocationCount})` : ''}` },
+    { key: 'batches', label: `Recent batches (${batches.length})` },
+  ];
+
   return (
     <div>
       <HelmetTitle title="Production Entry" />
@@ -403,7 +424,30 @@ const ProductionEntry = () => {
         />
       </div>
 
+      <div role="tablist" className="mb-3 flex flex-wrap gap-1 rounded border border-[rgb(var(--c-border))] bg-slate-50 p-1 dark:bg-boxdark">
+        {tabs.map((t) => {
+          const active = tab === t.key;
+          return (
+            <button
+              key={t.key}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => setTab(t.key)}
+              className={`rounded px-4 py-2 text-sm font-medium transition ${
+                active
+                  ? 'bg-blue-50 text-blue-600 dark:bg-slate-700/60 dark:text-blue-400'
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-700/40 dark:hover:text-blue-400'
+              }`}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* ---- Output ---- */}
+      {tab === 'output' && (
       <div className="rounded border border-[rgb(var(--c-border))] p-3 mb-3">
         <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Output
@@ -411,7 +455,7 @@ const ProductionEntry = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
           <div className="md:col-span-2">
             <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Product made</label>
-            <RequisitionItemsDropdown
+            <ProductDropdown
               id="outputProduct"
               name="outputProduct"
               onSelect={(o: Option | null) => {
@@ -445,8 +489,10 @@ const ProductionEntry = () => {
           />
         </div>
       </div>
+      )}
 
       {/* ---- Inputs ---- */}
+      {tab === 'inputs' && (
       <div className="rounded border border-[rgb(var(--c-border))] p-3 mb-3">
         <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Inputs (come out of stock at FIFO cost)
@@ -454,7 +500,7 @@ const ProductionEntry = () => {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
           <div className="md:col-span-5">
             <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Product</label>
-            <RequisitionItemsDropdown
+            <ProductDropdown
               id="inputProduct"
               name="inputProduct"
               onSelect={handleLineProduct}
@@ -547,8 +593,10 @@ const ProductionEntry = () => {
           </table>
         </div>
       </div>
+      )}
 
       {/* ---- Loss & allocations ---- */}
+      {tab === 'costs' && (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <div className="rounded border border-[rgb(var(--c-border))] p-3">
           <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -646,7 +694,11 @@ const ProductionEntry = () => {
           </p>
         </div>
       </div>
+      )}
 
+      {/* Save sits outside the tabs, so a batch can be saved from any of the
+          three entry tabs; the register has nothing of its own to save. */}
+      {tab !== 'batches' && (
       <div className="flex flex-wrap gap-2 mb-5">
         <ButtonLoading
           onClick={save}
@@ -663,11 +715,10 @@ const ProductionEntry = () => {
           icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
         />
       </div>
+      )}
 
       {/* ---- The register ---- */}
-      <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-        Recent batches
-      </h4>
+      {tab === 'batches' && (
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-[rgb(var(--c-table-head))] dark:text-gray-200">
@@ -731,6 +782,7 @@ const ProductionEntry = () => {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 };

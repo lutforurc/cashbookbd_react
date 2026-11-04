@@ -6,11 +6,11 @@ import HelmetTitle from '../../utils/others/HelmetTitle';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
-import RequisitionItemsDropdown from '../../utils/utils-functions/RequisitionItemsDropdown';
+import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { storeProductionSalesReturn } from './productionSlice';
 
-type Option = { value: string; label: string; label_3?: string };
+type Option = { value: string; label: string; label_3?: string; label_5?: string };
 
 type ReturnLine = {
   id: number;
@@ -60,7 +60,7 @@ const ProductionSalesReturn = () => {
     setForm((p) => ({ ...p, account: option?.value || '', accountName: option?.label || '' }));
 
   const handleLineProduct = (option: Option | null) =>
-    setLine((p) => ({ ...p, code: option?.value || '', name: option?.label || '', unit: option?.label_3 || '' }));
+    setLine((p) => ({ ...p, code: option?.value || '', name: option?.label || '', unit: option?.label_5 || '' }));
 
   const addLine = () => {
     if (!line.code) return toast.error('Pick a product');
@@ -186,7 +186,7 @@ const ProductionSalesReturn = () => {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end mb-3">
         <div className="md:col-span-5">
           <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Returned product</label>
-          <RequisitionItemsDropdown
+          <ProductDropdown
             id="returnProduct"
             name="returnProduct"
             onSelect={handleLineProduct}
