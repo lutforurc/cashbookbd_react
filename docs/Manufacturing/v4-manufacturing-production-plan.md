@@ -12,14 +12,16 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 - **অংশ খ** ডেভেলপারের জন্য, কারিগরি নিয়ম ও যাচাই।
 - **অংশ গ** Phase 0-এর প্রমাণ: কোড কী বলে, আর তাতে পরিকল্পনা কোথায় বদলাল।
 
-### মূল নিয়ম: ফর্ম আলাদা, রিপোর্ট একই (মালিক, ৪ নভেম্বর ২০২৬)
+### মূল নিয়ম: আগের ফর্ম বদলাবে না, রিপোর্ট একই (মালিক, ৪ নভেম্বর ২০২৬)
 
-1. **এই কাজের সব এন্ট্রি ফর্ম নতুন ও আলাদা হবে।** Production, ক্রয়, বিক্রয়, ফেরত, খরচ/মজুরি, opening stock, রেসিপি, স্কিম: প্রতিটা Manufacturing ব্রাঞ্চের নিজের ফর্ম।
-2. **আগের কোনো এন্ট্রি ফর্ম আপডেট বা মডিফাই হবে না।** Frontend স্ক্রিন, তার save/edit API, validation (`productValidation` সহ) বা posting কোড কিছুই নয়। আগের ফর্মে কোনো সমস্যা পাওয়া গেলেও (যেমন গ-৪, গ-৭) সেখানে ঠিক করা হবে না; নতুন ফর্ম নিজে সঠিকভাবে লিখবে।
-3. **রিপোর্ট আগেরগুলোই ব্যবহার হবে।** নতুন ফর্ম একই টেবিলে লিখবে (`main_trx_master`, `acc_transaction_*`, `inventory_masters`/`inventory_details`), একই head আর একই নিয়মে, যাতে Trial Balance, P&L, Balance Sheet, Cash Flow, Ledger, Stock রিপোর্ট কোনো বদল ছাড়াই ঠিক অঙ্ক দেখায়। P&L একদম বদলাবে না। যে রিপোর্ট নতুন voucher চেনে না (যেমন Product Ledger, গ-৬), সেখানে শুধু নতুন শাখা **যোগ** হবে, আগের শাখা অপরিবর্তিত, আর আলাদা অনুমোদনে।
-4. নতুন রিপোর্ট শুধু production-এর নিজের: Production Register, Batch Costing, trace।
+1. **যে আগের ফর্মে কোনো বদল লাগে না, সেটাই ব্যবহার হবে,** যেমন আছে তেমন।
+2. **যে আগের ফর্মে বদল লাগত, সেটা বদলানো হবে না; তার জায়গায় নতুন ফর্ম তৈরি হবে।** আগের ফর্মের frontend স্ক্রিন, save/edit API, validation (`productValidation` সহ) বা posting কোড কিছুই বদলাবে না। আগের ফর্মে কোনো সমস্যা পাওয়া গেলেও (যেমন গ-৪, গ-৭) সেখানে ঠিক করা হবে না।
+3. যে কাজের কোনো ফর্মই নেই (Production Entry, Recipe, স্কিম), সেগুলো নতুন।
+   - **একমাত্র ব্যতিক্রম (মালিক, ৪ নভেম্বর):** আগের Item opening stock ফর্মে পরিমাণ দশমিকে (যেমন ১২.৫০) নেওয়ার বদল অনুমোদিত। মালিকের মতে এতে কোনো সমস্যা হবে না, তাই আলাদা Opening Stock ফর্ম হবে না (খ-৬)।
+4. **রিপোর্ট আগেরগুলোই ব্যবহার হবে।** নতুন ফর্ম আগের ফর্মের মতো একই টেবিলে লিখবে (`main_trx_master`, `acc_transaction_*`, `inventory_masters`/`inventory_details`), একই head আর একই নিয়মে, যাতে Trial Balance, P&L, Balance Sheet, Cash Flow, Ledger, Stock রিপোর্ট কোনো বদল ছাড়াই ঠিক অঙ্ক দেখায়। P&L একদম বদলাবে না। যে রিপোর্ট নতুন voucher চেনে না (যেমন Product Ledger, গ-৬), সেখানে শুধু নতুন শাখা **যোগ** হবে, আগের শাখা অপরিবর্তিত, আর আলাদা অনুমোদনে।
+5. নতুন রিপোর্ট শুধু production-এর নিজের: Production Register, Batch Costing, trace।
 
-এর মানে, নিচে যেখানে v3 "আগের ফর্মে নতুন ঘর" বা "আগের ফর্মের কোড বদল" বলেছিল, v4-এ সেটা নতুন ফর্ম।
+এর মানে, নিচে যেখানে v3 "আগের ফর্মে নতুন ঘর" বা "আগের ফর্মের কোড বদল" বলেছিল, v4-এ সেটা নতুন ফর্ম। কোন ফর্ম আগেরটা আর কোনটা নতুন, তার পুরো তালিকা ক-১-এ।
 
 ### Phase 0-এর অবস্থা
 
@@ -43,7 +45,8 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 6. **Product Ledger-এ production দেখাতে নতুন শাখা লাগবে** (গ-৬)। Shared report বদল, তাই আগে অনুমোদন।
 7. **Unit conversion-এর আলাদা কোনো table নেই** (গ-৭)।
 8. **কয়েকটা পুরনো পথ পরিমাণকে পূর্ণসংখ্যা করে ফেলে।** Opening stock, sales return আর পুরনো transfer path-এ ১২.৫ কেজি হয়ে যায় ১২ (গ-৭)। নতুন ফর্ম এই পথ ব্যবহার করবে না।
-9. **সব এন্ট্রি ফর্ম আলাদা, আগের ফর্ম অপরিবর্তিত, রিপোর্ট একই** (উপরের মূল নিয়ম)। ফলে sales return, free goods, opening stock আর মজুরির জন্যও নতুন ফর্ম; আগের ফর্মে guard বা নতুন ঘর বসানোর পরিকল্পনা বাদ।
+9. **আগের ফর্ম অপরিবর্তিত, রিপোর্ট একই** (উপরের মূল নিয়ম)। বদল লাগে বলে নতুন ফর্ম শুধু: Sales Return (ধাপ ১), ফ্রিসহ Sales (ধাপ ৩), ফ্রিসহ Purchase (ধাপ ৪)। ক্রয়, বিক্রি, খরচ/মজুরি, transfer আগের ফর্মেই। Opening stock-ও আগের ফর্মে, শুধু পরিমাণ দশমিকে নেওয়ার বদলটুকু (মালিকের অনুমোদিত ব্যতিক্রম)। আগের ফর্মে guard বা নতুন ঘর বসানোর পরিকল্পনা বাদ।
+10. **ফ্রি আলাদা কলাম নয়, আলাদা রো, দাম ০, পাশে "ফ্রি" লেখা** (মালিক, ৪ নভেম্বর; খ-৯)।
 
 ## অংশ ক-১: এক নজরে
 
@@ -73,23 +76,26 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 
 ### কোন কাজে কোন ফর্ম
 
-সব ফর্ম নতুন, শুধু Manufacturing ব্রাঞ্চের মেনুতে। আগের ফর্ম যেমন আছে তেমন থাকবে।
+যে আগের ফর্মে বদল লাগে না সেটা যেমন আছে তেমন চলবে; যেটায় বদল লাগত তার জায়গায় নতুন ফর্ম। নতুন ফর্ম শুধু Manufacturing ব্রাঞ্চের মেনুতে।
 
-| কাজ | নতুন ফর্ম | ধাপ | যে আগের ফর্মের বদলে |
-| --- | --- | --- | --- |
-| কাঁচামাল, বড় প্যাকেট, খালি প্যাকেট/লেবেল কেনা | **Production Purchase** | ১ | Purchase Invoice |
-| মজুরি ও কারখানার খরচ (নগদ বা বাকি) | **Production Expense** | ১ | Payment Voucher / Journal |
-| বাকি মজুরি পরিশোধ | **Production Expense** (পরিশোধ মোড) | ১ | Payment Voucher |
-| শুরুর কাঁচামাল (opening stock) | **Production Opening Stock** | ১ | Item-এর opening stock |
-| মাল তৈরি / প্যাকেট বদল / কম্বো | **Production Entry** | ১ | নতুন কাজ |
-| তৈরি পণ্য বিক্রি | **Production Sales** | ১ | Sales Invoice |
-| বিক্রির ফেরত | **Production Sales Return** (খরচের দামে) | ১ | Sales Return |
-| রেসিপি সেট করা | **Recipe** | ২ | নতুন কাজ |
-| বিক্রিতে ফ্রি, স্কিম | **Production Sales**-এ ফ্রি ঘর + **স্কিম সেটআপ** | ৩ | নতুন কাজ |
-| ক্রয়ে ফ্রি | **Production Purchase**-এ ফ্রি ঘর | ৪ | নতুন কাজ |
-| পুরনো ব্রাঞ্চ থেকে কাঁচামাল আনা | ক-২ #১৪ দেখুন | — | Branch Transfer |
+| কাজ | ফর্ম | আগের না নতুন | ধাপ | কেন |
+| --- | --- | --- | --- | --- |
+| কাঁচামাল, বড় প্যাকেট, খালি প্যাকেট/লেবেল কেনা | Purchase Invoice | **আগের** | ১ | দাম আর দশমিক পরিমাণসহ stock-এ লেখে; বদল লাগে না |
+| মজুরি ও কারখানার খরচ (নগদ বা বাকি) | Payment Voucher / Journal | **আগের** | ১ | সঠিক ledger লেখে; বদল লাগে না |
+| বাকি মজুরি পরিশোধ | Payment Voucher | **আগের** | ১ | একই |
+| পুরনো ব্রাঞ্চ থেকে কাঁচামাল আনা | Branch Transfer | **আগের** (#১৪) | ১ | FIFO খরচ বহন করে |
+| তৈরি পণ্য বিক্রি (ফ্রি ছাড়া) | Sales Invoice | **আগের** | ১ | সাধারণ বিক্রিতে বদল লাগে না |
+| মাল তৈরি / প্যাকেট বদল / কম্বো | **Production Entry** | **নতুন** | ১ | এই কাজের কোনো ফর্ম নেই |
+| বিক্রির ফেরত | **Production Sales Return** | **নতুন** | ১ | আগেরটা ফেরত মাল বিক্রির দামে ঢোকায় (গ-৪); ঠিক করতে বদল লাগত |
+| শুরুর কাঁচামাল (opening stock) | Item-এর opening stock | **আগের, দশমিকে আপডেট** | ১ | আগেরটা পরিমাণ পূর্ণসংখ্যা করে (গ-৭); ১২.৫ কেজি হয়ে যায় ১২। মালিকের অনুমোদনে পরিমাণ দশমিকে (১.০০) নেওয়ার বদল হবে; নতুন ফর্ম নয় |
+| রেসিপি সেট করা | **Recipe** | **নতুন** | ২ | কোনো ফর্ম নেই |
+| বিক্রিতে ফ্রি, স্কিম | **Production Sales** (ফ্রি রো, দাম ০, "ফ্রি" লেখা) + **স্কিম সেটআপ** | **নতুন** | ৩ | আগের Sales-এ দাম ০ দেওয়া যায় না; বদল লাগত |
+| ফ্রিসহ ফেরত | **Production Sales Return**-এ ফ্রি রো | নতুন ফর্মেই | ৩ | — |
+| ক্রয়ে ফ্রি | **Production Purchase** (ফ্রি রো, দাম ০, "ফ্রি" লেখা) | **নতুন** | ৪ | আগের Purchase-এ দাম ০ দেওয়া যায় না; বদল লাগত |
 
-**রিপোর্ট আগেরগুলোই:** Trial Balance, P&L, Balance Sheet, Cash Flow, Ledger, Stock রিপোর্ট। নতুন ফর্ম একই টেবিলে একই নিয়মে লেখে বলে এগুলো বদল ছাড়াই নতুন ব্রাঞ্চের অঙ্ক দেখাবে। নতুন রিপোর্ট শুধু **Production Register ও Batch Costing** (ব্যাচ ধরে কাঁচামাল, খরচ, প্রতি ইউনিট দাম, নষ্ট)। রেসিপির চেয়ে বেশি নষ্ট হলে লাল দেখাবে।
+ধাপ ৩-এর পর ফ্রিসহ বিক্রি Production Sales দিয়ে হবে; ফ্রি ছাড়া বিক্রি আগের Sales Invoice-এও চলতে পারে। একইভাবে ধাপ ৪-এর পর ক্রয়।
+
+**রিপোর্ট আগেরগুলোই:** Trial Balance, P&L, Balance Sheet, Cash Flow, Ledger, Stock রিপোর্ট। আগের ফর্ম তো আগের মতোই লেখে, আর নতুন ফর্ম আগের ফর্মের মতো একই টেবিলে একই নিয়মে লেখে; তাই এগুলো বদল ছাড়াই নতুন ব্রাঞ্চের অঙ্ক দেখাবে। নতুন রিপোর্ট শুধু **Production Register ও Batch Costing** (ব্যাচ ধরে কাঁচামাল, খরচ, প্রতি ইউনিট দাম, নষ্ট)। রেসিপির চেয়ে বেশি নষ্ট হলে লাল দেখাবে।
 
 ### P&L-এ কী দেখাবে (নতুন, গ-২ থেকে)
 
@@ -102,7 +108,7 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 
 ## অংশ ক-২: সিদ্ধান্ত
 
-### যা ঠিক হয়ে গেছে (২৪ অক্টোবর)
+### যা ঠিক হয়ে গেছে (২৪ অক্টোবর ও পরে)
 
 | বিষয় | সিদ্ধান্ত |
 | --- | --- |
@@ -113,6 +119,10 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 | ছোট প্যাকেট | আলাদা পণ্য, আলাদা কোড |
 | ফ্রিসহ ফেরত | ফ্রি অংশও আনুপাতিক হারে ফেরত |
 | পারচেজে ফ্রি | লাগবে |
+| এন্ট্রি ফর্ম (৪ নভেম্বর) | বদল লাগে না এমন আগের ফর্মই ব্যবহার; বদল লাগলে আগেরটা না বদলে নতুন ফর্ম; রিপোর্ট আগেরগুলোই |
+| ফ্রি পণ্য (৪ নভেম্বর) | আলাদা কলাম নয়, **আলাদা রো, দাম ০, পাশে "ফ্রি" লেখা** (খ-৯) |
+| Opening stock (৪ নভেম্বর) | আগের Item opening stock ফর্মই; পরিমাণ দশমিকে নেওয়ার বদল অনুমোদিত, এতে সমস্যা হবে না |
+| পুরনো ব্রাঞ্চ থেকে কাঁচামাল আনা (#১৪, ৪ নভেম্বর) | **আগের Branch Transfer ফর্মই, কোনো বদল ছাড়া।** এটা FIFO খরচ বহন করে (গ-৫); নতুন "Transfer In" ফর্ম হবে না |
 
 ### যা মালিককে ঠিক করতে হবে
 
@@ -121,7 +131,7 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 | # | প্রশ্ন (সহজ ভাষায়) | প্রস্তাব |
 | --- | --- | --- |
 | ১ | এন্ট্রি সেভ করলেই স্টক বদলাবে, নাকি কেউ অনুমোদন দেওয়ার পর? | "খসড়া" আর "পোস্ট" দুটো বোতাম; পোস্ট করলেই স্টক বদলাবে, আলাদা অনুমোদন নয় (Product In/Out-ও তাই করে) |
-| ২ | মজুরি পরে দিলে কী হবে? | উৎপাদনের দিন Production Expense ফর্মে "মজুরি বাকি" লেখা, পরে টাকা দিলে একই ফর্মে পরিশোধ |
+| ২ | মজুরি পরে দিলে কী হবে? | উৎপাদনের দিন আগের Journal দিয়ে "মজুরি বাকি" লেখা, পরে টাকা দিলে আগের Payment Voucher |
 | ৩ | কোন কোন খরচ পণ্যের দামে ঢুকবে? | কারখানার মজুরি, প্যাকিং মজুরি, কারখানার পরিবহন; অফিস খরচ নয় |
 | ৪ | বিদ্যুৎ-ভাড়ার মতো মাসিক খরচ ভাগ হবে? | এখন না; খরচ হিসেবেই থাকবে। এর ফলে অবিক্রিত মালের দাম একটু কম দেখাবে, আর যে মাসে খরচ সেই মাসের লাভ একটু কম দেখাবে |
 | ৫ | কতটুকু নষ্ট "স্বাভাবিক"? | প্রতি পণ্যে সীমা, যেমন মশলা ৫%, চিনি ১%। বেশি হলে বাড়তিটা "অস্বাভাবিক নষ্ট", কারণ লিখতে হবে |
@@ -133,7 +143,6 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 | ১১ | কাঁচামাল নতুন ব্রাঞ্চে কেনা হবে, নাকি পুরনো ব্রাঞ্চ থেকে আসবে? কাঁচামাল আর তৈরি পণ্য আলাদা গুদামে? | ক্লায়েন্টের কাছ থেকে জানতে হবে। দুটোই কোডে সম্ভব (গ-৫, গ-৭) |
 | **১২** | **(নতুন) P&L-এর উপরের লাভ (gross profit) কীভাবে দেখাবে?** | **ক:** মজুরি খরচের তালিকায় থাকবে; শেষের লাভ ঠিক, উপরের লাভ মজুরির টাকা বেশি দেখাবে। Production কোনো ledger লেখে না। **খ:** Production পোস্ট করলে একটা স্বয়ংক্রিয় Journal মজুরির টাকাটা "Purchase"-এ সরিয়ে দেবে; দুটো লাভই ঠিক, কিন্তু P&L-এর "Purchase" অঙ্কে মজুরি মিশে থাকবে। **প্রস্তাব: ক দিয়ে শুরু**, কারণ এতে কোনো ledger লেখা হয় না আর ভুল হলে সহজে ধরা যায়; Production রিপোর্টে আসল gross profit আলাদা দেখাবে |
 | **১৩** | **(নতুন) বিক্রির পর ফেরত আসা মাল স্টকে কোন দামে ঢুকবে?** | আগের Sales Return ফর্ম ফেরতের টাকার দামে ঢোকায় (যেমন ২০০), কেনা দামে নয় (১৭১.১৬); তাই লাভ বাড়িয়ে দেখায়। **প্রস্তাব:** নতুন **Production Sales Return** ফর্ম ফেরত মাল আসল বিক্রির FIFO খরচে ঢোকাবে; আগের ফর্ম ও পুরনো ব্রাঞ্চ যেমন আছে থাকবে। নিশ্চিত করুন: আগের Sales Return-এর এই সমস্যা আলাদা কাজ হিসেবে ঠিক করা হবে, নাকি যেমন আছে থাকবে |
-| **১৪** | **(নতুন) পুরনো ব্রাঞ্চ থেকে কাঁচামাল আনা হলে কোন ফর্ম?** | আগের Branch Transfer ফর্ম FIFO খরচ ঠিকভাবে বহন করে (গ-৫), আর দুই ব্রাঞ্চের মধ্যে চলে। **প্রস্তাব:** এটা যেমন আছে, কোনো বদল ছাড়া ব্যবহার। আপনি চাইলে নতুন ব্রাঞ্চে আলাদা "Production Transfer In" ফর্ম হবে, কিন্তু পাঠানোর দিক পুরনো ব্রাঞ্চের আগের ফর্মেই থাকবে |
 
 ## অংশ ক-৩: কখন কী পাবেন
 
@@ -141,10 +150,11 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 
 | ধাপ | ক্লায়েন্ট কী পাবেন |
 | --- | --- |
-| ০. যাচাই | **কোডের অংশ শেষ (অংশ গ)।** বাকি: ক্লায়েন্ট DB-তে query চালানো আর #১২, #১৩, #১৪-এর সিদ্ধান্ত |
-| ১. উৎপাদন | নতুন ব্রাঞ্চ; নতুন ফর্ম: Production Purchase, Expense, Opening Stock, Entry (রেসিপি ছাড়া), Sales, Sales Return; Production Register ও Costing রিপোর্ট; আগের তিন রিপোর্ট মেলে |
+| ০. যাচাই | **কোডের অংশ শেষ (অংশ গ)।** বাকি: ক্লায়েন্ট DB-তে query চালানো আর #১২, #১৩-এর সিদ্ধান্ত |
+| ১. উৎপাদন | নতুন ব্রাঞ্চ; নতুন ফর্ম: Production Entry (রেসিপি ছাড়া), Production Sales Return; ক্রয়-খরচ-বিক্রি আগের ফর্মে; Item opening stock দশমিকে আপডেট; Production Register ও Costing রিপোর্ট; আগের তিন রিপোর্ট মেলে |
 | ২. রেসিপি | রেসিপি বাছলে লাইন নিজে ভরে যাবে; কাঁচামাল কম থাকলে আগেই জানাবে |
-| ৩. বিক্রিতে ফ্রি | Production Sales-এ ফ্রি ঘর, স্কিম সেটআপ, ফ্রিসহ ফেরত |
+| ৩. বিক্রিতে ফ্রি | নতুন Production Sales (ফ্রি রো, দাম ০), স্কিম সেটআপ, ফ্রিসহ ফেরত |
+| ৪. ক্রয়ে ফ্রি (উপরের সারির সঙ্গে) | নতুন Production Purchase (ফ্রি রো, দাম ০) |
 | ৪. ক্রয়ে ফ্রি | সরবরাহকারীর ফ্রি মাল ঢুকলে দাম নিজে ভাগ হবে |
 
 যা প্রথমে থাকবে না: এক ব্যাচ থেকে একাধিক ভিন্ন পণ্য, উপজাত বা ঝরতি মাল বিক্রি, বিক্রির সময় বান্ডেল বানানো বা ভাঙা, আর মাসিক খরচের স্বয়ংক্রিয় ভাগ। মাসিক খরচ পরে চাইলে রেসিপিতে আন্দাজি হার রাখা যাবে (যেমন বিদ্যুৎ ৳২ প্রতি কেজি), মাস শেষে আসল বিলের পার্থক্য P&L-এ থাকবে; এটা আগে থেকে বানানো হবে না।
@@ -201,17 +211,18 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 - **"ক" (প্রস্তাব):** কোনো ledger লেখা নয়। Net profit ঠিক; P&L-এর gross profit allocated খরচের পুরোটা বেশি দেখায়, আর একই অঙ্ক খরচের তালিকায় বাদ যায়।
 - **"খ":** Post-এর সময় একই transaction-এ Journal: Dr Purchase (coa4 35) / Cr Factory Labour, allocated অঙ্কে। Reversal-এ উল্টো Journal। P&L-এর দুই লাভই ঠিক। কিন্তু "Purchase" অঙ্কে মজুরি মেশে, আর যে রিপোর্ট coa4 35 পড়ে (Cash Flow ইত্যাদি) সেগুলোও এই অঙ্ক দেখবে। এটা বাছলে Phase 1-এর আগে সেই রিপোর্টের তালিকা যাচাই।
 
-**খরচ ঢোকে নতুন Production Expense ফর্ম দিয়ে:** আগের Payment Voucher বা Journal নয়। ফর্মটা একই `acc_transaction_*` টেবিলে, একই ধরনের balanced entry লেখে, তাই Ledger, Cash Book, Trial Balance, P&L আগের মতোই পড়ে। Production শুধু এই ফর্মের line থেকে allocate করবে।
+**খরচ ঢোকে আগের Payment Voucher বা Journal দিয়ে,** কোনো বদল ছাড়া; এগুলো সঠিক ledger লেখে। Production শুধু এই voucher-গুলোর খরচের line থেকে allocate করবে।
 
-**বাকি মজুরি:** নগদ দেওয়া পর্যন্ত অপেক্ষা নয়। উৎপাদনের দিন Production Expense (বাকি): Dr Factory Labour / Cr Labour Payable; Production সেই line থেকে allocate করবে। পরে Production Expense (পরিশোধ): Dr Labour Payable / Cr Cash।
+**বাকি মজুরি:** নগদ দেওয়া পর্যন্ত অপেক্ষা নয়। উৎপাদনের দিন Journal: Dr Factory Labour / Cr Labour Payable; Production সেই line থেকে allocate করবে। পরে Payment: Dr Labour Payable / Cr Cash।
 
 **নিয়ন্ত্রণ:**
 
 - একই source line তার allocatable balance-এর বেশি allocate নয়; concurrent allocation row lock দিয়ে আটকানো।
 - Source আর production একই branch/company, valid ও open period।
 - Purchase বা আগেই capitalize করা line আবার capitalize নয়।
-- Allocated source voucher edit/delete হলে আটকাবে ("এই খরচ Production #… তে ব্যবহৃত")। Source যেহেতু নতুন Production Expense ফর্মের, guard সেই ফর্মেই থাকবে; আগের edit কোডে কিছু বসবে না।
-- ⚠️ **Phase 1-এর শুরুতে যাচাই:** আগের voucher edit/delete স্ক্রিন (`VoucherModificationController`, Journal/Payment edit) vr_no দিয়ে নতুন ফর্মের voucher খুলতে পারে কি না। নতুন voucher নিজের `transaction_type` পাবে; আগের স্ক্রিন যদি type না দেখে যেকোনো voucher খোলে, তাহলে আগের ফর্ম না বদলে আটকানো যাবে না। তখন মালিকের সিদ্ধান্ত লাগবে (permission দিয়ে নতুন ব্রাঞ্চে আগের edit স্ক্রিন বন্ধ রাখা, যা ফর্ম বদল নয়)।
+- **Allocated source voucher edit/delete আটকানো যাবে না,** কারণ source আগের Payment/Journal-এর, আর সেই ফর্ম বদলানো হবে না। তার বদলে **ধরা পড়বে:** Production পোস্ট করার সময় source line-এর অঙ্ক, head আর তারিখ নিজের allocation টেবিলে লিখে রাখবে। Production Register প্রতিবার source-এর সঙ্গে মেলাবে; source বদলালে বা মুছলে সেই batch লাল হবে ("এই খরচের voucher বদলেছে")। ঠিক করার পথ: batch reverse করে আবার post (খ-৭)।
+- একই কারণে consumed কাঁচামালের source Purchase edit-ও আগের ফর্মে আটকানো যাবে না; Register একইভাবে ধরবে (খ-৭)।
+- চাইলে মালিক permission দিয়ে নতুন ব্রাঞ্চে আগের voucher edit/delete বন্ধ রাখতে পারেন। এটা ফর্ম বদল নয়, শুধু role setting।
 - Overhead (বিদ্যুৎ, ভাড়া) v1-এ allocate নয়; মালিকের সম্মতি (ক-২ #৪) লাগবে।
 
 ## অংশ খ-৬: Stock/FIFO integration
@@ -225,9 +236,15 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 - Availability production date অনুযায়ী; future receipt দিয়ে পুরনো production নয়। **Negative stock নিষিদ্ধ।** এটা Production-এর নিজের কঠিন নিয়ম। `StockShortageGuard` শুধু branch চাইলে সতর্ক করে, আটকায় না (গ-৫)।
 - **Backdating:** অনুমোদিত, যদি production date-এর পরে input বা output product-এর কোনো stock movement না থাকে এবং period খোলা থাকে। থাকলে আটকাবে ও কোন voucher-এর কারণে তা দেখাবে। একই দিনে ক্রম: `main_trx_master.id`।
 - **গুদাম:** input ও output-এর warehouse আলাদা বাছা যাবে (`inventory_details.godown_id` আছে)।
-- **Opening stock:** নতুন Production Opening Stock ফর্ম `inventory_details`-এ দামসহ layer লিখবে, দুই দশমিকের qty সহ। আগের Item opening stock পথ qty পূর্ণসংখ্যা করে (গ-৭), তাই সেটা এই ব্রাঞ্চে ব্যবহার হবে না। Opening-এর মূল্য P&L আগের মতোই opening stock walk থেকে পায়।
-- **Transfer:** আগের Branch Transfer `inventory_details`-এ FIFO খরচসহ layer লেখে (গ-৫); ব্যবহার ক-২ #১৪ অনুযায়ী।
-- **নতুন ক্রয়-বিক্রয়-ফেরত ফর্ম:** একই `inventory_details` (qty দুই দশমিক, ক্রয়ে `purchase_price`), একই ledger head (35 Purchase, 15 Sales, 19 Sales Return, 16, 23, 40) লিখবে, যাতে trading account কোনো বদল ছাড়াই পড়ে। Sales-এর `stock_out` সারিতে FIFO খরচ থাকবে; Sales Return ফেরত মাল সেই খরচে `stock_in` করবে (ক-২ #১৩)। Ledger-এর ধরন আগের Purchase/Sales যেমন লেখে হুবহু তেমন, যেটা Phase 1-এ আগের voucher-এর সঙ্গে সারি ধরে মিলিয়ে দেখা হবে।
+- **Opening stock (মালিকের অনুমোদিত ব্যতিক্রম):** আগের Item opening stock `inventory_details`-এ দামসহ layer লেখে, কিন্তু qty পূর্ণসংখ্যা করে (`ItemController.php:3297`, `(int)`)। এখানে বদল হবে: qty দুই দশমিকে (যেমন ১.০০, ১২.৫০) নেওয়া আর রাখা।
+  - Backend: `(int)` cast-এর বদলে দুই দশমিকে round। `inventory_details.stock_in` আগে থেকেই `decimal(12,2)`, তাই schema বদল নেই।
+  - Frontend: opening stock-এর qty input দশমিক নেবে (দুই ঘর)।
+  - IMEI/serial থাকলে qty আগের মতোই serial-এর সংখ্যা, পূর্ণসংখ্যা।
+  - প্রভাব: পুরনো সারি আগের মতোই থাকে; পূর্ণ সংখ্যা দিলে ফল আগের মতোই, তাই পুরনো ব্রাঞ্চে কিছু বদলায় না। Opening-এর মূল্য P&L আগের মতোই opening stock walk থেকে পায়।
+  - Phase 1-এর শুরুতে যাচাই: bulk upload পথ (`ItemUploadController.php:521, 1008`) qty কীভাবে নেয়; ওটা ব্যবহার না হলে বদলাবে না।
+- **Transfer (সিদ্ধান্ত #১৪):** আগের Branch Transfer ফর্মই ব্যবহার হবে, কোনো বদল ছাড়া। এটা `inventory_details`-এ FIFO খরচসহ layer লেখে (গ-৫), তাই production-এর FIFO পড়া আলাদা কিছু ছাড়াই এই layer পাবে। Phase 1-এর শুরুতে যাচাই: ফর্মটা layered পথ (`InventoryTransferMaster.php:147`) ব্যবহার করে, পূর্ণসংখ্যার পুরনো পথ (`:65`) নয়। পুরনো পথ হলে কেজির ভগ্নাংশ কেটে যাবে; তখন ক্লায়েন্টকে জানানো হবে যে transfer-এ পরিমাণ পূর্ণ সংখ্যায় দিতে হবে, ফর্ম বদলানো হবে না।
+- **আগের Purchase ও Sales:** কোনো বদল ছাড়া। Production এদের `inventory_details` সারি পড়ে। Phase 1-এর শুরুতে যাচাই: General ব্রাঞ্চের Purchase স্ক্রিন যে পথে লেখে (`TradingPurchaseController` দশমিক রাখে; পুরনো `PurchaseController` qty কাটে না), সেটা কেজির ভগ্নাংশ ঠিক রাখে।
+- **নতুন ফর্ম (Production Sales Return; পরে Production Sales ও Purchase):** আগের ফর্মের মতো একই `inventory_details` (qty দুই দশমিক), একই ledger head (35 Purchase, 15 Sales, 19 Sales Return, 16, 23, 40) লিখবে, যাতে trading account কোনো বদল ছাড়াই পড়ে। Sales Return ফেরত মাল original বিক্রির FIFO খরচে `stock_in` করবে (ক-২ #১৩)। Ledger-এর ধরন আগের ফর্ম যেমন লেখে হুবহু তেমন, যেটা Phase 1-এ আগের voucher-এর সঙ্গে সারি ধরে মিলিয়ে দেখা হবে।
 
 ## অংশ খ-৭: Edit, cancel ও audit
 
@@ -235,7 +252,7 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 - Output বিক্রি, transfer, write-off বা অন্য production-এ ব্যবহার হলে edit/cancel বন্ধ।
 - অব্যবহৃত output-এর reversal: exact input layers ফেরত, allocation মুক্ত, output layer বাতিল; reversal voucher original-এর সঙ্গে linked। Closed period-এ নয়।
 - কে কখন post/reverse করেছেন সংরক্ষিত।
-- ⚠️ অনেক পুরনো voucher edit-এ `inventory_details` মুছে আবার লেখে (যেমন `InventoryMasterIn::replaceDetails()`)। Production-এর FIFO link যদি কোনো purchase-এর detail row-এর `id` ধরে রাখে, সেই purchase edit হলে link ভাঙবে। তাই link রাখা হবে voucher (`main_trx_id`) + product + qty + দাম দিয়ে। Consumed layer-এর source purchase edit আটকাবে নতুন Production Purchase ফর্ম নিজে; আগের ফর্মের ঝুঁকি খ-৫-এর যাচাইয়ের মতোই।
+- ⚠️ অনেক পুরনো voucher edit-এ `inventory_details` মুছে আবার লেখে (যেমন `InventoryMasterIn::replaceDetails()`)। Production-এর FIFO link যদি কোনো purchase-এর detail row-এর `id` ধরে রাখে, সেই purchase edit হলে link ভাঙবে। তাই link রাখা হবে voucher (`main_trx_id`) + product + qty + দাম দিয়ে। Consumed layer-এর source purchase edit আগের ফর্মে আটকানো যাবে না; Production Register link আর source মিলিয়ে না মিললে batch লাল করবে (খ-৫)।
 
 ## অংশ খ-৮: Recipe (Phase 2)
 
@@ -247,13 +264,18 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 
 ## অংশ খ-৯: Free goods (Phase 3, 4)
 
-- সব free ঘর **নতুন Production Sales / Production Purchase ফর্মে**; আগের Sales/Purchase Invoice-এ কোনো ঘর যোগ হবে না, branch setting-ও লাগবে না।
-- **Same-SKU বিক্রি:** `paid_qty` ও `free_qty` আলাদা; stock out = যোগফল, charge শুধু paid।
-- **Different-SKU free:** linked promotion line, zero charge। আগের `productValidation` ছোঁয়া হবে না; নতুন ফর্মের নিজের validation।
-- **খরচের হিসাব:** free অংশের FIFO cost COGS-এ, তবে আলাদা চিহ্ন রেখে, যাতে Production/ফ্রি রিপোর্টে "ফ্রি দেওয়া মালের খরচ" দেখা যায়। P&L নিজে বদলাবে না।
+**নিয়ম (মালিক, ৪ নভেম্বর ২০২৬): ফ্রি আলাদা কলাম নয়, আলাদা রো।** ফ্রি মাল invoice-এ নিজের একটা সারি, দাম ০, আর সারির পাশে লেখা থাকবে "ফ্রি"। যেমন: "চিনি ২৫০ গ্রাম, ১০০ × ৩৫ = ৩,৫০০" আর তার নিচে "চিনি ২৫০ গ্রাম (ফ্রি), ২ × ০ = ০"।
+
+- ফ্রি রো শুধু **নতুন Production Sales / Production Purchase ফর্মে**। আগের Sales/Purchase Invoice-এ দাম ০-এর সারি দেওয়া যায় না (`productValidation`-এ দাম > ০ বাধ্যতামূলক), আর সেটা বদলানো হবে না।
+- **কোথায় যাবে:** ফ্রি রো আগের টেবিলেই সাধারণ সারি হিসেবে বসবে: `inventory_sales_details` (`sales_price` ০, `line_net_total` ০) আর `inventory_details` (`stock_out` = ফ্রি qty)। আগের টেবিলে নতুন কলাম যোগ হবে না; ওই টেবিলে "ফ্রি" লেখার কোনো ঘর এখন নেই।
+- **"ফ্রি" চিহ্ন কোথায়:** production-এর নিজের ছোট link টেবিলে (প্রস্তাব `production_free_lines`): ফ্রি সারি, যে paid সারির জন্য ফ্রি সেটা (`inventory_sales_details.line_uid` দিয়ে), scheme snapshot। নতুন ফর্মের স্ক্রিন আর print এই টেবিল দেখে সারির পাশে "ফ্রি" লেখে। আগের রিপোর্টে সারিটা দাম ০-এর সাধারণ সারি হিসেবে দেখাবে।
+- **Same-SKU আর different-SKU একই নিয়মে:** একই পণ্য হোক বা অন্য পণ্য, ফ্রি সবসময় আলাদা রো। Paid রো-তে charge, ফ্রি রো-তে ০; stock দুটো সারি থেকেই বের হয়।
+- **Ledger:** ফ্রি রো-র টাকা ০, তাই Sales-এ কিছু যোগ হয় না। কোনো আলাদা journal নয়।
+- **খরচের হিসাব:** ফ্রি রো-র `stock_out` closing stock কমায়, তাই তার FIFO খরচ নিজে থেকেই P&L-এর বিক্রিত মালের খরচে পড়ে। আগের রিপোর্ট বদলাতে হয় না। Production/ফ্রি রিপোর্ট link টেবিল দেখে আলাদা লাইনে "ফ্রি দেওয়া মালের খরচ" দেখাবে।
+- **নতুন ফর্মের validation:** দাম ০ চলবে শুধু ফ্রি হিসেবে চিহ্নিত সারিতে, যার একটা paid সারি আছে (বা scheme মেলে, বা `free.override` permission আছে)। সাধারণ সারিতে দাম > ০ আগের মতোই বাধ্যতামূলক।
 - **Scheme:** product, threshold, free qty, repeat হবে কি না (২০০-তে ৪?), তারিখ সীমা, customer group (পরে), manual override permission; invoice-এ snapshot।
-- **Return:** original line-এর সঙ্গে linked, original issue cost-এ ফেরত (ক-২ #১৩; আজকের return পথ এটা করে না, গ-৪); cumulative return original ছাড়াবে না। Rounding: প্রতি return-এ free = floor(returned paid × free ÷ paid), শেষ return-এ বাকিটা settle।
-- **Purchase free (Phase 4):** same SKU-তে unit cost = মোট দাম ÷ মোট received qty; আলাদা SKU হলে rule আগে ঠিক।
+- **Return:** Production Sales Return-এও ফ্রি আলাদা রো, দাম ০, "ফ্রি" লেখা। Original paid ও ফ্রি সারির সঙ্গে linked, original issue cost-এ stock-এ ফেরত (ক-২ #১৩); cumulative return original ছাড়াবে না। ফ্রি রো-র পরিমাণ: প্রতি return-এ floor(returned paid × free ÷ paid), শেষ return-এ বাকিটা settle। টাকা ফেরত শুধু paid রো-র।
+- **Purchase free (Phase 4):** সরবরাহকারীর ফ্রি মালও আলাদা রো, দাম ০, "ফ্রি" লেখা। Stock-এ সেটা ০ দামের layer হয়ে ঢোকে। ফলে মোট stock value ঠিক থাকে (১০০-র দাম, ১০২টা মাল), কিন্তু প্রতি-ইউনিট দাম গড় (মোট ÷ ১০২) নয়, layer ধরে। মাল কোন ক্রমে বিক্রি হচ্ছে তার ওপর নির্ভর করে কোনো মাসের লাভ সামান্য আগে-পরে সরে, মোট লাভ একই থাকে। গড় দাম চাইলে সেটা আলাদা সিদ্ধান্ত।
 - Delivery-based stock deduction চালু থাকলে invoice ও delivery-তে free দুবার কাটবে না।
 - Prepared bundle = আলাদা SKU, Production দিয়ে তৈরি; disassembly v1-এ নয়।
 
@@ -327,23 +349,24 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 7. Repack conversion, packaging qty, rounding residual।
 8. Unauthorized direct API ও cross-branch access rejected।
 9. Failed/retried/concurrent save-এ duplicate movement নেই।
-10. Feature বন্ধ থাকা পুরনো branch-এ আগের আচরণ অক্ষুণ্ণ (আগের মাসের P&L, Balance Sheet, Product Ledger আগে-পরে তুলনা)। আগের কোনো এন্ট্রি ফর্মের frontend বা API ফাইলে diff নেই।
-11. (Phase 3) ১০০+২ বিক্রি, ৫০ ফেরত → ১ ফ্রি ফেরত, টাকা ৫০-এর, stock +৫১, original issue cost-এ; শেষ return-এ residual settle; ফ্রি মালের খরচ রিপোর্টে আলাদা লাইনে।
+10. Feature বন্ধ থাকা পুরনো branch-এ আগের আচরণ অক্ষুণ্ণ (আগের মাসের P&L, Balance Sheet, Product Ledger আগে-পরে তুলনা)। আগের কোনো এন্ট্রি ফর্মের frontend বা API ফাইলে diff নেই, শুধু opening stock-এর দশমিক বদল ছাড়া; সেখানে পূর্ণ সংখ্যার opening দিলে ফল আগের মতোই।
+11. (Phase 3) ১০০ paid রো + ২ ফ্রি রো (দাম ০) বিক্রি, ৫০ ফেরত → ১ ফ্রি রো ফেরত, টাকা ৫০-এর, stock +৫১, original issue cost-এ; শেষ return-এ residual settle; invoice ও print-এ ফ্রি রো-র পাশে "ফ্রি"; আগের রিপোর্টে ফ্রি রো দাম ০-এর সারি; ফ্রি মালের খরচ Production রিপোর্টে আলাদা লাইনে।
 12. **(নতুন)** Product Ledger-এ production in/out সারি দেখায় আর running balance পরের মাসের opening-এর সঙ্গে মেলে।
-13. **(নতুন)** নতুন Production Purchase/Sales/Sales Return/Expense ফর্মের voucher আগের রিপোর্টে (Ledger, Cash Book, Trial Balance, P&L, Stock) আগের Purchase/Sales/Payment voucher-এর মতোই দেখায়: একই লেনদেন দুই ফর্মে দিলে রিপোর্টের অঙ্ক এক।
+13. **(নতুন)** নতুন Production Sales Return (পরে Production Sales/Purchase) ফর্মের voucher আগের রিপোর্টে (Ledger, Cash Book, Trial Balance, P&L, Stock) আগের ফর্মের voucher-এর মতোই দেখায়: একই লেনদেন দুই ফর্মে দিলে রিপোর্টের অঙ্ক এক (ফেরতের stock দাম ছাড়া, যা ইচ্ছা করেই খরচের দামে)।
+14. **(নতুন)** Source Payment/Journal বা Purchase পরে edit করলে Production Register সেই batch লাল দেখায়।
 
 ## অংশ খ-১৫: Phase ও change boundary
 
 | Phase | কাজ | শেষের প্রমাণ |
 | --- | --- | --- |
-| 0 | কোড/schema audit **শেষ (অংশ গ)**; বাকি: ক্লায়েন্ট DB query (গ-৯), ক-২ #১২, #১৩ ও #১৪ | গ-৯-এর ফল লেখা, তিন সিদ্ধান্ত লেখা |
-| 1 | নতুন ফর্ম: Production Purchase, Expense, Opening Stock, Entry, Sales, Sales Return; manual single-output production, source-linked cost, abnormal loss, stock integration, Product Ledger শাখা, Register ও Costing | Check ১–১০, ১২, ১৩ পাস |
+| 0 | কোড/schema audit **শেষ (অংশ গ)**; বাকি: ক্লায়েন্ট DB query (গ-৯), ক-২ #১২ ও #১৩ (#১৪ হয়ে গেছে) | গ-৯-এর ফল লেখা, দুই সিদ্ধান্ত লেখা |
+| 1 | নতুন ফর্ম: Production Entry, Production Sales Return; Item opening stock-এ দশমিক qty; manual single-output production, source-linked cost, abnormal loss, stock integration, Product Ledger শাখা, Register ও Costing | Check ১–১০, ১২–১৪ পাস |
 | 2 | Recipe, version, ঘাটতি দেখা | Recipe থেকে ভরা batch-এ check ১, ৭ পাস |
-| 3 | Sales free goods, scheme, returns | Check ১১ পাস |
-| 4 | Purchase free goods | Purchase free দিয়ে check ২ পাস |
+| 3 | নতুন Production Sales (ফ্রি রো), scheme, ফ্রিসহ return | Check ১১ পাস |
+| 4 | নতুন Production Purchase (ফ্রি রো) | Purchase free দিয়ে check ২ পাস |
 
 - পুরনো Manufacturing module মোছা হবে না; নতুন flow তার hardcoded account/year id ব্যবহার করবে না।
-- **আগের কোনো এন্ট্রি ফর্ম (স্ক্রিন, API, validation, posting) বদলাবে না;** সব এন্ট্রি নতুন ফর্মে।
+- **আগের কোনো এন্ট্রি ফর্ম (স্ক্রিন, API, validation, posting) বদলাবে না।** বদল না লাগলে আগেরটাই ব্যবহার; বদল লাগলে নতুন ফর্ম (ক-১)। একমাত্র ব্যতিক্রম: Item opening stock-এ দশমিক qty (মালিকের অনুমোদিত)।
 - শুধু অনুমোদিত phase-এর কোড বদলাবে। Shared engine বা report-এ কিছু যোগ করতে হলে exact impact দেখিয়ে আগে অনুমোদন (তালিকা গ-১০)।
 - **P&L Account (`profitLossData`, `ProfitLoss.tsx` ও তার report/print) একদম বদলাবে না।** বাকি সব এর সঙ্গে মিলবে।
 - "অন্য রিপোর্ট বদলাতে হবে না" ধরে production movement রিপোর্ট থেকে বাদ দেওয়া যাবে না।
@@ -409,7 +432,7 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 - **Unit:** `product_items`-এ `unit_id` (stock unit), `package_unit_id` + `package_size`, `measurement_unit_id` + `measurement` (`decimal(18,3)`), `pack_size_id` (`product_pack_size`, dev-এ ৭ সারি) আছে। কিন্তু "১ বস্তা = ৫০ kg" ধরনের conversion table নেই, আর কোনো stock writer এই ঘরগুলো দিয়ে qty রূপান্তর করে না। Phase 1-এ দুটো পথের একটা লাগবে: (ক) `measurement` + `measurement_unit_id`-কে net contents হিসেবে ব্যবহার, যদি ক্লায়েন্টের ডেটায় এগুলো ভরা থাকে; নয়তো (খ) ছোট নতুন conversion table। কোনটা, তা ক্লায়েন্ট DB দেখে ঠিক হবে (গ-৯)।
 - **Batch:** `inventory_details.batch_no`, `batch_date` আছে, কিন্তু writer-রা সাধারণত `date('Ymd')` বসায়। Production আসল batch ref লিখবে।
 - **Expiry:** কোথাও কোনো ঘর নেই। লাগলে নতুন কলাম বা production-এর নিজের টেবিলে (ক-২ #৬)।
-- **পূর্ণসংখ্যায় কাটা পথ:** sales return qty ও দাম (`InventoryMasterIn.php`), opening stock qty (`ItemController.php:3297`), পুরনো transfer qty (`InventoryTransferMaster.php:65`), পুরনো Manufacturing (`Manufacturing.php:202, 229`)। কেজির কাঁচামালে ভগ্নাংশ হারাবে। নতুন ফর্মগুলো এই পথ ব্যবহার করবে না, দুই দশমিকে লিখবে; আগের পথ যেমন আছে থাকবে।
+- **পূর্ণসংখ্যায় কাটা পথ:** sales return qty ও দাম (`InventoryMasterIn.php`), opening stock qty (`ItemController.php:3297`), পুরনো transfer qty (`InventoryTransferMaster.php:65`), পুরনো Manufacturing (`Manufacturing.php:202, 229`)। কেজির কাঁচামালে ভগ্নাংশ হারাবে। আগের পথ যেমন আছে থাকবে। Sales return-এর জন্য নতুন ফর্ম হচ্ছেই; opening stock-এর `(int)` মালিকের অনুমোদনে দশমিকে বদলাবে; transfer-এ পূর্ণ সংখ্যা (খ-৬)।
 - **Warehouse:** `inventory_details.godown_id` আছে, `inventory_godown` টেবিল আছে। আলাদা কাঁচামাল/তৈরি মালের গুদাম সম্ভব।
 
 ### গ-৮: Worked example কোন কোডে কীভাবে আসে
@@ -472,12 +495,13 @@ WHERE c4.id IN (15, 16, 18, 19, 21, 23, 35, 40);
 
 **নতুন (production-এর নিজের):**
 
-- Backend: migration (production tables, `acc_vr_type`-এ নতুন সারি: Production, Production Purchase, Production Sales, Production Sales Return, Production Expense, Production Opening; expense head marker); `Services/Production/` (প্রতিটা ফর্মের posting, `ProductInPosting`/`ProductOutPosting`-এর ধাঁচে); নতুন controller; তারিখ-নির্ভর FIFO পড়া (production service-এর ভিতরে); routes; permissions।
-- Frontend: প্রতিটা নতুন ফর্মের স্ক্রিন (ক-১-এর তালিকা), Production Register/Costing রিপোর্ট, sidebar entry (permission দিয়ে)। আগের ফর্মের component import করে ব্যবহার চলবে, কিন্তু সেই ফাইলে কোনো বদল নয়; বদল লাগলে নতুন component।
+- Backend: migration (production tables, `production_free_lines`, `acc_vr_type`-এ নতুন সারি: Production, Production Sales Return, পরে Production Sales, Production Purchase; expense head marker); `Services/Production/` (প্রতিটা নতুন ফর্মের posting, `ProductInPosting`/`ProductOutPosting`-এর ধাঁচে); নতুন controller; তারিখ-নির্ভর FIFO পড়া (production service-এর ভিতরে); routes; permissions।
+- Frontend: প্রতিটা নতুন ফর্মের স্ক্রিন (ক-১-এ "নতুন" চিহ্নিত), Production Register/Costing রিপোর্ট, sidebar entry (permission দিয়ে)। আগের ফর্মের component import করে ব্যবহার চলবে, কিন্তু সেই ফাইলে কোনো বদল নয়; বদল লাগলে নতুন component।
 
-**বিদ্যমান, শুধু পড়বে বা ব্যবহার হবে (বদলাবে না):**
+**বিদ্যমান, ব্যবহার হবে যেমন আছে (বদলাবে না):**
 
-- **সব আগের এন্ট্রি ফর্ম:** Purchase, Sales, Sales Return, Payment, Journal, Item/opening stock, Product In/Out, Branch Transfer; তাদের API, `productValidation`, `InventoryMasterIn`, `SalesReturnController`, `VoucherModificationController`
+- **আগের এন্ট্রি ফর্ম যা এই ব্রাঞ্চে চলবে:** Purchase Invoice, Sales Invoice (ফ্রি ছাড়া), Payment Voucher, Journal, Branch Transfer
+- **আগের এন্ট্রি ফর্ম যার বদলে নতুন হচ্ছে (তাও অপরিবর্তিত):** Sales Return (`SalesReturnController`, `InventoryMasterIn`); আর `productValidation`, `VoucherModificationController`
 - `ReportsController::profitLossData()`, `rebuildStockTable()`, `ProfitLoss.tsx` আর P&L-এর report/print (নিষেধ)
 - Trial Balance, Balance Sheet, Cash Flow, Ledger, Stock রিপোর্ট
 - `StockCostLayers`, `StockShortageGuard`, `TradingStockLedger`, `InterBranchPosting`
@@ -489,6 +513,12 @@ WHERE c4.id IN (15, 16, 18, 19, 21, 23, 35, 40);
 | `ReportsController::productLedgerData()` | production ও নতুন ফর্মের voucher-এর শাখা (গ-৬) | শুধু যোগ; পুরনো ছয় শাখা অপরিবর্তিত |
 | `transaction_type` filter করা আগের রিপোর্ট | নতুন type-এর voucher বাদ পড়লে সেই type যোগ (Check ১৩ দেখে ঠিক হবে) | শুধু তালিকায় যোগ |
 | Branch setup / feature flag | Manufacturing ব্রাঞ্চে নতুন মেনু ও API চালু | id hardcode নয় |
+
+**বিদ্যমান এন্ট্রি ফর্ম, বদল অনুমোদিত (একমাত্র ব্যতিক্রম, মালিক ৪ নভেম্বর):**
+
+| ফাইল | কী বদল | ঝুঁকি |
+| --- | --- | --- |
+| `ItemController.php:3297` আর opening stock-এর frontend qty input | qty `(int)`-এর বদলে দুই দশমিক | সব ব্রাঞ্চে চলে; পূর্ণ সংখ্যা দিলে ফল আগের মতোই, পুরনো সারি অপরিবর্তিত |
 
 ## সূত্র
 
