@@ -42,27 +42,33 @@ export const MENU_PERMISSIONS = {
     'ledger.customer',
     'ledger.details',
     'date.wise.total',
-    // The Expense Report is only ever reached through this menu, so the
-    // permission that shows the entry has to open the parent group too --
-    // otherwise a user holding just this one never sees Reports at all.
-    'expense.report',
-    // Same rule for the two statements under Trial Balance Details: either key
-    // alone has to open the Reports menu, or the screen it gates is unreachable.
-    'cash.flow.statement',
-    'general.ledger',
     'product.stock.view',
     'product.in.out',
     'purchase.ledger',
     'sales.ledger',
     'group.report',
     'mitch.match',
-    'productwise.profit',
-    'business.summary',
     // The referrer report is only ever reached through this menu, so its own
     // permission has to open the parent group too.
     'sales.referrer',
     // The delivery report, likewise reachable only through this menu.
     'delivery.view',
+  ],
+  // The statements that used to sit at the foot of Reports. Any one of them
+  // opens the parent; each child is then gated on its own permission. The
+  // product reports share one key, as they always have.
+  financial_statement: [
+    'productwise.profit',
+    'profit.loss.date.wise',
+    'monthly.statement',
+    'trial.balance.l4',
+    'trial.balance.l3',
+    'expense.report',
+    'profit.loss',
+    'balancesheet.view',
+    'business.summary',
+    'cash.flow.statement',
+    'general.ledger',
   ],
   requisition: ['requisition.view', 'requisition.create', 'requisition.comparison'],
   // Opens on any of the three: the settings screen and the two reports each

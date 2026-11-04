@@ -71,20 +71,8 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.ageing_report,
     routes.audit_trail,
     routes.cash_bank_received_payment,
-    routes.profit_loss,
-    routes.profit_loss_date_wise,
-    routes.monthly_statement,
-    routes.product_profit_loss,
-    routes.product_profit_summary,
     routes.bank_information,
     routes.connected_member,
-    routes.balance_sheet,
-    routes.business_summary,
-    routes.trial_balance_level3,
-    routes.trial_balance_level4,
-    routes.cash_flow_statement,
-    routes.general_ledger,
-    routes.expense_report,
     '/reports/due-installments',
     '/reports/employee-installment',
     '/reports/ledger',
@@ -112,6 +100,24 @@ export const MENU_ROUTES: Record<string, string[]> = {
     // Reached from a list on one of the screens above rather than from the menu
     // itself; the old hand-written condition knew about it and this keeps that.
     '/reports/closing-stock',
+  ],
+  // The statements that used to close the Reports menu. Listed here so opening
+  // one lights Financial Statement rather than Reports -- each path belongs to
+  // exactly one group.
+  'financial_statement': [
+    routes.product_profit_loss,
+    routes.product_profit_summary,
+    routes.profit_loss_date_wise,
+    routes.monthly_statement,
+    routes.trial_balance_level4,
+    routes.trial_balance_level3,
+    routes.trial_balance,
+    routes.expense_report,
+    routes.profit_loss,
+    routes.balance_sheet,
+    routes.business_summary,
+    routes.cash_flow_statement,
+    routes.general_ledger,
   ],
   // Old Software. The archive of the ERP the client migrated off -- kept apart
   // from Reports because it is a different system's records, not this one's.

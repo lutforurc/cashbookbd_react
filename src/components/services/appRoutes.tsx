@@ -183,6 +183,9 @@ const ROUTES = {
   balance_sheet: '/reports/balance-sheet',
   trial_balance_level3: '/reports/trialbalance-level3',
   trial_balance_level4: '/reports/trialbalance-level4',
+  // The standard Trial Balance URL the legacy screens have always used. It
+  // reads the same posted ledger and the same component as the Details entry.
+  trial_balance: '/reports/trialbalance',
   // The two statements that sit below Trial Balance Details in the menu.
   cash_flow_statement: '/reports/cash-flow-statement',
   general_ledger: '/reports/general-ledger',

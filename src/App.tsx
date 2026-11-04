@@ -1141,7 +1141,7 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'cash.bank.summery']} loading={permissionsLoading} />}>
               <Route path={routes.cash_bank_received_payment} element={<CashBankReceivedPayment user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'profit.loss']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['profit.loss']} loading={permissionsLoading} />}>
               <Route path={routes.profit_loss} element={<ProfitLoss user={me} />} />
             </Route>
             {/* Each on its own key, granted to nobody by default: a company
@@ -1152,17 +1152,20 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['monthly.statement']} loading={permissionsLoading} />}>
               <Route path={routes.monthly_statement} element={<MonthlyStatement user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'balancesheet.view']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['balancesheet.view']} loading={permissionsLoading} />}>
               <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['business.summary']} loading={permissionsLoading} />}>
               <Route path={routes.business_summary} element={<BusinessSummary user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'trial.balance.l3']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['trial.balance.l3']} loading={permissionsLoading} />}>
               <Route path={routes.trial_balance_level3} element={<TrialBalanceLevel3 user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'trial.balance.l4']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['trial.balance.l4']} loading={permissionsLoading} />}>
               <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />
+              {/* The standard Trial Balance URL. Same report and same key as
+                  Details, offered under the name the legacy menu used. */}
+              <Route path={routes.trial_balance} element={<TrialBalanceLevel4 user={me} />} />
             </Route>
             {/* The two statements below Trial Balance Details. Each on its own
                 key, granted to nobody by default: a company switches them on by
@@ -1176,7 +1179,7 @@ function App() {
             {/* The Expense Report reads the trial balance shape narrowed to the
                 expense heads. Offered on its own 'expense.report' permission, the
                 same name the sidebar entry tests, so the menu and the guard agree. */}
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view', 'expense.report']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['expense.report']} loading={permissionsLoading} />}>
               <Route path={routes.expense_report} element={<ExpenseReport user={me} />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['bank.information']} loading={permissionsLoading} />}>

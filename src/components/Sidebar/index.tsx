@@ -46,6 +46,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'installment_list', title: "Installments" },
     { id: 'employee_loan', title: "Employee Loan" },
     { id: 'accounts/journal', title: "Journal" },
+    { id: 'accounts/inter-branch', title: "Inter-Branch Transfers" },
   ],
   'invoice': [
     { id: 'invoice/purchase', title: "Purchase" },
@@ -89,20 +90,8 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'ageing_report', title: "Ageing" },
     { id: 'audit_trail', title: "Audit Trail" },
     { id: 'cash_bank_received_payment', title: "Cash &amp; Bank Summary" },
-    { id: 'profit_loss', title: "Profit Loss" },
-    { id: 'profit_loss_date_wise', title: "Profit Loss (Date Wise)" },
-    { id: 'monthly_statement', title: "Monthly Statement" },
-    { id: 'product_profit_loss', title: "Product Profit Loss" },
-    { id: 'product_profit_summary', title: "Product Profit Summary" },
     { id: 'bank_information', title: "Bank Information" },
     { id: 'connected_member', title: "Connected Member" },
-    { id: 'balance_sheet', title: "Balance Sheet" },
-    { id: 'business_summary', title: "Business Summary" },
-    { id: 'trial_balance_level3', title: "Trial Balance Group" },
-    { id: 'trial_balance_level4', title: "Trial Balance Details" },
-    { id: 'cash_flow_statement', title: "Cash Flow Statement" },
-    { id: 'general_ledger', title: "General Ledger" },
-    { id: 'expense_report', title: "Expense Report" },
     { id: 'reports/due-installments', title: "Due Installments" },
     { id: 'reports/employee-installment', title: "Employee Installments" },
     { id: 'reports/ledger', title: "Ledger" },
@@ -133,6 +122,25 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'report_customer_sales', title: "Customer Sales" },
     { id: 'reports/group-report', title: "Group Report" },
     { id: 'reports/mitch-match', title: "Mismatch" },
+  ],
+  // The financial statements, in the order the owner reads them: the product
+  // reports first, then the dated statements, the trial balances, and the
+  // period-end accounts. Any one of them opens the menu; each entry is gated
+  // on its own permission below.
+  'financial_statement': [
+    { id: 'product_profit_loss', title: "Product Profit Loss" },
+    { id: 'product_profit_summary', title: "Product Profit Summary" },
+    { id: 'profit_loss_date_wise', title: "Profit Loss (Date Wise)" },
+    { id: 'monthly_statement', title: "Monthly Statement" },
+    { id: 'trial_balance_level4', title: "Trial Balance Details" },
+    { id: 'trial_balance_level3', title: "Trial Balance Group" },
+    { id: 'trial_balance', title: "Trial Balance" },
+    { id: 'expense_report', title: "Expense Report" },
+    { id: 'profit_loss', title: "Profit Loss" },
+    { id: 'balance_sheet', title: "Balance Sheet" },
+    { id: 'business_summary', title: "Business Summary" },
+    { id: 'cash_flow_statement', title: "Cash Flow Statement" },
+    { id: 'general_ledger', title: "General Ledger" },
   ],
   'legacy': [
     { id: 'legacy/records', title: "Old ERP Record" },
@@ -290,6 +298,7 @@ export const SIDEBAR_MENUS = [
   { id: 'invoice', title: 'Invoice' },
   { id: 'branch-transfer', title: 'Branch Transfer' },
   { id: 'reports', title: 'Reports' },
+  { id: 'financial_statement', title: 'Financial Statement' },
   { id: 'product_tracking', title: 'Product Tracking' },
   { id: 'company_scheme', title: 'Company Scheme' },
   { id: 'requisition', title: 'Requisition' },
@@ -1623,64 +1632,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
 
-                          {hasPermission(permissions, 'profit.loss') && (
-                            <li style={subSlot('reports', 'profit_loss')}>
-                              <NavLink
-                                to={routes.profit_loss} //"/reports/profit-loss"
-                                className={subMenuLinkClass}
-                              >
-                                Profit Loss
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {/* The same account read a day at a time, directly
-                              under the report it slices. Its own key, granted
-                              to nobody by default -- assigned to a role to show. */}
-                          {hasPermission(permissions, 'profit.loss.date.wise') && (
-                            <li style={subSlot('reports', 'profit_loss_date_wise')}>
-                              <NavLink
-                                to={routes.profit_loss_date_wise}
-                                className={subMenuLinkClass}
-                              >
-                                Profit Loss (Date Wise)
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'monthly.statement') && (
-                            <li style={subSlot('reports', 'monthly_statement')}>
-                              <NavLink
-                                to={routes.monthly_statement}
-                                className={subMenuLinkClass}
-                              >
-                                Monthly Statement
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'productwise.profit') && (
-                            <li style={subSlot('reports', 'product_profit_loss')}>
-                              <NavLink
-                                to={routes.product_profit_loss}
-                                className={subMenuLinkClass}
-                              >
-                                Product Profit Loss
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'productwise.profit') && (
-                            <li style={subSlot('reports', 'product_profit_summary')}>
-                              <NavLink
-                                to={routes.product_profit_summary}
-                                className={subMenuLinkClass}
-                              >
-                                Product Profit Summary
-                              </NavLink>
-                            </li>
-                          )}
-
                           {hasPermission(permissions, 'bank.information') && (
                             <li style={subSlot('reports', 'bank_information')}>
                               <NavLink
@@ -1703,78 +1654,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {hasPermission(permissions, 'balancesheet.view') && (
-                            <li style={subSlot('reports', 'balance_sheet')}>
-                              <NavLink
-                                to={routes.balance_sheet}
-                                className={subMenuLinkClass}
-                              >
-                                Balance Sheet
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'business.summary') && (
-                            <li style={subSlot('reports', 'business_summary')}>
-                              <NavLink
-                                to={routes.business_summary}
-                                className={subMenuLinkClass}
-                              >
-                                Business Summary
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'trial.balance.l3') && (
-                            <li style={subSlot('reports', 'trial_balance_level3')}>
-                              <NavLink
-                                to={routes.trial_balance_level3}
-                                className={subMenuLinkClass}
-                              >
-                                Trial Balance Group
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'trial.balance.l4') && (
-                            <li style={subSlot('reports', 'trial_balance_level4')}>
-                              <NavLink
-                                to={routes.trial_balance_level4}
-                                className={subMenuLinkClass}
-                              >
-                                Trial Balance Details
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'cash.flow.statement') && (
-                            <li style={subSlot('reports', 'cash_flow_statement')}>
-                              <NavLink
-                                to={routes.cash_flow_statement}
-                                className={subMenuLinkClass}
-                              >
-                                Cash Flow Statement
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'general.ledger') && (
-                            <li style={subSlot('reports', 'general_ledger')}>
-                              <NavLink
-                                to={routes.general_ledger}
-                                className={subMenuLinkClass}
-                              >
-                                General Ledger
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'expense.report') && (
-                            <li style={subSlot('reports', 'expense_report')}>
-                              <NavLink
-                                to={routes.expense_report}
-                                className={subMenuLinkClass}
-                              >
-                                Expense Report
-                              </NavLink>
-                            </li>
-                          )}
                           {hasPermission(permissions, 'installment.create') && currentBranch?.business_type_id == 4 && (
                             <li style={subSlot('reports', 'reports/due-installments')}>
                               <NavLink
@@ -2041,6 +1920,197 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
+                        </ul>
+                      </div>
+                    </React.Fragment>
+                  )}
+                </SidebarLinkGroup>
+              )}
+
+              {/* Financial Statement. The statements that used to sit under a
+                  heading at the foot of Reports. They are their own subject --
+                  what the books earned, what they hold and what they owe -- and
+                  a reader who may see one of them should not have to open the
+                  transaction reports to find it. */}
+              {hasMenuPermission(permissions, 'financial_statement') && (
+                <SidebarLinkGroup
+                  activeCondition={isMenuActive('financial_statement', pathname)}
+                  menuId="financial_statement"
+                  style={menuSlot('financial_statement')}
+                  open={openMenu === 'financial_statement'}
+                  handleClick={() => handleMenuClick('financial_statement')}
+                >
+                  {(handleClick, open) => (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${isMenuActive('financial_statement', pathname) &&
+                          'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <FiPieChart />
+                        Financial Statement
+                        <FiChevronRight
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
+                            }`}
+                        />
+                      </NavLink>
+                      <div
+                        className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-180' : 'max-h-0'
+                          }`}
+                      >
+                        <ul className="mt-2 mb-5.5 flex flex-col gap-2.5 pl-6">
+                          {subDividers('financial_statement').map((entry) => (
+                            <li
+                              key={entry.id}
+                              style={entry.style}
+                              data-divider={entry.dataKey}
+                              className="mt-2 flex items-center gap-2 first:mt-0"
+                            >
+                              {entry.title ? (
+                                <span className="shrink-0 pl-4 text-[0.6rem] font-semibold uppercase tracking-wider text-bodydark2">
+                                  {entry.title}
+                                </span>
+                              ) : null}
+                              <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
+                            </li>
+                          ))}
+                          {hasPermission(permissions, 'productwise.profit') && (
+                            <li style={subSlot('financial_statement', 'product_profit_loss')}>
+                              <NavLink
+                                to={routes.product_profit_loss}
+                                className={subMenuLinkClass}
+                              >
+                                Product Profit Loss
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'productwise.profit') && (
+                            <li style={subSlot('financial_statement', 'product_profit_summary')}>
+                              <NavLink
+                                to={routes.product_profit_summary}
+                                className={subMenuLinkClass}
+                              >
+                                Product Profit Summary
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'profit.loss.date.wise') && (
+                            <li style={subSlot('financial_statement', 'profit_loss_date_wise')}>
+                              <NavLink
+                                to={routes.profit_loss_date_wise}
+                                className={subMenuLinkClass}
+                              >
+                                Profit Loss (Date Wise)
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'monthly.statement') && (
+                            <li style={subSlot('financial_statement', 'monthly_statement')}>
+                              <NavLink
+                                to={routes.monthly_statement}
+                                className={subMenuLinkClass}
+                              >
+                                Monthly Statement
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'trial.balance.l4') && (
+                            <li style={subSlot('financial_statement', 'trial_balance_level4')}>
+                              <NavLink
+                                to={routes.trial_balance_level4}
+                                className={subMenuLinkClass}
+                              >
+                                Trial Balance Details
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'trial.balance.l3') && (
+                            <li style={subSlot('financial_statement', 'trial_balance_level3')}>
+                              <NavLink
+                                to={routes.trial_balance_level3}
+                                className={subMenuLinkClass}
+                              >
+                                Trial Balance Group
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'trial.balance.l4') && (
+                            <li style={subSlot('financial_statement', 'trial_balance')}>
+                              <NavLink
+                                to={routes.trial_balance}
+                                className={subMenuLinkClass}
+                              >
+                                Trial Balance
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'expense.report') && (
+                            <li style={subSlot('financial_statement', 'expense_report')}>
+                              <NavLink
+                                to={routes.expense_report}
+                                className={subMenuLinkClass}
+                              >
+                                Expense Report
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'profit.loss') && (
+                            <li style={subSlot('financial_statement', 'profit_loss')}>
+                              <NavLink
+                                to={routes.profit_loss}
+                                className={subMenuLinkClass}
+                              >
+                                Profit Loss
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'balancesheet.view') && (
+                            <li style={subSlot('financial_statement', 'balance_sheet')}>
+                              <NavLink
+                                to={routes.balance_sheet}
+                                className={subMenuLinkClass}
+                              >
+                                Balance Sheet
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'business.summary') && (
+                            <li style={subSlot('financial_statement', 'business_summary')}>
+                              <NavLink
+                                to={routes.business_summary}
+                                className={subMenuLinkClass}
+                              >
+                                Business Summary
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'cash.flow.statement') && (
+                            <li style={subSlot('financial_statement', 'cash_flow_statement')}>
+                              <NavLink
+                                to={routes.cash_flow_statement}
+                                className={subMenuLinkClass}
+                              >
+                                Cash Flow Statement
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'general.ledger') && (
+                            <li style={subSlot('financial_statement', 'general_ledger')}>
+                              <NavLink
+                                to={routes.general_ledger}
+                                className={subMenuLinkClass}
+                              >
+                                General Ledger
+                              </NavLink>
+                            </li>
+                          )}
                         </ul>
                       </div>
                     </React.Fragment>
