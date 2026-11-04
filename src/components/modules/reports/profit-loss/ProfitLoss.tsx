@@ -308,8 +308,31 @@ const ProfitLoss = (user: any) => {
     const goodsIssued = toNum(apiData?.branch_transfer?.issued);
     const goodsReceived = toNum(apiData?.branch_transfer?.received);
 
+    /**
+     * ⚠️ OWNER DECISION ক-২ #12 "গ". The cost of the labour and transport that
+     * production allocated to batches posted in this period is carried into the
+     * stock the batches produced, so the trading account's purchase figure is
+     * short by exactly that amount. It is added to the cost side (and shown as
+     * a direct acquisition cost below) and the same amount is taken out of the
+     * Production Cost expense group, which leaves the net profit unchanged and
+     * makes the gross profit the true one. No ledger entry is written.
+     */
+    const productionCost = apiData?.production_cost;
+    const productionCostTotal = toNum(productionCost?.total);
+    const productionCostByGroup = new Map<number, number>();
+    for (const group of Array.isArray(productionCost?.groups)
+      ? productionCost.groups
+      : []) {
+      const key = toNum(group?.coal3_id);
+      productionCostByGroup.set(
+        key,
+        (productionCostByGroup.get(key) ?? 0) + toNum(group?.amount)
+      );
+    }
+
     // Trading base
-    const debitBase = opening + netPurchase + goodsReceived;
+    const debitBase =
+      opening + netPurchase + goodsReceived + productionCostTotal;
     const creditBase = closing + netSalesCredit + goodsIssued;
 
     // Blade balancing
@@ -338,7 +361,18 @@ const ProfitLoss = (user: any) => {
 
     const expenseRows = netprofit
       .filter((r) => !isIncomeGroup(r))
-      .map((r) => ({ ...r, debit: toNum(r.debit) - toNum(r.credit) }))
+      .map((r) => {
+        const net = toNum(r.debit) - toNum(r.credit);
+        // The production allocation leaves the group it was taken from. A
+        // group that reaches nil is removed by the filter below, not printed
+        // as a row of nothing.
+        const moved = productionCostByGroup.get(toNum(r.coal3_id)) ?? 0;
+
+        return {
+          ...r,
+          debit: Math.max(0, Math.round((net - moved) * 100) / 100),
+        };
+      })
       .filter((r) => toNum(r.debit) > 0);
 
     const incomeRows = netprofit
@@ -407,16 +441,15 @@ const ProfitLoss = (user: any) => {
      * purchase at opposite ends of the page and never states their
      * consequence.
      *
-     * Acquisition costs carried into stock are nil because nothing carries
-     * them: heads 197 Purchase Transportation and 199 Unloading book as period
-     * expense, the vouchers that used them move no stock, and the layer that
-     * prices the closing stock holds a purchase price with no room for
-     * freight. A cost directly attributable to bringing goods in may belong in
-     * inventory cost instead -- that is a question of what the cost was for,
-     * and moving it would mean taking it out of the expense it sits in rather
-     * than counting it twice. No such reclassification is made here. See note 3.
+     * The direct acquisition cost is the production cost the API reports for
+     * this period: labour and transport already posted as an expense and
+     * allocated to the batches that produced the stock. It is carried into the
+     * cost side above and taken out of the Production Cost expense group below,
+     * so the same money is not counted twice. Ordinary freight heads (197
+     * Purchase Transportation, 199 Unloading) are not moved; they remain a
+     * period expense as before. See note 3.
      */
-    const directAcquisitionCosts = 0;
+    const directAcquisitionCosts = productionCostTotal;
     const cogs = opening + netPurchase + directAcquisitionCosts - closing;
 
     const debitPLBase = grossLoss + totalExpense;

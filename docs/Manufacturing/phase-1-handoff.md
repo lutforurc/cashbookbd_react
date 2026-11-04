@@ -135,8 +135,8 @@ php artisan route:clear
 
 ### মালিক / ক্লায়েন্টের কাছ থেকে
 
-- **ক-২ #১২ (gross profit):** কোড প্রস্তাব "ক" ধরে বানানো, Production কোনো ledger লেখে না। চূড়ান্ত সিদ্ধান্ত লেখা বাকি।
-- **ক-২ #১৩ (ফেরতের দাম):** নতুন ফর্ম খরচের দামে নেয়। আগের Sales Return-এর সমস্যা আলাদা কাজ হিসেবে ঠিক হবে কি না, ঠিক করা বাকি।
+- **ক-২ #১২ (gross profit):** সিদ্ধান্ত **"গ"** (৪ নভেম্বর ২০২৬)। Production কোনো ledger লেখে না। P&L-এর Cost of Goods Sold-এ allocated production cost "Direct Acquisition Costs" লাইনে যোগ হয়, আর একই অঙ্ক Production Cost expense group থেকে বাদ যায়; gross profit আসল, net profit অপরিবর্তিত।
+- **ক-২ #১৩ (ফেরতের দাম):** সিদ্ধান্ত (৪ নভেম্বর ২০২৬): গ্রাহককে বিক্রির দামে ফেরত (ledger আজকের মতোই), ফেরত মাল original বিক্রির FIFO খরচে stock-এ। নতুন Production Sales Return ফর্ম এটাই করে; পুরনো Sales Return ফর্ম এই কাজে বদলাবে না।
 - **ক্লায়েন্ট DB-তে query (v4 গ-৯):** পুরনো Manufacturing module-এর ব্যবহার, id-গুলো, unit/net contents। এখনো চালানো হয়নি।
 - ক-২ #৬ (expiry), #১০ (VAT), #১১ (কাঁচামালের উৎস, গুদাম)।
 
@@ -159,7 +159,7 @@ php artisan route:clear
 
 নতুন কাজ দেওয়ার আগে Command Code-কে এই ফাইল আর v4 পড়তে বলুন। মূল নিয়ম:
 
-- P&L Account (`profitLossData`, `ProfitLoss*.tsx`) কোনোভাবে বদলাবে না।
+- P&L Account (`profitLossData`, `ProfitLoss*.tsx`) বদলাবে না। একমাত্র ব্যতিক্রম ক-২ #১২ "গ" (৪ নভেম্বর ২০২৬): allocated production cost COGS-এর Direct Acquisition Costs-এ যোগ, আর একই অঙ্ক Production Cost expense group থেকে বাদ; এর বাইরে কোনো P&L বদল নয়।
 - আগের এন্ট্রি ফর্ম বদলাবে না; বদল লাগলে নতুন ফর্ম। ব্যতিক্রম শুধু opening stock-এর দশমিক।
 - আগের রিপোর্টে শুধু নতুন শাখা যোগ, আগে অনুমোদন; নতুন টেবিল পড়লে `Schema::hasTable` দিয়ে সুরক্ষা।
 - সব SQL এক ফাইলে, আর সেটাই `AddUnitTypeToBuildingUnits`-এ method হিসেবে; নতুন artisan command নয়।

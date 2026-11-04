@@ -18,7 +18,7 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 2. **যে আগের ফর্মে বদল লাগত, সেটা বদলানো হবে না; তার জায়গায় নতুন ফর্ম তৈরি হবে।** আগের ফর্মের frontend স্ক্রিন, save/edit API, validation (`productValidation` সহ) বা posting কোড কিছুই বদলাবে না। আগের ফর্মে কোনো সমস্যা পাওয়া গেলেও (যেমন গ-৪, গ-৭) সেখানে ঠিক করা হবে না।
 3. যে কাজের কোনো ফর্মই নেই (Production Entry, Recipe, স্কিম), সেগুলো নতুন।
    - **একমাত্র ব্যতিক্রম (মালিক, ৪ নভেম্বর):** আগের Item opening stock ফর্মে পরিমাণ দশমিকে (যেমন ১২.৫০) নেওয়ার বদল অনুমোদিত। মালিকের মতে এতে কোনো সমস্যা হবে না, তাই আলাদা Opening Stock ফর্ম হবে না (খ-৬)।
-4. **রিপোর্ট আগেরগুলোই ব্যবহার হবে।** নতুন ফর্ম আগের ফর্মের মতো একই টেবিলে লিখবে (`main_trx_master`, `acc_transaction_*`, `inventory_masters`/`inventory_details`), একই head আর একই নিয়মে, যাতে Trial Balance, P&L, Balance Sheet, Cash Flow, Ledger, Stock রিপোর্ট কোনো বদল ছাড়াই ঠিক অঙ্ক দেখায়। P&L একদম বদলাবে না। যে রিপোর্ট নতুন voucher চেনে না (যেমন Product Ledger, গ-৬), সেখানে শুধু নতুন শাখা **যোগ** হবে, আগের শাখা অপরিবর্তিত, আর আলাদা অনুমোদনে।
+4. **রিপোর্ট আগেরগুলোই ব্যবহার হবে।** নতুন ফর্ম আগের ফর্মের মতো একই টেবিলে লিখবে (`main_trx_master`, `acc_transaction_*`, `inventory_masters`/`inventory_details`), একই head আর একই নিয়মে, যাতে Trial Balance, P&L, Balance Sheet, Cash Flow, Ledger, Stock রিপোর্ট কোনো বদল ছাড়াই ঠিক অঙ্ক দেখায়। P&L বদলাবে না, একমাত্র ক-২ #১২ "গ"-এর জন্য (allocated production cost COGS-এ, same amount Production Cost group থেকে বাদ)। যে রিপোর্ট নতুন voucher চেনে না (যেমন Product Ledger, গ-৬), সেখানে শুধু নতুন শাখা **যোগ** হবে, আগের শাখা অপরিবর্তিত, আর আলাদা অনুমোদনে।
 5. নতুন রিপোর্ট শুধু production-এর নিজের: Production Register, Batch Costing, trace।
 
 এর মানে, নিচে যেখানে v3 "আগের ফর্মে নতুন ঘর" বা "আগের ফর্মের কোড বদল" বলেছিল, v4-এ সেটা নতুন ফর্ম। কোন ফর্ম আগেরটা আর কোনটা নতুন, তার পুরো তালিকা ক-১-এ।
@@ -28,18 +28,18 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 | Phase 0-এর কাজ (খ-১৫) | অবস্থা |
 | --- | --- |
 | Read-only code/schema audit | **শেষ** (dev DB `krishibitandatabase` ও কোড, ৪ নভেম্বর)। অংশ গ |
-| Model A/B সিদ্ধান্ত | **Model A নিশ্চিত, B বাদ** (গ-২)। তবে gross profit কীভাবে দেখাবে, সেটা মালিকের সিদ্ধান্ত (ক-২ #১২) |
+| Model A/B সিদ্ধান্ত | **Model A নিশ্চিত, B বাদ** (গ-২)। Gross profit কীভাবে দেখাবে, তার মালিকের সিদ্ধান্ত: **"গ"** (ক-২ #১২, ৪ নভেম্বর ২০২৬) |
 | ক্লায়েন্ট DB-তে পুরনো module ব্যবহার | **বাকি।** চালানোর query গ-৯-এ দেওয়া আছে |
 | Exact file/dependency list | **শেষ** (গ-১০) |
 | খ-১৩-এর হিসাব কোন কোডে কীভাবে আসবে | **শেষ** (গ-৮)। v3-এর সংখ্যা হুবহু আসে না, সংশোধিত সংখ্যা খ-১৩-এ |
 
-**কাজ শুরুর আগে বাকি:** ক্লায়েন্ট DB-র query-র ফল, আর মালিকের সিদ্ধান্ত। বিশেষ করে নতুন দুটো: #১২ (gross profit) আর #১৩ (sales return-এর দাম)।
+**কাজ শুরুর আগে বাকি:** শুধু ক্লায়েন্ট DB-র query-র ফল। মালিকের দুটো সিদ্ধান্ত হয়ে গেছে (৪ নভেম্বর ২০২৬): #১২ (gross profit) = **"গ"**, আর #১৩ (sales return-এর দাম) = ফেরত মাল original বিক্রির FIFO খরচে।
 
 ### v3 থেকে কী বদলাল
 
 1. **Worked example-এর সংখ্যা সংশোধন।** Stock-এর দাম দুই দশমিকে রাখা হয়, তাই ১৭১.১৫৭৮৯… রাখা যায় না। Closing ৮,৫৫৭.৮৯ নয়, ৮,৫৫৮.০০; লাভ ১,২৯৭.৮৯ নয়, ১,২৯৮.০০ (গ-৩, খ-১৩)।
-2. **Gross profit v3-এর মতো আসবে না।** P&L-এর trading account শুধু নির্দিষ্ট কয়েকটা head পড়ে; Factory Labour নিচে খরচের ভাগে যায়। Net profit ঠিক থাকে, gross profit বড় দেখায়। P&L বদলানো নিষেধ, তাই মালিককে বাছতে হবে (গ-২, ক-২ #১২)।
-3. **Sales return এখন বিক্রির দামে stock-এ ঢোকে, খরচের দামে নয়।** এটা আজকের সব branch-এর সমস্যা, production-এর নয়; কিন্তু এর জন্য worked example ১৪৪.২০ টাকা বেশি লাভ দেখায় (গ-৪, ক-২ #১৩)।
+2. **Gross profit v3-এর মতো আসবে না।** P&L-এর trading account শুধু নির্দিষ্ট কয়েকটা head পড়ে; Factory Labour নিচে খরচের ভাগে যায়। মালিকের সিদ্ধান্ত **"গ"** (৪ নভেম্বর ২০২৬): allocated production cost COGS-এর Direct Acquisition Costs-এ যায় আর একই অঙ্ক Production Cost group থেকে বাদ যায়, তাই gross profit আসলটা আসে আর net profit অপরিবর্তিত থাকে (গ-২, ক-২ #১২)।
+3. **Sales return এখন বিক্রির দামে stock-এ ঢোকে, খরচের দামে নয়।** এটা আজকের সব branch-এর সমস্যা, production-এর নয়; কিন্তু এর জন্য worked example ১৪৪.২০ টাকা বেশি লাভ দেখায়। সিদ্ধান্ত (৪ নভেম্বর ২০২৬): নতুন Production Sales Return ফেরত মাল original বিক্রির FIFO খরচে নেবে; আগের Sales Return ফর্ম এই কাজে বদলাবে না (গ-৪, ক-২ #১৩)।
 4. **Model B বাদ।** বইয়ে কোনো stock account নেই; "Dr Inventory" লেখার জায়গাই নেই (গ-২)।
 5. **FIFO helper তারিখ মানে না।** Production-এর জন্য তারিখ-নির্ভর FIFO পড়া আলাদা লিখতে হবে; shared helper বদলানো নয় (গ-৫)।
 6. **Product Ledger-এ production দেখাতে নতুন শাখা লাগবে** (গ-৬)। Shared report বদল, তাই আগে অনুমোদন।
@@ -102,9 +102,9 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 P&L-এর উপরের অংশ (trading account) শুধু কেনা, বিক্রি, ফেরত আর opening/closing stock দেখে। মজুরি দেখায় নিচে, খরচের তালিকায়। তাই মজুরির খরচ তৈরি মালের দামে ঢুকলেও P&L-এ দেখাবে এভাবে:
 
 - **শেষের লাভ (net profit) ঠিক থাকবে।**
-- **উপরের লাভ (gross profit) মজুরির পুরো টাকাটা বেশি দেখাবে,** কারণ মজুরি নিচে বাদ যায়।
+- **উপরের লাভ (gross profit) "গ" অনুযায়ী আসলটা দেখাবে:** allocated মজুরি/পরিবহন COGS-এ যোগ হয়, আর একই অঙ্ক Production Cost group থেকে বাদ যায়। (না করলে gross profit মজুরির পুরো টাকাটা বেশি দেখাত, কারণ মজুরি নিচে বাদ যায়।)
 
-P&L রিপোর্ট বদলানো যাবে না (নিয়ম)। তাই মালিককে বাছতে হবে, ক-২ #১২।
+P&L রিপোর্ট বদলানো যাবে না (নিয়ম)। একমাত্র ব্যতিক্রম ক-২ #১২ **"গ"** (মালিকের সিদ্ধান্ত, ৪ নভেম্বর ২০২৬): allocated production cost COGS-এর Direct Acquisition Costs-এ যোগ হয় আর একই অঙ্ক Production Cost expense group থেকে বাদ যায়। এর বাইরে P&L-এ কোনো বদল নেই।
 
 ## অংশ ক-২: সিদ্ধান্ত
 
@@ -141,8 +141,8 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 | ৯ | ফ্রি পণ্যের খরচ রিপোর্টে কোথায় দেখাবে? | বিক্রিত মালের খরচেই থাকবে; Production/ফ্রি রিপোর্টে আলাদা লাইন "ফ্রি দেওয়া মালের খরচ" (P&L নিজে বদলাবে না) |
 | ১০ | ক্লায়েন্ট VAT-নিবন্ধিত? মূসক-৪.৩ জমা দেন? | ক্লায়েন্টের কাছ থেকে জানতে হবে; VAT পরামর্শকের সাথে যাচাই |
 | ১১ | কাঁচামাল নতুন ব্রাঞ্চে কেনা হবে, নাকি পুরনো ব্রাঞ্চ থেকে আসবে? কাঁচামাল আর তৈরি পণ্য আলাদা গুদামে? | ক্লায়েন্টের কাছ থেকে জানতে হবে। দুটোই কোডে সম্ভব (গ-৫, গ-৭) |
-| **১২** | **(নতুন) P&L-এর উপরের লাভ (gross profit) কীভাবে দেখাবে?** | **ক:** মজুরি খরচের তালিকায় থাকবে; শেষের লাভ ঠিক, উপরের লাভ মজুরির টাকা বেশি দেখাবে। Production কোনো ledger লেখে না। **খ:** Production পোস্ট করলে একটা স্বয়ংক্রিয় Journal মজুরির টাকাটা "Purchase"-এ সরিয়ে দেবে; দুটো লাভই ঠিক, কিন্তু P&L-এর "Purchase" অঙ্কে মজুরি মিশে থাকবে। **প্রস্তাব: ক দিয়ে শুরু**, কারণ এতে কোনো ledger লেখা হয় না আর ভুল হলে সহজে ধরা যায়; Production রিপোর্টে আসল gross profit আলাদা দেখাবে |
-| **১৩** | **(নতুন) বিক্রির পর ফেরত আসা মাল স্টকে কোন দামে ঢুকবে?** | আগের Sales Return ফর্ম ফেরতের টাকার দামে ঢোকায় (যেমন ২০০), কেনা দামে নয় (১৭১.১৬); তাই লাভ বাড়িয়ে দেখায়। **প্রস্তাব:** নতুন **Production Sales Return** ফর্ম ফেরত মাল আসল বিক্রির FIFO খরচে ঢোকাবে; আগের ফর্ম ও পুরনো ব্রাঞ্চ যেমন আছে থাকবে। নিশ্চিত করুন: আগের Sales Return-এর এই সমস্যা আলাদা কাজ হিসেবে ঠিক করা হবে, নাকি যেমন আছে থাকবে |
+| **১২** | **(নতুন) P&L-এর উপরের লাভ (gross profit) কীভাবে দেখাবে?** | **সিদ্ধান্ত (৪ নভেম্বর ২০২৬): "গ"।** Production কোনো ledger লেখে না ("ক"-এর মতোই)। P&L-এর Cost of Goods Sold-এর ভিতরে থাকা "Direct Acquisition Costs" লাইনে allocated production cost বসে, আর একই অঙ্ক "Production Cost" expense group থেকে বাদ যায়। Gross profit আসলটা হয়, net profit অপরিবর্তিত থাকে। শুধু `PROD_EXPENSE_*` allocation সরে; অফিস খরচ এবং ১৯৭/১৯৯ head সরবে না। "ক" ও "খ" বাতিল। |
+| **১৩** | **(নতুন) বিক্রির পর ফেরত আসা মাল স্টকে কোন দামে ঢুকবে?** | **সিদ্ধান্ত (৪ নভেম্বর ২০২৬):** গ্রাহককে বিক্রির দামে ফেরত (ledger আজকের মতোই), আর ফেরত মাল original বিক্রির FIFO খরচে stock-এ ঢোকে। নতুন **Production Sales Return** ফর্ম এটাই করে; কোনো বদল নেই। পুরনো Sales Return ফর্ম ঠিক করা এই কাজের অংশ নয়। |
 
 ## অংশ ক-৩: কখন কী পাবেন
 
@@ -150,7 +150,7 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 
 | ধাপ | ক্লায়েন্ট কী পাবেন |
 | --- | --- |
-| ০. যাচাই | **কোডের অংশ শেষ (অংশ গ)।** বাকি: ক্লায়েন্ট DB-তে query চালানো আর #১২, #১৩-এর সিদ্ধান্ত |
+| ০. যাচাই | **কোডের অংশ শেষ (অংশ গ)।** বাকি: ক্লায়েন্ট DB-তে query চালানো (গ-৯)। #১২, #১৩-এর সিদ্ধান্ত হয়ে গেছে |
 | ১. উৎপাদন | নতুন ব্রাঞ্চ; নতুন ফর্ম: Production Entry (রেসিপি ছাড়া), Production Sales Return; ক্রয়-খরচ-বিক্রি আগের ফর্মে; Item opening stock দশমিকে আপডেট; Production Register ও Costing রিপোর্ট; আগের তিন রিপোর্ট মেলে |
 | ২. রেসিপি | রেসিপি বাছলে লাইন নিজে ভরে যাবে; কাঁচামাল কম থাকলে আগেই জানাবে |
 | ৩. বিক্রিতে ফ্রি | নতুন Production Sales (ফ্রি রো, দাম ০), স্কিম সেটআপ, ফ্রিসহ ফেরত |
@@ -208,8 +208,9 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 
 **Gross profit (ক-২ #১২):**
 
-- **"ক" (প্রস্তাব):** কোনো ledger লেখা নয়। Net profit ঠিক; P&L-এর gross profit allocated খরচের পুরোটা বেশি দেখায়, আর একই অঙ্ক খরচের তালিকায় বাদ যায়।
-- **"খ":** Post-এর সময় একই transaction-এ Journal: Dr Purchase (coa4 35) / Cr Factory Labour, allocated অঙ্কে। Reversal-এ উল্টো Journal। P&L-এর দুই লাভই ঠিক। কিন্তু "Purchase" অঙ্কে মজুরি মেশে, আর যে রিপোর্ট coa4 35 পড়ে (Cash Flow ইত্যাদি) সেগুলোও এই অঙ্ক দেখবে। এটা বাছলে Phase 1-এর আগে সেই রিপোর্টের তালিকা যাচাই।
+- **"ক" (গৃহীত হয়নি):** কোনো ledger লেখা নয়। Net profit ঠিক; P&L-এর gross profit allocated খরচের পুরোটা বেশি দেখায়, আর একই অঙ্ক খরচের তালিকায় বাদ যায়।
+- **"খ" (গৃহীত হয়নি):** Post-এর সময় একই transaction-এ Journal: Dr Purchase (coa4 35) / Cr Factory Labour, allocated অঙ্কে। Reversal-এ উল্টো Journal। P&L-এর দুই লাভই ঠিক। কিন্তু "Purchase" অঙ্কে মজুরি মেশে, আর যে রিপোর্ট coa4 35 পড়ে (Cash Flow ইত্যাদি) সেগুলোও এই অঙ্ক দেখবে।
+- **"গ" (মালিকের সিদ্ধান্ত, ৪ নভেম্বর ২০২৬):** কোনো ledger লেখা নয় ("ক"-এর মতোই)। P&L-এর Cost of Goods Sold-এর ভিতরে থাকা "Direct Acquisition Costs" লাইনে allocated production cost যোগ হয়, আর একই অঙ্ক Production Cost expense group থেকে বাদ যায়। Gross profit আসলটা হয়, net profit অপরিবর্তিত থাকে। শুধু `PROD_EXPENSE_*` allocation সরে; অফিস খরচ এবং ১৯৭/১৯৯ head সরবে না। Report/print সব একই P&L হিসাব ব্যবহার করে।
 
 **খরচ ঢোকে আগের Payment Voucher বা Journal দিয়ে,** কোনো বদল ছাড়া; এগুলো সঠিক ledger লেখে। Production শুধু এই voucher-গুলোর খরচের line থেকে allocate করবে।
 
@@ -291,10 +292,10 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 
 ## অংশ খ-১২: রিপোর্ট
 
-- **Production Register** (list) ও **Batch Costing** (detail): input qty/value, allocated cost ও তার source voucher, output qty, unit cost, normal ও abnormal loss qty/%, recipe-র তুলনায় variance (Phase 2)। এখানে আসল gross profit (allocated খরচসহ) দেখাবে, যেহেতু P&L "ক"-তে সেটা দেখায় না।
+- **Production Register** (list) ও **Batch Costing** (detail): input qty/value, allocated cost ও তার source voucher, output qty, unit cost, normal ও abnormal loss qty/%, recipe-র তুলনায় variance (Phase 2)। এখানে আসল gross profit (allocated খরচসহ) batch-wise দেখাবে; P&L "গ"-তে একই allocated খরচ COGS-এ যোগ করে আসল gross profit দেখায়, কিন্তু batch-wise ভাঙা এখানেই।
 - **Material-to-output trace:** কোন purchase layer কোন batch-এ গেছে।
 - **Product Ledger-এ production in/out আলাদা শাখা** (গ-৬)। এটা shared report বদল, আগে অনুমোদন।
-- **আগের রিপোর্টই ব্যবহার হবে:** P&L, Balance Sheet, Trial Balance, Cash Flow, Ledger, Cash/Bank Book, Stock রিপোর্ট। এগুলো বদলাবে না; নতুন ফর্ম একই টেবিলে একই নিয়মে লেখে বলে নিজে থেকেই ঠিক অঙ্ক পায়। P&L একদম বদলাবে না।
+- **আগের রিপোর্টই ব্যবহার হবে:** P&L, Balance Sheet, Trial Balance, Cash Flow, Ledger, Cash/Bank Book, Stock রিপোর্ট। এগুলো বদলাবে না; নতুন ফর্ম একই টেবিলে একই নিয়মে লেখে বলে নিজে থেকেই ঠিক অঙ্ক পায়। P&L-এ একমাত্র অনুমোদিত বদল ক-২ #১২ "গ" (৪ নভেম্বর ২০২৬): allocated production cost COGS-এর Direct Acquisition Costs-এ যোগ, আর একই অঙ্ক Production Cost group থেকে বাদ।
 - যে আগের রিপোর্ট voucher-এর ধরন ধরে সারি গড়ে (Product Ledger, `transaction_type` filter করা রিপোর্ট), সেখানে নতুন voucher দেখা না গেলে শুধু নতুন শাখা **যোগ**, আগের শাখা অপরিবর্তিত, আলাদা অনুমোদনে (গ-৬)।
 - Print/PDF-এর সব text solid black; gray text নয়।
 
@@ -306,12 +307,12 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 | --- | --- | --- | --- |
 | ১ | মরিচ ৬০ kg × ১২০ + হলুদ ৪০ kg × ১৫০ কেনা, নগদ | Purchase ১৩,২০০ / Cash | in: ৬০ @১২০, ৪০ @১৫০ |
 | ২ | মজুরি বাকি | Factory Labour ৩,০৬০ / Labour Payable | — |
-| ৩ | Production: ৯৫ × ১ kg, নষ্ট ৫ kg, #২ থেকে ৩,০৬০ allocate | "ক": কিছু না | out: ৬০ + ৪০ kg; in: ১ @১৭০.৯৬, ৯৪ @১৭১.১৬ |
+| ৩ | Production: ৯৫ × ১ kg, নষ্ট ৫ kg, #২ থেকে ৩,০৬০ allocate | "গ": কিছু না (Production ledger লেখে না) | out: ৬০ + ৪০ kg; in: ১ @১৭০.৯৬, ৯৪ @১৭১.১৬ |
 | ৪ | ৫০ প্যাকেট × ২০০ বিক্রি, নগদ | Cash / Sales ১০,০০০ | out: ৫০ |
-| ৫ | ৫ প্যাকেট ফেরত, নগদ ফেরত | Sales Return ১,০০০ / Cash | in: ৫ @১৭১.১৬ (ক-২ #১৩ প্রস্তাব মেনে) |
+| ৫ | ৫ প্যাকেট ফেরত, নগদ ফেরত | Sales Return ১,০০০ / Cash | in: ৫ @১৭১.১৬ (ক-২ #১৩ সিদ্ধান্ত মেনে) |
 | ৬ | মজুরি পরিশোধ | Labour Payable / Cash ৩,০৬০ | — |
 
-**প্রত্যাশিত ফল ("ক", ফেরত খরচের দামে):**
+**"ক"-এর প্রত্যাশিত ফল (ফেরত খরচের দামে), ইতিহাসের জন্য:**
 
 | রিপোর্ট | লাইন | টাকা |
 | --- | --- | --- |
@@ -327,7 +328,23 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 | Balance Sheet | Assets: Cash ১২,৭৪০ + Stock ৮,৫৫৮ | ২১,২৯৮.০০ |
 | Balance Sheet | Equity: Capital ২০,০০০ + Profit ১,২৯৮ | ২১,২৯৮.০০ |
 
-**"খ" বাছলে যা বদলায়:** #৩-এ Journal Dr Purchase ৩,০৬০ / Cr Factory Labour ৩,০৬০। P&L-এ Purchase ১৬,২৬০, COGS ৭,৭০২.০০, gross profit ১,২৯৮.০০, Factory Labour ০, net profit ১,২৯৮.০০। Trial Balance-এ Purchase ১৬,২৬০, Labour ০, মোট একই ৩০,০০০।
+**"খ" বাছলে যা বদলায় (গৃহীত হয়নি):** #৩-এ Journal Dr Purchase ৩,০৬০ / Cr Factory Labour ৩,০৬০। P&L-এ Purchase ১৬,২৬০, COGS ৭,৭০২.০০, gross profit ১,২৯৮.০০, Factory Labour ০, net profit ১,২৯৮.০০। Trial Balance-এ Purchase ১৬,২৬০, Labour ০, মোট একই ৩০,০০০।
+
+**"গ" বাছা হলে প্রত্যাশিত ফল (মালিকের সিদ্ধান্ত, ৪ নভেম্বর ২০২৬):**
+
+| রিপোর্ট | লাইন | টাকা |
+| --- | --- | --- |
+| Stock | Closing: ৫ @১৭১.১৬ + ৪৫ @১৭১.১৬ | ৮,৫৫৮.০০ |
+| P&L | Net sales (১০,০০০ − ১,০০০) | ৯,০০০.০০ |
+| P&L | Net purchase | ১৩,২০০.০০ |
+| P&L | Direct Acquisition Costs (allocated production cost) | ৩,০৬০.০০ |
+| P&L | Cost of goods sold (০ + ১৩,২০০ + ৩,০৬০ − ৮,৫৫৮) | ৭,৭০২.০০ |
+| P&L | Gross profit | ১,২৯৮.০০ |
+| P&L | খরচ: Production Cost group (৩,০৬০ − ৩,০৬০) | ০.০০ (সারি দেখাবে না) |
+| P&L | Net profit | ১,২৯৮.০০ |
+| Production রিপোর্ট | আসল gross profit | ১,২৯৮.০০ |
+| Trial Balance | Dr = Cr | ৩০,০০০ = ৩০,০০০ (অপরিবর্তিত) |
+| Balance Sheet | Assets = Equity | ২১,২৯৮ = ২১,২৯৮ (অপরিবর্তিত) |
 
 **আজকের কোডে যা আসবে (ফেরত বিক্রির দামে, ক-২ #১৩ ছাড়া):** ফেরতের ৫টা ২০০ দরে ঢোকে। Closing = ১,০০০ + ৪৫ × ১৭১.১৬ = ৮,৭০২.২০; net profit ১,৪৪২.২০। অর্থাৎ ১৪৪.২০ (= ৫ × ২৮.৮৪) লাভ বেশি দেখায়, আর Check ১ ফেল করবে।
 
@@ -359,7 +376,7 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 
 | Phase | কাজ | শেষের প্রমাণ |
 | --- | --- | --- |
-| 0 | কোড/schema audit **শেষ (অংশ গ)**; বাকি: ক্লায়েন্ট DB query (গ-৯), ক-২ #১২ ও #১৩ (#১৪ হয়ে গেছে) | গ-৯-এর ফল লেখা, দুই সিদ্ধান্ত লেখা |
+| 0 | কোড/schema audit **শেষ (অংশ গ)**; ক-২ #১২ ("গ") ও #১৩-এর সিদ্ধান্ত লেখা হয়েছে; বাকি: ক্লায়েন্ট DB query (গ-৯) | গ-৯-এর ফল লেখা |
 | 1 | নতুন ফর্ম: Production Entry, Production Sales Return; Item opening stock-এ দশমিক qty; manual single-output production, source-linked cost, abnormal loss, stock integration, Product Ledger শাখা, Register ও Costing | Check ১–১০, ১২–১৪ পাস |
 | 2 | Recipe, version, ঘাটতি দেখা | Recipe থেকে ভরা batch-এ check ১, ৭ পাস |
 | 3 | নতুন Production Sales (ফ্রি রো), scheme, ফ্রিসহ return | Check ১১ পাস |
@@ -368,7 +385,7 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 - পুরনো Manufacturing module মোছা হবে না; নতুন flow তার hardcoded account/year id ব্যবহার করবে না।
 - **আগের কোনো এন্ট্রি ফর্ম (স্ক্রিন, API, validation, posting) বদলাবে না।** বদল না লাগলে আগেরটাই ব্যবহার; বদল লাগলে নতুন ফর্ম (ক-১)। একমাত্র ব্যতিক্রম: Item opening stock-এ দশমিক qty (মালিকের অনুমোদিত)।
 - শুধু অনুমোদিত phase-এর কোড বদলাবে। Shared engine বা report-এ কিছু যোগ করতে হলে exact impact দেখিয়ে আগে অনুমোদন (তালিকা গ-১০)।
-- **P&L Account (`profitLossData`, `ProfitLoss.tsx` ও তার report/print) একদম বদলাবে না।** বাকি সব এর সঙ্গে মিলবে।
+- **P&L Account (`profitLossData`, `ProfitLoss.tsx` ও তার report/print) বদলাবে না।** একমাত্র ব্যতিক্রম ক-২ #১২ **"গ"** (মালিকের সিদ্ধান্ত, ৪ নভেম্বর ২০২৬): allocated production cost COGS-এর Direct Acquisition Costs-এ যোগ হয়, আর একই অঙ্ক Production Cost expense group থেকে বাদ যায়। এর বাইরে P&L-এ কোনো বদল নয়। বাকি সব এর সঙ্গে মিলবে।
 - "অন্য রিপোর্ট বদলাতে হবে না" ধরে production movement রিপোর্ট থেকে বাদ দেওয়া যাবে না।
 - পুরনো branch, chart ও পুরনো voucher স্বয়ংক্রিয়ভাবে migrate বা repair হবে না।
 
@@ -394,7 +411,7 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 - **অর্থ:** কোনো "Direct Expense in trading" নেই। Factory Labour যেখানেই রাখা হোক, P&L-এ সেটা gross profit-এর নিচে বসে। আর head-টা level-3 7 বা 9-এর নিচে রাখলে trading-এ আসে না (id তালিকায় নেই), নিচের অংশেও আসে না (group বাদ)। তখন P&L থেকে পুরো উধাও হয়, Trial Balance-এ থাকে।
 - **Model A নিশ্চিত:** P&L = opening + purchase − closing (stock walk থেকে)। Production stock layer-এ allocated খরচ যোগ করলে closing বাড়ে, আর খরচের head সেই অঙ্ক কমায়; net-এ কাটাকাটি।
 - **Model B বাদ:** "Dr Inventory Adj" লেখার মতো কোনো stock head trading-এ পড়া হয় না। লিখলে সেই অঙ্ক closing stock-এর সঙ্গে দ্বিতীয়বার গোনা হতো, বা কোথাও আসত না।
-- **P&L বদলানো নিষেধ** (মালিকের নিয়ম, ৩ নভেম্বর ২০২৬)। তাই gross profit ঠিক দেখাতে হলে একমাত্র উপায় ledger-এ অঙ্কটা Purchase (35)-এ সরানো। এটাই ক-২ #১২-এর "খ"।
+- **P&L বদলানো নিষেধ** (মালিকের নিয়ম, ৩ নভেম্বর ২০২৬) — একমাত্র ব্যতিক্রম ক-২ #১২ **"গ"** (৪ নভেম্বর ২০২৬): কোনো ledger লেখা ছাড়া allocated production cost COGS-এর Direct Acquisition Costs-এ যায় আর একই অঙ্ক Production Cost group থেকে বাদ হয়। "খ" (ledger-এ Purchase 35-এ সরানো) গৃহীত হয়নি।
 
 ### গ-৩: দাম দুই দশমিকে
 
