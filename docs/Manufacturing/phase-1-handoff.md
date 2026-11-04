@@ -17,8 +17,8 @@ title: "Manufacturing Phase 1 — কাজের অবস্থা ও অন�
 
 | Repo | Branch | অবস্থা |
 | --- | --- | --- |
-| `cashbookbd_react` (frontend), `https://github.com/lutforurc/cashbookbd_react` | `Reseller-ui` | এই ফাইল সহ commit ও push করতে হবে |
-| `cashbook_api` (backend), `https://github.com/lutforurc/cashbook_api` | `Manufacturing-API` | এখনো remote-এ নেই; প্রথম push-এ `git push -u origin Manufacturing-API` |
+| `cashbookbd_react` (frontend), `https://github.com/lutforurc/cashbookbd_react` | `Manufacturing-UI` (`Reseller-ui` থেকে) | push করা হয়েছে |
+| `cashbook_api` (backend), `https://github.com/lutforurc/cashbook_api` | `Manufacturing-API` | push করা হয়েছে |
 
 অন্য কম্পিউটারে:
 
@@ -27,7 +27,7 @@ git -C <frontend-folder> fetch origin
 ```
 
 ```bash
-git -C <frontend-folder> checkout Reseller-ui
+git -C <frontend-folder> checkout Manufacturing-UI
 ```
 
 ```bash
