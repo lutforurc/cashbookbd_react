@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FiCheckSquare, FiInbox, FiRotateCcw, FiSend } from 'react-icons/fi';
+import { FiCheckCircle, FiCheckSquare, FiInbox, FiRotateCcw, FiSend } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 import httpService from '../../services/httpService';
@@ -215,14 +215,28 @@ const InterBranchTransfers = ({ user }: any) => {
         const isReceived = Number(row.status) === 2;
         const showReceive = tab === 'incoming' && isPending && canReceive;
         // Incoming = Reverse Receipt (its own key); outgoing = Reverse Transfer.
-        const showReverse = isReceived && (tab === 'outgoing' ? canReverse : canReverseReceipt);
+        // An approved voucher is final (the API refuses it too): a full
+        // reversal undoes both legs, a receipt reversal only the receipt.
+        const approved = tab === 'outgoing'
+          ? Boolean(row.payment_is_approved || row.receipt_is_approved)
+          : Boolean(row.receipt_is_approved);
+        const showReverse = isReceived && !approved && (tab === 'outgoing' ? canReverse : canReverseReceipt);
+        const showApproved = isReceived && approved;
 
-        if (!showReceive && !showReverse) {
+        if (!showReceive && !showReverse && !showApproved) {
           return <span className="text-xs text-slate-400">—</span>;
         }
 
         return (
           <div className="flex items-center gap-2">
+            {showApproved ? (
+              <span
+                title="Approved voucher — cannot be reversed"
+                className="inline-flex items-center gap-1 rounded-sm bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+              >
+                <FiCheckCircle className="text-sm" /> Approved
+              </span>
+            ) : null}
             {showReceive ? (
               <button
                 type="button"

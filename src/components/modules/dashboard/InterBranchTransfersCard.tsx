@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FiArrowDownLeft, FiArrowUpRight, FiCheckSquare, FiInbox, FiRotateCcw } from 'react-icons/fi';
+import { FiArrowDownLeft, FiArrowUpRight, FiCheckCircle, FiCheckSquare, FiInbox, FiRotateCcw } from 'react-icons/fi';
 
 import httpService from '../../services/httpService';
 import { API_INTERBRANCH_TRANSFER_DASHBOARD_URL } from '../../services/apiRoutes';
@@ -204,12 +204,26 @@ const InterBranchTransfersCard = ({ branchId, tick = 0, href, canAct = true, row
         const showReceive = status === 1 && canReceive && isIncoming;
         // Incoming rows are the destination undoing its receipt; outgoing rows
         // are the sender undoing the whole transfer. Different keys.
-        const showReverse = status === 2 && (isIncoming ? canReverseReceipt : canReverse);
+        // An approved voucher is final: a full reversal undoes both legs, a
+        // receipt reversal only the receipt. The API refuses it too.
+        const approved = isIncoming
+          ? Boolean(row.receipt_is_approved)
+          : Boolean(row.payment_is_approved || row.receipt_is_approved);
+        const showReverse = status === 2 && !approved && (isIncoming ? canReverseReceipt : canReverse);
+        const showApproved = status === 2 && approved;
 
-        if (!showReceive && !showReverse) return null;
+        if (!showReceive && !showReverse && !showApproved) return null;
 
         return (
           <div className="flex items-center gap-1">
+            {showApproved ? (
+              <span
+                title="Approved voucher — cannot be reversed"
+                className="inline-flex items-center gap-1 rounded-sm bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+              >
+                <FiCheckCircle /> Approved
+              </span>
+            ) : null}
             {showReceive ? (
               <button
                 type="button"
