@@ -336,11 +336,42 @@ const InstallmentDetails = () => {
       width: '150px',
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => (
-        <div className="text-right">
-          {row?.due_amount ?  thousandSeparator (row.due_amount) : '-'}
-        </div>
-      ),
+      // Three states, read off what was paid:
+      //   unpaid  -> the scheduled amount
+      //   partial -> each receipt voucher's date, oldest first, then what is left
+      //   paid    -> each receipt voucher's date alone
+      // A rule between every line, so two receipts read as two receipts.
+      render: (row: any) => {
+        const due = Number(row?.due_amount || 0);
+        const paid = Number(row?.paid_amount || 0);
+
+        if (paid > 0) {
+          const dates: string[] =
+            Array.isArray(row?.received_dates) && row.received_dates.length
+              ? row.received_dates
+              : [row?.received_date || '-'];
+          const lines = due > 0 ? [...dates, `Due: ${thousandSeparator(due)}`] : dates;
+
+          return (
+            <div className="inline-block text-right">
+              {lines.map((line, index) => (
+                <div
+                  key={index}
+                  className={index ? 'border-t border-gray-300 dark:border-gray-600' : ''}
+                >
+                  {line}
+                </div>
+              ))}
+            </div>
+          );
+        }
+
+        return (
+          <div className="text-right">
+            {row?.amount ? thousandSeparator(row.amount) : '-'}
+          </div>
+        );
+      },
     },
     {
       key: 'installment_id',

@@ -20,18 +20,6 @@ type Props = {
   period?: string;
   title?: string;
   fontSize?: number;
-  /**
-   * Customers per sheet, not rows -- a customer's units are boxed together and
-   * splitting that box across a fold is what the outline exists to prevent.
-   */
-  customersPerPage?: number;
-};
-
-const chunk = <T,>(data: T[], size: number): T[][] => {
-  if (size <= 0) return [data];
-  const out: T[][] = [];
-  for (let i = 0; i < data.length; i += size) out.push(data.slice(i, i + size));
-  return out;
 };
 
 const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
@@ -42,7 +30,6 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
       period,
       title = "Customer Wise Sold Unit List",
       fontSize = 10,
-      customersPerPage = 8,
     },
     ref
   ) => {
@@ -50,11 +37,6 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
     const mobileFormat = useMobileFormat();
     const fs = fontSize;
     const cell = "border border-gray-900 px-2 py-1";
-
-    // Cut into sheets here. Left to the browser, the second page onward carried
-    // no column headings and nothing saying which sheet it was.
-    const pages = chunk(rows, customersPerPage);
-    const pageCount = pages.length || 1;
 
     return (
       <div ref={ref} className="sold-unit-print p-8 text-gray-900 print-root">
@@ -67,15 +49,13 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
               }
+
+              /* A customer's box is never split across a fold. */
+              .sold-unit-print tbody { break-inside: avoid; }
             }`}
         </style>
 
-        {(pages.length ? pages : [[]]).map((pageRows, pIdx) => {
-        const isLastPage = pIdx === pageCount - 1;
-        const serialOffset = pIdx * customersPerPage;
-
-        return (
-        <div key={pIdx} className="print-page">
+        <div className="print-page">
           <PadPrinting />
 
           <div className="mb-4 text-center">
@@ -98,12 +78,11 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
               </tr>
             </thead>
 
-            <tbody>
-              {pageRows.length ? (
-                pageRows.map((customer, pageCustomerIndex) => {
-                  // Colour and serial follow the customer's place in the whole
-                  // report, not on this sheet, so neither restarts at a fold.
-                  const customerIndex = serialOffset + pageCustomerIndex;
+              {/* One <tbody> per customer: break-inside:avoid on it keeps the
+                  customer's box on one sheet, and the <thead> above repeats on
+                  every sheet the browser starts. */}
+              {rows.length ? (
+                rows.map((customer, customerIndex) => {
                   const color = customerColor(customerIndex).border;
                   const tint = customerColor(customerIndex).tint;
                   const sales = customer.units.map((unit) => ({
@@ -117,7 +96,7 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
                   let rowCursor = 0;
 
                   return (
-                    <React.Fragment key={customer.customer_id}>
+                    <tbody key={customer.customer_id}>
                       {sales.map(({ unit, lines }) =>
                         lines.map((line, lineIndex) => {
                           const rowIndex = rowCursor++;
@@ -244,6 +223,14 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
                                         {receipt.receipt_no ? ` | ${receipt.receipt_no}` : ""}
                                       </div>
                                     ))}
+                                    {/* Installment money, apart from the booking lines above: a
+                                        receipt here is an allocation, not a booking receipt. */}
+                                    {Number(unit.installment_received || 0) > 0 ? (
+                                      <div className="mt-1">
+                                        <div>Installment</div>
+                                        <div className="border-t border-gray-500">{money(unit.installment_received)}</div>
+                                      </div>
+                                    ) : null}
                                   </td>
                                   <td
                                     rowSpan={lines.length}
@@ -265,21 +252,23 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
                           );
                         })
                       )}
-                    </React.Fragment>
+                    </tbody>
                   );
                 })
               ) : (
-                <tr>
-                  <td colSpan={7} className={`${cell} py-6 text-center text-gray-500`}>
-                    No sold unit found
-                  </td>
-                </tr>
+                <tbody>
+                  <tr>
+                    <td colSpan={7} className={`${cell} py-6 text-center text-gray-500`}>
+                      No sold unit found
+                    </td>
+                  </tr>
+                </tbody>
               )}
-            </tbody>
 
-            {/* The report's total, so it goes on the sheet that ends it. */}
-            {rows.length && isLastPage ? (
-              <tfoot>
+            {/* The report's total, once, after the last customer. ⚠️ Not a
+                <tfoot>: the browser repeats a <tfoot> on every sheet. */}
+            {rows.length ? (
+              <tbody>
                 <tr className="bg-gray-100 font-bold">
                   <td style={{ fontSize: fs }} className={`${cell} text-right`} colSpan={4}>
                     Grand Total ({totals?.customer_count ?? 0} customer, {totals?.unit_count ?? 0} unit, {totals?.parking_count ?? 0} parking)
@@ -294,16 +283,29 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
                     {money(totals?.due_amount)}
                   </td>
                 </tr>
-              </tfoot>
+              </tbody>
             ) : null}
+
+            {/* The pinned footer's band, held back at the foot of every sheet:
+                a <tfoot> is the one part of a table the browser repeats there.
+                Without it a full sheet's last rows print through the footer.
+                Same 6mm as ItemDetailsPrint. */}
+            <tfoot>
+              <tr>
+                <td colSpan={7} style={{ height: "6mm", border: "none" }} />
+              </tr>
+            </tfoot>
           </table>
 
-          <PrintFooter page={pIdx + 1} total={pageCount} fontSize={fs} />
-
-          {!isLastPage && <div className="page-break" />}
+          {/* ⚠️ PINNED, as Cash Book pins its own when the report is one block.
+              This report used to be cut into blocks of eight customers, each
+              ending in an in-flow footer -- but a customer runs to four lines,
+              so a block outgrew its sheet and its footer landed halfway down the
+              next one. The browser breaks the pages now, and a fixed footer is
+              repainted at the foot of every sheet. It carries no page count:
+              nothing pinned can tell which sheet it stands on. */}
+          <PrintFooter fixed fontSize={fs} />
         </div>
-        );
-        })}
       </div>
     );
   }

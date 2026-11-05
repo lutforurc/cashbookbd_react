@@ -144,6 +144,8 @@ export interface SoldUnitRow {
   booking_amount: number;
   downpayment_amount: number;
   received_amount: number;
+  /** Installment receipts on live vouchers, kept apart from booking + down payment. */
+  installment_received?: number;
   due_amount: number;
 }
 
@@ -161,6 +163,8 @@ export interface SoldUnitCustomer {
   parking_amount: number;
   total_amount: number;
   received_amount: number;
+  /** Installment receipts on live vouchers, kept apart from booking + down payment. */
+  installment_received?: number;
   due_amount: number;
 }
 
@@ -172,6 +176,8 @@ export interface SoldUnitTotals {
   parking_amount: number;
   total_amount: number;
   received_amount: number;
+  /** Installment receipts on live vouchers, kept apart from booking + down payment. */
+  installment_received?: number;
   due_amount: number;
 }
 

@@ -1,5 +1,4 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from "react";
-import { FIELD_CHECKBOX } from '../../../../theme/fieldStyles';
 import { useDispatch, useSelector } from "react-redux";
 import {
   FiClipboard,
@@ -54,6 +53,7 @@ import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mo
 import Pagination from "../../../utils/utils-functions/Pagination";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { Input } from '../../../utils/fields/FormControls';
+import ToggleSwitch from '../../../utils/fields/ToggleSwitch';
 
 
 const cellBase = "border border-stroke px-2 py-1.5 dark:border-strokedark";
@@ -693,15 +693,16 @@ const SoldUnitList: React.FC = () => {
       </div>
 
       <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-5">
-        <label className="flex h-8.5 items-center gap-2 text-sm">
-          <Input
-            type="checkbox"
+        <div className="flex h-8.5 items-center">
+          <ToggleSwitch
+            id="due_only"
+            name="due_only"
             checked={dueOnly}
             onChange={(e) => setDueOnly(e.target.checked)}
-            className={FIELD_CHECKBOX}
+            label="Only units having due"
+            labelClassName="text-sm"
           />
-          Only units having due
-        </label>
+        </div>
 
         <ButtonLoading
           onClick={() => {
@@ -919,6 +920,14 @@ const SoldUnitList: React.FC = () => {
                                     {receipt.receipt_no ? ` | ${receipt.receipt_no}` : ""}
                                   </div>
                                 ))}
+                                {/* Installment money, apart from the booking lines above: a
+                                    receipt here is an allocation, not a booking receipt. */}
+                                {Number(unit.installment_received || 0) > 0 ? (
+                                  <div className="mt-1">
+                                    <div>Installment</div>
+                                    <div className="border-t border-gray-300 dark:border-gray-600">{money(unit.installment_received)}</div>
+                                  </div>
+                                ) : null}
                               </td>
                               <td
                                 rowSpan={lines.length}
