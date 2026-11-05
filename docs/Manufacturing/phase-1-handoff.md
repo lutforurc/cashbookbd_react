@@ -167,6 +167,46 @@ php artisan route:clear
 - `php -l` পাস, `npm run build` exit 0।
 - Commit: API `ae55724e`, React `56d63a9f`, দুটোই push করা।
 
+## ৪-খ. পর্যালোচনা ও সংশোধন (৫ নভেম্বর ২০২৬)
+
+v4 আর পুরো কোড মিলিয়ে দেখা হয়েছে (Claude Code)। যা ভুল পাওয়া গেল আর ঠিক হলো:
+
+| # | কোথায় | সমস্যা | ঠিক করা |
+| --- | --- | --- | --- |
+| ১ | Production Entry (৪ নভেম্বর, commit `bf4a31d7`) | Product-এর ঘরে Chart of Accounts আসত; খরচের তালিকা কখনো ভরত না; Edit draft খুলত না | ProductDropdown; thunk-এর সঠিক ডাক |
+| ২ | `ProductionPosting` নষ্টের হিসাব | সব input-এর পরিমাণ যোগ করে tolerance ধরত, তাই repack-এ ৫০ kg + ১৯৮ packet = ২৪৮ "unit"; স্বাভাবিক নষ্ট বেশি, অস্বাভাবিক কম আসত | শুধু loss basis-এর unit-এর input (যেমন "kg" = "Kg.") ধরা হয়; কোনোটা না মিললে আগের মতো সব |
+| ৩ | Posting | অস্বাভাবিক নষ্টে কারণ ছাড়াই post হতো (v4 খ-৪-এ বাধ্যতামূলক) | কারণ না লিখলে post আটকায় |
+| ৪ | Posting | Batch ref খালি থাকলে stock-এ `date('Ymd')` বসত (v4 খ-১, খ-৬) | খালি থাকলে voucher নম্বরই batch ref |
+| ৫ | Posting | Output-এ Non Asset (type 2) পণ্য বা output = নিজের input চলত | দুটোই আটকায় |
+| ৬ | Production Register | কোনো draft-এ খরচ বসালেই সারি লাল দেখাত ("no longer posted") | শুধু posted batch পরীক্ষা হয় |
+| ৭ | Register | কাঁচামালের ক্রয় edit (দাম/পরিমাণ বদল) ধরা পড়ত না, শুধু মোছা ধরত (v4 Check ১৪) | voucher + product + দাম + পরিমাণ মিলিয়ে দেখে |
+| ৮ | Entry-র "On hand" | branch-এর সর্বকালের balance দেখাত, batch-এর তারিখের নয়; post অন্য সংখ্যা ধরত | post যে reader ব্যবহার করে সেটাই, batch-এর তারিখে |
+| ৯ | Production Sales Return (টাকা) | `netpayment`-এ সবসময় মোট ফেরত পাঠাত। পুরনো ফর্মে এটা "Cash Payment"। ফলে বাকির কাস্টমারের ফেরতেও ledger-এ নগদ ফেরত লেখা হতো | পুরনো ফর্মের মতো "Cash Payment" ঘর: ক্যাশ কাস্টমারে মোট টাকা (বন্ধ), অন্যদের ০ থেকে শুরু, বদলানো যায় |
+| ১০ | Production Sales Return (stock) | একই বিক্রির বিপরীতে বিক্রির চেয়ে বেশি ফেরত নেওয়া যেত | আগের সব ফেরত (পুরনো ও নতুন ফর্ম) মিলিয়ে বিক্রির পরিমাণ ছাড়ালে আটকায় |
+
+**যাচাই:** `myappsaasdatabase`-এ company 18-এ একটা transaction-এর ভিতরে fixture (৫০ kg @১২০ + ১৯৮ packet @২, repack ১৯৬ packet, ৩ kg নষ্ট, ১% সীমা, বিক্রি ১০) বানিয়ে আসল controller ও service চালানো হয়েছে, তারপর roll back। ১৭টা পরীক্ষাই পাস: স্বাভাবিক নষ্ট ০.৫ kg, অস্বাভাবিক ২.৫ kg, অস্বাভাবিক খরচ ৩১৯.৮০, output ৬,০৭৬.২০ (layer মিলে হুবহু), batch ref = voucher নম্বর, ফেরত ৪টা @৩১.০২ (FIFO), আরও ৭টা ফেরত আটকায়, ক্রয়ের দাম বদলালে batch লাল। কোনো সারি থেকে যায়নি। `php -l` পাস, `npm run build` exit 0।
+
+**জেনে রাখা, এখন বদলানো হয়নি:**
+
+- Register-এর "Net sales" branch-এর সব বিক্রি ধরে, শুধু production-এর পণ্য নয়। শুধু কারখানার branch-এ ঠিক; branch-এ অন্য পণ্যও বিক্রি হলে "True gross profit" ভুল দেখাবে।
+- Production-এর FIFO ক্রয়ের `purchase_pct` (rebate) বাদ দেয় না, closing stock দেয়। কোনো local DB-তে এখন কোনো ক্রয়ে এটা ব্যবহার হয়নি।
+- FIFO আর "On hand" গুদাম আলাদা করে না, পুরো branch ধরে।
+- Production Sales Return-এর ভাউচার তারিখ "Original Sale Date" ঘর থেকে আসে, পুরনো Sales Return-এর মতোই। আজকের ফেরত পুরনো বিক্রির তারিখে বসতে পারে।
+- Production Sales Return খুঁজে edit করার স্ক্রিন নেই (API `/sales-return/edit`, `/update` আছে)।
+- Production-এর পাতায় `thousandSeparator(x, 2)`-এর `2` কাজ করে না; দশমিক branch setting থেকে আসে।
+
+## ৪-গ. এক ব্যাচে একাধিক পণ্য (৫ নভেম্বর ২০২৬)
+
+**মালিকের সিদ্ধান্ত:** Output একাধিক হতে পারে; খরচ ভাগ **বিক্রয়মূল্য অনুপাতে**।
+
+- **নিয়ম:** প্রতিটা output-এর ভাগ = পরিমাণ × পণ্যের sales price ÷ সব output-এর যোগফল। Entry-র Output ট্যাবে ভাগ % নিজে দেখায়; একটা বদলালে সবগুলো "হাতে লেখা" হয়ে যায় (মোট ১০০% হতে হবে), "Use sales value" চাপলে আবার স্বয়ংক্রিয়। কোনো output-এর sales price না থাকলে, আর হাতে ভাগ লেখা না থাকলে, post আটকায়।
+- **টাকা:** প্রতিটা output-এর টাকা = output value × ভাগ, পয়সায় গোল; শেষ output বাকিটা নেয়, তাই মোট হুবহু মেলে। প্রতিটা output দুই সারিতে (residual আগে)।
+- **Schema:** `production_outputs.cost_share_pct` DECIMAL(9,4) NULL। SQL ফাইল আর `runProductionSchema()` দুই জায়গায় যোগ, দুবার চালালেও ক্ষতি নেই। `myappsaasdatabase`-এ যোগ করা হয়েছে; **অন্য DB-তে `php artisan patch:add-unit-type` চালাতে হবে।**
+- **API:** `store`/`update` এখন `outputs: [{product_id, godown_id, qty, share_pct}]` নেয়; পুরনো একক `output` এখনো চলে। `production_master.output_*` ঘরে প্রথম output থাকে। List, Register আর Batch Costing প্রতিটা output দেখায় (`outputs`)।
+- **Reverse:** যেকোনো output বিক্রি/স্থানান্তর হলে আটকায়। Backdating-এর পরীক্ষায় সব output ধরা হয়।
+- **যাচাই** (একই rollback probe, ২৬টা পরীক্ষা পাস): ৪০ × ২৫০ আর ২০০ × ২৯ → ৬৩.২৯% / ৩৬.৭১%, টাকা ৪,০৪৮.১০ + ২,৩৪৭.৯০ = ৬,৩৯৬.০০; হাতে ৭০/৩০ → ৪,৪৭৭.২০ + ১,৯১৮.৮০; মোট ১০০% না হলে আটকায়; দাম না থাকলে আটকায়; দ্বিতীয় output বিক্রির পর reverse আটকায়; অব্যবহৃত batch reverse হয়।
+- **বাকি:** উপজাত/ঝরতি মাল (খরচ ০) আলাদা চিহ্ন নেই; লাগলে বলবেন।
+
 ## ৫. যা বাকি
 
 ### যাচাই
@@ -175,6 +215,11 @@ php artisan route:clear
 - "গ"-এর সংখ্যা Command Code-এর বানানো fixture-এ যাচাই; branch 11-এর আসল test data (অন্য কম্পিউটারের `krishibitandatabase`)-তে P&L একবার খুলে gross ১,২৯৮ আর net ১,২৯৮ মিলিয়ে দেখা বাকি।
 - একই company-র ভিতরে অন্য branch-এর API call আলাদা করে পরীক্ষা হয়নি (অন্য company-রটা হয়েছে)।
 - নিজে মেনু খুলে পুরো ক্রম UI দিয়ে একবার চালানো।
+
+### Phase 1-এর কাজ যা এখনো হয়নি
+
+- **Unit conversion / net contents (v4 খ-৪, গ-৭):** "১ বস্তা = ৫০ kg" ধরনের রূপান্তর নেই। Input-এর পরিমাণ পণ্যের নিজের stock unit-এ লিখতে হয়; `entered_unit_id` ঘর আছে কিন্তু ব্যবহার হয় না। কোন পথ (`measurement` ঘর নাকি নতুন টেবিল) তা ক্লায়েন্ট DB-র query (গ-৯) দেখে ঠিক হবে।
+- **Expiry (ক-২ #৬):** কোথাও ঘর নেই; মালিকের উত্তর লাগবে।
 
 ### সিদ্ধান্ত হয়ে গেছে (৪ নভেম্বর ২০২৬)
 

@@ -17,14 +17,20 @@ const monthStart = () => {
 };
 const today = () => new Date().toISOString().slice(0, 10);
 
+// A batch may make several products: then each output is one line in the
+// cell, and the master's qty and unit cost (the first product's) are not used.
+const perOutput = (row: any, single: React.ReactNode, pick: (o: any) => React.ReactNode) =>
+  Array.isArray(row.outputs) && row.outputs.length > 1
+    ? row.outputs.map((o: any, i: number) => <div key={i}>{pick(o)}</div>)
+    : single;
+
 /**
  * Production Register: one row per batch, with what it cost and the TRUE gross
  * profit for the period.
  *
- * ⚠️ THIS IS WHERE THE REAL GROSS PROFIT IS SHOWN. The P&L's trading account
- * cannot see the allocated labour, so its gross profit overstates by exactly the
- * cost that went into the stock (owner's decision #12, option "ক"). Here the
- * allocated cost is put back into the cost side.
+ * The true gross profit, batch by batch. The P&L shows the same allocated
+ * labour as a direct acquisition cost for the period as a whole (owner's
+ * decision #12, option "গ"); this is where it is broken down by batch.
  *
  * A batch whose source voucher has since been edited or deleted is flagged red.
  */
@@ -139,9 +145,11 @@ const ProductionRegister = () => {
                   {row.vr_no ? <span className="ml-1 text-xs text-gray-400">({row.vr_no})</span> : null}
                 </td>
                 <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.date}</td>
-                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.output_product}</td>
+                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">
+                  {perOutput(row, row.output_product, (o) => o.product_name)}
+                </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.output_qty), 2)}
+                  {perOutput(row, thousandSeparator(Number(row.output_qty), 2), (o) => thousandSeparator(Number(o.qty), 2))}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(Number(row.material_cost), 2)}
@@ -153,7 +161,7 @@ const ProductionRegister = () => {
                   {thousandSeparator(Number(row.true_cost), 2)}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.unit_cost), 2)}
+                  {perOutput(row, thousandSeparator(Number(row.unit_cost), 2), (o) => thousandSeparator(Number(o.unit_cost), 2))}
                 </td>
                 <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {thousandSeparator(Number(row.loss_actual), 2)}
@@ -253,12 +261,16 @@ const ProductionRegister = () => {
                 <tr key={row.id}>
                   <td>{row.batch_ref || `#${row.id}`}</td>
                   <td>{row.date}</td>
-                  <td>{row.output_product}</td>
-                  <td className="num">{thousandSeparator(Number(row.output_qty), 2)}</td>
+                  <td>{perOutput(row, row.output_product, (o) => o.product_name)}</td>
+                  <td className="num">
+                    {perOutput(row, thousandSeparator(Number(row.output_qty), 2), (o) => thousandSeparator(Number(o.qty), 2))}
+                  </td>
                   <td className="num">{thousandSeparator(Number(row.material_cost), 2)}</td>
                   <td className="num">{thousandSeparator(Number(row.allocated_cost), 2)}</td>
                   <td className="num">{thousandSeparator(Number(row.true_cost), 2)}</td>
-                  <td className="num">{thousandSeparator(Number(row.unit_cost), 2)}</td>
+                  <td className="num">
+                    {perOutput(row, thousandSeparator(Number(row.unit_cost), 2), (o) => thousandSeparator(Number(o.unit_cost), 2))}
+                  </td>
                   <td>{row.flag ? 'source changed' : row.status}</td>
                 </tr>
               ))}

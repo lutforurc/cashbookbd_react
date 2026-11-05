@@ -49,6 +49,9 @@ const BatchCosting = () => {
   const layers: any[] = detail.layers ?? [];
   const allocations: any[] = detail.allocations ?? [];
   const outputs: any[] = detail.outputs ?? [];
+  // A batch may make several products; then the master's qty and unit cost
+  // are only the first one's, and the output table carries each.
+  const severalOutputs = new Set(outputs.map((r) => r.product_name)).size > 1;
 
   return (
     <div>
@@ -81,11 +84,11 @@ const BatchCosting = () => {
         <Fact label="Batch" value={m.batch_ref || `#${m.id}`} />
         <Fact label="Date" value={m.date} />
         <Fact label="Status" value={m.status} />
-        <Fact label="Output qty" value={thousandSeparator(Number(m.output_qty), 2)} />
+        {!severalOutputs && <Fact label="Output qty" value={thousandSeparator(Number(m.output_qty), 2)} />}
         <Fact label="Material cost" value={thousandSeparator(Number(m.material_cost), 2)} />
         <Fact label="Allocated cost" value={thousandSeparator(Number(m.allocated_cost), 2)} />
         <Fact label="True cost" value={thousandSeparator(Number(m.true_cost), 2)} />
-        <Fact label="Unit cost" value={thousandSeparator(Number(m.unit_cost), 2)} />
+        {!severalOutputs && <Fact label="Unit cost" value={thousandSeparator(Number(m.unit_cost), 2)} />}
         <Fact label="Normal loss" value={thousandSeparator(Number(m.loss_normal), 3)} />
         <Fact label="Abnormal loss" value={thousandSeparator(Number(m.loss_abnormal), 3)} />
         <Fact label="Abnormal cost" value={thousandSeparator(Number(m.abnormal_loss_cost), 2)} />
@@ -126,8 +129,10 @@ const BatchCosting = () => {
 
       <Section title="Output layers">
         <Table
-          cols={['Qty', 'Unit cost', 'Batch', 'Rounding row']}
+          cols={['Product', 'Cost share %', 'Qty', 'Unit cost', 'Batch', 'Rounding row']}
           rows={outputs.map((r) => [
+            r.product_name,
+            r.cost_share_pct != null ? Number(r.cost_share_pct).toFixed(2) : '',
             thousandSeparator(Number(r.qty), 2),
             thousandSeparator(Number(r.unit_cost), 2),
             r.batch_no,

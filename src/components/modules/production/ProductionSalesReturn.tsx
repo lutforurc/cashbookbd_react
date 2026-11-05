@@ -54,10 +54,18 @@ const ProductionSalesReturn = () => {
   const setField = (name: string, value: any) => setForm((p) => ({ ...p, [name]: value }));
 
   const total = form.products.reduce((sum, r) => sum + Number(r.qty) * Number(r.price), 0);
-  const netpayment = Math.max(0, total - (Number(form.discountAmt) || 0));
+  const refundTotal = Math.max(0, total - (Number(form.discountAmt) || 0));
+
+  // "Cash Payment" is the cash actually handed back, and it is what the server
+  // reads as netpayment -- as on the ordinary Sales Return. The cash customer
+  // (account 17) is paid the whole refund and the box is locked; any other
+  // customer starts at 0 (the return only reduces what they owe) and may be
+  // paid part or all of it in cash.
+  const isCashCustomer = Number(form.account) === 17;
+  const cashPayment = isCashCustomer ? refundTotal.toFixed(2) : form.receivedAmt;
 
   const handleCustomer = (option: any) =>
-    setForm((p) => ({ ...p, account: option?.value || '', accountName: option?.label || '' }));
+    setForm((p) => ({ ...p, account: option?.value || '', accountName: option?.label || '', receivedAmt: '0' }));
 
   const handleLineProduct = (option: Option | null) =>
     setLine((p) => ({ ...p, code: option?.value || '', name: option?.label || '', unit: option?.label_5 || '' }));
@@ -120,6 +128,8 @@ const ProductionSalesReturn = () => {
     if (!form.account) return toast.error('Select the customer');
     if (!form.invoiceNo) return toast.error('The original sale invoice is required -- the cost is read from it');
     if (!form.products.length) return toast.error('Add at least one returned item');
+    if (cashPayment === '' || Number(cashPayment) < 0) return toast.error('Enter the cash payment (0 if none)');
+    if (Number(cashPayment) > refundTotal) return toast.error('The cash payment cannot be more than the refund');
 
     setSaving(true);
     const payload = {
@@ -128,7 +138,7 @@ const ProductionSalesReturn = () => {
       sales_invoice_date: form.invoiceDate,
       total,
       discount: Number(form.discountAmt) || 0,
-      netpayment,
+      netpayment: Number(cashPayment) || 0,
       notes: form.notes || null,
       table_data: form.products.map((r) => ({
         code: Number(r.code),
@@ -292,10 +302,12 @@ const ProductionSalesReturn = () => {
         <InputElement
           id="returnReceived"
           name="receivedAmt"
-          label="Refund (paid quantity only)"
-          value={netpayment.toFixed(2)}
-          onChange={() => undefined}
-          disabled
+          type="number"
+          step="0.01"
+          label={`Cash Payment (refund ${refundTotal.toFixed(2)})`}
+          value={cashPayment}
+          onChange={(e: any) => setField('receivedAmt', e.target.value)}
+          disabled={isCashCustomer}
           className="w-full"
         />
         <div className="md:col-span-2">

@@ -1,12 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2, FiCheckCircle, FiRotateCcw } from 'react-icons/fi';
+import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2, FiCheckCircle, FiRotateCcw, FiChevronRight } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
-import { Select } from '../../utils/fields/FormControls';
-import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import WarehouseDropdown from '../../utils/utils-functions/WarehouseDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
@@ -37,6 +35,12 @@ type InputLine = {
 
 const emptyInput = { productId: '', productName: '', unit: '', godownId: '', qty: '' };
 
+// One product the batch makes. `price` is the product's sales price, which the
+// batch cost is split by; `share` is a typed override ('' = work it out).
+type OutputLine = InputLine & { price: string; share: string };
+
+const emptyOutput = { ...emptyInput, price: '', share: '' };
+
 type Tab = 'output' | 'inputs' | 'costs' | 'batches';
 
 const today = () => {
@@ -45,7 +49,9 @@ const today = () => {
 };
 
 /**
- * Production Entry: a batch of raw materials turned into one finished SKU.
+ * Production Entry: a batch of raw materials turned into one or more finished
+ * products. With several, the batch cost is split by sales value (qty x sales
+ * price) unless the shares are typed (owner, 5 Nov 2026).
  *
  * A DRAFT moves nothing; POST is the act that takes the inputs off the shelf,
  * puts the output on it and freezes what it cost. There is no ledger entry --
@@ -66,9 +72,11 @@ const ProductionEntry = () => {
   const batches: any[] = Array.isArray(production?.data) ? production.data : [];
 
   const [saving, setSaving] = useState(false);
-  const [tab, setTab] = useState<Tab>('output');
+  const [tab, setTab] = useState<Tab>('inputs');
   const [line, setLine] = useState({ ...emptyInput });
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
+  const [outLine, setOutLine] = useState({ ...emptyOutput });
+  const [editingOutId, setEditingOutId] = useState<number | null>(null);
   const [allocatable, setAllocatable] = useState<any[]>([]);
   const [stock, setStock] = useState<Record<string, number>>({});
 
@@ -76,10 +84,7 @@ const ProductionEntry = () => {
     productionDate: today(),
     batchRef: '',
     notes: '',
-    outputProductId: '',
-    outputProductName: '',
-    outputGodownId: '',
-    outputQty: '',
+    outputs: [] as OutputLine[],
     inputs: [] as InputLine[],
     lossActual: '',
     lossTolerance: '',
@@ -130,10 +135,7 @@ const ProductionEntry = () => {
       productionDate: today(),
       batchRef: '',
       notes: '',
-      outputProductId: '',
-      outputProductName: '',
-      outputGodownId: '',
-      outputQty: '',
+      outputs: [],
       inputs: [],
       lossActual: '',
       lossTolerance: '',
@@ -143,6 +145,8 @@ const ProductionEntry = () => {
     });
     setLine({ ...emptyInput });
     setEditingLineId(null);
+    setOutLine({ ...emptyOutput });
+    setEditingOutId(null);
     setEditing(null);
     newKey();
   };
@@ -171,7 +175,7 @@ const ProductionEntry = () => {
           productId: line.productId,
           productName: line.productName,
           unit: line.unit,
-          godownId: line.godownId || p.outputGodownId,
+          godownId: line.godownId || p.outputs[0]?.godownId || '',
           qty: line.qty,
         },
       ],
@@ -215,6 +219,69 @@ const ProductionEntry = () => {
     }
   };
 
+  // ---- Outputs: the products the batch makes ----
+
+  const handleOutProduct = (option: any) =>
+    setOutLine((p) => ({
+      ...p,
+      productId: option?.value || '',
+      productName: option?.label || '',
+      unit: option?.label_5 || '',
+      price: option?.label_4 != null ? String(option.label_4) : '',
+    }));
+
+  const saveOut = () => {
+    if (!outLine.productId) return toast.error('Pick the product made');
+    if (!outLine.qty || Number(outLine.qty) <= 0) return toast.error('Enter the good output quantity');
+    if (form.outputs.some((o) => o.productId === outLine.productId && o.id !== editingOutId))
+      return toast.error('This product is already an output');
+    setForm((p) => ({
+      ...p,
+      outputs:
+        editingOutId === null
+          ? [...p.outputs, { ...outLine, id: Date.now() }]
+          : p.outputs.map((o) => (o.id === editingOutId ? { ...outLine, id: o.id } : o)),
+    }));
+    setOutLine({ ...emptyOutput });
+    setEditingOutId(null);
+  };
+
+  const editOut = (id: number) => {
+    const found = form.outputs.find((o) => o.id === id);
+    if (!found) return;
+    setOutLine({ ...found });
+    setEditingOutId(id);
+  };
+
+  const deleteOut = (id: number) => {
+    setForm((p) => ({ ...p, outputs: p.outputs.filter((o) => o.id !== id) }));
+    if (editingOutId === id) {
+      setOutLine({ ...emptyOutput });
+      setEditingOutId(null);
+    }
+  };
+
+  // The batch cost is split by sales value: qty x sales price (owner, 5 Nov
+  // 2026). This is the share the server will work out; a typed share replaces
+  // it, and once one is typed every output carries one, adding to 100.
+  const autoShares = useMemo(() => {
+    const weights = form.outputs.map((o) => Number(o.qty) * Number(o.price) || 0);
+    const sum = weights.reduce((s, w) => s + w, 0);
+    return weights.map((w) => (sum > 0 ? (w / sum) * 100 : 0));
+  }, [form.outputs]);
+  const sharesTyped = form.outputs.some((o) => o.share !== '');
+  const shareTotal = sharesTyped ? form.outputs.reduce((s, o) => s + (Number(o.share) || 0), 0) : 100;
+
+  const setShare = (id: number, value: string) =>
+    setForm((p) => ({
+      ...p,
+      outputs: p.outputs.map((o, i) =>
+        o.id === id ? { ...o, share: value } : { ...o, share: o.share !== '' ? o.share : autoShares[i].toFixed(2) },
+      ),
+    }));
+
+  const clearShares = () => setForm((p) => ({ ...p, outputs: p.outputs.map((o) => ({ ...o, share: '' })) }));
+
   const allocationTotal = useMemo(
     () =>
       Object.values(form.allocations).reduce((sum, v) => sum + (Number(v) || 0), 0),
@@ -226,11 +293,12 @@ const ProductionEntry = () => {
     idempotency_key: idempotencyKey.current,
     production_date: form.productionDate,
     batch_ref: form.batchRef || null,
-    output: {
-      product_id: Number(form.outputProductId),
-      godown_id: form.outputGodownId ? Number(form.outputGodownId) : null,
-      qty: Number(form.outputQty),
-    },
+    outputs: form.outputs.map((o) => ({
+      product_id: Number(o.productId),
+      godown_id: o.godownId ? Number(o.godownId) : null,
+      qty: Number(o.qty),
+      share_pct: sharesTyped && form.outputs.length > 1 ? Number(o.share) || 0 : null,
+    })),
     inputs: form.inputs.map((i) => ({
       product_id: Number(i.productId),
       godown_id: i.godownId ? Number(i.godownId) : null,
@@ -251,9 +319,11 @@ const ProductionEntry = () => {
   // on a hidden tab opens that tab instead of leaving the clerk to hunt for it.
   const validate = (): { message: string; tab: Tab } | null => {
     if (!form.productionDate) return { message: 'Production date is required.', tab };
-    if (!form.outputProductId) return { message: 'Choose the product this batch makes.', tab: 'output' };
-    if (!form.outputQty || Number(form.outputQty) <= 0)
-      return { message: 'Enter the good output quantity.', tab: 'output' };
+    if (!form.outputs.length) return { message: 'Add the product this batch makes.', tab: 'output' };
+    if (form.outputs.length > 1 && sharesTyped && Math.abs(shareTotal - 100) > 0.01)
+      return { message: `The cost shares add up to ${shareTotal.toFixed(2)}%, not 100%.`, tab: 'output' };
+    if (form.outputs.length > 1 && !sharesTyped && form.outputs.some((o) => !(Number(o.price) > 0)))
+      return { message: 'An output has no sales price, so its cost share cannot be worked out. Type the shares.', tab: 'output' };
     if (!form.inputs.length) return { message: 'Add at least one input.', tab: 'inputs' };
     return null;
   };
@@ -289,7 +359,9 @@ const ProductionEntry = () => {
         if (!response?.success) return toast.error(response?.message || 'Could not open the batch');
         const m = response.data?.master ?? {};
         const inputs: any[] = response.data?.inputs ?? [];
+        const outputs: any[] = response.data?.outputs ?? [];
         const allocations: any[] = response.data?.allocations ?? [];
+        const typed = outputs.length > 1 && outputs.every((o) => o.cost_share_pct != null);
         const allocMap: Record<string, string> = {};
         allocations.forEach((a) => {
           allocMap[String(a.source_acc_detail_id)] = String(Number(a.allocated_amount));
@@ -298,10 +370,16 @@ const ProductionEntry = () => {
           productionDate: m.production_date || today(),
           batchRef: m.batch_ref || '',
           notes: m.notes || '',
-          outputProductId: m.output_product_id ? String(m.output_product_id) : '',
-          outputProductName: m.output_product || '',
-          outputGodownId: m.output_godown_id ? String(m.output_godown_id) : '',
-          outputQty: m.output_qty ? String(Number(m.output_qty)) : '',
+          outputs: outputs.map((o, index) => ({
+            id: Date.now() + 1000 + index,
+            productId: String(o.product_id),
+            productName: o.product_name || '',
+            unit: o.unit || '',
+            godownId: o.godown_id ? String(o.godown_id) : '',
+            qty: String(Number(o.qty)),
+            price: o.sales_price != null ? String(Number(o.sales_price)) : '',
+            share: typed ? String(Number(o.cost_share_pct)) : '',
+          })),
           inputs: inputs.map((i, index) => ({
             id: Date.now() + index,
             productId: String(i.product_id),
@@ -317,7 +395,7 @@ const ProductionEntry = () => {
           allocations: allocMap,
         });
         setEditing({ id: Number(m.id), batchRef: m.batch_ref || '' });
-        setTab('output');
+        setTab('inputs');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } }) as any,
     );
@@ -372,417 +450,579 @@ const ProductionEntry = () => {
   };
 
   const allocationCount = Object.values(form.allocations).filter((v) => Number(v) > 0).length;
-  const tabs: { key: Tab; label: string }[] = [
-    { key: 'output', label: 'Output' },
-    { key: 'inputs', label: `Inputs (${form.inputs.length})` },
-    { key: 'costs', label: `Wastage & Expense${allocationCount ? ` (${allocationCount})` : ''}` },
-    { key: 'batches', label: `Recent batches (${batches.length})` },
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+  // The batch reads as the work does: materials go in, some is lost and labour
+  // is spent, products come out. The three steps are that sequence; each one
+  // carries a running summary so the whole batch can be read without opening
+  // them. The register sits apart -- it is the list, not a step.
+  const steps: { key: Tab; title: string; summary: string; filled: boolean }[] = [
+    {
+      key: 'inputs',
+      title: 'Materials in',
+      summary: form.inputs.length ? plural(form.inputs.length, 'material', 'materials') : 'Nothing added yet',
+      filled: form.inputs.length > 0,
+    },
+    {
+      key: 'costs',
+      title: 'Waste and labour',
+      summary:
+        [
+          allocationTotal > 0 ? `${thousandSeparator(allocationTotal)} expense` : '',
+          Number(form.lossActual) > 0 ? `${form.lossActual} ${form.lossBasis} lost` : '',
+        ]
+          .filter(Boolean)
+          .join(', ') || 'No expense or loss',
+      filled: allocationCount > 0 || Number(form.lossActual) > 0,
+    },
+    {
+      key: 'output',
+      title: 'Products out',
+      summary: form.outputs.length ? plural(form.outputs.length, 'product', 'products') : 'Nothing added yet',
+      filled: form.outputs.length > 0,
+    },
   ];
 
+  const th = 'px-3 py-2 font-medium';
+  const td = 'px-3 py-2 text-[rgb(var(--c-text))]';
+  const rowCls = 'border-t border-[rgb(var(--c-border))] bg-[rgb(var(--c-table-body))]';
+  const headCls = 'bg-[rgb(var(--c-table-head))] text-xs text-[rgb(var(--c-text))]';
+  const iconBtn = 'rounded p-1.5 transition hover:bg-[rgb(var(--c-page))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgb(var(--c-primary))]';
+
+  const panel = (title: string, hint: string, children: React.ReactNode) => (
+    <section className="mb-4 rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
+      <h2 className="text-base font-semibold text-[rgb(var(--c-text))]">{title}</h2>
+      <p className="mb-3 mt-0.5 text-sm text-[rgb(var(--c-text-muted))]">{hint}</p>
+      {children}
+    </section>
+  );
+
+  const emptyRow = (cols: number, text: string) => (
+    <tr className={rowCls}>
+      <td colSpan={cols} className="px-3 py-6 text-center text-sm text-[rgb(var(--c-text-muted))]">
+        {text}
+      </td>
+    </tr>
+  );
+
+  const rowActions = (onEdit: () => void, onDelete: () => void) => (
+    <div className="flex justify-end gap-1">
+      <button type="button" onClick={onEdit} className={`${iconBtn} text-[rgb(var(--c-primary))]`} aria-label="Edit row" title="Edit">
+        <FiEdit2 />
+      </button>
+      <button type="button" onClick={onDelete} className={`${iconBtn} text-[rgb(var(--c-danger))]`} aria-label="Remove row" title="Remove">
+        <FiTrash2 />
+      </button>
+    </div>
+  );
+
+  const addButton = (onClick: () => void, editingRow: boolean) => (
+    <ButtonLoading
+      onClick={onClick}
+      buttonLoading={false}
+      label={editingRow ? 'Update' : 'Add'}
+      className="w-full whitespace-nowrap text-center mr-0 py-2"
+      icon={editingRow ? <FiEdit2 className="text-lg ml-2 mr-2" /> : <FiPlus className="text-lg ml-2 mr-2" />}
+    />
+  );
+
   return (
-    <div>
+    <div className="pb-6">
       <HelmetTitle title="Production Entry" />
 
-      {editing && (
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700/50 dark:bg-amber-500/10 dark:text-amber-300">
-          <span>
-            Editing draft <strong>{editing.batchRef || `#${editing.id}`}</strong>
-          </span>
-          <button type="button" onClick={resetForm} className="font-medium underline">
-            Cancel edit
-          </button>
+      {/* ---- The batch ---- */}
+      <section className="mb-4 rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h1 className="text-xl font-semibold text-[rgb(var(--c-text))]">Production Entry</h1>
+          {editing ? (
+            <span className="flex items-center gap-3 rounded-full bg-[rgb(var(--c-warning)/0.15)] px-3 py-1 text-sm text-[rgb(var(--c-text))]">
+              Editing draft <strong>{editing.batchRef || `#${editing.id}`}</strong>
+              <button type="button" onClick={resetForm} className="font-medium text-[rgb(var(--c-primary))] underline">
+                Cancel
+              </button>
+            </span>
+          ) : (
+            <span className="rounded-full bg-[rgb(var(--c-primary)/0.1)] px-3 py-1 text-sm font-medium text-[rgb(var(--c-primary))]">
+              New batch
+            </span>
+          )}
         </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
-        <InputElement
-          id="productionDate"
-          name="productionDate"
-          type="date"
-          label="Production Date"
-          value={form.productionDate}
-          onChange={(e: any) => setField('productionDate', e.target.value)}
-          className="w-full"
-        />
-        <InputElement
-          id="batchRef"
-          name="batchRef"
-          label="Batch Ref"
-          placeholder="e.g. B-2611-01"
-          value={form.batchRef}
-          onChange={(e: any) => setField('batchRef', e.target.value)}
-          className="w-full"
-        />
-        <InputElement
-          id="notes"
-          name="notes"
-          label="Note"
-          placeholder="Anything worth writing down"
-          value={form.notes}
-          onChange={(e: any) => setField('notes', e.target.value)}
-          className="w-full"
-        />
-      </div>
-
-      <div role="tablist" className="mb-3 flex flex-wrap gap-1 rounded border border-[rgb(var(--c-border))] bg-slate-50 p-1 dark:bg-boxdark">
-        {tabs.map((t) => {
-          const active = tab === t.key;
-          return (
-            <button
-              key={t.key}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => setTab(t.key)}
-              className={`rounded px-4 py-2 text-sm font-medium transition ${
-                active
-                  ? 'bg-blue-50 text-blue-600 dark:bg-slate-700/60 dark:text-blue-400'
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-700/40 dark:hover:text-blue-400'
-              }`}
-            >
-              {t.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ---- Output ---- */}
-      {tab === 'output' && (
-      <div className="rounded border border-[rgb(var(--c-border))] p-3 mb-3">
-        <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-          Output
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
-          <div className="md:col-span-2">
-            <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Product made</label>
-            <ProductDropdown
-              id="outputProduct"
-              name="outputProduct"
-              onSelect={(o: Option | null) => {
-                setField('outputProductId', o?.value || '');
-                setField('outputProductName', o?.label || '');
-              }}
-              defaultValue={productOption(form.outputProductId, form.outputProductName)}
-              value={productOption(form.outputProductId, form.outputProductName)}
-            />
-          </div>
-          <div>
-            <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Warehouse</label>
-            <WarehouseDropdown
-              id="outputGodownId"
-              name="outputGodownId"
-              className="p-2"
-              warehouseDdl={warehouseOptions}
-              onChange={(e: any) => setField('outputGodownId', e.target.value)}
-              defaultValue={form.outputGodownId}
-            />
-          </div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
           <InputElement
-            id="outputQty"
-            name="outputQty"
-            type="number"
-            step="0.01"
-            label="Good output qty"
-            value={form.outputQty}
-            onChange={(e: any) => setField('outputQty', e.target.value)}
+            id="productionDate"
+            name="productionDate"
+            type="date"
+            label="Production date"
+            value={form.productionDate}
+            onChange={(e: any) => setField('productionDate', e.target.value)}
             className="w-full"
           />
-        </div>
-      </div>
-      )}
-
-      {/* ---- Inputs ---- */}
-      {tab === 'inputs' && (
-      <div className="rounded border border-[rgb(var(--c-border))] p-3 mb-3">
-        <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-          Inputs (come out of stock at FIFO cost)
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
-          <div className="md:col-span-5">
-            <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Product</label>
-            <ProductDropdown
-              id="inputProduct"
-              name="inputProduct"
-              onSelect={handleLineProduct}
-              defaultValue={productOption(line.productId, line.productName)}
-              value={productOption(line.productId, line.productName)}
-            />
-          </div>
-          <div className="md:col-span-3">
-            <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Warehouse</label>
-            <WarehouseDropdown
-              id="lineGodown"
-              name="lineGodown"
-              className="p-2"
-              warehouseDdl={warehouseOptions}
-              onChange={(e: any) => setLine((p) => ({ ...p, godownId: e.target.value }))}
-              defaultValue={line.godownId}
-            />
-          </div>
           <InputElement
-            id="lineQty"
-            name="lineQty"
-            type="number"
-            step="0.01"
-            label={`Quantity ${line.unit ? `(${line.unit})` : ''}`}
-            value={line.qty}
-            onChange={(e: any) => setLine((p) => ({ ...p, qty: e.target.value }))}
-            className="w-full md:col-span-2"
+            id="batchRef"
+            name="batchRef"
+            label="Batch ref"
+            placeholder="Left blank, the voucher number is used"
+            value={form.batchRef}
+            onChange={(e: any) => setField('batchRef', e.target.value)}
+            className="w-full"
           />
           <div className="md:col-span-2">
-            <ButtonLoading
-              onClick={editingLineId === null ? addLine : updateLine}
-              buttonLoading={false}
-              label={editingLineId === null ? 'Add' : 'Update'}
-              className="whitespace-nowrap text-center mr-0 py-2"
-              icon={
-                editingLineId === null ? (
-                  <FiPlus className="text-lg ml-2 mr-2" />
-                ) : (
-                  <FiEdit2 className="text-lg ml-2 mr-2" />
-                )
-              }
+            <InputElement
+              id="notes"
+              name="notes"
+              label="Note"
+              placeholder="Anything worth writing down"
+              value={form.notes}
+              onChange={(e: any) => setField('notes', e.target.value)}
+              className="w-full"
             />
           </div>
         </div>
+      </section>
 
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-gray-700 uppercase bg-[rgb(var(--c-table-head))] dark:text-gray-200">
-              <tr>
-                <th className="px-2 py-2 text-center">Sl</th>
-                <th className="px-2 py-2">Product</th>
-                <th className="px-2 py-2 text-right">Qty</th>
-                <th className="px-2 py-2 text-right">On hand</th>
-                <th className="px-2 py-2 text-center w-20">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {form.inputs.map((row, index) => {
-                const onHand = stock[row.productId];
-                const short = onHand !== undefined && Number(row.qty) > Number(onHand);
-                return (
-                  <tr key={row.id} className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
-                    <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">{index + 1}</td>
-                    <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.productName}</td>
-                    <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                      {thousandSeparator(Number(row.qty))} {row.unit}
-                    </td>
-                    <td className={`px-2 py-2 text-right ${short ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-gray-900 dark:text-[rgb(var(--c-text))]'}`}>
-                      {onHand === undefined ? '-' : thousandSeparator(Number(onHand))}
-                    </td>
-                    <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">
-                      <Button onClick={() => deleteLine(row.id)} className="text-red-500 ml-2 text-center">
-                        <FiTrash2 className="cursor-pointer text-center" />
-                      </Button>
-                      <Button onClick={() => editLine(row.id)} className="text-green-500 ml-2 text-center">
-                        <FiEdit2 className="cursor-pointer text-center" />
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-              {form.inputs.length === 0 && (
-                <tr className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
-                  <td colSpan={5} className="px-2 py-3 text-center text-gray-500 dark:text-gray-300">
-                    No input added
-                  </td>
-                </tr>
+      {/* ---- The flow: materials in, waste and labour, products out ---- */}
+      <nav role="tablist" aria-label="Batch steps" className="mb-4 flex flex-wrap items-stretch gap-2">
+        {steps.map((s, i) => {
+          const active = tab === s.key;
+          return (
+            <React.Fragment key={s.key}>
+              {i > 0 && (
+                <FiChevronRight aria-hidden className="hidden self-center text-xl text-[rgb(var(--c-text-muted))] md:block" />
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      )}
+              <button
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setTab(s.key)}
+                className={`flex min-w-[12rem] flex-1 flex-col items-start rounded-md border px-4 py-2.5 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--c-primary))] md:flex-none ${
+                  active
+                    ? 'border-[rgb(var(--c-primary))] bg-[rgb(var(--c-primary)/0.08)] shadow-[inset_0_-3px_0_rgb(var(--c-primary))]'
+                    : 'border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] hover:border-[rgb(var(--c-primary)/0.5)]'
+                }`}
+              >
+                <span className={`flex items-center gap-2 text-sm font-semibold ${active ? 'text-[rgb(var(--c-primary))]' : 'text-[rgb(var(--c-text))]'}`}>
+                  <span
+                    aria-hidden
+                    className={`h-2 w-2 rounded-full ${s.filled ? 'bg-[rgb(var(--c-success))]' : 'bg-[rgb(var(--c-border-strong))] ring-1 ring-[rgb(var(--c-text-muted)/0.4)]'}`}
+                  />
+                  {s.title}
+                </span>
+                <span className="mt-0.5 text-xs text-[rgb(var(--c-text-muted))]">{s.summary}</span>
+              </button>
+            </React.Fragment>
+          );
+        })}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'batches'}
+          onClick={() => setTab('batches')}
+          className={`ml-auto self-center rounded px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgb(var(--c-primary))] ${
+            tab === 'batches'
+              ? 'text-[rgb(var(--c-primary))] underline underline-offset-4'
+              : 'text-[rgb(var(--c-text-muted))] hover:text-[rgb(var(--c-primary))]'
+          }`}
+        >
+          Recent batches ({batches.length})
+        </button>
+      </nav>
 
-      {/* ---- Loss & allocations ---- */}
-      {tab === 'costs' && (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-        <div className="rounded border border-[rgb(var(--c-border))] p-3">
-          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-            Wastage
-          </h4>
-          <div className="grid grid-cols-2 gap-2">
-            <InputElement
-              id="lossActual"
-              name="lossActual"
-              type="number"
-              step="0.001"
-              label="Actual loss"
-              value={form.lossActual}
-              onChange={(e: any) => setField('lossActual', e.target.value)}
-              className="w-full"
-            />
-            <InputElement
-              id="lossBasis"
-              name="lossBasis"
-              label="Basis"
-              value={form.lossBasis}
-              onChange={(e: any) => setField('lossBasis', e.target.value)}
-              className="w-full"
-            />
-            <InputField
-              id="lossTolerance"
-              label="Normal tolerance %"
-              value={form.lossTolerance}
-              onChange={(v) => setField('lossTolerance', v)}
-            />
-            <InputElement
-              id="lossReason"
-              name="lossReason"
-              label="Reason (if abnormal)"
-              value={form.lossReason}
-              onChange={(e: any) => setField('lossReason', e.target.value)}
-              className="w-full"
-            />
-          </div>
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            Loss up to the tolerance stays in the output cost; anything beyond it is abnormal, needs a
-            reason, and is excluded from the output cost.
-          </p>
-        </div>
+      {/* ---- Materials in ---- */}
+      {tab === 'inputs' &&
+        panel(
+          'Materials in',
+          'Raw materials, bulk packs and empty packets this batch uses. They leave stock at their purchase cost, oldest first.',
+          <>
+            <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-12">
+              <div className="md:col-span-5">
+                <label className="text-sm text-[rgb(var(--c-text))]">Material</label>
+                <ProductDropdown
+                  id="inputProduct"
+                  name="inputProduct"
+                  onSelect={handleLineProduct}
+                  defaultValue={productOption(line.productId, line.productName)}
+                  value={productOption(line.productId, line.productName)}
+                />
+              </div>
+              <div className="md:col-span-3">
+                <label className="text-sm text-[rgb(var(--c-text))]">Warehouse</label>
+                <WarehouseDropdown
+                  id="lineGodown"
+                  name="lineGodown"
+                  className="p-2"
+                  warehouseDdl={warehouseOptions}
+                  onChange={(e: any) => setLine((p) => ({ ...p, godownId: e.target.value }))}
+                  defaultValue={line.godownId}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <InputElement
+                  id="lineQty"
+                  name="lineQty"
+                  type="number"
+                  step="0.01"
+                  label={`Quantity${line.unit ? ` (${line.unit})` : ''}`}
+                  value={line.qty}
+                  onChange={(e: any) => setLine((p) => ({ ...p, qty: e.target.value }))}
+                  className="w-full"
+                />
+              </div>
+              <div className="md:col-span-2">{addButton(editingLineId === null ? addLine : updateLine, editingLineId !== null)}</div>
+            </div>
 
-        <div className="rounded border border-[rgb(var(--c-border))] p-3">
-          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-            Allocated expense (from posted vouchers)
-          </h4>
-          {allocatable.length === 0 ? (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              No posted Factory Labour / Packing / Transport expense in this month. Enter the cost with a
-              Journal or Payment voucher first, then pick its line here.
-            </p>
-          ) : (
-            <div className="max-h-56 overflow-y-auto">
-              <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead className="text-xs text-gray-700 uppercase bg-[rgb(var(--c-table-head))] dark:text-gray-200">
+            <div className="mt-4 overflow-x-auto rounded border border-[rgb(var(--c-border))]">
+              <table className="w-full text-left text-sm">
+                <thead className={headCls}>
                   <tr>
-                    <th className="px-2 py-1">Voucher</th>
-                    <th className="px-2 py-1">Head</th>
-                    <th className="px-2 py-1 text-right">Free</th>
-                    <th className="px-2 py-1 text-right w-28">Allocate</th>
+                    <th className={`${th} w-12`}>#</th>
+                    <th className={th}>Material</th>
+                    <th className={`${th} text-right`}>Quantity</th>
+                    <th className={`${th} text-right`}>In stock on the date</th>
+                    <th className={`${th} w-24`} />
                   </tr>
                 </thead>
                 <tbody>
-                  {allocatable.map((a) => (
-                    <tr key={a.source_acc_detail_id} className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
-                      <td className="px-2 py-1 text-gray-900 dark:text-[rgb(var(--c-text))]">{a.voucher_no}</td>
-                      <td className="px-2 py-1 text-gray-900 dark:text-[rgb(var(--c-text))]">{a.head_name}</td>
-                      <td className="px-2 py-1 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                        {thousandSeparator(Number(a.remaining))}
-                      </td>
-                      <td className="px-2 py-1 text-right">
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max={Number(a.remaining)}
-                          value={form.allocations[a.source_acc_detail_id] ?? ''}
-                          onChange={(e) =>
-                            setField('allocations', { ...form.allocations, [a.source_acc_detail_id]: e.target.value })
-                          }
-                          className="w-24 rounded border border-[rgb(var(--c-border))] bg-transparent px-1 py-0.5 text-right text-gray-900 dark:text-[rgb(var(--c-text))]"
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                  {form.inputs.map((row, index) => {
+                    const onHand = stock[row.productId];
+                    const short = onHand !== undefined && Number(row.qty) > Number(onHand);
+                    return (
+                      <tr key={row.id} className={rowCls}>
+                        <td className={`${td} text-[rgb(var(--c-text-muted))]`}>{index + 1}</td>
+                        <td className={td}>{row.productName}</td>
+                        <td className={`${td} text-right tabular-nums`}>
+                          {thousandSeparator(Number(row.qty))} {row.unit}
+                        </td>
+                        <td className={`${td} text-right tabular-nums ${short ? 'font-semibold !text-[rgb(var(--c-danger))]' : ''}`}>
+                          {onHand === undefined ? '-' : thousandSeparator(Number(onHand))}
+                          {short && <span className="ml-2 text-xs">short</span>}
+                        </td>
+                        <td className={td}>{rowActions(() => editLine(row.id), () => deleteLine(row.id))}</td>
+                      </tr>
+                    );
+                  })}
+                  {form.inputs.length === 0 && emptyRow(5, 'Pick a material above and press Add.')}
                 </tbody>
               </table>
             </div>
-          )}
-          <p className="mt-2 text-right text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
-            Allocated total: <strong>{thousandSeparator(allocationTotal, 2)}</strong>
-          </p>
+          </>,
+        )}
+
+      {/* ---- Waste and labour ---- */}
+      {tab === 'costs' && (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+          <div className="lg:col-span-2">
+            {panel(
+              'Waste',
+              'Loss up to the normal tolerance stays in the product cost. Anything beyond it is abnormal, needs a reason, and is left out of the cost.',
+              <div className="grid grid-cols-2 gap-3">
+                <InputElement
+                  id="lossActual"
+                  name="lossActual"
+                  type="number"
+                  step="0.001"
+                  label="Lost in this batch"
+                  value={form.lossActual}
+                  onChange={(e: any) => setField('lossActual', e.target.value)}
+                  className="w-full"
+                />
+                <InputElement
+                  id="lossBasis"
+                  name="lossBasis"
+                  label="Measured in"
+                  placeholder="kg"
+                  value={form.lossBasis}
+                  onChange={(e: any) => setField('lossBasis', e.target.value)}
+                  className="w-full"
+                />
+                <InputField
+                  id="lossTolerance"
+                  label="Normal tolerance %"
+                  value={form.lossTolerance}
+                  onChange={(v) => setField('lossTolerance', v)}
+                />
+                <InputElement
+                  id="lossReason"
+                  name="lossReason"
+                  label="Reason, if abnormal"
+                  value={form.lossReason}
+                  onChange={(e: any) => setField('lossReason', e.target.value)}
+                  className="w-full"
+                />
+              </div>,
+            )}
+          </div>
+
+          <div className="lg:col-span-3">
+            {panel(
+              'Labour and factory expense',
+              'Spend posted Factory Labour, Packing Labour or Factory Transport from this month on this batch.',
+              <>
+                <div className="max-h-72 overflow-auto rounded border border-[rgb(var(--c-border))]">
+                  <table className="w-full text-left text-sm">
+                    <thead className={`${headCls} sticky top-0`}>
+                      <tr>
+                        <th className={th}>Voucher</th>
+                        <th className={th}>Expense</th>
+                        <th className={`${th} text-right`}>Still free</th>
+                        <th className={`${th} w-32 text-right`}>Spend on batch</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allocatable.map((a) => (
+                        <tr key={a.source_acc_detail_id} className={rowCls}>
+                          <td className={td}>{a.voucher_no}</td>
+                          <td className={td}>{a.head_name}</td>
+                          <td className={`${td} text-right tabular-nums`}>{thousandSeparator(Number(a.remaining))}</td>
+                          <td className={`${td} text-right`}>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max={Number(a.remaining)}
+                              aria-label={`Spend from ${a.voucher_no}`}
+                              value={form.allocations[a.source_acc_detail_id] ?? ''}
+                              onChange={(e) =>
+                                setField('allocations', { ...form.allocations, [a.source_acc_detail_id]: e.target.value })
+                              }
+                              className="w-28 rounded border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-right tabular-nums text-[rgb(var(--c-text))] focus:border-[rgb(var(--c-primary))] focus:outline-none"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                      {allocatable.length === 0 &&
+                        emptyRow(
+                          4,
+                          'No posted labour or factory expense in this month. Enter it with a Payment Voucher or Journal first, dated in the same month as the batch.',
+                        )}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="mt-3 text-right text-sm text-[rgb(var(--c-text))]">
+                  Spent on this batch <strong className="ml-2 tabular-nums">{thousandSeparator(allocationTotal)}</strong>
+                </p>
+              </>,
+            )}
+          </div>
         </div>
-      </div>
       )}
 
-      {/* Save sits outside the tabs, so a batch can be saved from any of the
-          three entry tabs; the register has nothing of its own to save. */}
+      {/* ---- Products out ---- */}
+      {tab === 'output' &&
+        panel(
+          'Products out',
+          'What the batch made. With more than one product, the cost is shared by sales value; type a share to set it yourself.',
+          <>
+            <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-12">
+              <div className="md:col-span-5">
+                <label className="text-sm text-[rgb(var(--c-text))]">Product made</label>
+                <ProductDropdown
+                  id="outputProduct"
+                  name="outputProduct"
+                  onSelect={handleOutProduct}
+                  defaultValue={productOption(outLine.productId, outLine.productName)}
+                  value={productOption(outLine.productId, outLine.productName)}
+                />
+              </div>
+              <div className="md:col-span-3">
+                <label className="text-sm text-[rgb(var(--c-text))]">Warehouse</label>
+                <WarehouseDropdown
+                  id="outputGodownId"
+                  name="outputGodownId"
+                  className="p-2"
+                  warehouseDdl={warehouseOptions}
+                  onChange={(e: any) => setOutLine((p) => ({ ...p, godownId: e.target.value }))}
+                  defaultValue={outLine.godownId}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <InputElement
+                  id="outputQty"
+                  name="outputQty"
+                  type="number"
+                  step="0.01"
+                  label={`Good quantity${outLine.unit ? ` (${outLine.unit})` : ''}`}
+                  value={outLine.qty}
+                  onChange={(e: any) => setOutLine((p) => ({ ...p, qty: e.target.value }))}
+                  className="w-full"
+                />
+              </div>
+              <div className="md:col-span-2">{addButton(saveOut, editingOutId !== null)}</div>
+            </div>
+
+            <div className="mt-4 overflow-x-auto rounded border border-[rgb(var(--c-border))]">
+              <table className="w-full text-left text-sm">
+                <thead className={headCls}>
+                  <tr>
+                    <th className={`${th} w-12`}>#</th>
+                    <th className={th}>Product</th>
+                    <th className={`${th} text-right`}>Good quantity</th>
+                    <th className={`${th} text-right`}>Sales price</th>
+                    <th className={`${th} w-36 text-right`}>Share of cost %</th>
+                    <th className={`${th} w-24`} />
+                  </tr>
+                </thead>
+                <tbody>
+                  {form.outputs.map((row, index) => (
+                    <tr key={row.id} className={rowCls}>
+                      <td className={`${td} text-[rgb(var(--c-text-muted))]`}>{index + 1}</td>
+                      <td className={td}>{row.productName}</td>
+                      <td className={`${td} text-right tabular-nums`}>
+                        {thousandSeparator(Number(row.qty))} {row.unit}
+                      </td>
+                      <td className={`${td} text-right tabular-nums`}>
+                        {Number(row.price) > 0 ? (
+                          thousandSeparator(Number(row.price))
+                        ) : (
+                          <span className="text-[rgb(var(--c-danger))]">Not set</span>
+                        )}
+                      </td>
+                      <td className={`${td} text-right`}>
+                        {form.outputs.length === 1 ? (
+                          <span className="tabular-nums">100.00</span>
+                        ) : (
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            aria-label={`Share of cost for ${row.productName}`}
+                            value={row.share !== '' ? row.share : autoShares[index].toFixed(2)}
+                            onChange={(e) => setShare(row.id, e.target.value)}
+                            className={`w-24 rounded border bg-transparent px-2 py-1 text-right tabular-nums focus:border-[rgb(var(--c-primary))] focus:outline-none ${
+                              row.share !== ''
+                                ? 'border-[rgb(var(--c-primary))] font-semibold text-[rgb(var(--c-primary))]'
+                                : 'border-[rgb(var(--c-border))] text-[rgb(var(--c-text))]'
+                            }`}
+                          />
+                        )}
+                      </td>
+                      <td className={td}>{rowActions(() => editOut(row.id), () => deleteOut(row.id))}</td>
+                    </tr>
+                  ))}
+                  {form.outputs.length === 0 && emptyRow(6, 'Pick the product this batch made and press Add. Add more than one if the batch made several.')}
+                </tbody>
+              </table>
+            </div>
+
+            {form.outputs.length > 1 && (
+              <div className="mt-3 flex flex-wrap items-center justify-end gap-4 text-sm text-[rgb(var(--c-text))]">
+                <span className={Math.abs(shareTotal - 100) > 0.01 ? 'font-semibold text-[rgb(var(--c-danger))]' : ''}>
+                  Shares add up to <strong className="tabular-nums">{shareTotal.toFixed(2)}%</strong>
+                  <span className="ml-1 text-[rgb(var(--c-text-muted))]">{sharesTyped ? '(typed)' : '(by sales value)'}</span>
+                </span>
+                {sharesTyped && (
+                  <button type="button" onClick={clearShares} className="font-medium text-[rgb(var(--c-primary))] underline">
+                    Share by sales value again
+                  </button>
+                )}
+              </div>
+            )}
+          </>,
+        )}
+
+      {/* Save sits under every step, so a batch can be saved from any of
+          them; the register has nothing of its own to save. */}
       {tab !== 'batches' && (
-      <div className="flex flex-wrap gap-2 mb-5">
-        <ButtonLoading
-          onClick={save}
-          buttonLoading={saving}
-          label={editing ? 'Update Draft' : 'Save Draft'}
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiSave className="text-lg ml-2 mr-2" />}
-        />
-        <ButtonLoading
-          onClick={resetForm}
-          buttonLoading={false}
-          label="Reset"
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
-        />
-      </div>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-4 py-3">
+          <p className="text-sm text-[rgb(var(--c-text-muted))]">
+            A draft moves no stock. Post it from Recent batches when the batch is done.
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={resetForm}
+              className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-[rgb(var(--c-text-muted))] hover:text-[rgb(var(--c-text))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgb(var(--c-primary))]"
+            >
+              <FiRefreshCcw /> Start over
+            </button>
+            <ButtonLoading
+              onClick={save}
+              buttonLoading={saving}
+              label={editing ? 'Update draft' : 'Save draft'}
+              className="whitespace-nowrap text-center mr-0 py-2"
+              icon={<FiSave className="text-lg ml-2 mr-2" />}
+            />
+          </div>
+        </div>
       )}
 
       {/* ---- The register ---- */}
-      {tab === 'batches' && (
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-[rgb(var(--c-table-head))] dark:text-gray-200">
-            <tr>
-              <th className="px-2 py-2">Batch</th>
-              <th className="px-2 py-2">Date</th>
-              <th className="px-2 py-2">Output</th>
-              <th className="px-2 py-2 text-right">Qty</th>
-              <th className="px-2 py-2 text-right">Unit cost</th>
-              <th className="px-2 py-2">Status</th>
-              <th className="px-2 py-2 text-center w-40">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {batches.map((row) => (
-              <tr key={row.id} className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
-                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {row.batch_ref || `#${row.id}`}
-                  {row.vr_no ? <span className="ml-1 text-xs text-gray-400">({row.vr_no})</span> : null}
-                </td>
-                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.production_date}</td>
-                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.output_product}</td>
-                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.output_qty), 2)}
-                </td>
-                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.unit_cost), 2)}
-                </td>
-                <td className="px-2 py-2">
-                  <span className={statusBadge(row.status)}>{row.status}</span>
-                </td>
-                <td className="px-2 py-2 text-center">
-                  {row.status === 'draft' && (
-                    <>
-                      <Button onClick={() => post(row.id)} className="text-green-600 ml-1 text-center" title="Post">
-                        <FiCheckCircle className="cursor-pointer text-center" />
-                      </Button>
-                      <Button onClick={() => openBatch(row.id)} className="text-blue-600 ml-1 text-center" title="Edit draft">
-                        <FiEdit2 className="cursor-pointer text-center" />
-                      </Button>
-                      <Button onClick={() => removeDraft(row.id)} className="text-red-500 ml-1 text-center" title="Delete draft">
-                        <FiTrash2 className="cursor-pointer text-center" />
-                      </Button>
-                    </>
-                  )}
-                  {row.status === 'posted' && (
-                    <Button onClick={() => reverse(row.id)} className="text-amber-600 ml-1 text-center" title="Reverse">
-                      <FiRotateCcw className="cursor-pointer text-center" />
-                    </Button>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {batches.length === 0 && (
-              <tr className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
-                <td colSpan={7} className="px-2 py-3 text-center text-gray-500 dark:text-gray-300">
-                  No batch yet
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-      )}
+      {tab === 'batches' &&
+        panel(
+          'Recent batches',
+          'Post a draft to move its stock. A posted batch can be reversed until any of its products is sold or moved.',
+          <div className="overflow-x-auto rounded border border-[rgb(var(--c-border))]">
+            <table className="w-full text-left text-sm">
+              <thead className={headCls}>
+                <tr>
+                  <th className={th}>Batch</th>
+                  <th className={th}>Date</th>
+                  <th className={th}>Products</th>
+                  <th className={`${th} text-right`}>Unit cost</th>
+                  <th className={th}>Status</th>
+                  <th className={`${th} text-right`} />
+                </tr>
+              </thead>
+              <tbody>
+                {batches.map((row) => {
+                  const made: any[] = Array.isArray(row.outputs) ? row.outputs : [];
+                  return (
+                    <tr key={row.id} className={rowCls}>
+                      <td className={td}>
+                        <span className="font-medium">{row.batch_ref || `#${row.id}`}</span>
+                        {row.vr_no && <span className="block text-xs text-[rgb(var(--c-text-muted))]">{row.vr_no}</span>}
+                      </td>
+                      <td className={`${td} whitespace-nowrap`}>{row.production_date}</td>
+                      <td className={td}>
+                        {made.length
+                          ? made.map((o) => (
+                              <div key={o.product_id}>
+                                {o.product_name}
+                                <span className="ml-2 text-[rgb(var(--c-text-muted))] tabular-nums">{thousandSeparator(Number(o.qty))}</span>
+                              </div>
+                            ))
+                          : row.output_product}
+                      </td>
+                      <td className={`${td} text-right tabular-nums`}>
+                        {made.length > 1
+                          ? made.map((o) => <div key={o.product_id}>{thousandSeparator(Number(o.unit_cost))}</div>)
+                          : thousandSeparator(Number(row.unit_cost))}
+                      </td>
+                      <td className={td}>
+                        <span className={statusBadge(row.status)}>{row.status}</span>
+                      </td>
+                      <td className={td}>
+                        <div className="flex items-center justify-end gap-1">
+                          {row.status === 'draft' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => post(row.id)}
+                                className="mr-1 flex items-center gap-1.5 rounded bg-[rgb(var(--c-success))] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--c-success))]"
+                              >
+                                <FiCheckCircle /> Post
+                              </button>
+                              {rowActions(() => openBatch(row.id), () => removeDraft(row.id))}
+                            </>
+                          )}
+                          {row.status === 'posted' && (
+                            <button
+                              type="button"
+                              onClick={() => reverse(row.id)}
+                              className="flex items-center gap-1.5 rounded border border-[rgb(var(--c-border))] px-3 py-1.5 text-xs font-medium text-[rgb(var(--c-text))] hover:border-[rgb(var(--c-warning))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgb(var(--c-primary))]"
+                            >
+                              <FiRotateCcw /> Reverse
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {batches.length === 0 && emptyRow(6, 'No batch yet. Save a draft and it appears here.')}
+              </tbody>
+            </table>
+          </div>,
+        )}
     </div>
   );
 };
