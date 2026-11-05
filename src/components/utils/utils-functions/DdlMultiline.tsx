@@ -7,6 +7,7 @@ import { settingOn } from '../userFeatureSettings';
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { StylesConfig } from 'react-select';
 import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
+import { nomineeRelationType } from '../fields/DataConstant';
 
 interface OptionType {
   value: string;
@@ -15,8 +16,17 @@ interface OptionType {
   label_3?: string;
   label_4?: string;
   label_5?: string;
+  /** What label_5 is to the party: 'father', 'husband'... Blank reads as Father. */
+  relation?: string;
   isAction?: boolean;
 }
+
+/** The relation word as the customer form offers it, so 'husband' prints Husband. */
+const relationLabel = (relation?: string) => {
+  const key = (relation || '').trim().toLowerCase();
+
+  return nomineeRelationType.find((r) => r.id === key)?.name || 'Father';
+};
 
 interface DropdownProps {
   id?: string;
@@ -150,7 +160,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
     [
       {
         setting: 'party_ddl_show_father',
-        label: 'Father',
+        label: relationLabel(option.relation),
         value: (option.label_5 || '').trim() === '0' ? '' : (option.label_5 || '').trim(),
       },
       {
@@ -228,6 +238,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
               label_3: item.label_3,
               label_4: item.label_4,
               label_5: item.label_5,
+              relation: item.relation,
             }),
           );
           if (actionOptionLabel) {

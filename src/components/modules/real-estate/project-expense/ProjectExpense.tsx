@@ -263,10 +263,8 @@ const ProjectExpense = () => {
       account: selected ? Number(selected.value) : '',
       accountName: selected?.label || '',
       isExpense,
-      projectId: isExpense ? prev.projectId : '',
-      projectName: isExpense ? prev.projectName : '',
-      buildingId: isExpense ? prev.buildingId : '',
-      buildingName: isExpense ? prev.buildingName : '',
+      // Project and building stay picked even for a non-expense line, so the
+      // next expense line still has them; handleAdd drops them from the row.
     }));
 
     if (selected) {
@@ -293,18 +291,23 @@ const ProjectExpense = () => {
       return;
     }
 
+    // A non-expense line is never project-tracked, whatever the form still shows.
+    const line = form.isExpense
+      ? form
+      : { ...form, projectId: '' as const, projectName: '', buildingId: '' as const, buildingName: '' };
+
     if (editingRowKey) {
       // Put it back where it was rather than on the end. A voucher is read in
       // the order it was entered, and a corrected line jumping to the bottom
       // makes the reader hunt for what changed.
       setRows((prev) =>
-        prev.map((row) => (row.key === editingRowKey ? { ...form, key: row.key } : row)),
+        prev.map((row) => (row.key === editingRowKey ? { ...line, key: row.key } : row)),
       );
       setEditingRowKey(null);
     } else {
       setRows((prev) => [
         ...prev,
-        { ...form, key: `${Date.now()}-${prev.length}`, projectId: form.projectId },
+        { ...line, key: `${Date.now()}-${prev.length}` },
       ]);
     }
 
@@ -371,7 +374,15 @@ const ProjectExpense = () => {
     setNote('');
     setSelectedOrder(null);
     setPaidFrom({ id: null, name: '' });
-    setForm(emptyRow());
+    // Project and building outlive the voucher, as they outlive each line: the
+    // next voucher is nearly always for the same site.
+    setForm((prev) => ({
+      ...emptyRow(),
+      projectId: prev.projectId,
+      projectName: prev.projectName,
+      buildingId: prev.buildingId,
+      buildingName: prev.buildingName,
+    }));
   };
 
   const payload = () => ({
@@ -590,7 +601,9 @@ const ProjectExpense = () => {
                 name="project_id"
                 className={SELECT_CLASS}
                 value={form.projectId}
-                disabled={!form.isExpense}
+                // Open while no account is picked, so the site carried over from
+                // the last voucher can be changed before the next line.
+                disabled={Boolean(form.account) && !form.isExpense}
                 onChange={(e) => handleProjectChange(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -615,7 +628,7 @@ const ProjectExpense = () => {
                 name="building_id"
                 className={SELECT_CLASS}
                 value={form.buildingId}
-                disabled={!form.isExpense || !form.projectId}
+                disabled={(Boolean(form.account) && !form.isExpense) || !form.projectId}
                 onChange={(e) => handleBuildingChange(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
