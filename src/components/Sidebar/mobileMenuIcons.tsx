@@ -87,28 +87,19 @@ export const BranchTransferMenuIcon = ({ className }: GlyphProps) => (
   </MenuGlyph>
 );
 
-/** A document with a bar chart and a magnifier — the mobile app's Reports. */
+/** A rounded analytics card with three rising solid bars — Reports. */
 export const ReportsMenuIcon = ({ className }: GlyphProps) => (
-  <MenuGlyph className={className} viewBox="0.6 0.1 23.4 23.4">
+  <MenuGlyph className={className} viewBox="2.16 2.16 19.68 19.68">
     <path
       stroke="currentColor"
-      strokeWidth="1.95"
+      strokeWidth="1.7"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M4.5 3H10.5Q12.5 3 12.5 5V18.5Q12.5 20.5 10.5 20.5H4.5Q2.5 20.5 2.5 18.5V5Q2.5 3 4.5 3Z"
+      d="M7.4 3.8H16.6Q20.2 3.8 20.2 7.4V16.6Q20.2 20.2 16.6 20.2H7.4Q3.8 20.2 3.8 16.6V7.4Q3.8 3.8 7.4 3.8Z"
     />
-    <path
-      stroke="currentColor"
-      strokeWidth="1.85"
-      strokeLinecap="round"
-      d="M5.2 17.6V13.6M7.5 17.6V10.6M9.8 17.6V8.2"
-    />
-    <path
-      stroke="currentColor"
-      strokeWidth="1.95"
-      strokeLinecap="round"
-      d="M21.8 14.8a4.6 4.6 0 0 1-9.2 0a4.6 4.6 0 0 1 9.2 0ZM20.45 18.05L22 19.6"
-    />
+    <rect x="6.4" y="12.6" width="3.2" height="3.6" rx="1.6" fill="currentColor" />
+    <rect x="10.4" y="10.6" width="3.2" height="5.6" rx="1.6" fill="currentColor" />
+    <rect x="14.4" y="8.6" width="3.2" height="7.6" rx="1.6" fill="currentColor" />
   </MenuGlyph>
 );
 
