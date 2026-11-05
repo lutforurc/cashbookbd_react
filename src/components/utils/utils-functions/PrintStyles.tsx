@@ -19,6 +19,24 @@ type Props = {
    * top stays as it was -- only the sides are asked about.
    */
   narrowMargins?: boolean;
+  /**
+   * The colour the report's own heading and column headings take.
+   *
+   * `'theme'` is the tenant's print colour, as every report has always been.
+   * `'black'` pins the whole page to black -- for a statement that leaves the
+   * office and must read the same whatever theme the branch has chosen.
+   */
+  accent?: 'theme' | 'black';
+  /**
+   * One margin for both sides of the sheet, in millimetres.
+   *
+   * ⚠️ THE PAGE AND THE CONTENT ARE DECIDED TOGETHER. A wider `@page` margin
+   * with the usual 8mm gutter inside `.print-page` would add the two up and
+   * leave the report narrower than asked for. When this is set the gutter is
+   * dropped to nil, so the paper margin is the only space on either side and
+   * the report gets the full width back.
+   */
+  sideMargin?: number;
 };
 
 /**
@@ -46,7 +64,13 @@ type Props = {
  *               page 8mm short and the footer 8mm up the sheet. The millimetre
  *               keeps a rounding overflow from spilling onto a page of its own.
  */
-const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4', narrowMargins = false }) => {
+const PrintStyles: React.FC<Props> = ({
+  orientation = 'portrait',
+  pageSize = 'a4',
+  narrowMargins = false,
+  accent = 'theme',
+  sideMargin,
+}) => {
   // A4: 210 x 297mm. Half: 210 x 148.5mm -- half of A4's height, the sheet a
   // half-page receipt is actually cut from. 'landscape' swaps which of the
   // two is the printed width, exactly as it already did for A4 alone.
@@ -77,9 +101,12 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4
    * but the space the rows must leave is reserved by the report, out of its own
    * flow. See the <tfoot> spacer in ItemDetailsPrint.
    */
-  const SIDES = narrowMargins
-    ? { left: '5mm', right: '4mm', gutter: '4mm' }
-    : { left: '10mm', right: '8mm', gutter: '8mm' };
+  const SIDES =
+    typeof sideMargin === 'number'
+      ? { left: `${sideMargin}mm`, right: `${sideMargin}mm`, gutter: '0mm' }
+      : narrowMargins
+        ? { left: '5mm', right: '4mm', gutter: '4mm' }
+        : { left: '10mm', right: '8mm', gutter: '8mm' };
 
   const MARGIN = { top: '6mm', right: SIDES.right, bottom: '5mm', left: SIDES.left };
 
@@ -133,7 +160,7 @@ const PrintStyles: React.FC<Props> = ({ orientation = 'portrait', pageSize = 'a4
           .print-page h2,
           .print-page h3,
           .print-page thead th {
-            color: rgb(var(--c-print-accent));
+            color: ${accent === 'black' ? '#000' : 'rgb(var(--c-print-accent))'};
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }

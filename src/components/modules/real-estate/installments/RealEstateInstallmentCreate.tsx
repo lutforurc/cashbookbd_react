@@ -1,10 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { toast } from 'react-toastify';
 import { FiEdit2, FiRefreshCcw, FiSave, FiSearch, FiX } from 'react-icons/fi';
+import { useReactToPrint } from 'react-to-print';
 
-import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import InstallmentStatementPrint from './InstallmentStatementPrint';
+import { buildStatementPlan, type StatementPlan } from './installmentStatement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
@@ -76,6 +80,12 @@ type InstallmentRow = {
   invoice_no?: string | null;
   early_payment_date?: string | null;
   early_payment_discount?: number;
+  // Carried through for the printed statement; the on-screen editor ignores them.
+  paid_amount?: number;
+  due_amount?: number;
+  status?: string | null;
+  received_date?: string | null;
+  payments?: any[];
 };
 
 type EditableInstallmentRow = InstallmentRow & {
@@ -140,6 +150,10 @@ export default function RealEstateInstallmentCreate() {
   const [earlyDiscount, setEarlyDiscount] = useState('');
   const [earlyPaymentDate, setEarlyPaymentDate] = useState<Date | null>(null);
 
+  const printRef = useRef<HTMLDivElement>(null);
+  const [printFontSize, setPrintFontSize] = useState(8);
+  const [statementPlan, setStatementPlan] = useState<StatementPlan | null>(null);
+
   const totalAmount = toNumber(summary?.amounts?.total_amount);
   const bookingAmount = Math.max(
     toNumber(summary?.amounts?.booking_amount),
@@ -175,6 +189,52 @@ export default function RealEstateInstallmentCreate() {
   }, [installmentAmount, numberOfInstallments, scheduleBaseAmount, startDate, summary]);
   const hasSavedInstallments = savedInstallments.length > 0;
   const scheduleLocked = hasSavedInstallments && previewRows.length === 0;
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: 'Installment Statement',
+    onAfterPrint: () => setStatementPlan(null),
+  });
+
+  const handlePrintFontSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value, 10);
+    setPrintFontSize(Number.isFinite(value) && value > 0 ? value : 8);
+  };
+
+  /**
+   * The statement is built from the schedule already loaded for this sale, so
+   * the printed rows can only ever be the selected customer's own plan.
+   */
+  const startPrintStatement = () => {
+    if (!hasSavedInstallments) {
+      toast.info('Load a saved installment plan first');
+      return;
+    }
+
+    const saleOption = saleOptions.find((item) => String(item.id) === String(selectedSaleId));
+
+    setStatementPlan(
+      buildStatementPlan({
+        rows: savedInstallments,
+        customerName: summary?.customer?.name,
+        customerId: summary?.customer?.customer_id ?? summary?.customer?.id,
+        planRef: summary?.receipt_no ?? saleOption?.receipt_no,
+        unitRef: [summary?.booking?.unit_label, summary?.booking?.parking_label]
+          .filter(Boolean)
+          .join(', '),
+        saleDate: summary?.meta?.sale_date,
+      }),
+    );
+  };
+
+  useEffect(() => {
+    if (!statementPlan) return undefined;
+
+    // Waiting for the commit (and the letterhead image) before handing the node
+    // to react-to-print; printing in the click handler gets the previous DOM.
+    const timer = setTimeout(() => handlePrint(), 250);
+    return () => clearTimeout(timer);
+  }, [statementPlan]);
 
   const loadUnitSaleOptions = async (q = '') => {
     try {
@@ -294,6 +354,11 @@ export default function RealEstateInstallmentCreate() {
               : row.early_payment_date
             : null,
           early_payment_discount: toNumber(row?.early_payment_discount ?? row?.early_discount),
+          paid_amount: toNumber(row?.paid_amount ?? row?.received_amount),
+          due_amount: toNumber(row?.due_amount),
+          status: row?.status ?? null,
+          received_date: row?.received_date ?? null,
+          payments: Array.isArray(row?.payments) ? row.payments : undefined,
         }))
       : [];
   };
@@ -377,6 +442,7 @@ export default function RealEstateInstallmentCreate() {
     setSummary(null);
     setSavedInstallments([]);
     setSavedInstallmentsLoaded(false);
+    setStatementPlan(null);
     setEditingInstallmentId(null);
     setEditingRow(null);
     setInstallmentAmount('');
@@ -624,15 +690,39 @@ export default function RealEstateInstallmentCreate() {
               Create schedule after excluding booking money and down payment.
             </p>
           </div>
-          <ButtonLoading
-            onClick={(e: any) => {
-              e?.preventDefault?.();
-              resetForm();
-            }}
-            label="Reset"
-            className=""
-            icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
-          />
+          <div className="flex flex-wrap items-end gap-2">
+            <PrintFontInput
+              id="statement_font_size"
+              name="statement_font_size"
+              label="Font"
+              value={String(printFontSize)}
+              onChange={handlePrintFontSizeChange}
+              onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === 'Enter') e.preventDefault();
+              }}
+              type="text"
+              className="font-medium text-sm w-20! text-center"
+            />
+            <PrintButton
+              onClick={startPrintStatement}
+              label="Print Installment Statement"
+              disabled={!hasSavedInstallments || installmentsLoading || summaryLoading}
+              title={
+                hasSavedInstallments
+                  ? 'Print this customer’s saved installment statement'
+                  : 'Load a saved installment plan first'
+              }
+            />
+            <ButtonLoading
+              onClick={(e: any) => {
+                e?.preventDefault?.();
+                resetForm();
+              }}
+              label="Reset"
+              className=""
+              icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+            />
+          </div>
         </div>
 
         <div className="rounded border border-gray-300 bg-white p-3 dark:bg-gray-800">
@@ -648,6 +738,7 @@ export default function RealEstateInstallmentCreate() {
                   setSelectedSaleId(saleId);
                   setSavedInstallments([]);
                   setSavedInstallmentsLoaded(false);
+                  setStatementPlan(null);
                   loadSaleSummary(saleId);
                 }}
                 className="h-[2.1rem] bg-transparent"
@@ -975,6 +1066,29 @@ export default function RealEstateInstallmentCreate() {
               )}
             </tbody>
           </table>
+        </div>
+        {/* ⚠️ OFF THE SCREEN, NOT display:none. The sheet measures its own rows
+            to work out how many fit on a page, and a hidden node measures zero.
+            The width is the printed content width (A4 less 8mm either side)
+            plus the sheet's own 2rem padding, so the measurement is taken at
+            exactly the width it will print at. */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left: '-10000px',
+            top: 0,
+            width: 'calc(194mm + 4rem)',
+            pointerEvents: 'none',
+          }}
+        >
+          {statementPlan ? (
+            <InstallmentStatementPrint
+              ref={printRef}
+              plans={[statementPlan]}
+              fontSize={printFontSize}
+            />
+          ) : null}
         </div>
       </form>
     </>
