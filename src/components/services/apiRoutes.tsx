@@ -276,6 +276,7 @@ export const API_BRANCH_TRANSFER_COMPARISON_URL = `${API_BASE_URL}/warehouse/tra
 export const API_BRANCH_TRANSFER_DESTROY_URL = `${API_BASE_URL}/warehouse/transfer/destroy/`;
 export const API_BRANCH_TRANSFER_UPDATE_URL = `${API_BASE_URL}/warehouse/transfer/update/`;
 export const API_BRANCH_RECEIVED_LIST_URL = `${API_BASE_URL}/warehouse/received/list`;
+export const API_BRANCH_TRANSFER_AVAILABLE_STOCK_URL = `${API_BASE_URL}/warehouse/transfer/available-stock`;
 export const API_BRANCH_TRANSFER_STORE_URL = `${API_BASE_URL}/warehouse/transfer/issue`;
 export const API_BRANCH_RECEIVED_STORE_URL = `${API_BASE_URL}/warehouse/transfer/receive`;
 

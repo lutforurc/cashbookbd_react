@@ -59,6 +59,8 @@ interface InputElementProps {
    * the server allows it on exactly those fields (RejectNegativeNumbers).
    */
   allowNegative?: boolean;
+  /** Read-only text drawn at the right end inside the box; not part of the value. */
+  suffix?: React.ReactNode;
 }
 
 const InputElement: React.FC<InputElementProps> = ({
@@ -88,7 +90,9 @@ const InputElement: React.FC<InputElementProps> = ({
   description,
   size,
   allowNegative = false,
+  suffix,
 }) => {
+  const hasSuffix = suffix !== undefined && suffix !== null && suffix !== '';
   const nativeDateTimeClass = ['date', 'time', 'datetime-local', 'month'].includes(type)
     ? 'native-date-time-input'
     : '';
@@ -184,6 +188,10 @@ const InputElement: React.FC<InputElementProps> = ({
             `w-full ${nativeDateTimeClass} ${negative ? 'border-danger' : ''} ${className}`,
           )}
           style={{
+            // Room for exactly the suffix, so a narrow box keeps the rest for typing.
+            ...(hasSuffix
+              ? { paddingRight: `calc(${String(suffix).length}ch + 1rem)` }
+              : {}),
             ...(type === 'number'
               ? {
                   appearance: 'textfield',
@@ -192,7 +200,11 @@ const InputElement: React.FC<InputElementProps> = ({
               : {}),
           }}
         />
-
+        {hasSuffix ? (
+          <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center whitespace-nowrap bg-transparent text-sm font-medium text-[rgb(var(--c-gray-700))] dark:text-[rgb(var(--c-gray-300))]">
+            {suffix}
+          </span>
+        ) : null}
       </div>
 
       {negative ? (

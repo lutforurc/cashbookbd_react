@@ -20,7 +20,10 @@ import ROUTES from '../../services/appRoutes';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { trxDateToDate, trxDateToIso } from '../../utils/utils-functions/transactionDate';
 import httpService from '../../services/httpService';
-import { API_CUSTOMER_MOBILE_CHECK_URL } from '../../services/apiRoutes';
+import {
+  API_BRANCH_TRANSFER_AVAILABLE_STOCK_URL,
+  API_CUSTOMER_MOBILE_CHECK_URL,
+} from '../../services/apiRoutes';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 
 type ProductOption = {
@@ -270,6 +273,26 @@ const BranchTransfer = () => {
     setTransferDate(trxDateToDate(trxDt));
     setFormData((prev) => (prev.transferDate === iso ? prev : { ...prev, transferDate: iso }));
   }, [trxDt, transferDateTouched]);
+
+  // The issuing branch's stock of the chosen product, shown inside the
+  // Quantity box. Same figure the save's shortage check reads.
+  const [availableStock, setAvailableStock] = useState<number | null>(null);
+  useEffect(() => {
+    setAvailableStock(null);
+    if (!lineItem.productId || !formData.fromBranch) return undefined;
+    let stale = false;
+    httpService
+      .get(API_BRANCH_TRANSFER_AVAILABLE_STOCK_URL, {
+        params: { branch_id: formData.fromBranch, product_id: lineItem.productId },
+      })
+      .then((response) => {
+        if (!stale) setAvailableStock(Number(response?.data?.data?.available ?? 0));
+      })
+      .catch(() => {});
+    return () => {
+      stale = true;
+    };
+  }, [lineItem.productId, formData.fromBranch]);
 
   const handleProductSelect = (option: ProductOption | null) => {
     if (!option) {
@@ -726,6 +749,7 @@ const BranchTransfer = () => {
  value={lineItem.quantity}
  placeholder="0"
  onChange={handleLineItemChange}
+ suffix={availableStock === null ? undefined : thousandSeparator(availableStock)}
               />
             </div>
             <div className="md:col-span-2">
