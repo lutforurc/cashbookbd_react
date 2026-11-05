@@ -51,6 +51,9 @@ const TransactionTypes: React.FC<OrderProps> = ({
           what either value ever returned. */}
       <option value="1">Cash Received</option>
       <option value="2">Cash Payment</option>
+      {/* 3 matches 3- and 10- (cash + credit sales), 4 matches 4- and 9-. */}
+      <option value="3">Sales</option>
+      <option value="4">Purchase</option>
     </Select>
   );
 };

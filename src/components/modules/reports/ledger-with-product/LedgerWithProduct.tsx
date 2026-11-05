@@ -477,11 +477,14 @@ const LedgerWithProduct = (user: any) => {
   }, [dropdownData, branchId]);
 
   const transactionTypeLabel =
-    transactionType === '2'
-      ? 'Cash Payment'
-      : transactionType === '1'
-        ? 'Cash Received'
-        : 'All';
+    (
+      {
+        '1': 'Cash Received',
+        '2': 'Cash Payment',
+        '3': 'Sales',
+        '4': 'Purchase',
+      } as Record<string, string>
+    )[transactionType] || 'All';
   /**
    * How many rows a printed page carries, or 0 for "do not split at all".
    *
