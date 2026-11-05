@@ -46,6 +46,16 @@
   transition-duration: 150ms;
 }
 
+/* A menu's leading icon sits a step above its label's own size -- react-icons
+ * draw at 1em, so the icon would otherwise match the text exactly. Sizing it in
+ * `em` keeps it proportional to the sidebar's own font size (and to the icon's
+ * own design), and only the first icon is targeted: the chevron beside it keeps
+ * its size, the label is untouched, and nothing about the row's height, gap or
+ * padding moves. The collapsed rail pins its icons to 18px, which still wins. */
+.app-sidebar-menu nav > div > ul > li > a > svg:first-child {
+  font-size: 1.15em;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .app-sidebar-menu nav > div > ul > li > div[class*='max-h-'],
   .app-sidebar-menu nav > div > ul > li > a,

@@ -2,6 +2,22 @@ import React, { CSSProperties, useEffect, useLayoutEffect, useRef, useState } fr
 import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import {
+  AdminMenuIcon,
+  AssetsMenuIcon,
+  BranchTransferMenuIcon,
+  CompanySchemeMenuIcon,
+  HotelMenuIcon,
+  HrmMenuIcon,
+  InvoiceMenuIcon,
+  LabourItemsMenuIcon,
+  ProductsMenuIcon,
+  ProductTrackingMenuIcon,
+  ReportsMenuIcon,
+  ResellerMenuIcon,
+  TransactionMenuIcon,
+  VrSettingsMenuIcon,
+} from './mobileMenuIcons';
+import {
   dividerLabel,
   isDivider,
   useSidebarCustomization,
@@ -316,35 +332,21 @@ export const SIDEBAR_MENUS = [
   { id: 'customer_dashboard', title: 'Customer Dashboard' },
 ];
 import {
-  FiActivity,
   FiArchive,
   FiBarChart2,
-  FiBook,
-  FiBriefcase,
   FiChevronDown,
   FiChevronLeft,
   FiChevronRight,
   FiChevronUp,
-  FiDollarSign,
   FiEye,
   FiEyeOff,
-  FiFileText,
   FiMenu,
-  FiClipboard,
   FiGrid,
   FiHome,
   FiInbox,
-  FiLayers,
-  FiKey,
-  FiPackage,
   FiMapPin,
   FiPieChart,
-  FiSettings,
-  FiShoppingCart,
-  FiTag,
-  FiTool,
   FiTrendingUp,
-  FiTruck,
   FiUser,
   FiUsers,
 } from 'react-icons/fi';
@@ -867,7 +869,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
                       }`}
                   >
-                    <FiBriefcase />
+                    <ResellerMenuIcon />
                     Reseller Dashboard
                   </NavLink>
                 </li>
@@ -895,7 +897,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <FiDollarSign />
+                        <TransactionMenuIcon />
                         Transaction
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -1105,7 +1107,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <FiShoppingCart />
+                        <InvoiceMenuIcon />
                         Invoice
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -1294,7 +1296,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
                       >
-                        <FiTruck />
+                        <BranchTransferMenuIcon />
                         Branch Transfer
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -1502,7 +1504,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <FiBook />
+                        <ReportsMenuIcon />
                         Reports
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -2247,7 +2249,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <FiActivity />
+                        <ProductTrackingMenuIcon />
                         Product Tracking
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -2335,7 +2337,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <FiTag />
+                        <CompanySchemeMenuIcon />
                         Company Scheme
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -2764,7 +2766,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
                       >
-                        <FiPackage />
+                        <AssetsMenuIcon />
                         Assets
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -2841,7 +2843,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
                       >
-                        <FiKey />
+                        <HotelMenuIcon />
                         Hotel
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -2979,7 +2981,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <FiLayers />
+                        <ProductsMenuIcon />
                         Products
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -3158,7 +3160,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
                       >
-                        <FiTool />
+                        <LabourItemsMenuIcon />
                         Labour Items
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -3237,7 +3239,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <FiSettings />
+                        <AdminMenuIcon />
                         Admin
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -3682,7 +3684,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <FiFileText />
+                        <VrSettingsMenuIcon />
                         VR Settings
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
@@ -3810,7 +3812,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                         }}
                       >
-                        <FiClipboard />
+                        <HrmMenuIcon />
                         HRM
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
