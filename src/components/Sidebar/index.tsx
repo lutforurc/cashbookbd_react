@@ -13,6 +13,7 @@ import {
   ProductsMenuIcon,
   ProductTrackingMenuIcon,
   ReportsMenuIcon,
+  RequisitionMenuIcon,
   ResellerMenuIcon,
   TransactionMenuIcon,
   VrSettingsMenuIcon,
@@ -343,7 +344,6 @@ import {
   FiMenu,
   FiGrid,
   FiHome,
-  FiInbox,
   FiMapPin,
   FiPieChart,
   FiTrendingUp,
@@ -2414,7 +2414,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <FiInbox />
+                        <RequisitionMenuIcon />
                         Requisition
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''

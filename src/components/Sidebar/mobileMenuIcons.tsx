@@ -125,6 +125,33 @@ export const ProductTrackingMenuIcon = ({ className }: GlyphProps) => (
   </MenuGlyph>
 );
 
+/** A clipboard with line items and a tick — Requisition. */
+export const RequisitionMenuIcon = ({ className }: GlyphProps) => (
+  <MenuGlyph className={className} viewBox="1.32 1.27 21.36 21.36">
+    <path
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M16.3 5Q18.3 5 18.3 7V18Q18.3 20 16.3 20H7.7Q5.7 20 5.7 18V7Q5.7 5 7.7 5H9.1M14.9 5H16.3"
+    />
+    <path
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9.1 3.9H14.9Q15.9 3.9 15.9 4.9V5.9Q15.9 6.9 14.9 6.9H9.1Q8.1 6.9 8.1 5.9V4.9Q8.1 3.9 9.1 3.9Z"
+    />
+    <path
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 10.6H15M9 13.4H15M8.9 16.6L10.8 18.5L15.1 14.2"
+    />
+  </MenuGlyph>
+);
+
 /** A rosette badge with ribbon tails — the mobile app's Company Scheme. */
 export const CompanySchemeMenuIcon = ({ className }: GlyphProps) => (
   <MenuGlyph className={className} viewBox="2.3 2.8 19.4 19.4">
@@ -165,15 +192,29 @@ export const AssetsMenuIcon = ({ className }: GlyphProps) => (
   </MenuGlyph>
 );
 
-/** An isometric parcel box — the mobile app's Products. */
+/** A rounded parcel with a shipping label on its face — Products. */
 export const ProductsMenuIcon = ({ className }: GlyphProps) => (
-  <MenuGlyph className={className} viewBox="2.4 3.4 19.2 19.2">
+  <MenuGlyph className={className} viewBox="2.2 2.2 19.6 19.6">
     <path
       stroke="currentColor"
       strokeWidth="1.7"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M4 9.6L9.6 6H20L14.4 9.6ZM4 9.6H14.4V20H4ZM14.4 9.6L20 6V16.4L14.4 20"
+      d="M11.16 20.17a1.68 1.68 0 0 0 1.68 0l5.88-3.36A1.68 1.68 0 0 0 19.56 15.36V8.64a1.68 1.68 0 0 0-.84-1.45l-5.88-3.36a1.68 1.68 0 0 0-1.68 0l-5.88 3.36A1.68 1.68 0 0 0 4.44 8.64v6.72a1.68 1.68 0 0 0 .84 1.45z"
+    />
+    <path
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 20.17V12M4.69 7.8l6.47 3.7a1.68 1.68 0 0 0 1.68 0l6.5-3.7"
+    />
+    <path
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6.3 11L10.2 13.25V16.45L6.3 14.2Z"
     />
   </MenuGlyph>
 );
