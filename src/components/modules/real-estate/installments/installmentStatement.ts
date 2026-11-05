@@ -52,8 +52,9 @@ export type StatementReceipt = {
 export type StatementPlan = {
   customerName: string;
   customerId: string;
-  planRef: string;
-  unitRef: string;
+  customerAddress: string;
+  unitNo: string;
+  parkingNo: string;
   saleDate: string;
   installments: StatementInstallment[];
   receipts: StatementReceipt[];
@@ -202,11 +203,12 @@ export function buildStatementPlan(args: {
   rows: StatementSourceRow[];
   customerName?: string | null;
   customerId?: string | number | null;
-  planRef?: string | null;
-  unitRef?: string | null;
+  customerAddress?: string | null;
+  unitNo?: string | null;
+  parkingNo?: string | null;
   saleDate?: string | null;
 }): StatementPlan {
-  const { rows, customerName, customerId, planRef, unitRef, saleDate } = args;
+  const { rows, customerName, customerId, customerAddress, unitNo, parkingNo, saleDate } = args;
 
   const source = (Array.isArray(rows) ? rows : [])
     .filter(Boolean)
@@ -361,8 +363,9 @@ export function buildStatementPlan(args: {
   return {
     customerName: String(customerName ?? '').trim(),
     customerId: String(customerId ?? '').trim(),
-    planRef: String(planRef ?? '').trim(),
-    unitRef: String(unitRef ?? '').trim(),
+    customerAddress: String(customerAddress ?? '').trim(),
+    unitNo: String(unitNo ?? '').trim(),
+    parkingNo: String(parkingNo ?? '').trim(),
     saleDate: formatStatementDate(saleDate),
     installments,
     receipts: receiptRows,

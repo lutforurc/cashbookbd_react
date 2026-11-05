@@ -345,13 +345,18 @@ const InstallmentStatementPrint = React.forwardRef<HTMLDivElement, Props>(
     });
 
     const planLine = (plan: StatementPlan, planIndex: number, planCount: number) => (
-      <div className="mt-1 text-center text-black" style={{ fontSize: Math.max(fs, 8) }}>
+      <div
+        className="mt-1 text-center text-black break-words"
+        style={{ fontSize: Math.max(fs, 8) }}
+      >
         <span className="font-semibold">Customer:</span> {plan.customerName || '-'}
         {plan.customerId ? ` (${plan.customerId})` : ''}
-        <span className="mx-2">|</span>
-        <span className="font-semibold">Plan / Unit:</span> {plan.planRef || '-'}
-        {plan.unitRef ? ` - ${plan.unitRef}` : ''}
-        <span className="mx-2">|</span>
+        {' | '}
+        <span className="font-semibold">Address:</span> {plan.customerAddress || '-'}
+        {' | '}
+        <span className="font-semibold">Unit#</span> {plan.unitNo || '-'}
+        {plan.parkingNo ? `, P# ${plan.parkingNo}` : ''}
+        {' | '}
         <span className="font-semibold">Sale Date:</span> {plan.saleDate}
         {planCount > 1 ? ` | Plan ${planIndex + 1} of ${planCount}` : ''}
       </div>

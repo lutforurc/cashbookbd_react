@@ -22,6 +22,7 @@ import {
   API_UNIT_SALE_DDL_URL,
   API_UNIT_SALE_INSTALLMENT_CREATE_URL,
   API_UNIT_SALE_INSTALLMENT_UPDATE_URL,
+  API_UNIT_SALE_SOLD_UNITS_URL,
   API_UNIT_SALE_SUMMARY_URL,
 } from '../../../services/apiRoutes';
 import { Input } from '../../../utils/fields/FormControls';
@@ -55,6 +56,8 @@ type SaleSummary = {
     ledger_id?: number | string | null;
     name?: string | null;
     mobile?: string | null;
+    /** Present on newer summaries; the sold-unit report is the fallback. */
+    address?: string | null;
   };
   amounts?: {
     total_amount?: number;
@@ -109,6 +112,17 @@ const normalizeMatchValue = (value: any) =>
     .trim()
     .toLowerCase();
 
+/**
+ * "Unit# ", "P# " and the like are added by the statement itself, so a label
+ * that already carries one is stripped first instead of printed twice. The
+ * number stays a string: a parking bay written "09" must keep its zero.
+ */
+const stripLabelPrefix = (value: any, pattern: RegExp) =>
+  String(value ?? '')
+    .trim()
+    .replace(pattern, '')
+    .trim();
+
 const parseDisplayDate = (value: any) => {
   if (!value) return null;
   const parsed = dayjs(value, ['DD/MM/YYYY', 'YYYY-MM-DD'], true);
@@ -153,6 +167,7 @@ export default function RealEstateInstallmentCreate() {
   const printRef = useRef<HTMLDivElement>(null);
   const [printFontSize, setPrintFontSize] = useState(8);
   const [statementPlan, setStatementPlan] = useState<StatementPlan | null>(null);
+  const [statementLoading, setStatementLoading] = useState(false);
 
   const totalAmount = toNumber(summary?.amounts?.total_amount);
   const bookingAmount = Math.max(
@@ -202,29 +217,70 @@ export default function RealEstateInstallmentCreate() {
   };
 
   /**
+   * The buyer's address lives on the customer record. The summary sometimes
+   * carries it; when it does not, the sold-unit report -- which is keyed by the
+   * same customer -- is asked for it. A failure here prints a dash rather than
+   * stopping the statement.
+   */
+  const resolveCustomerAddress = async (
+    customerId: string | number | null,
+    knownAddress?: string | null,
+  ) => {
+    const known = String(knownAddress ?? '').trim();
+    if (known) return known;
+    if (!customerId) return '';
+
+    try {
+      const response: any = await httpService.get(API_UNIT_SALE_SOLD_UNITS_URL, {
+        params: { customer_id: customerId },
+      });
+      const payload = response?.data?.data?.data;
+      const rows = Array.isArray(payload?.data) ? payload.data : [];
+      const match = rows.find((row: any) => String(row?.customer_id) === String(customerId));
+      return String(match?.customer_address ?? '').trim();
+    } catch {
+      return '';
+    }
+  };
+
+  /**
    * The statement is built from the schedule already loaded for this sale, so
    * the printed rows can only ever be the selected customer's own plan.
    */
-  const startPrintStatement = () => {
+  const startPrintStatement = async () => {
     if (!hasSavedInstallments) {
       toast.info('Load a saved installment plan first');
       return;
     }
 
-    const saleOption = saleOptions.find((item) => String(item.id) === String(selectedSaleId));
+    const customerId = summary?.customer?.customer_id ?? summary?.customer?.id ?? null;
+    const parkingLabel = String(summary?.booking?.parking_label ?? '').trim();
 
-    setStatementPlan(
-      buildStatementPlan({
-        rows: savedInstallments,
-        customerName: summary?.customer?.name,
-        customerId: summary?.customer?.customer_id ?? summary?.customer?.id,
-        planRef: summary?.receipt_no ?? saleOption?.receipt_no,
-        unitRef: [summary?.booking?.unit_label, summary?.booking?.parking_label]
-          .filter(Boolean)
-          .join(', '),
-        saleDate: summary?.meta?.sale_date,
-      }),
-    );
+    setStatementLoading(true);
+
+    try {
+      const customerAddress = await resolveCustomerAddress(
+        customerId,
+        summary?.customer?.address,
+      );
+
+      setStatementPlan(
+        buildStatementPlan({
+          rows: savedInstallments,
+          customerName: summary?.customer?.name,
+          customerId,
+          customerAddress,
+          unitNo: stripLabelPrefix(summary?.booking?.unit_label, /^unit\s*#?\s*[:.-]?\s*/i),
+          parkingNo:
+            parkingLabel && parkingLabel !== '-'
+              ? stripLabelPrefix(parkingLabel, /^p(?:arking)?\s*#?\s*[:.-]?\s*/i)
+              : '',
+          saleDate: summary?.meta?.sale_date,
+        }),
+      );
+    } finally {
+      setStatementLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -706,7 +762,9 @@ export default function RealEstateInstallmentCreate() {
             <PrintButton
               onClick={startPrintStatement}
               label="Print Installment Statement"
-              disabled={!hasSavedInstallments || installmentsLoading || summaryLoading}
+              disabled={
+                !hasSavedInstallments || installmentsLoading || summaryLoading || statementLoading
+              }
               title={
                 hasSavedInstallments
                   ? 'Print this customer’s saved installment statement'
