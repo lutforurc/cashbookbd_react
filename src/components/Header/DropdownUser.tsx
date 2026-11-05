@@ -309,30 +309,7 @@ const DropdownUser = () => {
                 My Devices
               </Link>
             </li>
-            {/* Settings → Account → Request Account Deletion. The page itself is
-                public; opening it from here is the signed-in entry point, and it
-                prefills from the session and offers company-wide deletion only
-                to the owner the backend recognises. */}
-            <li>
-              <Link
-                to={routes.account_deletion_request}
-                className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
-              >
-                {/* The trash glyph the mobile app shows on this row, taking the
-                    row's colour. */}
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
-                </svg>
-                Request Account Deletion
-              </Link>
-            </li>
+            
             {me && (
               <li>
                 <Link
@@ -380,6 +357,30 @@ const DropdownUser = () => {
                 </Link>
               </li>
             )}
+            {/* Settings → Account → Request Account Deletion. The page itself is
+                public; opening it from here is the signed-in entry point, and it
+                prefills from the session and offers company-wide deletion only
+                to the owner the backend recognises. */}
+            <li>
+              <Link
+                to={routes.account_deletion_request}
+                className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+              >
+                {/* The trash glyph the mobile app shows on this row, taking the
+                    row's colour. */}
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                </svg>
+                Request Account Deletion
+              </Link>
+            </li>
             {hasPermission(permissions, 'subscription.history') && (
               <li>
                 <Link
