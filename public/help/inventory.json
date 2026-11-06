@@ -1,0 +1,124 @@
+{
+  "product-in": {
+    "title": "পণ্য ঢোকানো",
+    "module": "Inventory",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কেনা ছাড়া অন্য কারণে স্টকে আসা পণ্য লেখা হয় — যেমন গুদামে হিসাব করে পাওয়া। Save করলেই স্টক বাড়ে; Approve শুধু সায় দেয়।",
+    "sections": [
+      { "heading": "এন্ট্রি", "menu": "Inventory → Product In", "steps": ["Reason বাছুন (খালি ঘরে Where did it came from?), To Warehouse ও Came from দিন।", "Select Product, Quantity, Rate ও Line Note দিয়ে Add Item চাপুন।", "Note লিখে Save করুন; ভুল হলে Reset All।"] },
+      { "heading": "তালিকা ও অনুমোদন", "steps": ["Receipt List-এ All / Pending only / Approved only ও Every reason বাছুন, Search করুন।", "In No, Date, Reason, Warehouse, Came From, Items, Total Qty, Value ও Approval দেখা যায়।", "Print দিয়ে Stock In Slip, Approve / Take the approval back off দিয়ে অনুমোদন, Edit / Delete দিয়ে সারি সামলান।"] },
+      { "heading": "সতর্কতা", "warning": "যে কারণে নাম লাগে সেখানে Came from না দিলে সেভ হবে না। ৳০ রেটের লাইন হলুদ দেখায় — দাম ছাড়া শুধু পরিমাণ বাড়ে, পরে বিক্রি হলে পুরোটাই লাভ দেখাবে। অনুমোদিত রশিদ বদলাতে আগে অনুমোদন তুলুন।" }
+    ]
+  },
+  "product-out": {
+    "title": "পণ্য বের করা",
+    "module": "Inventory",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নষ্ট, হারানো বা ফেরত পাঠানো পণ্য স্টক থেকে বের করার এন্ট্রি। Save করলেই স্টক কমে; Approve শুধু সায় দেয়।",
+    "sections": [
+      { "heading": "এন্ট্রি", "menu": "Inventory → Product Out", "steps": ["Reason বাছুন (খালি ঘরে Why did it go?), From Warehouse ও Went back to দিন।", "Note ও Photos যোগ করুন।", "Select Product, Quantity ও Line Note দিয়ে Add Item চাপুন; Save করুন।"] },
+      { "heading": "তালিকা ও ছাপা", "steps": ["Write-off List-এ All / Pending only / Approved only ও Every reason বাছুন।", "Out No, Date, Reason, Warehouse, Went Back To, Items, Total Qty, Photos ও Approval দেখা যায়।", "Print দিয়ে Damage / Loss Slip বের হয়; Approve / Take the approval back off ও Edit / Delete আছে।"] },
+      { "heading": "সতর্কতা", "warning": "স্টকে যথেষ্ট না থাকলে জানালা আসবে — Cancel করে স্টক ঠিক করুন, নাহলে Continue Save করলে ঘাটতি বইয়ে থাকবে। অনুমোদিত এন্ট্রি বদলাতে আগে অনুমোদন তুলুন।" }
+    ]
+  },
+  "product-in-reasons": {
+    "title": "পণ্য ঢোকার কারণ",
+    "module": "Inventory",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "পণ্য ঢোকানোর কারণের নিজস্ব ছোট তালিকা; কোন কারণে নাম জিজ্ঞাসা করবে তাও এখানে ঠিক হয়।",
+    "sections": [
+      { "heading": "কারণ যোগ ও বদল", "menu": "Inventory → Product In → Reasons", "steps": ["Reason লিখুন (যেমন গুদামে হিসাব করে পাওয়া গেছে) ও Order দিন।", "This one asks who it came from চালু করলে ওই কারণের এন্ট্রিতে Came from লাগবে।", "Add / Update চাপুন; Sl, Reason, Asks for a name, Order, Offered ও Action দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "একবার ব্যবহার হওয়া কারণ মোছা হয় না — Offered = Retired হয়ে নতুন এন্ট্রিতে আর আসে না, পুরনো রশিদ অক্ষত থাকে।" }
+    ]
+  },
+  "product-out-reasons": {
+    "title": "পণ্য বের হওয়ার কারণ",
+    "module": "Inventory",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "পণ্য বের হওয়ার কারণের তালিকা; কোন কারণে ফেরত কোথায় গেল জিজ্ঞাসা করবে তাও এখানে ঠিক হয়।",
+    "sections": [
+      { "heading": "কারণ যোগ ও বদল", "menu": "Inventory → Product Out → Reasons", "steps": ["Reason লিখুন (যেমন ভেঙে গেছে) ও Order দিন।", "This one asks who it went back to চালু করলে ওই কারণের এন্ট্রিতে Went back to লাগবে।", "Add / Update চাপুন; তালিকায় Sl, Reason, Asks for a name, Order ও Offered দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "ব্যবহার হওয়া কারণ Retired হয়, মোছে না; পুরনো স্লিপের কারণ অপরিবর্তিত থাকে।" }
+    ]
+  },
+  "product-in-register": {
+    "title": "পণ্য ঢোকার রেজিস্টার",
+    "module": "Inventory",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নির্বাচিত সময়ে কী ঢুকল, কোথা থেকে এল এবং তার মূল্য কত — এক জায়গায় দেখা যায়।",
+    "sections": [
+      { "heading": "রিপোর্ট", "menu": "Inventory → Product In Register", "steps": ["From, To, Warehouse, Reason ও Product বাছুন; Show চাপুন।", "উপরে Came in this period মোট দেখায়, সাথে লাভ কতটা বাড়ল তার ব্যাখ্যা।", "The slips-এ তারিখ, In No, পণ্য, Qty, রেট, মূল্য, কারণ ও গুদাম; Where it came from ও Which goods সারসংক্ষেপ দেখায়।"] },
+      { "heading": "সতর্কতা", "warning": "৳০ রেটে ঢোকা লাইন থাকলে হলুদ বার্তায় সংখ্যা ও পরিমাণ দেখায় — বিক্রির সময় সেগুলো পুরো লাভ হিসেবে পড়বে।" }
+    ]
+  },
+  "product-out-register": {
+    "title": "পণ্য বের হওয়ার রেজিস্টার",
+    "module": "Inventory",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নির্বাচিত সময়ে কী বের হলো, কেন এবং তার খরচ কত — তা দেখা যায়।",
+    "sections": [
+      { "heading": "রিপোর্ট", "menu": "Inventory → Product Out Register", "steps": ["From, To, Warehouse, Reason ও Product বাছুন; Show চাপুন।", "উপরে Written off in this period মোট খরচ দেখায়।", "The slips-এ তারিখ, Out No, পণ্য, Qty, রেট, খরচ, কারণ ও গুদাম; Why it went ও Which goods সারসংক্ষেপ দেখায়।"] },
+      { "heading": "সতর্কতা", "warning": "এই খরচ ইতিমধ্যে ক্লোজিং স্টকে আছে — তাই লাভ ঠিক এই পরিমাণ কমবে, এর বেশি নয়।" }
+    ]
+  },
+  "branch-issue": {
+    "title": "শাখায় পণ্য পাঠানো",
+    "module": "Inventory",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এক শাখা থেকে আরেক শাখায় চালান দিয়ে স্টক পাঠানোর এন্ট্রি।",
+    "sections": [
+      { "heading": "চালান", "menu": "Inventory → Branch Issue", "steps": ["From Branch, To Branch, Challan Date ও Challan Number দিন।", "Receiver Name, Receiver Mobile, Driver Name, Driver Mobile ও Note দিন।", "Select Product, Quantity, Damaged Qty, Short Qty ও Rate দিয়ে Add Item করুন; Save চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "উৎস শাখায় স্টক কম থাকলে Not Enough Stock জানালা আসবে — Available ও Requested দেখে Cancel করুন বা Continue Save। Receive করার সময় দায়িত্ব নেওয়া হয়, তাই চালান মিলিয়ে নিন।" }
+    ]
+  },
+  "branch-receive": {
+    "title": "শাখায় পণ্য গ্রহণ",
+    "module": "Inventory",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "অন্য শাখা থেকে আসা চালানের পণ্য গ্রহণ করে স্টকে যোগ করা হয়; নষ্ট বা কম পণ্যও এখানে লেখা হয়।",
+    "sections": [
+      { "heading": "গ্রহণ", "menu": "Inventory → Branch Receive", "steps": ["From Branch, Receive Branch, Receive Date ও Challan Number দিন।", "Receiver ও Driver-এর নাম-মোবাইল এবং Note দিন।", "Select Product, Quantity, Damaged Qty, Short Qty ও Rate দিয়ে Add Item করে Save করুন।"] },
+      { "heading": "সতর্কতা", "warning": "চালানের সাথে মিলিয়ে Quantity দিন; Damaged Qty ও Short Qty আলাদা ঘরে লিখলে স্টকে সেগুলোও গণনা হবে।" }
+    ]
+  },
+  "material-issue": {
+    "title": "প্রকল্পে মালামাল ইস্যু",
+    "module": "Inventory",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "গুদামের স্টক কোনো প্রকল্প বা সাইটে, কোন ভবন/ফ্লোরে, কোন কাজে দেওয়া হলো — তা লেখা হয়।",
+    "sections": [
+      { "heading": "ইস্যু", "menu": "Inventory → Material Issue", "steps": ["Issue Date, From Warehouse, Project / Site ও Received By দিন।", "Select Product, Quantity, Building / Floor, Work Item ও Line Note দিয়ে Add Item করুন।", "Save চাপুন; Issue List-এ Issue No, Date, Project, Warehouse, Received By ও Total Qty দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "ছাপার চালান Material Issue Challan; প্রকল্প না বাছলে সেভ হবে না। কাজ শেষে Received By-এর নাম রাখুন, নাহলে দায় মেলানো কঠিন।" }
+    ]
+  },
+  "branch-list": {
+    "title": "শাখার তালিকা",
+    "module": "Inventory",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কোম্পানির সব শাখা, তাদের যোগাযোগ ও চালু/বন্ধ অবস্থা।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Setup → Branch List", "steps": ["Sl. No., Branch Name, Contact Person, Business Type, Contact Number ও status দেখা যায়।", "Add Branch দিয়ে নতুন শাখা; Edit ও on/off সুইচ দিয়ে পুরনো শাখা সামলান।"] },
+      { "heading": "সতর্কতা", "warning": "শাখা বন্ধ করলে তার লেনদেন মোছে না, শুধু নতুন কাজ বন্ধ হয়। শাখা মোছার ব্যবস্থা এখানে নেই।" }
+    ]
+  }
+}

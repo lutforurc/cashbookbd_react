@@ -292,6 +292,7 @@ import ResellerDashboard from './components/modules/reseller/ResellerDashboard';
 import AccountDeletionRequest from './pages/AccountDeletion/AccountDeletionRequest';
 import AccountDeletionList from './components/modules/account-deletion/AccountDeletionList';
 import AccountDeletionDetail from './components/modules/account-deletion/AccountDeletionDetail';
+import HelpPage from './components/help/HelpPage';
 
 /*
  * There is no exempt-company list here any more, and its absence is the point.
@@ -387,6 +388,9 @@ function App() {
                   personal, so it carries no permission. */}
               <Route path={routes.switch_branch} element={<SwitchBranch />} />
               <Route path={routes.my_devices} element={<MyDevices />} />
+              {/* The manual is personal reading, like the profile above it:
+                  no permission, every signed-in user. */}
+              <Route path={routes.help} element={<HelpPage />} />
               {/* One's own password, like the devices above it: personal, so
                   it carries no permission. Another user's is on User Edit. */}
               <Route path={routes.change_password} element={<ChangePassword />} />

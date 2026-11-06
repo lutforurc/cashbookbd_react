@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { FiClock, FiLogOut, FiUserX } from 'react-icons/fi';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import routes from '../../../services/appRoutes';
 import AttendanceReport from './AttendanceReport';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import HelmetTitle from '../../../utils/others/HelmetTitle';
 
 const reportTabs = [
   {
@@ -47,6 +48,7 @@ const AttendanceExceptionReports = ({ user }: any) => {
 
   return (
     <div>
+      <HelmetTitle title={activeTab.title} />
       <div className="mb-3 flex flex-wrap gap-2 border-b border-[rgb(var(--c-border))]">
         {reportTabs.map((tab) => {
           const Icon = tab.icon;

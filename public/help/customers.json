@@ -1,0 +1,53 @@
+{
+  "customer-supplier-list": {
+    "title": "গ্রাহক ও সরবরাহকারী তালিকা",
+    "module": "Customers",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "গ্রাহক, সরবরাহকারী ও অ্যাডভান্স পার্টির তালিকা — সাথে ব্যালেন্স, guarantor/nominee, opening balance ও প্রতিটি সারির কাজ।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Customers → Customer & Supplier", "steps": ["Client Type (All Types/Customer/Supplier/Supplier & Customer/Advance) ও Employee বাছুন।", "Search বক্সে নাম, মোবাইল বা ব্যালেন্সের শর্ত লিখুন; Search চাপুন।", "Sl. No., Name, National ID, Address, Employee, Ledger Page, Mobile, Balance ও Opening দেখা যায়।"] },
+      { "heading": "সারির কাজ", "steps": ["চোখের আইকনে Actions খুলে View guarantors, View nominees, Print profile (PDF), Change log, Recent transactions, Edit বা Delete করুন।", "Opening ঘরে শুরুর ব্যালেন্স লিখে Save/Cancel; ভাউচার নম্বরে চাপলে লেজার খোলে।", "Print দিয়ে ফিল্টার করা পুরো তালিকা ছাপা হয়।"] },
+      { "heading": "সতর্কতা", "warning": "শাখার opening চলাকালে কিছু কলাম লুকানো থাকে। Opening Balance একবার দেওয়ার পর সরাসরি বদলানো যায় না — শাখার opening খুলে ঠিক করতে হয়।" }
+    ]
+  },
+  "customer-supplier-form": {
+    "title": "গ্রাহক/সরবরাহকারী তৈরি",
+    "module": "Customers",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নতুন গ্রাহক বা সরবরাহকারীর তথ্য, guarantor, nominee ও portal login এই ফর্মে লেখা হয়। Edit স্ক্রিনে একই ঘর, শুধু কিছু ঘর লক থাকে।",
+    "sections": [
+      { "heading": "ঘরগুলো", "menu": "Customers → Add Customer / Edit Customer", "steps": ["Select Area, Select Type ও Handle By Employee বাছুন।", "Name, Name (Bangla), Relation, Relation's Name ও Mother's Name লিখুন।", "Sex, Date of Birth, Occupation, Contact Person, Contact Number, National ID ও Mobile Number দিন।", "Present Address লিখুন; Same as Present চালু করলে Permanent Address একই হবে।", "Ledger Page, Opening Balance ও Customer Number দিন।", "Portal login দিতে Access Customer Login = Yes করে Portal Password দিন; Photo যোগ করুন।"] },
+      { "heading": "Guarantor ও Nominee", "steps": ["Guarantor Details-এ Name, Father Name, Mobile, National ID ও Address দিয়ে Add Guarantor করুন।", "Nominee Details-এ Name, Relation, Share Percentage, Priority Order, Guardian ও Status দিয়ে Add Nominee করুন।", "শেষে Save/Update (Ctrl + U) চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "একই মোবাইল নম্বর আগে থাকলে Confirm করে তবেই সেভ হবে। Opening Balance একবার দেওয়ার পর বদলানো যায় না; nominee-দের share মোট ১০০% হওয়া উচিত।" }
+    ]
+  },
+  "customer-opening-import": {
+    "title": "গ্রাহকের শুরুর ব্যালেন্স আপলোড",
+    "module": "Customers",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "Excel থেকে অনেক গ্রাহকের শুরুর ব্যালেন্স একসাথে আনা হয়; প্রতিটি সারি যাচাই করে তবেই Save হয়।",
+    "sections": [
+      { "heading": "আপলোড", "menu": "Customers → Opening Import", "steps": ["Download Format দিয়ে নমুনা নামান, অথবা Paste Rows দিয়ে সারি পেস্ট করুন।", "Load Rows চাপুন, তারপর Check।", "প্রতিটি সারিতে New customer, Existing, Will create বা To fix দেখা যায়।", "সব ঠিক হলে Ok চাপুন।"] },
+      { "heading": "মিলানোর নিয়ম", "steps": ["সারি আগে Customer No. দিয়ে মেলে; না মিললে Name ও Mobile একসাথে মিলতে হয়।", "ধনাত্মক Opening মানে গ্রাহক আমাদের কাছে ঋণী; ঋণাত্মক দিলে বই তাদের কাছে ঋণী।"] },
+      { "heading": "সতর্কতা", "warning": "শাখায় opening বন্ধ থাকলে আপলোড হবে না। মোবাইল নম্বরের সতর্কতা থাকলে তবুও import করা যায়।" }
+    ]
+  },
+  "customer-portal-password": {
+    "title": "গ্রাহকের পাসওয়ার্ড",
+    "module": "Customers",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কাস্টমার পোর্টালে নিজের পাসওয়ার্ড বদলানোর পাতা। প্রথমবার ঢুকলে ডিফল্ট পাসওয়ার্ড বদলাতে হয়।",
+    "sections": [
+      { "heading": "পাসওয়ার্ড বদল", "menu": "Customer portal → Change Password", "steps": ["Current Password, New Password ও Confirm Password লিখুন।", "Save Password চাপুন।", "পরেরবার এই পাসওয়ার্ডেই ঢুকবেন।"] },
+      { "heading": "সতর্কতা", "warning": "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে এবং দুই ঘরে একই লিখতে হবে। মোবাইল নম্বর বা জন্মতারিখ পাসওয়ার্ড হিসেবে দেবেন না।" }
+    ]
+  }
+}

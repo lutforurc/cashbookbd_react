@@ -29,6 +29,7 @@ import CustomerStatement from './CustomerStatement';
 import CustomerDue from './CustomerDue';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import HelmetTitle from '../../../utils/others/HelmetTitle';
 
 interface CustomerProfile {
   id: number;
@@ -296,6 +297,7 @@ const allPayments = paymentList.map((pay: any) => ({
           inside the tabs are the real beneficiaries -- at 5xl they scrolled
           sideways on a screen with room to spare. */}
       <div className="mx-auto w-full max-w-(--breakpoint-2xl) space-y-4 px-3 py-4 sm:space-y-5 sm:px-6 sm:py-6">
+        <HelmetTitle title="Customer Dashboard" />
         {/* ===== Hero header ===== */}
         <div className="rounded-lg border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-sm sm:p-6">
           {/* Wraps rather than truncates on a phone: the address is the line

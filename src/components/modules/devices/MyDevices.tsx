@@ -7,6 +7,7 @@ import Breadcrumb from '../../Breadcrumbs/Breadcrumb';
 import { logout } from '../../../features/authReducer';
 import { useDispatch } from 'react-redux';
 import { Button } from '../../../pages/UiElements/CustomButtons';
+import HelmetTitle from '../../utils/others/HelmetTitle';
 
 type Device = {
   id: number;
@@ -72,6 +73,7 @@ const MyDevices: React.FC = () => {
   return (
     <>
       <Breadcrumb pageName="My Devices" />
+      <HelmetTitle title="My Devices" />
 
       <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-5 pb-5 pt-6 shadow-default">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

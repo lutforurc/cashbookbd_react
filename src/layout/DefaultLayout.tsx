@@ -10,6 +10,7 @@ import SubscriptionStatusBanner from '../components/modules/subscription/Subscri
 import InAppMessageHost from '../components/modules/in-app-messages/InAppMessageHost';
 import { isUserFeatureEnabled } from '../components/utils/userFeatureSettings';
 import useCtrlUUpdate from '../components/utils/hooks/useCtrlUUpdate';
+import HelpProvider from '../components/help/HelpProvider';
 
 interface DefaultLayoutProps {
   isLoggedIn: boolean;
@@ -63,8 +64,13 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, us
           <main>
             {/* <div className="mx-auto max-w-(--breakpoint-2xl) p-4 2xl:p-6">  */}
             <div className="mx-auto max-w-screen-max-w-4xl p-4 2xl:p-6">
-              <SubscriptionStatusBanner subscription={subscription.current} />
-              <Outlet />
+              {/* One help dialog for the whole project: screens only ask it to
+                  open their topic, and it sits above the routed screen so a
+                  half-typed form is never unmounted. */}
+              <HelpProvider>
+                <SubscriptionStatusBanner subscription={subscription.current} />
+                <Outlet />
+              </HelpProvider>
             </div>
           </main>
           {/* <!-- ===== Main Content End ===== --> */}

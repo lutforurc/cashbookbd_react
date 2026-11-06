@@ -1,0 +1,319 @@
+{
+  "bank-reconciliation": {
+    "title": "ব্যাংক মিলানো",
+    "module": "Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বইয়ের প্রতিটি এন্ট্রি ব্যাংকের স্টেটমেন্টের সাথে মিলিয়ে পার্থক্য দেখা হয় এবং মাস বন্ধ করা হয়।",
+    "sections": [
+      { "heading": "মিলানো", "menu": "Accounts → Bank Reconciliation", "steps": ["Account ও Statement up to বাছুন; Only what has not cleared টিক দিন।", "The bank says ঘরে ব্যাংকের ব্যালেন্স দিন।", "What the books say, cheques written not presented ও paid in not credited দেখে পার্থক্য মেলান।", "মিললে Close this month; ভুল হলে Open it again।"] },
+      { "heading": "তালিকা", "steps": ["Date, Voucher, What it was, Paid in, Paid out ও On the statement দেখা যায়।", "Print দিয়ে মিলানোর শিট ছাপে; Months already done-এ আগের মাসের লিংক থাকে।"] },
+      { "heading": "সতর্কতা", "warning": "পার্থক্য সাধারণত ব্যাংক চার্জ বা সুদ — তার ভাউচার লিখুন বা বাদ পড়া এন্ট্রি টিক দিন। ব্যাংকের তারিখের ব্যালেন্স না দিলে মিলানো হবে না।" }
+    ]
+  },
+  "budget": {
+    "title": "বাজেট ও প্রকৃত খরচ",
+    "module": "Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বছরের জন্য প্রতিটি খাতের বাজেট ও এখন পর্যন্ত প্রকৃত খরচ তুলনা করে।",
+    "sections": [
+      { "heading": "তুলনা", "menu": "Accounts → Budget Against Actual", "steps": ["Branch, Year ending ও Project বাছুন (The branch as a whole রাখলে পুরো শাখা)।", "Head, Budget for the year, Should have spent, Actually spent ও Left for the year দেখা যায়।", "Left for the year ঘরে বাজেট লিখে রাখা যায়; নিচে Total।"] },
+      { "heading": "সতর্কতা", "warning": "শাখা বা বছর না বাছলে সংখ্যা অর্থহীন; প্রকল্পভিত্তিক খরচ আলাদা দেখতে Project বাছুন।" }
+    ]
+  },
+  "cheque-register": {
+    "title": "চেক রেজিস্টার",
+    "module": "Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নেওয়া ও দেওয়া প্রতিটি চেকের কাগজপত্রের অবস্থা — হাতে, ব্যাংকে, পরিশোধিত, ফেরত বা বাতিল।",
+    "sections": [
+      { "heading": "চেক লেখা", "menu": "Accounts → Cheque Register", "steps": ["Write one in চাপুন; Which way (Taken in / Given out) বাছুন।", "Cheque no, Drawn on, Amount, Dated, Whose, Our account, Voucher no ও Note দিন।", "Save চাপুন; সারিতে banked, cleared, returned, cancelled দিয়ে অবস্থা বদলান।"] },
+      { "heading": "ফেরত চেক", "steps": ["সারির returned চেপে Returned on, What the memo said ও The bank's charge দিন।", "Charge goes to বাছুন; Put it back চাপুন — রিসিভের ভাউচার উল্টে যায়।"] },
+      { "heading": "সতর্কতা", "warning": "ব্যাংকে দেওয়া ও পরিশোধ হওয়া শুধু কাগজের তথ্য — এতে কিছু পোস্ট হয় না। ফেরত চেকই একমাত্র ব্যতিক্রম। ভাউচার নম্বর না দিলে ফেরত স্বয়ংক্রিয়ভাবে মেলানো যাবে না।" }
+    ]
+  },
+  "employee-loan": {
+    "title": "কর্মচারীকে ঋণ",
+    "module": "Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কর্মচারীকে দেওয়া ঋণ লেখা বা বদলানোর এন্ট্রি।",
+    "sections": [
+      { "heading": "ঋণ", "menu": "Accounts → Employee Loan", "steps": ["Select Employee বাছুন; Enter Remarks ও Amount (Tk.) দিন।", "Manual Voucher Number লাগলে দিন।", "Save / Update চাপুন; Home দিয়ে ফিরুন।"] },
+      { "heading": "সতর্কতা", "warning": "অনুমোদিত ঋণ বদলানো যায় না। কর্মচারী বা অঙ্ক না দিলে সেভ হবে না।" }
+    ]
+  },
+  "loan-balance": {
+    "title": "ঋণের ব্যালেন্স",
+    "module": "Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রতিটি কর্মচারীর মোট ঋণ, পরিশোধ ও বাকি — শাখা ধরে দেখা যায়।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Accounts → Employee Loan Balance", "steps": ["Select All Branch বাছুন, Search করুন।", "#, Employee Name, Designation, Total Senction, Total Payment ও Balance দেখা যায়।", "নিচে Total Balance মোট বাকি দেখায়।"] },
+      { "heading": "সতর্কতা", "warning": "এখানে ঋণ বদলানো যায় না; নতুন ঋণ বা পরিশোধ Employee Loan পাতায় লিখুন।" }
+    ]
+  },
+  "loan-ledger": {
+    "title": "ঋণের লেজার",
+    "module": "Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একজন কর্মচারীর ঋণের লেনদেন নির্দিষ্ট সময়ে দেখা ও ছাপা হয়।",
+    "sections": [
+      { "heading": "লেজার", "menu": "Accounts → Employee Loan Ledger", "steps": ["Select Branch, Select Employee, Start Date ও End Date দিন।", "Rows ও Font ঠিক করে Run চাপুন।", "Sl. No, VR No & Date, Remarks, Received, Payment ও Voucher দেখা যায়; প্রিন্ট আইকনে ছাপে।"] },
+      { "heading": "সতর্কতা", "warning": "কর্মচারী না বাছলে রিপোর্ট আসে না; তারিখের বাইরের লেনদেন বাদ পড়বে।" }
+    ]
+  },
+  "inter-branch": {
+    "title": "আন্তঃশাখা লেনদেন",
+    "module": "Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এক শাখা থেকে অন্য শাখায় পাঠানো টাকা গ্রহণ বা উল্টে দেওয়ার জায়গা।",
+    "sections": [
+      { "heading": "গ্রহণ", "menu": "Accounts → Inter-Branch Transfer", "steps": ["Incoming ট্যাবে Status ও Reference দিন; Apply চাপুন।", "Sending Branch, Transfer Ref., Payment Date, Amount ও Note দেখে Receive করুন।"] },
+      { "heading": "পাঠানো ও উল্টানো", "steps": ["Outgoing ট্যাবে Destination Branch, Amount, Received By ও Vouchers দেখা যায়।", "Reverse Receipt বা Reverse Transfer দিয়ে ফেরানো যায়।"] },
+      { "heading": "সতর্কতা", "warning": "Approved ভাউচার উল্টানো যায় না। অনুমোদিত লেনদেন ফেরাতে আগে অনুমোদন তুলুন।" }
+    ]
+  },
+  "year-closing": {
+    "title": "বছর বন্ধ",
+    "module": "Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বছরের আয়-ব্যয়ের খাতগুলো মূলধনে ঢেলে খালি করা হয়, যাতে নতুন বছর শূন্য থেকে শুরু হয়।",
+    "sections": [
+      { "heading": "বন্ধ করা", "menu": "Accounts → Year Closing", "steps": ["Branch ও Year ending বাছুন।", "The profit goes to-তে মূলধনের খাত বাছুন; Note দিন।", "কার্ডে earned, spent, profit/loss ও যত খাত খালি হবে দেখে Close the year চাপুন।"] },
+      { "heading": "ফেরানো", "steps": ["Years closed-এ আগের বছর দেখা যায়; Undo this closing দিয়ে বন্ধ ফেরানো যায়।", "ফেরানোর পর ভাউচার বদলে আবার বছর বন্ধ করুন।"] },
+      { "heading": "সতর্কতা", "warning": "বন্ধ করার পর ওই তারিখ পর্যন্ত বই লক থাকে — ভাউচার যোগ, বদল, মোছা বা অনুমোদন তোলা যায় না। মূলধনের খাত না বাছলে কোথায় লাভ যাবে দেখা যায় না।" }
+    ]
+  },
+  "highlight-rules": {
+    "title": "হাইলাইটের নিয়ম",
+    "module": "Admin",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "রিপোর্টে নির্দিষ্ট শব্দ থাকা লাইন কোন রঙে বাক্সবন্দী হবে তা ঠিক করা হয়।",
+    "sections": [
+      { "heading": "নিয়ম", "menu": "Admin → Highlight Rules", "steps": ["Phrase লিখুন (যেমন Not Yet Reports), Color, Priority ও Status বাছুন।", "Preview-তে Sample line দেখে Add / Update চাপুন।", "তালিকায় #, Phrase, Color, Priority, Status ও Description দেখা যায়; Edit বা Delete করুন।"] },
+      { "heading": "সতর্কতা", "warning": "একই লাইনে কয়েকটি শব্দ মিললে সবচেয়ে বেশি Priority জেতে। শব্দের ছোট অংশও মিলে যায়, তাই খুব সাধারণ শব্দ দেবেন না।" }
+    ]
+  },
+  "delivery": {
+    "title": "ডেলিভারি",
+    "module": "Invoices",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বিক্রয় চালান থেকে কোন পণ্য ট্রাকে কত বের হলো তা লেখা হয়; স্টক তখনই কমে।",
+    "sections": [
+      { "heading": "ডেলিভারি", "menu": "Invoices → Delivery", "steps": ["Invoice No. লিখে Load চাপুন।", "Ordered, Delivered, Pending দেখে Deliver Now ঘরে পরিমাণ দিন।", "Delivery Date, Challan No, Vehicle No, Driver ও Receiver-এর তথ্য ও Notes দিন।", "Total going out মিলিয়ে Save Delivery চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "চালানটি আগেই স্টক কেটে থাকলে Deliver Now কাজ করবে না — চালানটি Deduct stock on delivery চালু করে লিখতে হবে। স্টক কম থাকলে সেভের আগে সতর্কতা আসবে। Recent Deliveries থেকে Print বা Cancel করা যায়।" }
+    ]
+  },
+  "labour-invoice": {
+    "title": "শ্রমিক বিল",
+    "module": "Invoices",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "সরবরাহকারীর শ্রমিকের কাজের বিল — আইটেম, পরিমাণ, দর, পেমেন্ট ও ডিসকাউন্ট।",
+    "sections": [
+      { "heading": "বিল", "menu": "Invoices → Labour Invoice", "steps": ["Select Supplier, Bill Number, Bill Date ও Select Invoice Type দিন।", "Select Labour Item, Quantity ও Price দিয়ে Update / Add New চাপুন।", "Payment Amount, Discount Amount ও Notes দিন।", "Sl. No., Item Name, Quantity, Rate ও Total মিলিয়ে Save চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "একই বিল নম্বর দুবার দিলে হিসাব দ্বিগুণ হবে; Search Invoice দিয়ে আগে দেখে নিন। বিল বদলাতে সারির Edit ব্যবহার করুন।" }
+    ]
+  },
+  "purchase-import": {
+    "title": "ক্রয় চালান আপলোড",
+    "module": "Invoices",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "Excel বা পেস্ট করা সারি থেকে অনেক ক্রয় চালান একসাথে যাচাই করে সেভ করা হয়।",
+    "sections": [
+      { "heading": "আপলোড", "menu": "Invoices → Purchase Import", "steps": ["Download Format দিয়ে নমুনা নামান, Upload করুন বা Paste Rows দিয়ে সারি দিন।", "Preview-তে Supplier, Product, Qty, Rate, Weight Variance, Payment ও Truck Number দেখুন।", "Check with Software চাপুন; Invoices, Invoice Total ও Payment Total মিলিয়ে Save Invoices দিন।"] },
+      { "heading": "সতর্কতা", "warning": "একবার সেভ হলে ফেরানোর সহজ উপায় নেই — Check-এর ফল ও মোট অঙ্ক ভালো করে দেখুন। ভুল সারি থাকলে Reset করে নতুন করে দিন।" }
+    ]
+  },
+  "sales-import": {
+    "title": "বিক্রয় চালান আপলোড",
+    "module": "Invoices",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "Excel বা পেস্ট করা সারি থেকে অনেক বিক্রয় চালান একসাথে যাচাই করে সেভ করা হয়।",
+    "sections": [
+      { "heading": "আপলোড", "menu": "Invoices → Sales Import", "steps": ["Download Format দিয়ে নমুনা নামান, Upload করুন বা Paste Rows দিন।", "Preview-তে Customer, Product, Qty, Rate, Weight Variance, Received ও Truck Number দেখুন।", "Check with Software চাপুন; Invoices, Invoice Total ও Received Total মিলিয়ে Save Invoices দিন।"] },
+      { "heading": "সতর্কতা", "warning": "গ্রাহকের নাম ভুল হলে বিক্রি অন্য খাতায় যাবে; Check-এর Status দেখে তবেই সেভ করুন।" }
+    ]
+  },
+  "tiles-combined": {
+    "title": "টাইলস/স্যানিটারি সম্মিলিত চালান",
+    "module": "Invoices",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একই স্ক্রিনে টাইলস/স্যানিটারির ক্রয় ও বিক্রি — আলাদা পেমেন্ট ও রিসিভের ঘরসহ।",
+    "sections": [
+      { "heading": "চালান", "menu": "Invoices → Tiles Combined", "steps": ["Select Supplier ও Select Customer বাছুন; Payment Tk. ও Received Tk. দিন।", "Date, Purchase Discount, Sales Discount ও Notes দিন।", "Purchase ও Sales অংশে Memo/Challan নম্বর-তারিখ দিন।", "Select Product, Select Warehouse, Quantity, Purchase Rate ও Sales Rate দিয়ে Update Item করুন।", "SL. NO. · PRODUCT NAME · QUANTITY · PURCHASE RATE · PURCHASE · SALES RATE · TOTAL মিলিয়ে Save করুন।"] },
+      { "heading": "সতর্কতা", "warning": "Purchase Rate বা Sales Rate বাদ দিলে মোট ভুল হবে; স্টক কম থাকলে সেভের আগে সতর্কতা আসবে।" }
+    ]
+  },
+  "trading-combined": {
+    "title": "ট্রেডিং সম্মিলিত চালান",
+    "module": "Invoices",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একই ফর্মে ট্রেডিং ব্যবসার ক্রয় ও বিক্রি; প্রতি পণ্যে ক্রয়-বিক্রয়ের দর।",
+    "sections": [
+      { "heading": "চালান", "menu": "Invoices → Trading Combined", "steps": ["Select Supplier, Select Customer ও Vehicle Number দিন।", "Select Purchase Order / Sales Order, Amount Tk. (Both বা Sales) ও Discount Amount দিন।", "Select Product, Bag Number, Weight Variance, Quantity, Purchase Rate ও Sales Rate দিয়ে Add New / Update Item করুন।", "Purchase Tk., Sales Tk., Profit / Loss মিলিয়ে Save করুন।"] },
+      { "heading": "সতর্কতা", "warning": "দুই দিকের দর না দিলে লাভ-ক্ষতি ভুল দেখাবে। একই পণ্য দুইবার যোগ করলে পরিমাণ দ্বিগুণ হবে।" }
+    ]
+  },
+  "order-list": {
+    "title": "অর্ডার তালিকা",
+    "module": "Orders",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "ক্রয় ও বিক্রয় অর্ডার, তাদের লেনদেন, লিংক ও বাকি পরিমাণ দেখা যায়।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Orders → Order List", "steps": ["Order Type, Order Status, Account, Product ও Order Start/End Date দিন; Apply চাপুন।", "Order for, Product / Trx. Qty, Order No./Rate/Date, Contract/Order/Remaining Qty ও Order Amount দেখা যায়।", "Linked Orders-এ ক্লিক করলে সংযুক্ত অর্ডারের তালিকা খোলে।", "Print বা New Order ব্যবহার করুন।"] },
+      { "heading": "সতর্কতা", "warning": "Remaining Qty শূন্য হলে অর্ডার শেষ; নতুন লেনদেন যোগ করলে সীমা ছাড়িয়ে যাবে না।" }
+    ]
+  },
+  "order-form": {
+    "title": "অর্ডার তৈরি ও সম্পাদনা",
+    "module": "Orders",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি পক্ষের জন্য এক বা একাধিক পণ্যের অর্ডার তৈরি বা বদলানো হয়।",
+    "sections": [
+      { "heading": "অর্ডার", "menu": "Orders → New Order", "steps": ["Select Branch, Order For, Order Number, Delivery Location ও Order Date দিন।", "Select Product, Order Qty, Order Rate, Contract Order Qty ও Order Type দিন।", "একাধিক পণ্যে Add Product দিয়ে Products গ্রিডে যোগ করুন।", "Note, Transaction Account, Reference Order ও Order Status ঠিক করে Save / Update করুন।"] },
+      { "heading": "সতর্কতা", "warning": "Contract Order Qty অর্ডারের সীমা; Delivery Location ও Last Delivery Date পরে লেনদেনের সময় কাজে লাগে।" }
+    ]
+  },
+  "avg-price": {
+    "title": "গড় দাম",
+    "module": "Orders",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "ক্রয় ও অন্যান্য খরচ মিলিয়ে একটি অর্ডারের পণ্যের প্রকৃত গড় দাম বের করা হয়।",
+    "sections": [
+      { "heading": "হিসাব", "menu": "Orders → Average Price", "steps": ["Select Branch, Select Order ও Report Type বাছুন; Run চাপুন।", "{product} Purchase Cost-এ Total Quantity, Total Cost ও Average Per Unit দেখুন।", "Increase / Decrease ও Others Cost মিলিয়ে Net per unit দেখুন।"] },
+      { "heading": "সতর্কতা", "warning": "অর্ডার না বাছলে কোনো ফল আসে না; খরচের খাত বাদ পড়লে গড় দাম কম দেখাবে।" }
+    ]
+  },
+  "order-transactions": {
+    "title": "অর্ডারের লেনদেন",
+    "module": "Orders",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি অর্ডারের চালান, পণ্য, গাড়ি, টাকা ও বাকি একসাথে দেখা ও ছাপা হয়।",
+    "sections": [
+      { "heading": "রিপোর্ট", "menu": "Orders → Order With Transaction", "steps": ["Select Branch ও Select Order বাছুন; Apply চাপুন।", "Rows ও Font ঠিক করুন।", "SL. NO., CHAL. NO. & DATE, PRODUCT & DETAILS, VEHICLE, QUANTITY, RATE, TOTAL, DISCOUNT, RECEIVED/PAYMENT ও BALANCE দেখা যায়।", "প্রিন্ট আইকনে ছাপা হয়।"] },
+      { "heading": "সতর্কতা", "warning": "লেনদেন না থাকলে No order transaction data found দেখায়; ভুল অর্ডার বাছলে Reset করে আবার বাছুন।" }
+    ]
+  },
+  "profile": {
+    "title": "প্রোফাইল",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নিজের কভার ছবি ও প্রোফাইল ছবি দেখা ও বদলানো হয়।",
+    "sections": [
+      { "heading": "ছবি", "menu": "Profile", "steps": ["কভার ছবির Edit চেপে নতুন ছবি বাছুন।", "ক্যামেরা বোতামে (Change photo) প্রোফাইল ছবি বদলান।", "আপলোড শেষ হলে ছবি সাথে সাথে দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "শুধু ছবি ফাইল নেওয়া হয়; কভার সর্বোচ্চ ৪MB, প্রোফাইল ছবি ২MB। বড় ফাইল হলে আপলোড হবে না।" }
+    ]
+  },
+  "my-devices": {
+    "title": "আমার ডিভাইস",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "অ্যাকাউন্টে যেসব ডিভাইস সাইন ইন করা আছে, তার তালিকা ও দূর থেকে সাইন আউট।",
+    "sections": [
+      { "heading": "ডিভাইস", "menu": "Users → My Devices", "steps": ["Signed-in devices-এ নাম, This device ব্যাজ, IP ও শেষ ব্যবহার দেখা যায়।", "Refresh দিয়ে তালিকা নতুন করুন।", "অন্য ডিভাইসে Sign out remotely চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "নিজের চলতি ডিভাইসে Sign out চাপলে সেশন বন্ধ হবে; প্ল্যানের ডিভাইস-সীমা উপরে লেখা থাকে।" }
+    ]
+  },
+  "my-tasks": {
+    "title": "আমার কাজ",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নিজের বা অন্যকে দেওয়া কাজের নোট — তারিখ, রিমাইন্ডার, রং ও অবস্থা সহ।",
+    "sections": [
+      { "heading": "কাজ দেখা", "menu": "Users → My Tasks", "steps": ["All, My own, Assigned to me বা I assigned বাছুন; From ও To দিয়ে খুঁজুন।", "Today, Upcoming ও Found {range} ভাগে কাজ দেখা যায়।", "কার্ডে Start working, Mark done, Reopen, Pin, Edit বা Delete করুন।"] },
+      { "heading": "নতুন কাজ", "steps": ["New Task চাপুন; Task, Description, Due Date & Reminder, Assign to ও Colour দিন।", "Add Task / Save চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "Assign to-তে অন্যকে দিলে কাজটি তার বোর্ডেও যাবে। Delete করলে কাজটি ফেরানো যায় না।" }
+    ]
+  },
+  "switch-branch": {
+    "title": "শাখা বদল",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নিজের কাজের শাখা বদলে অন্য অনুমোদিত শাখায় যাওয়া হয়।",
+    "sections": [
+      { "heading": "বদল", "menu": "Switch Branch", "steps": ["Working in দেখে Branch বাছুন।", "Switch Branch চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "শুধু অনুমোদিত শাখায় যাওয়া যায়; একটির বেশি না থাকলে বদলানোর কিছু নেই। বদলালে নতুন শাখার তথ্য দেখাবে।" }
+    ]
+  },
+  "delivery-dashboard": {
+    "title": "ডেলিভারি ড্যাশবোর্ড",
+    "module": "Dashboard",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নির্বাচিত সময়ে কী বের হয়েছে ও কী এখনো বাকি — ডেলিভারির সারসংক্ষেপ।",
+    "sections": [
+      { "heading": "সারসংক্ষেপ", "menu": "Dashboard → Delivery System", "steps": ["Invoices, Complete, Partial, Not delivered, Ordered, Delivered ও Pending টাইল দেখুন।", "Partial Deliveries ও Due for Delivery কার্ডে বাকি চালান দেখুন।", "Sl., Invoice No., Date, Customer, Ordered, Delivered, Pending ও Status তালিকা দেখুন।"] },
+      { "heading": "সতর্কতা", "warning": "Ordered, Delivered ও Pending পরিমাণের মোট মিলিয়ে দেখুন; Open Delivery দিয়ে বিস্তারিত পাতায় যান।" }
+    ]
+  },
+  "account-deletion-request": {
+    "title": "অ্যাকাউন্ট মোছার আবেদন",
+    "module": "Account",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নিজের ব্যক্তিগত অ্যাকাউন্ট বা কোম্পানিসহ সব তথ্য মোছার অনুরোধ জমা দেওয়ার পাবলিক পাতা।",
+    "sections": [
+      { "heading": "আবেদন", "menu": "Account Deletion", "steps": ["Full name, Registered email address, Registered mobile number ও Company name দিন।", "Request type বাছুন — ব্যক্তিগত অ্যাকাউন্ট বা কোম্পানি ও সব তথ্য।", "Reason লিখে নিশ্চিতকরণের ঘর টিক দিন; Submit request চাপুন।", "সফল হলে Reference number সংরক্ষণ করুন।"] },
+      { "heading": "সতর্কতা", "warning": "আবেদন করলেই কিছু মোছে না — ১৪ দিন অপেক্ষা ও পরিচয়-মালিকানা যাচাইয়ের পর মোছা হয়। কোম্পানিসহ মোছা অ্যাপ থেকে ফেরানো যায় না; দরকারি রেকর্ড আগে এক্সপোর্ট করুন।" }
+    ]
+  },
+  "change-password": {
+    "title": "পাসওয়ার্ড বদল",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নিজের অ্যাকাউন্টের পাসওয়ার্ড বদলানোর পাতা।",
+    "sections": [
+      { "heading": "পাসওয়ার্ড", "menu": "Profile → Change Password", "steps": ["বর্তমান পাসওয়ার্ড, নতুন পাসওয়ার্ড ও নিশ্চিতকরণ দিন।", "সংরক্ষণ করুন; পরেরবার নতুন পাসওয়ার্ডেই ঢুকবেন।"] },
+      { "heading": "সতর্কতা", "warning": "নতুন পাসওয়ার্ড দুই ঘরে একই লিখতে হবে এবং যথেষ্ট শক্ত হতে হবে; বর্তমান পাসওয়ার্ড ভুল হলে বদলাবে না।" }
+    ]
+  }
+}

@@ -331,6 +331,9 @@ export const SIDEBAR_MENUS = [
   { id: 'al-charts', title: 'Analytics' },
   { id: 'legacy', title: 'Old Software' },
   { id: 'customer_dashboard', title: 'Customer Dashboard' },
+  // The manual: every signed-in user, so it sits at the end of the list and
+  // carries no permission gate.
+  { id: 'help', title: 'Help' },
 ];
 import {
   FiArchive,
@@ -343,6 +346,7 @@ import {
   FiEyeOff,
   FiMenu,
   FiGrid,
+  FiHelpCircle,
   FiHome,
   FiMapPin,
   FiPieChart,
@@ -362,6 +366,38 @@ import { resolveAssetUrl } from '../services/resolveAssetUrl';
 import { hasMenuPermission } from './hasMenuPermission';
 import DropdownUser from '../Header/DropdownUser';
 import { Button } from '../../pages/UiElements/CustomButtons';
+
+/**
+ * The glyph each menu carries, declared once.
+ *
+ * The Help page draws the same menus; reading this map instead of repeating the
+ * icon list there is what keeps the two from drifting apart.
+ */
+export const SIDEBAR_MENU_ICONS: Record<string, React.ReactNode> = {
+  dashboard: <FiGrid />,
+  reseller: <ResellerMenuIcon />,
+  transaction: <TransactionMenuIcon />,
+  invoice: <InvoiceMenuIcon />,
+  'branch-transfer': <BranchTransferMenuIcon />,
+  reports: <ReportsMenuIcon />,
+  financial_statement: <FiPieChart />,
+  product_tracking: <ProductTrackingMenuIcon />,
+  company_scheme: <CompanySchemeMenuIcon />,
+  requisition: <RequisitionMenuIcon />,
+  'real-estate': <FiMapPin />,
+  hotel: <HotelMenuIcon />,
+  asset: <AssetsMenuIcon />,
+  products: <ProductsMenuIcon />,
+  labour_items: <LabourItemsMenuIcon />,
+  admin: <AdminMenuIcon />,
+  vr_settings: <VrSettingsMenuIcon />,
+  hrm: <HrmMenuIcon />,
+  'customer-supplier': <FiUsers />,
+  'al-charts': <FiBarChart2 />,
+  legacy: <FiArchive />,
+  customer_dashboard: <FiUser />,
+  help: <FiHelpCircle />,
+};
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -4284,6 +4320,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                   </NavLink>
                 </li>
               )}
+
+              {/* Help. Deliberately NOT behind hasMenuPermission(): that helper
+                  answers false for a key it does not know, and this entry must
+                  reach every signed-in user -- a platform admin passes every
+                  gate, so testing with one would hide exactly this failure. */}
+              <li style={menuSlot('help')}>
+                <NavLink
+                  to={routes.help}
+                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium dark:text-bodydark1 duration-300 ease-in-out hover:bg-gray-300 dark:hover:bg-meta-4 ${pathname === routes.help &&
+                    'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-[rgb(var(--c-text))] border-l-4 border-blue-500'
+                    }`}
+                >
+                  <FiHelpCircle />
+                  Help
+                </NavLink>
+              </li>
             </ul>
             {isTopbar ? (
               <div className="mb-1 flex shrink-0 items-center">

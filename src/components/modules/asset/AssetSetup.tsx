@@ -176,7 +176,10 @@ const AssetSetup = ({ user }: any) => {
 
   return (
     <div>
-      <HelmetTitle title="Assets" />
+      <HelmetTitle
+        title="Assets"
+        helpTopic={tab === 'categories' ? 'asset-category' : undefined}
+      />
 
       <h2 className="mb-3 text-center text-xl font-semibold text-black dark:text-white">
         Fixed Assets

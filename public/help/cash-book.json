@@ -1,0 +1,56 @@
+{
+  "cash-book": {
+    "title": "ক্যাশ বই",
+    "module": "Cash Book",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নির্বাচিত শাখার নগদ আয়-ব্যয় তারিখ ধরে এই রিপোর্টে দেখা যায়, সাথে ব্যালেন্স।",
+    "sections": [
+      {
+        "heading": "রিপোর্ট দেখার ধাপ",
+        "menu": "Reports → Cash Book",
+        "steps": [
+          "Select Branch থেকে শাখা বাছুন।",
+          "Start Date ও End Date দিন।",
+          "Apply চাপুন।"
+        ]
+      },
+      {
+        "heading": "বাটনগুলো",
+        "steps": [
+          "Reset — বাছাই মুছে দেয়।",
+          "Print — এই রিপোর্টের কাগজ বের করে।"
+        ],
+        "warning": "তারিখের ঘর খালি থাকলে রিপোর্ট আসবে না। শাখা ভুল হলে অন্য শাখার ক্যাশ দেখাবে।"
+      }
+    ]
+  },
+  "bank-book": {
+    "title": "ব্যাংক বই",
+    "module": "Cash Book",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নির্বাচিত শাখার ব্যাংক লেনদেন তারিখ ধরে এই রিপোর্টে দেখা যায়, সাথে ব্যালেন্স।",
+    "sections": [
+      {
+        "heading": "রিপোর্ট দেখার ধাপ",
+        "menu": "Reports → Bank Book",
+        "steps": [
+          "Select Branch থেকে শাখা বাছুন।",
+          "Start Date ও End Date দিন।",
+          "Apply চাপুন।"
+        ]
+      },
+      {
+        "heading": "বাটনগুলো",
+        "steps": [
+          "Reset — বাছাই মুছে দেয়।",
+          "Print — এই রিপোর্টের কাগজ বের করে।"
+        ],
+        "warning": "তারিখের ঘর খালি থাকলে রিপোর্ট আসবে না। শাখা ভুল হলে অন্য শাখার ব্যাংক লেনদেন দেখাবে।"
+      }
+    ]
+  }
+}

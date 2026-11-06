@@ -1,0 +1,391 @@
+{
+  "modules": [
+    {
+      "id": "sales",
+      "title": "Sales",
+      "file": "sales.json",
+      "topics": ["sales-invoice", "sales-return"]
+    },
+    {
+      "id": "purchase",
+      "title": "Purchase",
+      "file": "purchase.json",
+      "topics": ["purchase-invoice", "purchase-return"]
+    },
+    {
+      "id": "collection",
+      "title": "Collection",
+      "file": "collection.json",
+      "topics": ["cash-received", "bank-received"]
+    },
+    {
+      "id": "payment",
+      "title": "Payment",
+      "file": "payment.json",
+      "topics": ["cash-payment", "bank-payment"]
+    },
+    {
+      "id": "ledger",
+      "title": "Ledger",
+      "file": "ledger.json",
+      "topics": ["general-ledger"]
+    },
+    {
+      "id": "cash-book",
+      "title": "Cash Book",
+      "file": "cash-book.json",
+      "topics": ["cash-book", "bank-book"]
+    },
+    {
+      "id": "reports",
+      "title": "Reports",
+      "file": "reports.json",
+      "topics": [
+        "trial-balance",
+        "balance-sheet",
+        "profit-loss",
+        "cash-flow",
+        "due-list",
+        "ledger-report",
+        "sales-ledger",
+        "purchase-ledger",
+        "return-ledger",
+        "ageing",
+        "bank-information",
+        "daily-account-book",
+        "closing-stock",
+        "product-stock",
+        "voucher-register",
+        "audit-trail",
+        "branch-movement-report",
+        "branch-voucher-lists",
+        "branch-stock-report",
+        "business-summary",
+        "cash-bank-received-payment",
+        "cash-book-two-column",
+        "cat-wise-in-out",
+        "connected-member",
+        "customer-sales-report",
+        "date-wise-total",
+        "delivery-report",
+        "due-installments",
+        "expense-report",
+        "godown-stock",
+        "group-report",
+        "group-report-setup",
+        "hrm-mismatch-payment",
+        "date-wise-in-out",
+        "labour-ledger",
+        "ledger-with-product",
+        "mitch-match",
+        "monthly-statement",
+        "product-financial-statement",
+        "product-ledger-data",
+        "product-profit-loss",
+        "product-profit-summary",
+        "product-receivable-payable",
+        "profit-loss-date-wise",
+        "sales-referrer",
+        "sales-summary",
+        "imei-stock",
+        "tiles-purchase-report"
+      ]
+    },
+    {
+      "id": "transactions",
+      "title": "Transaction",
+      "file": "transactions.json",
+      "topics": ["journal-voucher"]
+    },
+    {
+      "id": "hrms",
+      "title": "HRM",
+      "file": "hrms.json",
+      "topics": [
+        "labour-category",
+        "labour-item",
+        "requisition-list",
+        "requisition-form",
+        "requisition-analysis",
+        "employee-list",
+        "employee-form",
+        "designation-list",
+        "designation-form",
+        "designation-level-list",
+        "designation-level-form",
+        "attendance-setup",
+        "manual-attendance",
+        "attendance-daily-reports",
+        "overtime-report",
+        "employee-attendance-report",
+        "branch-attendance-summary",
+        "holiday-calendar",
+        "monthly-attendance",
+        "leave-applications",
+        "attendance-audit",
+        "salary-generate",
+        "salary-sheet",
+        "festival-bonus",
+        "festival-bonus-generate"
+      ]
+    },
+    {
+      "id": "products",
+      "title": "Products",
+      "file": "products.json",
+      "topics": [
+        "product-list",
+        "product-form",
+        "product-low-stock",
+        "product-stock-alerts",
+        "product-statement",
+        "product-opening-import",
+        "product-category",
+        "product-brand",
+        "product-unit",
+        "product-pack-size",
+        "product-group",
+        "item-chart"
+      ]
+    },
+    {
+      "id": "customers",
+      "title": "Customers",
+      "file": "customers.json",
+      "topics": [
+        "customer-supplier-list",
+        "customer-supplier-form",
+        "customer-opening-import",
+        "customer-portal-password"
+      ]
+    },
+    {
+      "id": "inventory",
+      "title": "Inventory",
+      "file": "inventory.json",
+      "topics": [
+        "product-in",
+        "product-out",
+        "product-in-reasons",
+        "product-out-reasons",
+        "product-in-register",
+        "product-out-register",
+        "branch-issue",
+        "branch-receive",
+        "material-issue",
+        "branch-list"
+      ]
+    },
+    {
+      "id": "coa",
+      "title": "Chart of Accounts",
+      "file": "coa.json",
+      "topics": [
+        "coa-l1",
+        "coa-l2",
+        "coa-l3",
+        "coa-l3-form",
+        "coa-l4",
+        "coa-l4-form",
+        "account-opening-balance"
+      ]
+    },
+    {
+      "id": "admin",
+      "title": "Admin",
+      "file": "admin.json",
+      "topics": [
+        "account-deletions",
+        "account-deletion-detail",
+        "voucher-images",
+        "admin-business-types",
+        "admin-inventory-systems",
+        "admin-tutorial-videos",
+        "admin-inapp-list",
+        "admin-inapp-form",
+        "admin-installments",
+        "admin-dayclose",
+        "admin-jumpdate",
+        "admin-notifications",
+        "admin-remove-approval",
+        "admin-voucher-approval",
+        "admin-resellers",
+        "admin-unit-payments",
+        "admin-unit-payment-form",
+        "admin-voucher-date",
+        "admin-voucher-type",
+        "admin-website-templates",
+        "admin-website-template-editor"
+      ]
+    },
+    {
+      "id": "subscription",
+      "title": "Subscription",
+      "file": "subscription.json",
+      "topics": [
+        "subscription-admin",
+        "subscription-plans",
+        "subscription-plan-form",
+        "subscription-pricing",
+        "subscription-my-plan",
+        "subscription-payment-submit",
+        "subscription-billing-history"
+      ]
+    },
+    {
+      "id": "settings",
+      "title": "Settings",
+      "file": "settings.json",
+      "topics": [
+        "print-layout",
+        "menu-arrangement",
+        "software-info",
+        "product-tracking-settings",
+        "voucher-delete",
+        "installment-delete",
+        "recycle-bin",
+        "report-mismatch",
+        "voucher-history",
+        "voucher-activity"
+      ]
+    },
+    {
+      "id": "system",
+      "title": "Users, SMS and Others",
+      "file": "system.json",
+      "topics": [
+        "sms-log",
+        "sms-template-list",
+        "sms-template-form",
+        "legacy-records",
+        "legacy-accounts",
+        "somity-collection-sheet",
+        "somity-monthly-report",
+        "dashboard",
+        "customer-dashboard",
+        "reseller-dashboard",
+        "approval-center",
+        "approval-audit",
+        "scheme-receivable",
+        "scheme-receipts",
+        "user-list",
+        "user-form",
+        "company-users",
+        "online-users",
+        "login-log",
+        "roles",
+        "add-role",
+        "add-permission",
+        "company-list",
+        "company-edit",
+        "branch-form"
+      ]
+    },
+    {
+      "id": "sales-purchase",
+      "title": "Sales & Purchase Variants",
+      "file": "sales-purchase.json",
+      "topics": [
+        "sales-general",
+        "sales-trading",
+        "sales-tiles",
+        "sales-electronics",
+        "sales-company-scheme",
+        "sales-return-general",
+        "sales-return-tiles",
+        "sales-import-trading",
+        "combined-trading",
+        "combined-tiles",
+        "purchase-trading",
+        "purchase-construction",
+        "purchase-tiles",
+        "purchase-electronics",
+        "purchase-return-construction",
+        "purchase-return-tiles",
+        "purchase-import-trading"
+      ]
+    },
+    {
+      "id": "extra",
+      "title": "Accounts, Orders and More",
+      "file": "extra.json",
+      "topics": [
+        "bank-reconciliation",
+        "budget",
+        "cheque-register",
+        "employee-loan",
+        "loan-balance",
+        "loan-ledger",
+        "inter-branch",
+        "year-closing",
+        "highlight-rules",
+        "delivery",
+        "labour-invoice",
+        "purchase-import",
+        "sales-import",
+        "tiles-combined",
+        "trading-combined",
+        "order-list",
+        "order-form",
+        "avg-price",
+        "order-transactions",
+        "profile",
+        "my-devices",
+        "my-tasks",
+        "switch-branch",
+        "delivery-dashboard",
+        "account-deletion-request",
+        "change-password"
+      ]
+    },
+    {
+      "id": "hotel",
+      "title": "Hotel",
+      "file": "hotel.json",
+      "topics": [
+        "hotel-setup",
+        "hotel-bookings",
+        "hotel-booking-form",
+        "hotel-hall-bookings",
+        "hotel-reports",
+        "hotel-booking-due",
+        "hotel-calendar",
+        "hotel-housekeeping",
+        "hotel-amenity-issue",
+        "hotel-amenity-issue-form",
+        "hotel-asset-purchase",
+        "hotel-payment-entry",
+        "hotel-received-entry"
+      ]
+    },
+    {
+      "id": "real-estate",
+      "title": "Real Estate",
+      "file": "real-estate.json",
+      "topics": [
+        "realestate-area",
+        "realestate-project",
+        "realestate-building",
+        "realestate-floor",
+        "realestate-flat-layout",
+        "realestate-unit-list",
+        "realestate-unit-form",
+        "realestate-charge-type",
+        "realestate-unit-sale",
+        "realestate-sold-units",
+        "realestate-installment",
+        "realestate-project-expense-income",
+        "realestate-project-purchase-labour",
+        "realestate-project-cost-report",
+        "realestate-project-income-report",
+        "realestate-project-summary-report"
+      ]
+    },
+    {
+      "id": "assets",
+      "title": "Assets",
+      "file": "assets.json",
+      "topics": ["asset-category"]
+    }
+  ]
+}

@@ -1,0 +1,688 @@
+{
+  "labour-category": {
+    "title": "লেবার ক্যাটাগরি",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "শ্রমিকের কাজের ধরন অনুযায়ী ক্যাটাগরি তৈরি করা হয়। পরে লেবার আইটেম এই ক্যাটাগরির নিচে বসানো হয়।",
+    "sections": [
+      {
+        "heading": "ক্যাটাগরি তৈরি",
+        "menu": "Labour Items → Category",
+        "steps": [
+          "New Category চাপুন।",
+          "Category Name ও Category Description লিখুন।",
+          "Active চালু রেখে Save চাপুন; বদলাতে হলে Update চাপুন।",
+          "Back দিয়ে তালিকায় ফিরুন।"
+        ]
+      },
+      {
+        "heading": "তালিকা",
+        "steps": [
+          "Sl. No., Category Name, Category Description ও Status দেখা যায়।",
+          "Search বক্সে নাম লিখে Search চাপলে খোঁজা যায়।",
+          "Action থেকে Edit বা Delete করা যায়।"
+        ],
+        "warning": "যে ক্যাটাগরির নিচে লেবার আইটেম আছে, সেটি মোছা যাবে না — আগে আইটেমগুলো সরান বা inactive করুন।"
+      }
+    ]
+  },
+  "labour-item": {
+    "title": "লেবার আইটেম",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "শ্রমিকের যে কাজটির হিসেবে বিল হবে — যেমন রাজমিস্ত্রি, সহকারী — তা লেবার আইটেম হিসেবে রাখা হয়, সাথে একক ও হার।",
+    "sections": [
+      {
+        "heading": "আইটেম তৈরি",
+        "menu": "Labour Items → Item",
+        "steps": [
+          "New Item চাপুন।",
+          "Select Category থেকে ক্যাটাগরি বাছুন।",
+          "Item Name ও Item Description লিখুন।",
+          "Select Unit থেকে একক, Rate-এ হার লিখুন।",
+          "Active চালু রেখে Save চাপুন; বদলাতে Update চাপুন।"
+        ]
+      },
+      {
+        "heading": "তালিকা",
+        "steps": [
+          "Category, Item Name, Unit, Rate ও Status দেখা যায়।",
+          "উপরের Category ফিল্টার ও Search দিয়ে খোঁজা যায়।",
+          "Action থেকে Edit বা Delete করা যায়।"
+        ],
+        "warning": "যে আইটেম আগে কোনো লেবার বিলে ব্যবহার হয়েছে, সেটি মোছা যায় না — inactive করুন।"
+      }
+    ]
+  },
+  "requisition-list": {
+    "title": "রিকুইজিশন তালিকা",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কোন শাখা বা প্রকল্পের জন্য কী কী মাল চাওয়া হয়েছে, তার তালিকা ও অনুমোদনের অবস্থা এই স্ক্রিনে দেখা যায়।",
+    "sections": [
+      {
+        "heading": "তালিকা দেখা",
+        "menu": "Requisition → Requisition List",
+        "steps": [
+          "Branch, Start Date ও End Date বাছুন।",
+          "Status থেকে Approved বা Rejected বাছুন, নাহলে Select All রাখুন।",
+          "Search চাপুন।"
+        ]
+      },
+      {
+        "heading": "কলাম ও কাজ",
+        "steps": [
+          "Req. No, Req. Date, Std. Date, End Date, Project, Note, Req. Amount ও Approved Amount দেখা যায়।",
+          "Action থেকে রিকুইজিশন খোলা, বদলানো বা মোছা যায়।",
+          "New Requisition চাপলে নতুন ফর্ম খোলে।"
+        ],
+        "warning": "অনুমোদিত রিকুইজিশনের অঙ্ক পরে বদলাবেন না — বদল দরকার হলে নতুন রিকুইজিশন করুন।"
+      }
+    ]
+  },
+  "requisition-form": {
+    "title": "রিকুইজিশন ফর্ম",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি রিকুইজিশনের মাল ও তার হিসাব এই ফর্মে লেখা হয় — কোন সময়ের জন্য, কী কী পণ্য, কত দিন, কত পরিমাণ ও দাম।",
+    "sections": [
+      {
+        "heading": "ফর্ম লেখার ধাপ",
+        "menu": "Requisition → New Requisition",
+        "steps": [
+          "Notes, Requisition Start Date ও Requisition End Date দিন।",
+          "Requisition Amount লিখুন।",
+          "Select Product, Day, Quantity ও Price দিয়ে Add New চাপুন। প্রতিটি পণ্যের জন্য আলাদা লাইন করুন।",
+          "সব লাইন ঠিক থাকলে Save চাপুন।"
+        ]
+      },
+      {
+        "heading": "লাইন ও বাটন",
+        "steps": [
+          "লাইন টেবিলে Product Name, Days, Quantity, Rate ও Total দেখা যায়।",
+          "ভুল হলে Update দিয়ে বদলান; Reset ফর্ম খালি করে; Home ড্যাশবোর্ডে ফেরে।",
+          "Search Requisition দিয়ে আগের রিকুইজিশন খুঁজে খোলা যায়।"
+        ],
+        "warning": "Day, Quantity ও Price তিনটে মিলিয়ে Total দেখে নিন — একটির ভুলে বিলের অঙ্ক ভুল হবে।"
+      }
+    ]
+  },
+  "requisition-analysis": {
+    "title": "রিকুইজিশন বিশ্লেষণ",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "যত মাল চাওয়া হয়েছিল, তার কত কেনা হলো এবং কত টাকা খরচ হলো — পণ্য ধরে এই রিপোর্টে দেখা যায়।",
+    "sections": [
+      {
+        "heading": "রিপোর্ট দেখা",
+        "menu": "Requisition → Comparison",
+        "steps": [
+          "Select Branch, Start Date ও End Date দিন।",
+          "Run চাপুন।",
+          "New Requisition চাপলে নতুন রিকুইজিশন ফর্ম খোলে।"
+        ]
+      },
+      {
+        "heading": "কলাম",
+        "steps": [
+          "Product Name, Requisition Qty, Purchase Qty, Requisition Amount, Approved Amount, Total Expense, Balance ও Status দেখা যায়।",
+          "Balance ধনাত্মক হলে চাওয়ার চেয়ে কম কেনা হয়েছে; ঋণাত্মক হলে বেশি।"
+        ],
+        "warning": "তারিখের পরিসর ভুল হলে কেনাকাটার অঙ্ক মিলবে না। রিকুইজিশনের সময়কাল ধরেই তারিখ দিন।"
+      }
+    ]
+  },
+  "employee-list": {
+    "title": "কর্মচারী তালিকা",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কর্মচারীদের তালিকা, তাদের পদবি, মোবাইল ও প্রকল্প এক জায়গায় দেখা যায়। কিছু ঘর সরাসরি সারিতেই বদলানো যায়।",
+    "sections": [
+      {
+        "heading": "তালিকা দেখা",
+        "menu": "HRM → Employee → Employee List",
+        "steps": [
+          "Branch ও Designation বাছুন, দরকার হলে Designation Level-ও।",
+          "Search চাপুন।",
+          "Employee চাপলে নতুন কর্মচারীর ফর্ম খোলে।"
+        ]
+      },
+      {
+        "heading": "সারিতে বদল ও প্রিন্ট",
+        "steps": [
+          "Sal. Sl. No., Designation ও Mobile সারিতেই বদলানো যায়।",
+          "Action থেকে Edit বা status switch ব্যবহার করুন; Delete নেই।",
+          "Rows per page ও Font ঠিক করে প্রিন্টার আইকনে চাপলে তালিকা ছাপা হয়।"
+        ],
+        "warning": "কর্মচারী মোছা যায় না, শুধু status বন্ধ করা যায়। বন্ধ করলে বেতন ও হাজিরার হিসাবে আর আসবে না।"
+      }
+    ]
+  },
+  "employee-form": {
+    "title": "কর্মচারীর তথ্য",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একজন কর্মচারীর ব্যক্তিগত তথ্য, বেতনের খাত এবং হাজিরার নিয়ম এই ফর্মে লেখা হয়। বেতন শিট এই তথ্য ধরেই তৈরি হয়।",
+    "sections": [
+      {
+        "heading": "যা যা আগে থাকতে হবে",
+        "steps": [
+          "Designation আগে তৈরি থাকতে হবে।",
+          "Branch তালিকায় শাখা থাকতে হবে।",
+          "Attendance Policy ও Shift তৈরি থাকলে বাছা যাবে।"
+        ]
+      },
+      {
+        "heading": "ফর্ম পূরণ",
+        "menu": "HRM → Employee → Employee",
+        "steps": [
+          "Name, Father's Name, National ID, Mobile Number, Present ও Permanent Address দিন।",
+          "Date of Birth, Joining Date ও Qualification লিখুন।",
+          "Basic Salary, House Rent, Medical Allowance, Others Allowance, Loan Deduction ও Others Deduction দিন।",
+          "Select Designation ও Select Branch বাছুন; Gender, Is Payable?, Attendance Type ও Attendance Policy দিন।",
+          "Default Shift, Overtime Eligible, Show in Manual Attendance, Daily Wage, OT Rate ও Standard Work Minutes ঠিক করুন।",
+          "Salary Sheet Serial Number ও Status দিয়ে Save চাপুন।"
+        ]
+      },
+      {
+        "heading": "যা মনে রাখবেন",
+        "steps": [
+          "Edit স্ক্রিনে Gender ঘরটির নাম Select Sex; বদল শেষে Update চাপুন।",
+          "বেতনের অঙ্কে ভুল থাকলে পরের মাসের Salary Generate ভুল হবে।"
+        ],
+        "warning": "Attendance Type ভুল দিলে কর্মচারী হাজিরার হিসাবে ভুলভাবে পড়বে — Monthly, Daily Labour ও Shift Based-এর নিয়ম আলাদা।"
+      }
+    ]
+  },
+  "designation-list": {
+    "title": "পদবির তালিকা",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রতিষ্ঠানের পদবিগুলো, তাদের স্তর ও ক্রম এই তালিকায় থাকে।",
+    "sections": [
+      {
+        "heading": "তালিকা ও নতুন পদবি",
+        "menu": "HRM → Designation",
+        "steps": [
+          "Search দিয়ে পদবি খুঁজুন।",
+          "New Designation চাপলে ফর্ম খোলে।",
+          "Sl, Designation, Level, Sequence, Description ও Action দেখা যায়।"
+        ],
+        "warning": "যে পদবিতে কর্মচারী আছে, সেটি মোছার আগে কর্মচারীদের অন্য পদবিতে সরান।"
+      }
+    ]
+  },
+  "designation-form": {
+    "title": "পদবি তৈরি",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি পদবি তার স্তর ও ক্রমসহ তৈরি করা হয়।",
+    "sections": [
+      {
+        "heading": "ফর্ম",
+        "menu": "HRM → Designation → New Designation",
+        "steps": [
+          "Designation Level বাছুন।",
+          "Designation Name, Sequence ও Description লিখুন।",
+          "Save চাপুন; বদলাতে Update চাপুন।",
+          "Back দিয়ে তালিকায় ফিরুন।"
+        ],
+        "warning": "Sequence ছোট সংখ্যা আগে দেখাবে। একই ক্রম দুবার দিলে তালিকার ক্রম এলোমেলো দেখাবে।"
+      }
+    ]
+  },
+  "designation-level-list": {
+    "title": "পদবির স্তর",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "পদবিগুলোকে যে স্তরে ভাগ করা হয় (যেমন ব্যবস্থাপনা, কর্মী), তার তালিকা।",
+    "sections": [
+      {
+        "heading": "তালিকা",
+        "menu": "HRM → Designation Level",
+        "steps": [
+          "Search দিয়ে স্তর খুঁজুন।",
+          "New Level চাপলে নতুন স্তরের ফর্ম খোলে।",
+          "Level Name, Description ও Status দেখা যায়; Action থেকে Edit বা Delete করুন।"
+        ],
+        "warning": "যে স্তরে পদবি আছে, সেটি মোছার আগে পদবিগুলো অন্য স্তরে সরান।"
+      }
+    ]
+  },
+  "designation-level-form": {
+    "title": "পদবির স্তর তৈরি",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নতুন পদবির স্তর তৈরি বা বদলানো হয়।",
+    "sections": [
+      {
+        "heading": "ফর্ম",
+        "menu": "HRM → Designation Level → New Level",
+        "steps": [
+          "Level Name লিখুন।",
+          "Description লিখুন।",
+          "Save চাপুন; বদলাতে Update চাপুন।"
+        ],
+        "warning": "স্তরের নাম বদলালে পুরনো রিপোর্টে আগের নামই থাকবে — নাম স্থির রাখাই ভালো।"
+      }
+    ]
+  },
+  "attendance-setup": {
+    "title": "হাজিরার সেটআপ",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "হাজিরার পেছনের নিয়ম এখানে ঠিক করা হয় — শিফট, পলিসি, রোস্টার, সাপ্তাহিক ছুটি, ছুটির দিন ও ছুটির ধরন।",
+    "sections": [
+      {
+        "heading": "ট্যাবগুলো",
+        "menu": "HRM → Attendance → Setup",
+        "steps": [
+          "Shift — Shift Name, Code, Start Time, End Time, Grace Minutes, Half Day Minutes, Early Out Minutes ও Night Shift দিয়ে Save করুন।",
+          "Policy — Policy Name, Employee Type, Branch, Default Shift, Standard/Minimum/Half Day/Grace/Early Out Minutes, Overtime, OT After Minutes, Late ও Early Out Deduction Count দিন।",
+          "Roster — Employee, Branch, Shift, Duty Date, Status ও Remarks দিয়ে সারি যোগ করুন; Load Roster দিয়ে ভরাও যায়।",
+          "Weekly Holiday — Branch, Day, Enabled ও Effective From/To দিন।",
+          "Holiday — Holiday Date, Holiday Name, Holiday Type, Paid, Optional ও Remarks দিন।",
+          "Leave Type — Leave Type, Code, Yearly Quota, Sort Order, Paid, Allow Half Day, Allow Backdated ও Attachment দিন।"
+        ]
+      },
+      {
+        "heading": "যা মনে রাখবেন",
+        "steps": [
+          "প্রতিটি ট্যাবে Save ও Reset আছে; সারি বদলালে Save বাটন Update হয়ে যায়।",
+          "Policy-র Standard Work Minutes ও Grace Minutes ঠিক না থাকলে দেরি ও আধা দিনের হিসাব ভুল হবে।"
+        ],
+        "warning": "Holiday-তে Paid বন্ধ থাকলে ওই দিনের বেতন কাটবে। ছুটির ধরন ও Paid একবার মিলিয়ে নিন।"
+      }
+    ]
+  },
+  "manual-attendance": {
+    "title": "হাতের হাজিরা",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এক দিনের হাজিরা হাতে লেখা হয় — একজন কর্মচারীর জন্য একবারে, অথবা অনেকের জন্য একসাথে।",
+    "sections": [
+      {
+        "heading": "একজনের হাজিরা",
+        "menu": "HRM → Attendance → Manual Attendance",
+        "steps": [
+          "Employee বাছুন, Branch, Shift ও Attendance Type ঠিক করুন।",
+          "Date, In Time, Out Time, Status ও Remarks দিন।",
+          "Save Single চাপুন। আগের সারি খুললে বাটন Update Single হয়।"
+        ]
+      },
+      {
+        "heading": "অনেকের হাজিরা",
+        "steps": [
+          "Fill From ও Fill To দিন, Fill Range চাপুন।",
+          "সর্বোচ্চ ৩১ দিন এবং আজকের পরে নয়। ছুটির দিন ছুটি হিসেবে লেখে, আগের এন্ট্রি অপরিবর্তিত থাকে।",
+          "Bulk Entry, Bulk Approve ও Bulk Clear দিয়ে তালিকা সামলান।"
+        ]
+      },
+      {
+        "heading": "তালিকা",
+        "steps": [
+          "Date, Employee, Type, Shift, In, Out, OT Hr., Status ও Approval দেখা যায়।",
+          "Action থেকে Edit, Approve, Reject, Cancel rejected বা Delete করুন।"
+        ],
+        "warning": "একই দিনে একই কর্মচারীর দুইবার এন্ট্রি দিলে হিসাব দ্বিগুণ হবে। আগে তালিকায় খুঁজে দেখুন।"
+      }
+    ]
+  },
+  "attendance-daily-reports": {
+    "title": "দৈনিক হাজিরার রিপোর্ট",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একই রিপোর্টের চারটি রূপ — Daily Attendance, Absent, Late ও Early Out। তারিখের পরিসরে প্রতি কর্মচারীর প্রতিদিনের হাজিরা ও সারসংক্ষেপ দেখা যায়।",
+    "sections": [
+      {
+        "heading": "রিপোর্ট দেখা",
+        "menu": "HRM → Attendance → Report / Absent / Late / Early Out",
+        "steps": [
+          "From ও To দিন, Branch বাছুন।",
+          "Status ও Approval দিয়ে ফল ছোট করুন।",
+          "Load চাপুন।"
+        ]
+      },
+      {
+        "heading": "ফল পড়া",
+        "steps": [
+          "উপরে Active Employee, Attendance Entry, Absent/Missing, Present, Half Day, Leave, Late, Early Out ও Approval-এর সংখ্যা দেখা যায়।",
+          "Late রিপোর্টে Late Deduction Days, Early Out রিপোর্টে Early Out Deduction Days বাড়তি থাকে।",
+          "নিচের তালিকায় Date, ID, Employee, Branch, Shift, In, Out, Minutes, Status ও Approval থাকে।"
+        ],
+        "warning": "Absent/Missing মানে ওই দিনের কোনো এন্ট্রি নেই — ছুটি বা ছুটির দিন আলাদা Status-এ গোনা হয়।"
+      }
+    ]
+  },
+  "overtime-report": {
+    "title": "ওভারটাইম রিপোর্ট",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "মাসের প্রতিটি দিনে প্রতি কর্মচারীর ওভারটাইম ঘণ্টা গ্রিড আকারে দেখা যায়, সাথে দিন ও মোটের যোগফল।",
+    "sections": [
+      {
+        "heading": "রিপোর্ট দেখা",
+        "menu": "HRM → Attendance → Overtime Report",
+        "steps": [
+          "From, To ও Branch দিন; Status ও Approval দিয়ে ছোট করুন।",
+          "Load চাপুন।"
+        ]
+      },
+      {
+        "heading": "ফল পড়া",
+        "steps": [
+          "উপরে OT Hr. ও OT Amount সহ সারসংক্ষেপ দেখা যায়।",
+          "গ্রিডে Name, প্রতিটি দিনের ঘণ্টা ও Total থাকে; নিচে Total সারি।",
+          "Print চাপলে কাগজ বের হয়; পাশের দুই ঘরে সারি ও লেখার আকার ঠিক হয়।"
+        ],
+        "warning": "কোনো দিনে OT না থাকলে ঘর খালি থাকে — ০ লিখে দেখানো হয় না।"
+      }
+    ]
+  },
+  "employee-attendance-report": {
+    "title": "কর্মচারীর হাজিরা",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একজন কর্মচারীর নিজের হাজিরা তারিখ ধরে দেখা যায়, সাথে প্রতিটি অবস্থার মোট সংখ্যা।",
+    "sections": [
+      {
+        "heading": "রিপোর্ট দেখা",
+        "menu": "HRM → Attendance → Employee Report",
+        "steps": [
+          "Employee বাছুন, From, To ও Branch দিন।",
+          "Status দিয়ে ফল ছোট করুন, Load চাপুন।"
+        ]
+      },
+      {
+        "heading": "ফল পড়া",
+        "steps": [
+          "Total Days, Present, Absent, Leave, Late, Early Out, Half Day ও Holiday দেখা যায়।",
+          "তালিকায় Date, Shift, In, Out, Minutes, Status, Approval ও Remarks থাকে।"
+        ],
+        "warning": "একজন কর্মচারী না বাছলে রিপোর্ট খালি থাকবে।"
+      }
+    ]
+  },
+  "branch-attendance-summary": {
+    "title": "শাখাভিত্তিক হাজিরার সারসংক্ষেপ",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এক মাসের হাজিরা শাখা বা প্রকল্প ধরে মোট করে দেখায়, যাতে শাখাগুলো পাশাপাশি মেলানো যায়।",
+    "sections": [
+      {
+        "heading": "রিপোর্ট দেখা",
+        "menu": "HRM → Attendance → Branch Summary",
+        "steps": [
+          "Branch/Project, Month ও Year বাছুন।",
+          "Load চাপুন।"
+        ]
+      },
+      {
+        "heading": "ফল পড়া",
+        "steps": [
+          "উপরে Branches, Employees, Present, Absent, Leave, Late, Early Out ও Deduction দেখা যায়।",
+          "তালিকায় কর্মচারী, Working, Present, Paid/Unpaid Leave, Absent, Late, Early Out, Half Day, Payable ও Deduction থাকে।"
+        ],
+        "warning": "Payable ও Deduction বেতনের নিয়ম থেকে আসে — পলিসি ভুল থাকলে এই দুই ঘর ভুল হবে।"
+      }
+    ]
+  },
+  "holiday-calendar": {
+    "title": "ছুটির ক্যালেন্ডার",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এক মাসের ছুটি ও সাপ্তাহিক ছুটি দিনের ঘরে চিহ্নিত করে দেখা যায়।",
+    "sections": [
+      {
+        "heading": "ক্যালেন্ডার দেখা",
+        "menu": "HRM → Attendance → Holiday Calendar",
+        "steps": [
+          "Month, Year ও Branch/Project বাছুন।",
+          "Type থেকে Holiday বা Weekly Holiday বাছুন।",
+          "Load চাপুন।"
+        ]
+      },
+      {
+        "heading": "ফল পড়া",
+        "steps": [
+          "উপরে Total Days, Holiday, Weekly Holiday, Paid ও Optional দেখা যায়।",
+          "ক্যালেন্ডারে Holiday, Weekly ও Optional রঙে আলাদা; এক দিনে বেশি থাকলে +n more লেখা আসে।"
+        ],
+        "warning": "ছুটির তালিকা Attendance Setup → Holiday ট্যাব থেকে আসে — সেখানে না থাকলে ক্যালেন্ডারে দেখাবে না।"
+      }
+    ]
+  },
+  "monthly-attendance": {
+    "title": "মাসিক হাজিরা",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এক মাসের হাজিরা প্রথমে সংখ্যায়, তারপর দিনভিত্তিক গ্রিডে দেখা যায় — প্রতি কর্মচারীর পাশে ১ থেকে ৩১ তারিখ।",
+    "sections": [
+      {
+        "heading": "রিপোর্ট দেখা",
+        "menu": "HRM → Attendance → Monthly Report",
+        "steps": [
+          "Select Branch, Month ও Year বাছুন।",
+          "Load চাপুন।"
+        ]
+      },
+      {
+        "heading": "দুই ট্যাব",
+        "steps": [
+          "Monthly Attendance Summary-তে Present, Paid/Unpaid Leave, Absent, Late, Early Out, Half Day, Payable ও Deduction দেখা যায়।",
+          "Attendance for the Month গ্রিডে প্রতিটি দিনের চিহ্ন থাকে; নিচে Present, Late, Weekly holiday, Holiday, Absent, Leave ও Half Day-এর ব্যাখ্যা।",
+          "Print A4 চাপলে মাসিক শিট ছাপা হয়।"
+        ],
+        "warning": "অন্য শাখার Present আলাদা রঙে দেখানো হয়; ঘরের ওপর ধরলে কোন শাখা তা লেখা আসে।"
+      }
+    ]
+  },
+  "leave-applications": {
+    "title": "ছুটির আবেদন",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কর্মচারীর ছুটির আবেদন লেখা হয় এবং অনুমোদন বা বাতিল করা হয়।",
+    "sections": [
+      {
+        "heading": "আবেদন লেখা",
+        "menu": "HRM → Attendance → Leave Applications",
+        "steps": [
+          "Employee, Branch ও Leave Type বাছুন।",
+          "From Date, To Date ও Reason লিখুন।",
+          "Apply চাপুন; ভুল হলে Reset।"
+        ]
+      },
+      {
+        "heading": "অনুমোদন",
+        "steps": [
+          "From, To ও Branch দিয়ে Load করুন।",
+          "তালিকায় From, To, Employee, Leave Type, Days, Paid, Unpaid, Approval ও Reason দেখা যায়।",
+          "Action থেকে Approve বা Reject করুন।"
+        ],
+        "warning": "একই সময়ে দুটি আবেদন দিলে দিনের হিসাব দ্বিগুণ হবে — আগের আবেদন দেখে নিন।"
+      }
+    ]
+  },
+  "attendance-audit": {
+    "title": "হাজিরার পরিবর্তনের ইতিহাস",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "হাজিরার এন্ট্রিতে কে কী বদল করেছেন, কখন এবং কেন — তার ইতিহাস এই স্ক্রিনে দেখা যায়।",
+    "sections": [
+      {
+        "heading": "ইতিহাস দেখা",
+        "menu": "HRM → Attendance → Audit History",
+        "steps": [
+          "From, To ও Branch/Project বাছুন।",
+          "Action (Submitted, Corrected, Approved, Rejected, Cleared/Cancelled) ও Employee দিয়ে ছোট করুন।",
+          "Search-এ এন্ট্রি, কর্মচারী বা মন্তব্য লিখে Load চাপুন।"
+        ]
+      },
+      {
+        "heading": "ফল পড়া",
+        "steps": [
+          "উপরে Total, Approved, Rejected ও Cleared সংখ্যা দেখা যায়।",
+          "তালিকায় Entry ID, Action, Employee, Branch/Project, Attendance Date, Status, Action By, Action Time ও Remarks থাকে।"
+        ],
+        "warning": "এখানে কিছু বদলানো যায় না — এটি শুধু ইতিহাস।"
+      }
+    ]
+  },
+  "salary-generate": {
+    "title": "বেতন তৈরি",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এক মাসের বেতন শিট তৈরি হয় — কর্মচারী বেছে তাদের হাজিরা ও ঋণের হিসাব ধরে বেতন হিসাব হয়, তারপর Salary Generate চাপলে শিট তৈরি হয়।",
+    "sections": [
+      {
+        "heading": "শিট তৈরি",
+        "menu": "HRM → Salary → Salary Generate",
+        "steps": [
+          "Branch ও Designation Level বাছুন।",
+          "Monthly Salary বা Overtime Salary বাছুন।",
+          "Month দিন, Search চাপুন।",
+          "তালিকা মিলিয়ে Salary Generate চাপুন।"
+        ]
+      },
+      {
+        "heading": "তালিকা পড়া",
+        "steps": [
+          "Name of Employee, Month Days, Working Day, Monthly Basic, Basic, Total, Loan Ded., Att. Ded ও Net Salary দেখা যায়।",
+          "Overtime শিটে OT Rate ও OT ঘণ্টা থাকে।",
+          "নিচে Total Employees, Total Salary, Loan Deduction, Att. Deduction ও Net Total দেখা যায়।",
+          "Action থেকে কোনো কর্মচারীকে এই শিট থেকে সরানো যায়।"
+        ],
+        "warning": "একই মাসের শিট দুবার Generate করলে বেতন দ্বিগুণ হবে। আগে Salary Sheet-এ মাসটি আছে কি না দেখুন।"
+      }
+    ]
+  },
+  "salary-sheet": {
+    "title": "বেতন শিট",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "তৈরি হওয়া মাসিক বেতন শিটের তালিকা, কত দেওয়া হয়েছে ও কত বাকি। Payment Month-এ চাপলে শিট ছাপা যায়, Update দিয়ে সম্পাদনা হয়।",
+    "sections": [
+      {
+        "heading": "তালিকা দেখা",
+        "menu": "HRM → Salary → Salary Sheet",
+        "steps": [
+          "Branch ও Year বাছুন, Search চাপুন।",
+          "Payment Month, Employees, Gross Salary, Net Salary, Loan Ded., Payment Amount ও Due দেখা যায়।",
+          "Rows per page ও Font ঠিক করে প্রিন্ট করা যায়।"
+        ]
+      },
+      {
+        "heading": "শিট সম্পাদনা ও এক্সেল",
+        "steps": [
+          "Action থেকে Update বাছলে Salary Sheet Update খোলে; সেখানে কর্মচারী যোগ, দিন বদল ও বাদ দেওয়া যায়।",
+          "Action থেকে Excel বাছলে শিট Excel ফাইলে নামে।",
+          "Payment বাছলে পরিশোধের হিসাব খোলে।",
+          "Payment Month-এ চাপলে বেতন শিট ছাপা হয়।"
+        ],
+        "warning": "শিটে Payment হয়ে গেলে পরে দিন বা অঙ্ক বদলাবেন না — পরিশোধের হিসাব মিলবে না।"
+      }
+    ]
+  },
+  "festival-bonus": {
+    "title": "উৎসব বোনাস",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "তৈরি হওয়া উৎসব বোনাসের তালিকা, কত দেওয়া হয়েছে ও কত বাকি। Bonus Title-এ চাপলে বিস্তারিত শিট খোলে।",
+    "sections": [
+      {
+        "heading": "তালিকা দেখা",
+        "menu": "HRM → Bonus → Bonus Reports",
+        "steps": [
+          "ফিল্টার আইকন বা Use the filter চেপে Select Branch ও Select Year বাছুন, Apply চাপুন।",
+          "Bonus Title, Month, Employees, Bonus Amount, Paid ও Due দেখা যায়।"
+        ]
+      },
+      {
+        "heading": "শিট সম্পাদনা ও প্রিন্ট",
+        "steps": [
+          "Action থেকে Update বাছলে Festival Bonus Update খোলে; কর্মচারী যোগ বা বাদ ও Percent/Bonus বদলানো যায়।",
+          "Payment বাছলে পরিশোধের হিসাব খোলে।",
+          "Rows per page ও Font ঠিক করে Print চাপুন — আগে Bonus Title থেকে শিট খুলতে হবে।"
+        ],
+        "warning": "Print চাপার আগে নিচের Bonus Title থেকে detail sheet খোলা না থাকলে কাগজ আসবে না।"
+      }
+    ]
+  },
+  "festival-bonus-generate": {
+    "title": "উৎসব বোনাস তৈরি",
+    "module": "HRM",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বেসিক বেতনের একটি শতাংশ ধরে উৎসব বোনাসের তালিকা তৈরি করা হয়।",
+    "sections": [
+      {
+        "heading": "বোনাস তৈরি",
+        "menu": "HRM → Bonus → Bonus Generate",
+        "steps": [
+          "Bonus % of Basic, Branch ও Bonus Month দিন।",
+          "Bonus Title বাছুন; Other হলে Custom Bonus Title লিখুন।",
+          "Designation Level বাছুন, নাহলে All levels রাখুন।",
+          "Load Employees চাপুন, উপরে Total Basic Salary, Eligible Employees ও Projected Bonus মিলিয়ে নিন।",
+          "Generate Bonus চাপুন।"
+        ]
+      },
+      {
+        "heading": "তালিকা",
+        "steps": [
+          "Employee, Basic Salary, Bonus % ও Bonus Amount দেখা যায়; Action থেকে কাউকে বাদ দেওয়া যায়।",
+          "Remove Employee চাপলে কেবল এই তালিকা থেকে বাদ যায়, শিট তৈরি না হওয়া পর্যন্ত কিছু মোছে না।"
+        ],
+        "warning": "একই মাস ও একই শিরোনামে আবার Generate করলে আলাদা বোনাস ব্যাচ তৈরি হবে — আগে Bonus Reports দেখুন।"
+      }
+    ]
+  }
+}

@@ -1174,7 +1174,7 @@ const TradingBusinessPurchase = () => {
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Purchase Invoice" screen="purchase.trading" />
+        <HelmetTitle title="Purchase Invoice" screen="purchase.trading"  helpTopic="purchase-trading" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         {purchase.isLoading ? <Loader /> : null}

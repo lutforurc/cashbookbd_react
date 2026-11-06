@@ -272,7 +272,7 @@ const Delivery = () => {
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Delivery" screen="delivery" />
+        <HelmetTitle title="Delivery" screen="delivery"  helpTopic="delivery" />
       </div>
 
       {canCreate && (

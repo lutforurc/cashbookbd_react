@@ -651,7 +651,7 @@ const TilesBusinessSalesReturn = () => {
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Sales Return" screen="sales-return.tiles" />
+        <HelmetTitle title="Sales Return" screen="sales-return.tiles"  helpTopic="sales-return-tiles" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         {buttonLoading ? <Loader /> : null}

@@ -1,0 +1,122 @@
+{
+  "print-layout": {
+    "title": "ছাপার কাগজের নকশা",
+    "module": "Settings",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "চালান, অর্ডার, হোটেল রিসিভ ও বিলের কাগজে কোন অংশ কোথায় বসবে তা সাজানো হয়।",
+    "sections": [
+      { "heading": "নকশা সাজানো", "menu": "Settings → Delivery Challan Layout / Order Layout", "steps": ["Branch, Paper, Start from, Text size ও Rows per page বাছুন।", "Parts of the paper থেকে অংশ যোগ করুন; বাঁ প্যানেলে সেটিংস, মাঝে ব্যান্ড, ডানে What it will look like দেখুন।", "Left margin, Right margin, Print sideways, Half page ও Print the page foot ঠিক করুন।", "Name of this layout লিখে Save; Test Print দিয়ে পরীক্ষা করুন।"] },
+      { "heading": "সতর্কতা", "warning": "শুধু 'prints' চিহ্নিত নকশাই প্রিন্টারে যায়। কিছু না থাকলে built-in নকশা ছাপে। উপরে-নিচের মার্জিন সব রিপোর্টের জন্য এক — আলাদা করতে Blank Space অংশ বসান।" }
+    ]
+  },
+  "menu-arrangement": {
+    "title": "মেনু সাজানো",
+    "module": "Settings",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নিজের সাইডবারে মেনু ও তার ভেতরের লিংকের ক্রম, দেখানো-লুকানো ঠিক করা হয়।",
+    "sections": [
+      { "heading": "সাজানো", "menu": "Settings → Arrange Menu", "steps": ["Main menu-তে Drag বা Move up / Move down দিয়ে মেনু সাজান।", "Show/Hide দিয়ে যা ব্যবহার করেন না তা লুকান।", "Divider name / Divider / Line দিয়ে ভাগ; Right প্যানেলে Inside {menu} সাজান।"] },
+      { "heading": "সতর্কতা", "warning": "এটি শুধু আপনার নিজের মেনু — অন্য ব্যবহারকারীর মেনু বদলায় না। Reset দিয়ে আগের অবস্থায় ফেরানো যায়।" }
+    ]
+  },
+  "software-info": {
+    "title": "সফটওয়্যারের তথ্য",
+    "module": "Settings",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "সব রিপোর্টের নিচে যে সফটওয়্যার কোম্পানির নাম ও মোবাইল ছাপে তা ঠিক করা হয়।",
+    "sections": [
+      { "heading": "তথ্য", "menu": "Settings → Software Information", "steps": ["Software Company Name ও Mobile Number লিখুন।", "Email, Website ও Address (ঐচ্ছিক) দিন।", "Update চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "এখানে দেওয়া নাম-মোবাইল সব রিপোর্টে যাবে; ছাপার আগে বানান মিলিয়ে নিন।" }
+    ]
+  },
+  "product-tracking-settings": {
+    "title": "পণ্য ট্র্যাকিং সেটিং",
+    "module": "Settings",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কোন পণ্য আলাদা বিল ও নগদ লেনদেনে দেখা যাবে তা ঠিক করা হয়।",
+    "sections": [
+      { "heading": "সেটিং যোগ", "menu": "Settings → Product Tracking", "steps": ["Product, Customer / Supplier (For all parties) ও Branch (All Branch) বাছুন।", "Sales Bill, Purchase Bill, Cash Received, Cash Payment ও Active চালু করুন।", "Add চাপুন; তালিকায় Customer / Supplier, Product ও প্রতিটি সুইচ দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "এই সেটিং না থাকলে Cash Received ও Cash Payment ফর্মে Product ড্রপডাউন আসবে না। Delete করলে পুরনো ভাউচার মোছে না।" }
+    ]
+  },
+  "voucher-delete": {
+    "title": "ভাউচার মোছা",
+    "module": "Settings",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি ভাউচার ও তার লেনদেন Recycle Bin-এ পাঠানো হয়।",
+    "sections": [
+      { "heading": "মোছা", "menu": "Voucher Settings → Voucher Delete", "steps": ["Enter Voucher Number ঘরে নম্বর লিখুন।", "Delete Voucher চাপুন; Confirm Deletion-এ সায় দিন।", "Home দিয়ে ফিরুন।"] },
+      { "heading": "সতর্কতা", "warning": "ভাউচার Recycle Bin-এ যায়, সাথে সাথে চিরতরে মোছে না। ইতিমধ্যে মোছা ভাউচার হলে আলাদা জানালা আসে — Continue করলে আবার মোছা হবে।" }
+    ]
+  },
+  "installment-delete": {
+    "title": "কিস্তি মোছা",
+    "module": "Settings",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি ভাউচারের কিস্তি পরিকল্পনা মুছে ফেলা হয়।",
+    "sections": [
+      { "heading": "মোছা", "menu": "Voucher Settings → Installment Delete", "steps": ["Enter Voucher Number দিন।", "Delete Installment চাপুন; Confirm Deletion-এ Confirm করুন।", "Home দিয়ে ফিরুন।"] },
+      { "heading": "সতর্কতা", "warning": "কিস্তি মুছলে ওই বিক্রয়ের কিস্তি-ভিত্তিক রিপোর্ট ও ডিউ তালিকা বদলে যাবে; ভাউচার নিজে মুছে যায় না।" }
+    ]
+  },
+  "recycle-bin": {
+    "title": "রিসাইকেল বিন",
+    "module": "Settings",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "মোছা ভাউচার দেখা, ফিরিয়ে আনা বা চিরতরে মুছে ফেলার জায়গা।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Voucher Settings → Recycle Bin", "steps": ["Search দিয়ে Voucher No, নাম বা তারিখ খুঁজুন।", "Sl. No., Voucher No, Voucher Date, Name, Deleted At, Deleted By, Debit, Credit ও Action দেখা যায়।", "প্রিন্ট প্রিভিউ দেখুন, Restore দিয়ে ফেরান, Remove দিয়ে চিরতরে মুছুন।"] },
+      { "heading": "সতর্কতা", "warning": "Remove করলে আর ফেরানো যায় না। Restore করলে ভাউচার আগের জায়গায় ফিরে যায়, কিন্তু সংশ্লিষ্ট রিপোর্ট নতুন করে চালাতে হবে।" }
+    ]
+  },
+  "report-mismatch": {
+    "title": "রিপোর্টের অমিল",
+    "module": "Settings",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "যে ভাউচারগুলো রিপোর্টে অমিল তৈরি করে — যেমন কোম্পানি ছাড়া বা ডেবিট-ক্রেডিট সমান নয় — তাদের তালিকা।",
+    "sections": [
+      { "heading": "অমিল দেখা", "menu": "Voucher Settings → Report Mismatch", "steps": ["Refresh চাপুন।", "Sl. No., Type (No Company / Unbalanced), Voucher No, Voucher Date, Details, Branch, Amount ও Status দেখা যায়।", "Action-এর Fix দিয়ে তারিখ, শাখা ও অঙ্ক দেখে ঠিক করুন।"] },
+      { "heading": "সতর্কতা", "warning": "No Company মানে Profit & Loss ভাউচারটি গোনে, Balance Sheet গোনে না। Recycled ব্যাজ মানে ভাউচার রিসাইকেল বিনে।" }
+    ]
+  },
+  "voucher-history": {
+    "title": "ভাউচারের পুরনো অবস্থা",
+    "module": "Settings",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি ভাউচার আগে কী লিখেছিল আর এখন কী লিখছে, তার তুলনা।",
+    "sections": [
+      { "heading": "ইতিহাস", "menu": "Voucher Settings → Log History", "steps": ["Select Branch ও Voucher Number দিন; View History চাপুন।", "Before ও After অংশে পুরনো-নতুন অবস্থা দেখা যায়।", "What changed-এ Field, Before ও After সারি; পণ্য, ক্রয় বা এন্ট্রি না থাকলে তা-ও লেখা থাকে।"] },
+      { "heading": "সতর্কতা", "warning": "ভাউচার নম্বর না দিলে জানানো হবে। এখানে কিছু বদলানো যায় না — শুধু দেখার ইতিহাস।" }
+    ]
+  },
+  "voucher-activity": {
+    "title": "ভাউচার বদলের তালিকা",
+    "module": "Settings",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কে, কখন, কোন ভাউচারে কী কাজ করেছে তার তালিকা।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Voucher Settings → Log Changes", "steps": ["Branch বাছুন এবং পৃষ্ঠার সংখ্যা ঠিক করুন।", "Sl. No., Vr No, Vr Date, Action, Action Time, Action By, Branch ও status দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "এটি অডিট তালিকা — কোনো সারি এখান থেকে বদলানো বা মোছা যায় না।" }
+    ]
+  }
+}

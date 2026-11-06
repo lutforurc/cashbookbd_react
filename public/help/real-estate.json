@@ -1,0 +1,208 @@
+{
+  "realestate-area": {
+    "title": "প্রকল্পের এলাকা",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রকল্পের লোকেশন বা এলাকা নাম, অক্ষাংশ-দ্রাঘিমাংশ ও বিবরণসহ রাখা হয়। প্রকল্প তৈরির আগে এলাকাটি থাকা দরকার।",
+    "sections": [
+      { "heading": "এলাকা তৈরি", "menu": "Real Estate → Area → New Location", "steps": ["New Location চাপুন।", "Enter Area Name, Enter Latitude, Enter Longitude ও Enter Description লিখুন।", "Enter Notes ও Select Status দিন, Save চাপুন; বদলাতে Update।"] },
+      { "heading": "তালিকা", "steps": ["List of Project Locations-এ Name of areas, Branch ও Company দেখা যায়।", "Action থেকে Edit বা Delete করুন।"] },
+      { "heading": "সতর্কতা", "warning": "যে এলাকায় প্রকল্প আছে সেটি মোছার আগে প্রকল্পগুলো সরান।" }
+    ]
+  },
+  "realestate-project": {
+    "title": "প্রকল্প / জমি",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি প্রকল্প বা জমির টুকরো তার এলাকা, মালিক, দাম ও তারিখসহ লেখা হয়।",
+    "sections": [
+      { "heading": "প্রকল্প তৈরি", "menu": "Real Estate → Project → New Project", "steps": ["Select Branch, Select Location ও Select Land Owner বাছুন।", "Project / Land Name, Location Details, Area (Sq. Ft), Purchase Price ও Sale Price লিখুন।", "Notes, Purchase Date ও Sales Date দিন।", "Select Status দিয়ে Save চাপুন; বদলাতে Update।"] },
+      { "heading": "তালিকা", "steps": ["List of Projects-এ Name of Project, Area, Location ও Branch দেখা যায়; উপরের ফিল্টার দিয়ে বাছুন।"] },
+      { "heading": "সতর্কতা", "warning": "Purchase Price ও Sale Price ভুল দিলে লাভের হিসাব ভুল হবে; Area ছাড়া ইউনিটের হিসাব মিলবে না।" }
+    ]
+  },
+  "realestate-building": {
+    "title": "বিল্ডিং",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রকল্পের ভিতরে একটি বিল্ডিং, তার ফ্লোর, নির্মাণ খরচ ও তারিখ লেখা হয়।",
+    "sections": [
+      { "heading": "বিল্ডিং তৈরি", "menu": "Real Estate → Building → New Project", "steps": ["Select Project ও Building Name দিন।", "Total Floors, Construction Cost, Total Cost ও Sale Price লিখুন।", "Start Date, Completion Date ও Sale Date দিন; Notes ও Select Status দিন।", "Save চাপুন; বদলাতে Update।"] },
+      { "heading": "তালিকা", "steps": ["Real Estate Building List-এ Name of Building, Project Name, Location ও ফ্ল্যাটের সংখ্যা দেখা যায়।", "ফ্ল্যাটগুলো Floor ও Unit হিসেবে খুলে দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "Total Cost ভুল হলে ফ্লোর ও ইউনিটের দাম ভুলভাবে ভাগ হবে।" }
+    ]
+  },
+  "realestate-floor": {
+    "title": "ফ্লোর",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বিল্ডিংয়ের একটি ফ্লোর, তার ইউনিট সংখ্যা, খরচ ও দাম লেখা হয়।",
+    "sections": [
+      { "heading": "ফ্লোর তৈরি", "menu": "Real Estate → Building → Floor", "steps": ["Select Building বাছুন।", "Flat Name ও Floor No দিন; Total Units লিখুন।", "Allocated Cost ও Sale Price দিন।", "Sale Date, Notes ও Select Status দিয়ে Save/Update চাপুন।"] },
+      { "heading": "তালিকা", "steps": ["Floor List-এ Floor No, Flat Name, Building Name, Units ও Status দেখা যায়।", "Action থেকে Edit বা Delete করুন।"] },
+      { "heading": "সতর্কতা", "warning": "Allocated Cost ও Sale Price ঠিক না হলে ইউনিটের দাম মিলবে না।" }
+    ]
+  },
+  "realestate-flat-layout": {
+    "title": "বিল্ডিং লেআউট",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বিল্ডিংয়ের ফ্লোর ও ইউনিটের অবস্থা ছবির মতো দেখা যায় — কোনটি Available, Sold, Under Dev বা Parking।",
+    "sections": [
+      { "heading": "লেআউট দেখা", "menu": "Real Estate → Layout", "steps": ["উপরে বিল্ডিং ও ফ্লোরের ট্যাব বাছুন।", "Building ও Grid টগল দিয়ে দেখার ধরন বদলান।"] },
+      { "heading": "একটি ইউনিট দেখা", "steps": ["ইউনিটে চাপলে Unit Details খোলে — Status, Type, Size ও Total Price; Customer, Mobile, Rate, Paid ও Due দেখা যায়।", "সেখান থেকে Sale / Booking, Payment Entry, Edit Unit বা Unit List-এ যাওয়া যায়।"] },
+      { "heading": "সতর্কতা", "warning": "Status ভুল থাকলে ইউনিট Available/Under Dev-এ ভুল দেখাবে — Unit List থেকে ঠিক করুন।" }
+    ]
+  },
+  "realestate-unit-list": {
+    "title": "ইউনিটের তালিকা",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "ফ্ল্যাট ও পার্কিং ইউনিটের তালিকা — নম্বর, ধরন, সাইজ, দাম ও অবস্থা।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Real Estate → Unit → Unit List", "steps": ["Branch ফিল্টার দিয়ে বাছুন।", "New Unit চাপলে নতুন ইউনিটের ফর্ম খোলে।", "Unit No, Unit Type, Flat Name, Building Name, Location, Size, Unit Price, Total Price ও Status দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "Under Dev ইউনিটের তথ্য বদলানো যায় না — আগে অবস্থা বদলাতে হবে।" }
+    ]
+  },
+  "realestate-unit-form": {
+    "title": "ইউনিট তৈরি",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি ইউনিট বা পার্কিং স্পেসের সাইজ, খরচ, দর ও অবস্থা লেখা হয়।",
+    "sections": [
+      { "heading": "ফর্ম", "menu": "Real Estate → Unit → New Unit", "steps": ["Select Floor বাছুন।", "Unit No ও Size (sqft) দিন।", "Allocated Cost ও Unite Rate লিখুন।", "Sale Date, Notes, Select Unit Type (Unit/Parking) ও Select Status দিন।", "Save চাপুন; বদলাতে Update।"] },
+      { "heading": "সতর্কতা", "warning": "Select Unit Type ভুল হলে পার্কিং ইউনিট হিসেবে বা উল্টোভাবে হিসাব হবে।" }
+    ]
+  },
+  "realestate-charge-type": {
+    "title": "ইউনিট চার্জের ধরন",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "ইউনিট বিক্রির সঙ্গে যে বাড়তি চার্জ যোগ বা বাদ হয় (যেমন কর, রেজিস্ট্রি), তার ধরন তৈরি করা হয়।",
+    "sections": [
+      { "heading": "চার্জের ধরন", "menu": "Real Estate → Unit Charge Types", "steps": ["New Charge Type চাপুন।", "Charge Type Name, Effect ((+) Add বা (−) Subtract), Notes, Sort Order ও Status দিন।", "Save চাপুন; বদলাতে Update।"] },
+      { "heading": "তালিকা", "steps": ["Name, Effect, Notes, Status ও Sort দেখা যায়; Action থেকে Edit বা Delete করুন।"] },
+      { "heading": "সতর্কতা", "warning": "Effect ভুল দিলে চার্জ যোগের বদলে বাদ যাবে, ফলে বিক্রির মোট দাম ভুল হবে।" }
+    ]
+  },
+  "realestate-unit-sale": {
+    "title": "ইউনিট বিক্রির দাম তৈরি",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "ইউনিট, পার্কিং ও বাড়তি চার্জ মিলিয়ে বিক্রির মোট দাম তৈরি হয়; বুকিংয়ের টাকাও এখানে লেখা হয়।",
+    "sections": [
+      { "heading": "নতুন বিক্রি", "menu": "Real Estate → Sold Units → Unit Sale", "steps": ["Select Customer ও Select Unit বাছুন; দরকার হলে Select Parking।", "Charge Type ও Amount (Tk.) দিয়ে Add Charge চাপুন।", "Payment Mode, Money Receipt No., Booking Tk. ও প্রয়োজনে Check/Ref. Number, Bank Name, Branch Name দিন।", "Nominee দরকার হলে বাছুন; Save চাপুন।"] },
+      { "heading": "সম্পাদনা", "steps": ["Edit-এ Sale Date ও Note (Why this was corrected) দিন।", "Received so far-এর নিচে মোট দাম নামানো যাবে না; টাকা payment screen থেকে ঠিক করুন।"] },
+      { "heading": "সতর্কতা", "warning": "অনুমোদিত ভাউচারে থাকা বিক্রি বদলাতে আগে অনুমোদন সরাতে হবে। Nominee-দের share ১০০%-এ মিলতে হবে।" }
+    ]
+  },
+  "realestate-sold-units": {
+    "title": "বিক্রি হওয়া ইউনিট",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "গ্রাহক ধরে কোন ইউনিট বা পার্কিং বিক্রি হলো, কত টাকা এসেছে ও কত বাকি — সাথে বিক্রির কাগজপত্র।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Real Estate → Sold Units", "steps": ["Project, Building, Search, Sale Date From/To দিন।", "Only units having due চালু করলে শুধু বাকি থাকা ইউনিট আসবে।", "Search চাপুন।"] },
+      { "heading": "ফল ও কাজ", "steps": ["Customer, Unit / Parking, Amount, Total, Received ও Due দেখা যায়; উপরে Customers, Sold Units, Parking Value, Sale Value, Received ও Due কার্ড।", "Action থেকে EDIT, CANCEL, Booking Form (B-n), Allotment Letter (L-n), DEED ও Payment করা যায়।", "Print কাগজ বের করে।"] },
+      { "heading": "সতর্কতা", "warning": "CANCEL করলে ইউনিট আবার বাজারে ফিরবে এবং ভাউচার Recycle Bin-এ যাবে; আগে নিশ্চিত হোন।" }
+    ]
+  },
+  "realestate-installment": {
+    "title": "কিস্তির সূচি",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বুকিং ও ডাউন পেমেন্ট বাদ দিয়ে একজন ক্রেতার কিস্তির সূচি তৈরি করা হয়।",
+    "sections": [
+      { "heading": "সূচি তৈরি", "menu": "Real Estate → Installment Create", "steps": ["Unit Sale বাছুন বা Customer / Mobile / Unit লিখে Load চাপুন।", "Sale Summary-তে Total Sale, Booking Money, Down Payment ও Installment Base দেখুন।", "Installment Amount, Installments No., Start Date দিন।", "Early Payment Discount দরকার হলে দিন; Create Installments চাপুন।"] },
+      { "heading": "ফল ও প্রিন্ট", "steps": ["Inst No, Due Date, Amount, Early Pay Date, Early Discount ও Status দেখা যায়।", "Print Installment Statement দিয়ে সূচি ও রশিদ ছাপা হয়।"] },
+      { "heading": "সতর্কতা", "warning": "Already Created দেখালে আর নতুন সূচি তৈরি হবে না — আগের সূচি দেখে নিন।" }
+    ]
+  },
+  "realestate-project-expense-income": {
+    "title": "প্রকল্পের খরচ ও আয়",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রকল্প ও বিল্ডিং ধরে খরচ (Project Expense) বা আয় (Project Income) লেখা হয়। দুই স্ক্রিনের ঘরগুলো একই।",
+    "sections": [
+      { "heading": "লেখার ধাপ", "menu": "Real Estate → Project Expense / Project Income", "steps": ["Select Account বাছুন।", "Select Project (Optional) ও Select Building বাছুন।", "Enter Remarks ও Amount (Tk.) দিন; Voucher Note লিখুন।", "Add New দিয়ে লাইন যোগ করুন, তারপর Save/Update চাপুন।"] },
+      { "heading": "সম্পাদনা", "steps": ["Search Voucher দিয়ে পুরনো ভাউচার খুলুন।", "ক্যাশ ছাড়া অন্য হিসাব থেকে হলে উপরে লেখা থাকে — Save করলে সেটিই থাকবে।"] },
+      { "heading": "সতর্কতা", "warning": "Project না বাছলে খরচ বা আয় কোনো প্রকল্পের হিসাবে ধরা হবে না; রিপোর্টে আলাদা দেখাবে।" }
+    ]
+  },
+  "realestate-project-purchase-labour": {
+    "title": "প্রকল্পের ক্রয় ও লেবার বিল",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রকল্পের জন্য সরবরাহকারীর মাল (Project Purchase) বা শ্রমিকের কাজ (Project Labour) বিল ও তার পরিশোধ লেখা হয়।",
+    "sections": [
+      { "heading": "বিল লেখা", "menu": "Real Estate → Project Purchase / Project Labour", "steps": ["Select Supplier ও Notes দিন।", "Invoice/Bill Number, Invoice Date, Vehicle Number, Discount Amount ও Payment Amount দিন।", "Select Project ও Select Building বাছুন।", "Select Product বা Select Labour Item, Quantity ও Price/Rate দিয়ে Add New চাপুন।", "Save/Update চাপুন।"] },
+      { "heading": "ফল পড়া", "steps": ["Payment Amount এখনই দেওয়া টাকা; বাকিটা Due Tk.-এ থাকে।", "Search Invoice দিয়ে পুরনো বিল খোলা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "Payment Amount ভুল দিলে সরবরাহকারী বা শ্রমিকের বাকি ভুল হবে।" }
+    ]
+  },
+  "realestate-project-cost-report": {
+    "title": "প্রকল্পের খরচ",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রতিটি প্রকল্প ও বিল্ডিংয়ে কত খরচ হলো, এবং কোন খরচ কোনো প্রকল্পে লেখা হয়নি — তা দেখা যায়।",
+    "sections": [
+      { "heading": "রিপোর্ট দেখা", "menu": "Real Estate → Project Cost", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "ট্যাব", "steps": ["Project Summary — Area, Direct, Project-wide, Total ও Per sqft।", "Building Detail — Head, Direct, Allocated ও Total।", "Expenses Without a Project — Date, Voucher, Head, Remarks ও Amount।"] },
+      { "heading": "সতর্কতা", "warning": "উপরে লাল ব্লকে যে খরচ দেখানো যায় না তা আলাদা করে দেখুন — সেগুলো কোনো প্রকল্পের অঙ্কে নেই।" }
+    ]
+  },
+  "realestate-project-income-report": {
+    "title": "প্রকল্পের আয়",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রতিটি প্রকল্প কত আয় করেছে, কোনটি বিল্ডিংয়ের এবং কোনটি পুরো প্রকল্পের — তা দেখা যায়।",
+    "sections": [
+      { "heading": "রিপোর্ট দেখা", "menu": "Real Estate → Project Income Report", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "ট্যাব", "steps": ["Project Summary — Building, Project-wide ও Total।", "Income Detail — Project, Building, Head ও Amount।", "Income Without a Project — Date, Voucher, Head, Remarks ও Amount।"] },
+      { "heading": "সতর্কতা", "warning": "Project-wide আয় বিল্ডিংয়ে ভাগ করা হয় না — একটি হোর্ডিংয়ের ভাড়া ফ্ল্যাটের মাপে ভাগ হবে না।" }
+    ]
+  },
+  "realestate-project-summary-report": {
+    "title": "প্রকল্পের সারসংক্ষেপ",
+    "module": "Real Estate",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রতিটি প্রকল্পের খরচ, আয়, ক্রয়, লেবার, ইউনিট, বিক্রি, আদায় ও বাকি এক সারিতে দেখা যায়।",
+    "sections": [
+      { "heading": "রিপোর্ট দেখা", "menu": "Real Estate → Project Summary Report", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "ফল পড়া", "steps": ["Project, Expense, Income, Purchase, Labour, Units, Sold, Received, Outstanding ও P&L দেখা যায়।", "নিচে Total সারি; Print কাগজ বের করে।"] },
+      { "heading": "সতর্কতা", "warning": "তারিখের পরিসর বদলালে সব অঙ্ক বদলাবে — একই পরিসরে তুলনা করুন।" }
+    ]
+  }
+}

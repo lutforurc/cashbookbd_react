@@ -1,0 +1,150 @@
+{
+  "product-list": {
+    "title": "পণ্যের তালিকা",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "শাখার সব পণ্য ক্যাটাগরি ধরে দেখা যায়। এখান থেকেই পণ্যের opening stock (শুরুর স্টক) সারিতে সারিতে লেখা বা ঠিক করা হয়।",
+    "sections": [
+      { "heading": "তালিকা দেখা", "menu": "Products → Product List", "steps": ["Brand, Category ও Group বাছুন, নাহলে All Brand / All Categories / All Groups রাখুন।", "Search বক্সে নাম বা কোড লিখে Search করুন।", "Sl, Product, Category, Unit ও স্টকের ঘরগুলো দেখা যায়; Category: নাম (সংখ্যা) দলে ভাগ থাকে।"] },
+      { "heading": "Opening stock ও বাটন", "steps": ["Stock Qty, IMEI/Serial, Qty ও Rate ঘরে শুরুর স্টক লিখে সারির Save চাপুন; ভুল হলে Cancel বা Delete opening stock।", "New দিয়ে নতুন পণ্য, Edit/Delete দিয়ে সারির পণ্য, Change log দিয়ে বদলের ইতিহাস দেখা যায়।", "Print দিয়ে Product List ছাপা হয়; Excel দিয়ে পুরো তালিকা opening import শিট হিসেবে নামে।"] },
+      { "heading": "সতর্কতা", "warning": "Qty ও Rate ঋণাত্মক হতে পারে না। Opening stock মুছলে ওই ভাউচার Recycle Bin-এ যায়, পণ্য মোছে না; বিক্রি হয়ে যাওয়া স্টক এভাবে সরানো যায় না।" }
+    ]
+  },
+  "product-form": {
+    "title": "পণ্য তৈরি ও সম্পাদনা",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নতুন পণ্য তৈরি বা পুরনো পণ্য বদলানোর ফর্ম। শাখার সেটআপ অনুযায়ী কিছু ঘর আসে বা লুকিয়ে থাকে।",
+    "sections": [
+      { "heading": "ঘরগুলো", "menu": "Products → Product List → New / Edit", "steps": ["Select Brand, Select Product Group, Select Package ও Select Category বাছুন।", "Product Code, Product Name ও Product Description লিখুন।", "Purchase Price, Sales Price, Waranty/Guaranty Type ও Warranty Days দিন।", "Select Product Type, Select Unit, Measurement, Measurement Unit, Package Size, Package Type ও Order Level দিন।"] },
+      { "heading": "Opening Stock (নতুন পণ্যে)", "steps": ["IMEI / Serial-এ প্রতি লাইনে একটা নম্বর দিন, অথবা খালি রাখুন।", "Quantity ও Rate দিন; Rate খালি থাকলে Purchase Price ধরা হয়।", "Save চাপুন; বদলাতে Update (Ctrl + U) চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "Measurement ও Measurement Unit একসাথে দিতে হবে; Package Size ও Package Type-ও একসাথে। Opening quantity বা rate ঋণাত্মক হলে Save হবে না।" }
+    ]
+  },
+  "product-low-stock": {
+    "title": "কম স্টকের পণ্য",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "যে পণ্য ন্যূনতম স্টকে নেমেছে বা শেষ হয়ে গেছে, তার তালিকা।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Products → Low Stock", "steps": ["Category ও Brand বাছুন, Search দিয়ে খুঁজুন।", "Sl, Product, Category, Brand, Unit, Minimum Stock, Stock In, Stock Out, Current Stock ও Status দেখা যায়।", "Low Stock বা Out of Stock ব্যাজে অবস্থা বোঝা যায়।", "Print দিয়ে তালিকা ছাপা হয়।"] },
+      { "heading": "সতর্কতা", "warning": "ন্যূনতম স্টক পণ্যের Order Level থেকে আসে — সেটি ঠিক না থাকলে এই তালিকা ভুল দেখাবে।" }
+    ]
+  },
+  "product-stock-alerts": {
+    "title": "স্টকের ব্যতিক্রম তালিকা",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "তিনটি আলাদা তালিকা একই ধরনের — Negative Stock (বাইরে যাওয়া বেশি), Slow Moving (কম চলাচল) ও Warehouse Stock Difference (গুদামে অসম)।",
+    "sections": [
+      { "heading": "Negative Stock Products", "menu": "Products → Negative Stock", "steps": ["Category ও Brand বাছুন, Search করুন।", "Stock In, Stock Out ও Current Stock-এ ঋণাত্মক ব্যালেন্স দেখা যায়; Print আছে।"] },
+      { "heading": "Slow Moving ও Warehouse Difference", "steps": ["Slow Moving-এ Days ঘরে দিন; Last Movement ও Days Idle দেখা যায়; Print আছে।", "Warehouse Stock Difference-এ Warehouses, Min, Max ও Difference দেখা যায়; এই স্ক্রিনে Print নেই।"] },
+      { "heading": "সতর্কতা", "warning": "Negative stock মানে বইয়ে বাইরে যাওয়া বেশি — বিক্রি বা নষ্টের এন্ট্রি মিলিয়ে দেখুন।" }
+    ]
+  },
+  "product-statement": {
+    "title": "পণ্যের বিবরণ",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নির্বাচিত শাখা ও সময়ে একটি পণ্যের প্রতিটি ইনভয়েসে কত ঢুকল বা বের হলো এবং স্টক কত রইল — তা দেখা যায়।",
+    "sections": [
+      { "heading": "রিপোর্ট দেখা", "menu": "Products → Product Statement", "steps": ["Select Branch, Select Product, Start Date ও End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "ফল পড়া", "steps": ["Sl. No., Name, Type, Inv. No., Inv. Date, Qty, Purchase Price, Sales Price, Amount ও Stock দেখা যায়।", "শুরুতে Opening ও শেষে Total সারি থাকে; Print কাগজ বের করে।"] },
+      { "heading": "সতর্কতা", "warning": "Branch ও তারিখ না দিলে রিপোর্ট আসবে না।" }
+    ]
+  },
+  "product-opening-import": {
+    "title": "পণ্যের শুরুর স্টক আপলোড",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "Excel শিট থেকে অনেক পণ্যের শুরুর স্টক একসাথে লেখা হয়; প্রতিটি সারি যাচাই করে তবেই Save হয়।",
+    "sections": [
+      { "heading": "আপলোড ও যাচাই", "menu": "Products → Opening Import", "steps": ["Download Format দিয়ে শিটের নমুনা নামান, অথবা Paste Rows দিয়ে Excel থেকে সারি পেস্ট করুন।", "Product Type (for new products) বাছুন এবং Load Rows চাপুন।", "Check চাপলে প্রতিটি সারির অবস্থা দেখা যায় — New product, Existing, Will create বা To fix।", "সব ঠিক হলে Ok চেপে Save করুন।"] },
+      { "heading": "সতর্কতা", "warning": "শাখায় opening বন্ধ থাকলে উপরে বার্তা আসবে। To fix থাকা সারি ঠিক না করে Ok চাপলে সেগুলো Save হবে না।" }
+    ]
+  },
+  "product-category": {
+    "title": "পণ্যের ক্যাটাগরি",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "পণ্যের ক্যাটাগরি তালিকা; নতুন ক্যাটাগরি এখান থেকেই যোগ বা বদলানো হয়।",
+    "sections": [
+      { "heading": "ক্যাটাগরি", "menu": "Products → Category", "steps": ["Search দিয়ে খুঁজুন; New Category চাপলে ফর্ম খোলে।", "Category Name ও Category Description লিখে Save/Update চাপুন।", "Category List-এ Sl. No., Category Name, Category Description ও Action দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "যে ক্যাটাগরির নিচে পণ্য আছে সেটি মোছা যায় না। /category/edit পাতা শুধু Edit Category লেখা দেখায় — বদল আনতে তালিকার Edit ব্যবহার করুন।" }
+    ]
+  },
+  "product-brand": {
+    "title": "ব্র্যান্ড",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "পণ্যের ব্র্যান্ড বা নির্মাতার তালিকা, সাথে যোগাযোগের তথ্য।",
+    "sections": [
+      { "heading": "ব্র্যান্ড", "menu": "Products → Brand", "steps": ["Search দিয়ে খুঁজুন; New Brand চাপলে ফর্ম খোলে।", "Brand Name, Email, Address ও Contact দিয়ে Save/Update চাপুন।", "তালিকায় Sl, Brand, Email, Address, Contact ও Action দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "যে ব্র্যান্ডের নিচে পণ্য আছে সেটি মোছা যায় না।" }
+    ]
+  },
+  "product-unit": {
+    "title": "পরিমাপের একক",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "পণ্যের একক (কেজি, পিস, লিটার ইত্যাদি) তৈরি ও দেখা যায়।",
+    "sections": [
+      { "heading": "একক", "menu": "Products → Unit", "steps": ["Search দিয়ে খুঁজুন; New Unit চাপলে ফর্ম খোলে।", "Unit Name, Short Name ও Description লিখে Save/Update চাপুন।", "তালিকায় Sl, Unit Name, Short Name ও Description দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "একক বদলালে পুরনো পণ্যের স্টক ও দামের হিসাব বদলে যেতে পারে — নতুন পণ্যের জন্য নতুন এককই ভালো।" }
+    ]
+  },
+  "product-pack-size": {
+    "title": "প্যাক সাইজ",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "পণ্যের প্যাক সাইজ (যেমন 12Kg, 35Kg) তালিকা।",
+    "sections": [
+      { "heading": "প্যাক সাইজ", "menu": "Products → Pack Size", "steps": ["Search দিয়ে খুঁজুন; New Pack Size চাপলে জানালা খোলে।", "Pack Size (যেমন 12Kg) ও Description লিখে Save/Update চাপুন।", "তালিকায় Sl. No., Pack Size, Description ও Action দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "যে প্যাক সাইজ কোনো পণ্য ব্যবহার করে সেটি মোছা যায় না।" }
+    ]
+  },
+  "product-group": {
+    "title": "পণ্যের গ্রুপ",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "পণ্যের গ্রুপ তালিকা; গ্রুপ দিয়ে রিপোর্টে পণ্য ভাগ করা যায়।",
+    "sections": [
+      { "heading": "গ্রুপ", "menu": "Products → Product Group", "steps": ["Search দিয়ে খুঁজুন; New Group চাপলে জানালা খোলে।", "Group Name ও Group Description লিখে Save/Update চাপুন।", "তালিকায় Sl. No., Group Name, Group Description ও Action দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "যে গ্রুপে পণ্য আছে সেটি মোছা যায় না।" }
+    ]
+  },
+  "item-chart": {
+    "title": "পণ্য/হিসাবের তুলনা",
+    "module": "Products",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি হিসাবের চলাচল দুই সময়ের মধ্যে তুলনা করে লাইন চার্টে দেখা যায়।",
+    "sections": [
+      { "heading": "চার্ট দেখা", "menu": "Analytics → Item Chart", "steps": ["Select Branch ও Select Account বাছুন।", "Start Date (P1), End Date (P1), Start Date (P2) ও End Date (P2) দিন।", "Run বাটন নেই — ঘর বদলালেই চার্ট নতুন করে আসে।"] },
+      { "heading": "সতর্কতা", "warning": "কোনো তথ্য না এলে চার্টে কিছুই আঁকা হয় না; তারিখ দুটো উল্টে দিলে তুলনা অর্থহীন হবে।" }
+    ]
+  }
+}

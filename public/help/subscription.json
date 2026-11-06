@@ -1,0 +1,88 @@
+{
+  "subscription-admin": {
+    "title": "সাবস্ক্রিপশন প্রশাসন",
+    "module": "Subscription",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্ল্যাটফর্ম চালকের সাবস্ক্রিপশন তালিকা, ম্যানুয়াল পেমেন্ট ও চালু অবস্থা দেখা ও সামলানোর জায়গা।",
+    "sections": [
+      { "heading": "সাবস্ক্রিপশন দেওয়া", "menu": "Subscription → Subscription Admin", "steps": ["Company, Plan, Status (Active/Trialing/Pending Payment/Expired/Suspended/Cancelled) বাছুন।", "Access Status, Start Date, End Date, Trial End ও Short Note দিন।", "Assign Subscription চাপুন।"] },
+      { "heading": "তালিকা ও পেমেন্ট", "steps": ["তালিকায় Company, Plan, Status, Access ও Ends দেখা যায়।", "Payment Requests-এ company, plan, method, transaction id, Amount, Months, Sender ও Paid At দেখে Approve বা Reject করুন।"] },
+      { "heading": "সতর্কতা", "warning": "Reject করলে টাকা ফেরে না — ব্যবহারকারীকে জানান। মেয়াদ শেষ হলে Access নিজে থেকে বদলাতে পারে, তাই End Date মিলিয়ে রাখুন।" }
+    ]
+  },
+  "subscription-plans": {
+    "title": "সাবস্ক্রিপশন প্ল্যান",
+    "module": "Subscription",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "দাম, সীমা ও ট্রায়ালসহ প্ল্যানের তালিকা।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Subscription → Subscription Admin → Plan List", "steps": ["Plan, Billing, Price, Limits ও Status দেখা যায়।", "New Plan দিয়ে নতুন প্ল্যান; Edit দিয়ে বদলান।", "Limits ঘরে Employees, Customers, Products, Users, Devices/User, Branches, Txn/Month ও Support দেখায়।"] },
+      { "heading": "সতর্কতা", "warning": "একটি প্ল্যানে কোম্পানি থাকলে তাকে মুছে ফেলা যায় না — Status বন্ধ করে নতুন সাবস্ক্রিপশন দেওয়া ভালো।" }
+    ]
+  },
+  "subscription-plan-form": {
+    "title": "সাবস্ক্রিপশন প্ল্যান তৈরি",
+    "module": "Subscription",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নতুন প্ল্যানের দাম, সীমা, ট্রায়াল ও সুবিধা ঠিক করার ফর্ম।",
+    "sections": [
+      { "heading": "প্ল্যান", "menu": "Subscription → Plans → New Plan", "steps": ["Plan Name, Slug, Billing Interval, Status, Price ও Currency দিন।", "Trial Days, Grace Days ও Sort Order দিন।", "Max Employees, Customers, Products, Users, Devices / User, Branches ও Transactions / Month দিন (খালি = Unlimited)।", "Support Time, Description ও Included Features বাছুন; Save করুন।"] },
+      { "heading": "সতর্কতা", "warning": "Slug পরে বদলালে পুরনো লিংক ভাঙতে পারে। সীমা খালি রাখলে অসীম ধরা হবে — ইচ্ছাকৃত কিনা দেখে নিন।" }
+    ]
+  },
+  "subscription-pricing": {
+    "title": "প্ল্যানের দাম",
+    "module": "Subscription",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কোম্পানির ব্যবহারকারী যে প্ল্যানগুলো দেখে বেছে নেয়।",
+    "sections": [
+      { "heading": "প্ল্যান দেখা", "menu": "Subscription → Pricing", "steps": ["প্রতিটি কার্ডে প্ল্যানের নাম, interval, দাম, Trial দিন ও সীমা দেখা যায়।", "Pay Manually দিয়ে পেমেন্ট পাঠানোর পাতায় যান।", "Current Status দিয়ে নিজের সাবস্ক্রিপশন দেখুন।"] },
+      { "heading": "সতর্কতা", "warning": "এখানে টাকা কাটে না — ম্যানুয়াল পেমেন্ট পাঠিয়ে প্রশাসকের অনুমোদনের পরে চালু হয়।" }
+    ]
+  },
+  "subscription-my-plan": {
+    "title": "আমার সাবস্ক্রিপশন",
+    "module": "Subscription",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নিজের প্ল্যান, মেয়াদ ও চালু সুবিধাগুলো দেখা যায়।",
+    "sections": [
+      { "heading": "অবস্থা", "menu": "Subscription → My Plan", "steps": ["প্ল্যানের নাম, status ও Access দেখা যায়।", "Start Date, End Date, Trial Ends ও Next Billing Date দেখুন।", "Enabled Features-এ চালু সুবিধার তালিকা থাকে।"] },
+      { "heading": "নবায়ন", "steps": ["Need Renewal? থেকে Submit Payment, Billing History বা Compare Plans বাছুন।", "সাবস্ক্রিপশন না থাকলে Manual Subscription থেকে View Plans, Submit Payment বা Billing History নিন।"] },
+      { "heading": "সতর্কতা", "warning": "মেয়াদ শেষের পরে Access কমে যেতে পারে; আগেভাগে নবায়নের আবেদন করুন।" }
+    ]
+  },
+  "subscription-payment-submit": {
+    "title": "সাবস্ক্রিপশনের পেমেন্ট পাঠানো",
+    "module": "Subscription",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "ম্যানুয়াল পেমেন্ট করার পর তার তথ্য প্রশাসকের কাছে জমা দেওয়া হয়।",
+    "sections": [
+      { "heading": "পেমেন্ট তথ্য", "menu": "Subscription → Submit Payment", "steps": ["Plan বাছুন; Amount নিজে থেকে আসে।", "Payment Method (bKash/Nagad/Bank Transfer/Cash), Billing Months, Payment Date, Transaction ID, Sender Number ও Receiver Account দিন।", "Note লিখে Submit করুন।"] },
+      { "heading": "সতর্কতা", "warning": "Transaction ID ভুল দিলে অনুমোদন আটকে যাবে। দাম শূন্য প্ল্যানে পেমেন্ট লাগে না।" }
+    ]
+  },
+  "subscription-billing-history": {
+    "title": "বিলিং ইতিহাস",
+    "module": "Subscription",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রতিটি ম্যানুয়াল পেমেন্ট ও তার অনুমোদনের অবস্থা।",
+    "sections": [
+      { "heading": "ইতিহাস", "menu": "Subscription → Billing History", "steps": ["Date, Plan, Method, Amount, Months, Transaction ID ও Status দেখা যায়।", "Status দেখে বোঝা যায় পেমেন্ট অপেক্ষায়, অনুমোদিত বা বাতিল।"] },
+      { "heading": "সতর্কতা", "warning": "এখানে কোনো পেমেন্ট বদলানো যায় না; ভুল হলে প্রশাসকের সঙ্গে যোগাযোগ করুন।" }
+    ]
+  }
+}

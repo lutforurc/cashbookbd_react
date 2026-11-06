@@ -1,0 +1,308 @@
+{
+  "sms-log": {
+    "title": "এসএমএস লগ",
+    "module": "SMS",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "পাঠানো এসএমএসগুলোর তালিকা — কাকে, কী লেখা, কোন মাধ্যমে গেল এবং গেল কি না।",
+    "sections": [
+      { "heading": "লগ", "menu": "SMS → SMS Logs", "steps": ["Branch বাছুন, Search বক্সে নাম বা মোবাইল লিখে Search করুন।", "Sl., Name, Mobile, Message, Provider, Status, Attempts, Sent At ও Created At দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "Status ব্যর্থ হলে Attempts দেখুন; বারবার পাঠানোর আগে নম্বর ঠিক আছে কি না মিলিয়ে নিন।" }
+    ]
+  },
+  "sms-template-list": {
+    "title": "এসএমএস টেমপ্লেট",
+    "module": "SMS",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বারবার ব্যবহৃত এসএমএসের নমুনা তালিকা।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "SMS → Templates", "steps": ["Search দিয়ে Template বা Placeholders খুঁজুন।", "Sl., Template, Placeholders, Message, Status ও Updated দেখা যায়।", "New Template দিয়ে নতুন; view / edit / delete আইকনে পুরনো নমুনা সামলান।"] },
+      { "heading": "সতর্কতা", "warning": "Status Inactive হলে নমুনাটি পাঠানোর সময় বাছাইয়ে আসে না।" }
+    ]
+  },
+  "sms-template-form": {
+    "title": "এসএমএস টেমপ্লেট তৈরি",
+    "module": "SMS",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি এসএমএস নমুনার লেখা, চলক ও অবস্থা ঠিক করার ফর্ম।",
+    "sections": [
+      { "heading": "নমুনা", "menu": "SMS → Templates → New Template", "steps": ["Template Name, Template Key ও Message Body লিখুন।", "Description, Status ও Preview Variables JSON দিন।", "Preview দিয়ে দেখে Save / Update করুন।"] },
+      { "heading": "চলকের নিয়ম", "steps": ["চলক {{name}} আকারে লিখুন, যেমন {{customer_name}} বা {{amount}}।", "কোনো অংশ চলক খালি থাকলে পুরোটা বাদ দিতে [[ ]] দিয়ে ঘেরাও করুন।"] },
+      { "heading": "সতর্কতা", "warning": "Template Key পরে বদলালে পুরনো পাঠানোর নিয়ম ভাঙতে পারে; নতুন নমুনা বানানো ভালো।" }
+    ]
+  },
+  "legacy-records": {
+    "title": "পুরনো ERP-র রেকর্ড",
+    "module": "Legacy",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "পুরনো সিস্টেমের গ্রাহক-সরবরাহকারীর ব্যালেন্স ও লেনদেন দেখা যায়; এখানে কোনো হিসাব বা পোস্ট হয় না।",
+    "sections": [
+      { "heading": "খোঁজা", "menu": "Legacy → Old Records", "steps": ["কোন সিস্টেম ও ধরন (কাস্টমার / সাপ্লায়ার) বাছুন।", "নাম বা মোবাইল লিখুন — 01712-437131 ও 01712437131 দুটোই কাজ করে।", "ক্রমিক, নাম, ধরন, সিস্টেম, ঠিকানা, মোবাইল, লেনদেন ও ব্যালেন্স দেখা যায়।"] },
+      { "heading": "বিস্তারিত", "steps": ["(-) ব্যালেন্স — মোট, (+) ব্যালেন্স — মোট ও নিট উপরে দেখা যায়।", "সারিতে ক্লিক করলে সর্বশেষ ব্যালেন্স ও লেনদেনের তালিকা (ক্রমিক নং, তারিখ, বিবরণ, ডেবিট, ক্রেডিট, ব্যালেন্স) খোলে।", "বিল দেখলে Print করা যায়। পুরনো ভার্সনের রেকর্ডে একই নিয়ম, শিরোনাম পুরনো ভার্সনের ERP-র রেকর্ড।"] },
+      { "heading": "সতর্কতা", "warning": "এটি শুধু পড়ার আর্কাইভ — এখান থেকে কিছু বদলালে নতুন খাতায় কিছুই বদলাবে না।" }
+    ]
+  },
+  "legacy-accounts": {
+    "title": "পুরনো ERP-র নিজস্ব অ্যাকাউন্ট",
+    "module": "Legacy",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "পুরনো সিস্টেমের নিজের ক্যাশ ও ব্যাংক অ্যাকাউন্টের ব্যালেন্স — শুধু ব্যাকআপ দেখার জন্য।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Legacy → Old Accounts", "steps": ["(-) ব্যালেন্স — মোট, (+) ব্যালেন্স — মোট ও নিট দেখা যায়।", "ক্রমিক, নাম, নম্বর, ধরন, মোবাইল, বিবরণ, লেনদেন ও ব্যালেন্স দেখা যায়।", "সারিতে ক্লিক করলে পুরনো সিস্টেমের ব্যালেন্স ও লেনদেনের তালিকা খোলে।"] },
+      { "heading": "সতর্কতা", "warning": "এগুলো নতুন খাতার opening নয়; এখানে কোনো হিসাব হয় না বা পোস্ট হয় না।" }
+    ]
+  },
+  "somity-collection-sheet": {
+    "title": "সমিতির কালেকশন শিট",
+    "module": "Reports",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "সদস্যদের বিক্রি, ডাউন পেমেন্ট, আগের কালেকশন, কিস্তি ও বাকি — এক মাসের শিট।",
+    "sections": [
+      { "heading": "শিট", "menu": "Reports → Collection Sheet", "steps": ["Select Branch, Select Somity, Month ও Status (Opening/Closing) বাছুন।", "Apply চাপুন; Rows ও Font ঠিক করে Print দিন।", "SL. NO, MEMBER DETAILS, TOTAL SALES, DOWN PAYMENT, PRV. COLL., INSTALLMENT, THIS MONTH ও BALANCE দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "সারি না এলে Print বন্ধ থাকে; সমিতি ও মাস ঠিক আছে কি না দেখুন। পি:/স্বা: লাইনে সদস্যের পরিচয় থাকে।" }
+    ]
+  },
+  "somity-monthly-report": {
+    "title": "সমিতির মাসিক রিপোর্ট",
+    "module": "Reports",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "দিন ধরে বিতরণ, ডাউন পেমেন্ট, কিস্তি আদায়, নগদ বিক্রি ও খরচের হিসাব।",
+    "sections": [
+      { "heading": "রিপোর্ট", "menu": "Reports → Monthly Report", "steps": ["Select Project, Start Date ও End Date দিন।", "Apply চাপুন; Rows ও Font ঠিক করে Print দিন।", "ক্রমিক, তারিখ, বিতরণ, ডাউন পেমেন্ট, কিস্তি আদায়, নগদ বিক্রয়, খরচ ও মন্তব্য দেখা যায়; নিচে Grand Total।"] },
+      { "heading": "সতর্কতা", "warning": "তারিখের বাইরের লেনদেন আসবে না; প্রকল্প না বাছলে সব প্রকল্পের মিলিত সংখ্যা আসতে পারে।" }
+    ]
+  },
+  "dashboard": {
+    "title": "ড্যাশবোর্ড",
+    "module": "Dashboard",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "শাখার ধরন অনুযায়ী নিজের ব্যবসার সারসংক্ষেপ — বিক্রি, ক্রয়, নগদ, স্টক ও বকেয়া।",
+    "sections": [
+      { "heading": "সারসংক্ষেপ", "menu": "Dashboard", "steps": ["This month, Last month বা Custom বেছে From ও To দিন।", "শীর্ষ কার্ডে All Branches, Today Sales, Today Purchase, New Customers, Today Vouchers ও Balance Summary দেখা যায়।", "Cash Book (Range), Inter-Branch Transfers, Receivable/Payable Ageing, Low Stock, Stock on Hand, Installments Due, Top Sales/Purchase Products ও চার্টগুলো দেখুন।"] },
+      { "heading": "অন্য ধরনের ব্যবসা", "steps": ["Trading শাখায় Stock value, Quantity on hand, Lines in stock, Money Asleep, Sales, Cost of goods, Purchase variance, Gross profit, Margin ও Net position দেখা যায়।", "Hotel শাখায় In the building, Arriving, Leaving, Free tonight, Occupancy, ADR ও RevPAR।", "Real Estate শাখায় Booked value, Received, Outstanding, Units left/sold, Parking ও Installments দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "কার্ডের সংখ্যা চলতি তথ্য অনুযায়ী বদলায়; তারিখ-সীমা বদলালে আগের সংখ্যার সাথে মিলবে না।" }
+    ]
+  },
+  "customer-dashboard": {
+    "title": "গ্রাহকের ড্যাশবোর্ড",
+    "module": "Dashboard",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "গ্রাহক নিজের পাওনা, জমা, কিস্তি ও ডিউ এক জায়গায় দেখেন।",
+    "sections": [
+      { "heading": "সারসংক্ষেপ", "menu": "Customer → Dashboard", "steps": ["Total Received, Total Payment ও Balance কার্ড দেখুন।", "Overview, Statement, Due, Installments ও Payments ট্যাব বাছুন।", "Installment Summary-তে Total, Paid, Due ও Overdue দেখা যায়।"] },
+      { "heading": "বিস্তারিত", "steps": ["Installment Information-এ Sl. No., Invoice. No, Install. No, Due Date, Amount ও Status থাকে।", "Payment History-এ Vr. No, Vr. date, Inst. No ও Amount থাকে।", "Logout দিয়ে বেরোন; উপরে থিম বদলানোর সুইচ আছে।"] },
+      { "heading": "সতর্কতা", "warning": "Balance মানে Received বিয়োগ Payment; কোন কিস্তি কখন দিতে হবে তা Due ট্যাবে দেখুন।" }
+    ]
+  },
+  "reseller-dashboard": {
+    "title": "রিসেলার ড্যাশবোর্ড",
+    "module": "Reseller",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "রিসেলার নিজের ক্লায়েন্ট, সাবস্ক্রিপশন ও কমিশনের অবস্থা দেখেন।",
+    "sections": [
+      { "heading": "সারসংক্ষেপ", "menu": "Reseller → Dashboard", "steps": ["Clients, Approved Payments, Approved Amount, Commission, Paid ও Payable দেখুন।", "Refresh দিয়ে নতুন তথ্য আনুন।", "My Clients-এ Company, Plan, Subscription ও Access; Commission History ও Payment Details-এ বিস্তারিত দেখুন।"] },
+      { "heading": "সতর্কতা", "warning": "Payable হলো অনুমোদিত কমিশন থেকে পরিশোধ বাদ দেওয়ার পরের সংখ্যা; ক্লায়েন্ট না থাকলে কোনো সারি আসবে না।" }
+    ]
+  },
+  "approval-center": {
+    "title": "অনুমোদন কেন্দ্র",
+    "module": "Approval",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "উপস্থিতি ও ভাউচার এক জায়গায় দেখে দল বেঁধে অনুমোদন বা বাতিল করা হয়।",
+    "sections": [
+      { "heading": "অনুমোদন", "menu": "Approval Center", "steps": ["From, To, Branch/Project ও Search দিন; Load চাপুন।", "Attendance বা Vouchers ট্যাব বাছুন; Pending / Approved দেখুন।", "সারি বেছে Approve, Remove Approval, Reject বা Clear করুন; Confirm Approval Action-এ Remarks লিখুন।"] },
+      { "heading": "সতর্কতা", "warning": "Reject ও Clear শুধু Attendance-এ কাজ করে, ভাউচারে নয়। অনুমোদনের আগে তারিখ ও শাখা মিলিয়ে নিন।" }
+    ]
+  },
+  "approval-audit": {
+    "title": "অনুমোদনের অডিট",
+    "module": "Approval",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কে, কখন, কোন উপস্থিতি বা ভাউচারে কী সিদ্ধান্ত দিয়েছে তার ইতিহাস।",
+    "sections": [
+      { "heading": "অডিট", "menu": "Approval Center → Audit History", "steps": ["From, To, Branch/Project ও Action বাছুন; Search করুন।", "Action At, Attendance Date, Employee, Branch/Project, Action, Action By ও Remarks দেখা যায়।", "Print বা Excel দিয়ে তালিকা নিন।"] },
+      { "heading": "সতর্কতা", "warning": "এটি অডিট তালিকা — এখান থেকে অনুমোদন বদলানো যায় না; বদলাতে Approval Center-এ যান।" }
+    ]
+  },
+  "scheme-receivable": {
+    "title": "কোম্পানি স্কিমের পাওনা",
+    "module": "Company Scheme",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "ব্র্যান্ডভিত্তিক স্কিমে কোন আইএমইআই-এর কত পাওনা, কত এসেছে ও কত বাকি — তা দেখা ও গ্রহণ করা হয়।",
+    "sections": [
+      { "heading": "পাওনা", "menu": "Reports → Company Scheme Receivable", "steps": ["Company (scheme account), Select Branch, Status ও IMEI / Mobile / Invoice দিন; Apply চাপুন।", "Invoice, Product / IMEI, Buyer, Company, Sale Price, Receivable, Received, Balance ও Due Date দেখা যায়।", "Fill oldest first দিয়ে অঙ্ক ভরুন, তারিখ দিন, তারপর Receive চাপুন।"] },
+      { "heading": "মিলানো", "steps": ["নিচে Ledger balance, Open IMEIs ও Difference দেখা যায়।", "Difference থাকলে something reached this account outside Company Scheme বার্তা আসে।"] },
+      { "heading": "সতর্কতা", "warning": "কোম্পানি না বেছে Apply চাপলে তালিকা আসবে না। Receive করলে ভাউচার তৈরি হয় — Print {voucher} দিয়ে তা ছাপা যায়।" }
+    ]
+  },
+  "scheme-receipts": {
+    "title": "কোম্পানি স্কিমের রিসিভ",
+    "module": "Company Scheme",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "ব্র্যান্ড থেকে স্কিমে যে টাকা এসেছে তার রিসিভ তালিকা।",
+    "sections": [
+      { "heading": "রিসিভ", "menu": "Reports → Company Scheme Receipts", "steps": ["Company, Select Branch, Start Date ও End Date দিন; Apply চাপুন।", "Date, Voucher, Company, IMEI, Product, Invoice ও Amount দেখা যায়; নিচে Total।", "ভাউচারে ক্লিক করলে সেই রিসিভ ছাপা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "তারিখ-সীমা না দিলে তালিকা আসে না; কোনো রিসিভ না থাকলে No receipt in this range দেখায়।" }
+    ]
+  },
+  "user-list": {
+    "title": "ব্যবহারকারীর তালিকা",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কোম্পানির সব ব্যবহারকারী, তাদের শাখা, পদ ও চালু/বন্ধ অবস্থা।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Users → User List", "steps": ["Search দিয়ে নাম, ইমেইল বা মোবাইল খুঁজুন; All companies দিয়ে সব কোম্পানি দেখুন।", "Sl. No., User Name, Company, Working Branch, Email, Mobile ও Role দেখা যায়।", "সুইচ দিয়ে চালু/বন্ধ, Edit user দিয়ে বদল, Generate temporary password দিয়ে সাময়িক পাসওয়ার্ড দিন।"] },
+      { "heading": "সতর্কতা", "warning": "নিজের অ্যাকাউন্ট বন্ধ করা যায় না। বন্ধ করলে ব্যবহারকারী ঢুকতে পারবে না, কিন্তু তার তথ্য মোছে না।" }
+    ]
+  },
+  "user-form": {
+    "title": "ব্যবহারকারী তৈরি ও সম্পাদনা",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নতুন ব্যবহারকারী যোগ বা পুরনো ব্যবহারকারীর পদ, শাখা ও পাসওয়ার্ড বদলানোর ফর্ম।",
+    "sections": [
+      { "heading": "নতুন ব্যবহারকারী", "menu": "Users → Add User", "steps": ["User Name, Email Address ও Mobile Number দিন।", "Select Role, Language ও Select Branch বাছুন।", "Password ও Confirm Password দিন; Sidebar Menu ও Use Filter Parameter ঠিক করুন।", "Save চাপুন।"] },
+      { "heading": "সম্পাদনা", "steps": ["Edit User-এ Email Address, Select Role ও Select Branch বদলান।", "Sidebar Menu ও Use Filter Parameter সুইচ ঠিক রেখে Update চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "একই ইমেইল বা মোবাইল আগে থাকলে সেভ হবে না। ভুল পদ দিলে ব্যবহারকারী অপ্রয়োজনীয় স্ক্রিন দেখতে পাবেন।" }
+    ]
+  },
+  "company-users": {
+    "title": "কোম্পানির ব্যবহারকারী",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কোম্পানির মালিক ও সাধারণ ব্যবহারকারীদের আলাদা করে দেখা যায়।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Users → Company Users", "steps": ["Show all users দিয়ে সব দেখুন; Search দিয়ে খুঁজুন।", "Sl. No., User Name, Company, Working Branch, Email/Phone, Role ও Action দেখা যায়।", "Add User দিয়ে নতুন ব্যবহারকারী; সীমা পূর্ণ হলে User Limit Full দেখায়।"] },
+      { "heading": "সতর্কতা", "warning": "কোম্পানির ব্যবহারকারীর সীমা প্ল্যান অনুযায়ী; সীমা পূর্ণ হলে আগে প্ল্যান বদলাতে হবে।" }
+    ]
+  },
+  "online-users": {
+    "title": "অনলাইন ব্যবহারকারী",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এখন কে সাইন ইন করে আছে এবং শেষ কখন দেখা গেছে।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Users → Online Users", "steps": ["Refresh চাপুন।", "Sl. No., Status (Online), User Name, Working Branch, Email, Role ও Last Seen দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "Last Seen পুরনো হলে ব্যবহারকারী ব্রাউজার বন্ধ করে থাকতে পারেন; এটি লগআউটের প্রমাণ নয়।" }
+    ]
+  },
+  "login-log": {
+    "title": "লগইন ইতিহাস",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কে কখন ঢুকেছে, কোথা থেকে এবং বেরিয়েছে কি না।",
+    "sections": [
+      { "heading": "ইতিহাস", "menu": "Users → Login History", "steps": ["From ও Result (All/Signed in/Refused) দিন; Search করুন।", "Sl. No., User, Result, Company / Branch, Logged In, Logged Out, Duration, IP Address ও Device দেখা যায়।", "Reset দিয়ে ফিল্টার মুছুন।"] },
+      { "heading": "সতর্কতা", "warning": "Refused মানে ঢুকতে পারেনি; Not signed out মানে সেশন বন্ধ হয়নি — নিরাপত্তার জন্য দেখে নিন।" }
+    ]
+  },
+  "roles": {
+    "title": "পদের অনুমতি",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রতিটি পদের জন্য কোন কাজের অনুমতি থাকবে তা টিক দিয়ে ঠিক করা হয়।",
+    "sections": [
+      { "heading": "অনুমতি", "menu": "Users → Roles", "steps": ["Roles ড্রপডাউনে পদ বাছুন।", "প্রতিটি গ্রুপে All দিয়ে সব, বা আলাদা আলাদা অনুমতি টিক দিন।", "Update চাপুন; Add Role দিয়ে নতুন পদ।"] },
+      { "heading": "সতর্কতা", "warning": "প্ল্যানের নিজের পদ বদলানো যায় না — শুধু কোম্পানির নিজের পদ সম্পাদনযোগ্য। অনুমতি কমালে ব্যবহারকারী সাথে সাথে সেই স্ক্রিন হারাবেন।" }
+    ]
+  },
+  "add-role": {
+    "title": "নতুন পদ",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি নতুন পদের নাম তৈরি করা হয়; অনুমতি পরে Roles পাতায় দেওয়া হয়।",
+    "sections": [
+      { "heading": "পদ", "menu": "Users → Roles → Add Role", "steps": ["Role Name লিখুন।", "Save চাপুন; তারপর Roles-এ গিয়ে অনুমতি টিক দিন।"] },
+      { "heading": "সতর্কতা", "warning": "একই নামে দুটি পদ বানাবেন না — পরে কোনটি কাকে দেওয়া হয়েছে বোঝা কঠিন হবে।" }
+    ]
+  },
+  "add-permission": {
+    "title": "নতুন অনুমতি",
+    "module": "Users",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি নতুন অনুমতির চাবি ও তার গ্রুপ তৈরি করা হয়।",
+    "sections": [
+      { "heading": "অনুমতি", "menu": "Users → Roles → Add Permission", "steps": ["Permission Name লিখুন, যেমন voucher.approval।", "Group Name-এ Search বা Choose from list দিয়ে গ্রুপ বাছুন, অথবা Add new group করুন।", "Save চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "একই চাবি দুবার বানালে অনুমতি মিশে যাবে — আগে Search করে দেখুন। নতুন অনুমতি নিজে থেকে কোনো ভূমিকায় যায় না।" }
+    ]
+  },
+  "company-list": {
+    "title": "কোম্পানির তালিকা",
+    "module": "Company",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এই ইনস্টলে থাকা কোম্পানিগুলোর তালিকা।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Setup → Company List", "steps": ["Search দিয়ে নাম বা মোবাইল খুঁজুন।", "Sl. No., Name of Company, Logo, Logo Dark, Contact Person, Phone/Mobile ও Action দেখা যায়।", "Edit company দিয়ে তথ্য বদলান।"] },
+      { "heading": "সতর্কতা", "warning": "কোম্পানি মোছার কাজ এখানে নেই; মোছার অনুরোধ Admin → Account Deletions দিয়ে যায়।" }
+    ]
+  },
+  "company-edit": {
+    "title": "কোম্পানির তথ্য সম্পাদনা",
+    "module": "Company",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কোম্পানির নাম, যোগাযোগ, ঠিকানা ও অর্থবছরের শুরু ঠিক করা হয়।",
+    "sections": [
+      { "heading": "তথ্য", "menu": "Setup → Company List → Edit", "steps": ["Name of Company, Contact Person, Phone/Mobile, Email ও ঠিকানা লিখুন।", "Financial year starts in ও Year closing বাছুন।", "Update চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "অর্থবছরের শুরু বদলালে রিপোর্টের সময়কাল বদলে যেতে পারে; বছর বন্ধ করার আগে হিসাব মিলিয়ে নিন।" }
+    ]
+  },
+  "branch-form": {
+    "title": "শাখা তৈরি ও সম্পাদনা",
+    "module": "Company",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি শাখার ধরন, ছাপা, ফর্ম, গ্রাহক ও পণ্যের নিয়ম ধাপে ধাপে ঠিক করা হয়।",
+    "sections": [
+      { "heading": "ধাপগুলো", "menu": "Setup → Branch List → Add Branch", "steps": ["Basic Info-তে Select Branch Type, Select Business Type, Select Inventory System, Select Status ও যোগাযোগ দিন।", "Print Setup, Invoice Setup ও Forms Setup-এ ছাপা ও ভাউচার ফর্মের ধরন ঠিক করুন।", "Customer Setup, Product Setup ও Dropdown-এ গ্রাহক-পণ্যের ঘর বাছুন।", "Real Estate Setup, Hotel Setup, Feature Controls ও SaaS Setup দিয়ে বাকি সুবিধা চালু করুন।", "প্রতিটি ধাপে Next, শেষে Save / Update চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "Stock With Zero, Multiple Warehouse, Opening ongoing ও Block Negative Stock Sale-এর মতো সুইচ পরে বদলালে পুরনো লেনদেনে প্রভাব পড়তে পারে। SMS Service বন্ধ থাকলে এসএমএস যাবে না।" }
+    ]
+  }
+}

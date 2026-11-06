@@ -27,6 +27,10 @@ const ROUTES = {
   highlight_rules: '/admin/highlight-rules',
   reseller_dashboard: '/reseller/dashboard',
 
+  // The product's own manual. Every signed-in user, no permission; the topic
+  // lives in the address (`/help?topic=asset-category`).
+  help: '/help',
+
   // Account / company deletion. The request page is public (a root route); the
   // review console is a platform-operator screen.
   account_deletion_request: '/account-deletion',

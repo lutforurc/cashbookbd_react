@@ -1,6 +1,8 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import TutorialVideoLink, { deriveScreenKey } from './TutorialVideoLink';
+import HelpButton from '../../help/HelpButton';
+import { helpTopicForPath } from '../../help/helpTopicForPath';
 
 interface HelmetParam {
   title: string | null;
@@ -20,6 +22,13 @@ interface HelmetParam {
    * the screen, and leaving this off is right.
    */
   screen?: string;
+  /**
+   * Names the help topic when the route alone cannot.
+   *
+   * A tabbed screen (Assets) holds several topics on one route; it passes the
+   * one its open tab belongs to. Left off, the topic is read from the route.
+   */
+  helpTopic?: string;
 }
 
 /**
@@ -30,7 +39,7 @@ interface HelmetParam {
  * the video list has never seen registers itself the first time a platform
  * operator opens it. See TutorialVideoLink.
  */
-const HelmetTitle: React.FC<HelmetParam> = ({ title = '', screen, children }) => {
+const HelmetTitle: React.FC<HelmetParam> = ({ title = '', screen, children, helpTopic }) => {
   // useLocation, not window.location. The browser URL changes the moment a
   // navigation starts, so a screen that navigates away -- a form redirecting to
   // its list after a save -- could render once more and read the path it was
@@ -38,6 +47,7 @@ const HelmetTitle: React.FC<HelmetParam> = ({ title = '', screen, children }) =>
   // which is what registered "Edit Branch" against the branch list route once.
   const { pathname } = useLocation();
   const screenKey = screen || deriveScreenKey(pathname);
+  const topic = helpTopic ?? helpTopicForPath(pathname);
 
   return (
     <div>
@@ -48,6 +58,9 @@ const HelmetTitle: React.FC<HelmetParam> = ({ title = '', screen, children }) =>
             {title}
           </h1>
           <TutorialVideoLink screen={screenKey} title={String(title || '')} />
+          {/* One help button for every screen, in the title row beside the
+              video link. The dialog it opens is the layout's single modal. */}
+          {topic ? <HelpButton topic={topic} /> : null}
           {children}
         </div>)
       }

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import httpService from '../../services/httpService';
 import { API_ACCOUNT_DELETION_ADMIN_LIST_URL } from '../../services/apiRoutes';
+import HelmetTitle from '../../utils/others/HelmetTitle';
 
 /*
  * One deletion request: verify, review, confirm, process.
@@ -75,6 +76,7 @@ const AccountDeletionDetail: React.FC = () => {
 
   return (
     <div className="space-y-5">
+      <HelmetTitle title="Deletion Request" />
       <button onClick={() => navigate('/admin/account-deletions')} className="text-sm text-primary">
         ← Back to requests
       </button>

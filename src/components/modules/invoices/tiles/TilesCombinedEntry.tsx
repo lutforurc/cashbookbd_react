@@ -819,7 +819,7 @@ const TilesCombinedEntry = () => {
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title={editingCombinedNumber ? 'Edit Combined Invoice' : 'Combined Invoice'} screen="combined-entry.tiles" />
+        <HelmetTitle title={editingCombinedNumber ? 'Edit Combined Invoice' : 'Combined Invoice'} screen="combined-entry.tiles"  helpTopic="combined-tiles" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-8">
         <div className="min-w-0 self-start md:self-auto">

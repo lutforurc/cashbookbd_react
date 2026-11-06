@@ -1,0 +1,93 @@
+{
+  "asset-category": {
+    "title": "অ্যাসেট ক্যাটাগরি ও অ্যাকাউন্ট হেড তৈরি",
+    "module": "Assets",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "ক্যাটাগরি ফর্মে কোনো হেড তৈরি হয় না, শুধু আগে থেকে থাকা হেড বেছে নিতে হয়। তাই কাজের ক্রম হলো গ্রুপ হেড, অ্যাকাউন্ট হেড, তারপর ক্যাটাগরি। এখানে উদাহরণ হিসেবে Vehicles ক্যাটাগরি ধরা হয়েছে।",
+    "sections": [
+      {
+        "heading": "ধাপ ১: গ্রুপ হেড তৈরি",
+        "menu": "Customers → CoA L3 → New COA L3",
+        "steps": [
+          "নিচের গ্রুপগুলো আগে থেকে থাকলে আবার বানানোর দরকার নেই।"
+        ],
+        "table": {
+          "headers": ["Accounts Group Head", "Chart of Accounts (Level-2)", "Source"],
+          "rows": [
+            ["Fixed Assets", "Fixed Asset", "General Transaction"],
+            ["Accumulated Depreciation", "Fixed Asset", "General Transaction"],
+            ["Depreciation", "Administrative & General Expenses", "General Transaction"],
+            ["Asset Disposal", "Indirect Income", "General Transaction"]
+          ]
+        },
+        "warning": "Source ঘরটি নিজে বদলে দিন। এখানে অন্য কোনো অপশন আগে থেকে বসে থাকতে পারে। প্রতিটি গ্রুপে General Transaction বেছে নিন।"
+      },
+      {
+        "heading": "ধাপ ২: চারটি অ্যাকাউন্ট হেড তৈরি",
+        "menu": "Customers → Accounts Head List → New Head Entry",
+        "steps": [
+          "প্রতিটি হেডের জন্য Accounts Group Head, Reporting To ও Accounts Head Name পূরণ করে SAVE চাপুন।",
+          "Accounts Group Head ঘরে কমপক্ষে ৩ অক্ষর লিখলে তালিকা আসবে।",
+          "Asset ও Accumulated Depreciation হেড প্রতি ক্যাটাগরির জন্য আলাদা বানানো ভালো।",
+          "Depreciation ও Gain / Loss হেড সব ক্যাটাগরিতে একই ব্যবহার করা যায়। একই নামে আবার বানানো যাবে না।"
+        ],
+        "table": {
+          "headers": ["Accounts Head Name", "Accounts Group Head", "Reporting To"],
+          "rows": [
+            ["Vehicles", "Fixed Assets", "Balance Sheet"],
+            ["Accumulated Depreciation — Vehicles", "Accumulated Depreciation", "Balance Sheet"],
+            ["Depreciation", "Depreciation", "Profit and Loss Accounts"],
+            ["Gain / Loss on Disposal of Asset", "Asset Disposal", "Profit and Loss Accounts"]
+          ]
+        },
+        "warning": "Reporting To ঘরে সবচেয়ে বেশি ভুল হয়। এখানে আগে থেকেই Balance Sheet বসানো থাকে। শেষের দুটি হেডে এটি বদলে Profit and Loss Accounts না করলে ক্যাটাগরি ফর্মের তালিকায় হেড দুটি আসবে না।"
+      },
+      {
+        "heading": "ধাপ ৩: ক্যাটাগরি তৈরি",
+        "menu": "Assets → Categories & Register → Categories ট্যাব → Add a category",
+        "steps": [
+          "ঘরগুলো পূরণ করে Save চাপুন। হেড তৈরির আগেই ফর্ম খোলা থাকলে পেজ রিলোড করুন, নতুন হেড তাহলে তালিকায় আসবে।"
+        ],
+        "table": {
+          "headers": ["ঘর", "উদাহরণ", "মানে"],
+          "rows": [
+            ["Category", "Vehicles", "ক্যাটাগরির নাম (আবশ্যক, একই নাম দুবার হবে না)"],
+            ["Code", "VEH", "ঐচ্ছিক"],
+            ["Rate %", "20", "বছরে অবচয়ের হার (আবশ্যক, ০ হলেও লিখতে হবে)"],
+            ["Stops at", "1", "মূল্য এই অঙ্কে নামলে অবচয় থামে"],
+            ["Asset head", "Vehicles", "ক্রয়মূল্য এখানে থাকে"],
+            ["Accumulated depreciation", "Accumulated Depreciation — Vehicles", "জমা অবচয় এখানে বাড়ে"],
+            ["Depreciation charge", "Depreciation", "এ বছরের অবচয় খরচ"],
+            ["Gain or loss on sale", "Gain / Loss on Disposal of Asset", "বিক্রিতে লাভ বা ক্ষতি"],
+            ["Note", "ঐচ্ছিক", "হারটি কোথা থেকে এলো"]
+          ]
+        }
+      },
+      {
+        "heading": "ধাপ ৪: তালিকায় মিলিয়ে দেখুন",
+        "steps": [
+          "Save করার পর Heads কলাম দেখুন।"
+        ],
+        "table": {
+          "headers": ["লেখা", "মানে", "করণীয়"],
+          "rows": [
+            ["চারটি হেডের নাম", "ক্যাটাগরি পুরোপুরি প্রস্তুত", "কিছু করতে হবে না"],
+            ["no gain-or-loss head — cannot be sold yet", "অবচয় চলবে, কিন্তু বিক্রি করা যাবে না", "Gain or loss on sale হেড দিন"],
+            ["not set — cannot be depreciated", "Asset, Accumulated বা Depreciation হেড বাকি", "তিনটি হেডই দিন"]
+          ]
+        }
+      },
+      {
+        "heading": "মনে রাখার বিষয়",
+        "steps": [
+          "হার বদলালে নতুন হার পরের অবচয় হিসাব থেকে কার্যকর হয়। আগের বছরের হিসাব বদলায় না।",
+          "শুধু অ্যাসেট না থাকলেই ক্যাটাগরি মোছা যায়।",
+          "Asset head Fixed Asset-এর নিচের গ্রুপেই রাখুন, নইলে হোটেলের Accounts Transaction-এর তালিকায় ক্যাটাগরিটি আসবে না।",
+          "Reporting To ভুল হলে Accounts Head List থেকে হেডটি এডিট করে ঠিক করুন।",
+          "ক্যাটাগরি পুরো কোম্পানির জন্য, তাই শাখা বাছতে হয় না।"
+        ]
+      }
+    ]
+  }
+}

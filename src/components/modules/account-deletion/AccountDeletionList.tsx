@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import httpService from '../../services/httpService';
 import { API_ACCOUNT_DELETION_ADMIN_LIST_URL } from '../../services/apiRoutes';
+import HelmetTitle from '../../utils/others/HelmetTitle';
 
 /*
  * The platform-operator review console for account / company deletion requests.
@@ -67,9 +68,10 @@ const AccountDeletionList: React.FC = () => {
   }, [load]);
 
   return (
-    <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-default">
+    <div>
+      <HelmetTitle title="Account Deletion Requests" />
+      <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-6 shadow-default">
       <div className="mb-5 flex flex-wrap items-center gap-3">
-        <h2 className="mr-auto text-lg font-semibold text-[rgb(var(--c-text))]">Account Deletion Requests</h2>
         <select
           className="rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-2 text-sm"
           value={status}
@@ -180,6 +182,7 @@ const AccountDeletionList: React.FC = () => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

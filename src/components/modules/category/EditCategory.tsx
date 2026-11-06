@@ -1,7 +1,11 @@
-import React from 'react';
+import HelmetTitle from '../../utils/others/HelmetTitle';
 
 const EditCategory = () => {
-  return <div>Edit Category</div>;
+  return (
+    <div>
+      <HelmetTitle title="Edit Category" />
+    </div>
+  );
 };
 
 export default EditCategory;

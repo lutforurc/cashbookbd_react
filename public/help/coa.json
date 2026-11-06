@@ -1,0 +1,87 @@
+{
+  "coa-l1": {
+    "title": "হিসাবের তালিকা — প্রথম স্তর",
+    "module": "Chart of Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "হিসাবের তালিকার সবচেয়ে উপরের স্তর; নিচের স্তরগুলো এই স্তরের নিচে সাজানো হয়।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Accounts → Chart of Accounts L1", "steps": ["Search বক্সে নাম লিখে Search করুন।", "Sl. No. ও Chart of Account L1 দেখা যায়; Action ঘরে অনুমতি না থাকলে Don't have permission লেখা থাকে।"] },
+      { "heading": "সতর্কতা", "warning": "এই স্তর শুধু দেখার — নতুন হিসাব নিচের স্তরে যোগ করতে হয়।" }
+    ]
+  },
+  "coa-l2": {
+    "title": "হিসাবের তালিকা — দ্বিতীয় স্তর",
+    "module": "Chart of Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রথম স্তরের নিচের হিসাবের দল; কোন দল কোন প্রথম স্তরের অধীনে তা এখানে দেখা যায়।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Accounts → Chart of Accounts L2", "steps": ["All Chart of Accounts L1 বাছুন (অথবা সব রাখুন) এবং Search করুন।", "Sl. No., Chart of Account L2, Chart of Account L1 ও Action দেখা যায়।", "Action-এর আইকন দিয়ে Edit বা Delete; বইয়ের আইকনে সেই হিসাবের লেজার খোলে।"] },
+      { "heading": "সতর্কতা", "warning": "কোনো L1 বাছলে শুধু তার অধীনের L2 দেখায়; খালি তালিকায় বলে ওই L1-এর কোনো L2 নেই।" }
+    ]
+  },
+  "coa-l3": {
+    "title": "হিসাবের তালিকা — তৃতীয় স্তর",
+    "module": "Chart of Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "দ্বিতীয় স্তরের নিচের হিসাবের দল, যেখান থেকে Accounts Head তৈরি হয়।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Accounts → Chart of Accounts L3", "steps": ["All Chart of Accounts L1 বাছুন, তারপর দ্বিতীয় বাছাইয়ে All Chart of Accounts L2।", "Search করে Sl. No., Chart of Account L3, Chart of Account L2, Source Name ও Action দেখুন।", "New COA L3 দিয়ে নতুন দল; Action-এর Ledger / Edit / Delete দিয়ে কাজ করুন।"] },
+      { "heading": "সতর্কতা", "warning": "শেয়ার করা (shared) দলে Edit বা Delete থাকে না — সেটি কোম্পানির সাধারণ হিসাব।" }
+    ]
+  },
+  "coa-l3-form": {
+    "title": "তৃতীয় স্তরের হিসাব তৈরি",
+    "module": "Chart of Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নতুন তৃতীয় স্তরের হিসাব তৈরি বা বদলানোর ফর্ম।",
+    "sections": [
+      { "heading": "ফর্ম", "menu": "Accounts → Chart of Accounts L3 → New COA L3", "steps": ["Chart of Accounts (Level-2) বাছুন; তালিকায় Select COA L2 লেখা থাকে।", "Source থাকলে বাছুন।", "Accounts Group Head লিখে SAVE / UPDATE করুন; Back দিয়ে ফিরুন।"] },
+      { "heading": "সতর্কতা", "warning": "Level-2 ও Accounts Group Head দুটোই লাগবে। Shared হিসাব হলে এই ফর্মে বদলানো যাবে না।" }
+    ]
+  },
+  "coa-l4": {
+    "title": "হিসাবের প্রধান তালিকা",
+    "module": "Chart of Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "যে হিসাবগুলোতে সত্যিকার লেনদেন বসে — Accounts Head-এর তালিকা।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Accounts → Accounts Head List", "steps": ["All Chart of Accounts L1 ও L2 বাছুন, Search করুন।", "Sl. No., Accounts Head, Group Head ও Action দেখা যায়।", "New Head Entry দিয়ে নতুন হিসাব; Ledger / Edit / Delete দিয়ে কাজ করুন।"] },
+      { "heading": "সতর্কতা", "warning": "যে হিসাবে লেনদেন হয়েছে সেটি মোছা যায় না; বদলালে পুরনো রিপোর্টের অর্থ বদলে যেতে পারে।" }
+    ]
+  },
+  "coa-l4-form": {
+    "title": "হিসাবের প্রধান তৈরি",
+    "module": "Chart of Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নতুন Accounts Head তৈরি বা বদলানোর ফর্ম।",
+    "sections": [
+      { "heading": "ফর্ম", "menu": "Accounts → Accounts Head List → New Head Entry", "steps": ["Accounts Group Head ঘরে Search for a Reference দিয়ে দল খুঁজে বাছুন।", "Reporting To বাছুন।", "Accounts Head Name লিখে SAVE / UPDATE করুন।"] },
+      { "heading": "সতর্কতা", "warning": "Group Head, Reporting To ও Accounts Head — তিনটিই লাগবে। শেয়ার করা হিসাব এখানে বদলানো যায় না।" }
+    ]
+  },
+  "account-opening-balance": {
+    "title": "হিসাবের শুরুর ব্যালেন্স",
+    "module": "Chart of Accounts",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বই শুরুর দিনে ক্যাশ, ব্যাংক ও মোবাইল ব্যাংকিং অ্যাকাউন্টে কত ছিল তা লেখা হয়; প্রতিটি অঙ্ক একটি জার্নাল ভাউচার হয়ে বসে।",
+    "sections": [
+      { "heading": "ব্যালেন্স লেখা", "menu": "Accounts → Account Opening Balance", "steps": ["Search দিয়ে অ্যাকাউন্ট খুঁজুন; প্রতিটি দলের নিচে Sl. No., Account ও Opening দেখা যায়।", "Opening ঘরে অঙ্ক লিখে সারির Save চাপুন; ভুল হলে Cancel।", "নিচে Total opening মোট দেখায়; ভাউচার নম্বরে চাপলে লেজার খোলে।"] },
+      { "heading": "মুছে ফেলা", "steps": ["Delete দিলে প্রশ্ন আসে — ভাউচার Recycle Bin-এ যায়, অ্যাকাউন্ট মোছে না।", "Inactive ব্যাজ থাকা অ্যাকাউন্টের শুরুর ব্যালেন্স মোছা যায়, বদলানো যায় না।"] },
+      { "heading": "সতর্কতা", "warning": "শাখায় opening বন্ধ থাকলে কিছুই দেখাবে না; শাখার সেটিং থেকে চালু করুন। এখানে ছাপা বা এক্সপোর্ট নেই।" }
+    ]
+  }
+}

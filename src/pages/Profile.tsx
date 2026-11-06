@@ -6,6 +6,7 @@ import userSix from '../images/user/user-06.png';
 import { useDispatch, useSelector } from 'react-redux';
 import { uploadUserCover, uploadUserPhoto } from '../components/modules/user/userSlice';
 import { Input } from '../components/utils/fields/FormControls';
+import HelmetTitle from '../components/utils/others/HelmetTitle';
 
 // ✅ IMPORTANT: path ঠিক করুন (এইটাই আপনার main issue)
 // উদাহরণ:
@@ -136,6 +137,7 @@ const Profile = () => {
   return (
     <>
       <Breadcrumb pageName="Profile" />
+      <HelmetTitle title="Profile" />
 
       <div className="overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
         <div className="relative z-20 h-35 md:h-65">

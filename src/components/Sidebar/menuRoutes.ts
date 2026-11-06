@@ -170,6 +170,9 @@ export const MENU_ROUTES: Record<string, string[]> = {
     '/real-estate/unit-types/create',
   ],
   'asset': [routes.asset_setup],
+  // The manual has no submenu of its own; listed so the entry is marked while
+  // its page is open.
+  'help': [routes.help],
   'hotel': [
     routes.hotel_setup,
     routes.hotel_bookings,
