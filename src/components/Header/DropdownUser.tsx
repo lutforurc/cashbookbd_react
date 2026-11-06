@@ -327,8 +327,6 @@ const DropdownUser = () => {
                     xmlns="http://www.w3.org/2000/svg"
                     aria-hidden="true"
                   >
-
-                    
                     <path
                       d="M5.1 4H18.9Q21.5 4 21.5 6.6V7.6Q21.5 10.2 18.9 10.2H5.1Q2.5 10.2 2.5 7.6V6.6Q2.5 4 5.1 4Z"
                       stroke="currentColor"
