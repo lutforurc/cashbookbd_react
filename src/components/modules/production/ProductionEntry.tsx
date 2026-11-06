@@ -64,6 +64,14 @@ const isoFromDate = (date: Date | null): string => {
   return `${date.getFullYear()}-${month}-${day}`;
 };
 
+// The row keeps ISO for the payload; the table reads it the way every other
+// date in the app reads.
+const displayDate = (value: string | null | undefined): string => {
+  const date = dateFromIso(value);
+  if (!date) return '—';
+  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+};
+
 /**
  * Production Entry: a batch of raw materials turned into one or more finished
  * products. With several, the batch cost is split by sales value (qty x sales
@@ -249,6 +257,8 @@ const ProductionEntry = () => {
   const saveOut = () => {
     if (!outLine.productId) return toast.error('Pick the product made');
     if (!outLine.qty || Number(outLine.qty) <= 0) return toast.error('Enter the good output quantity');
+    if (outLine.expiry && form.productionDate && outLine.expiry < form.productionDate)
+      return toast.error("The expiry date cannot be before the production date");
     if (form.outputs.some((o) => o.productId === outLine.productId && o.id !== editingOutId))
       return toast.error('This product is already an output');
     setForm((p) => ({
@@ -314,6 +324,7 @@ const ProductionEntry = () => {
       godown_id: o.godownId ? Number(o.godownId) : null,
       qty: Number(o.qty),
       share_pct: sharesTyped && form.outputs.length > 1 ? Number(o.share) || 0 : null,
+      expiry_date: o.expiry || null,
     })),
     inputs: form.inputs.map((i) => ({
       product_id: Number(i.productId),
@@ -340,6 +351,8 @@ const ProductionEntry = () => {
       return { message: `The cost shares add up to ${shareTotal.toFixed(2)}%, not 100%.`, tab: 'output' };
     if (form.outputs.length > 1 && !sharesTyped && form.outputs.some((o) => !(Number(o.price) > 0)))
       return { message: 'An output has no sales price, so its cost share cannot be worked out. Type the shares.', tab: 'output' };
+    if (form.productionDate && form.outputs.some((o) => o.expiry && o.expiry < form.productionDate))
+      return { message: 'An output expiry date is before the production date.', tab: 'output' };
     if (!form.inputs.length) return { message: 'Add at least one input.', tab: 'inputs' };
     return null;
   };
@@ -395,6 +408,7 @@ const ProductionEntry = () => {
             qty: String(Number(o.qty)),
             price: o.sales_price != null ? String(Number(o.sales_price)) : '',
             share: typed ? String(Number(o.cost_share_pct)) : '',
+            expiry: o.expiry_date ? String(o.expiry_date).slice(0, 10) : '',
           })),
           inputs: inputs.map((i, index) => ({
             id: Date.now() + index,
@@ -885,6 +899,7 @@ const ProductionEntry = () => {
                     <th className={`${th} w-12`}>#</th>
                     <th className={th}>Product</th>
                     <th className={`${th} text-right`}>Good quantity</th>
+                    <th className={`${th}`}>Expiry</th>
                     <th className={`${th} text-right`}>Sales price</th>
                     <th className={`${th} w-36 text-right`}>Share of cost %</th>
                     <th className={`${th} w-24`} />
@@ -897,6 +912,9 @@ const ProductionEntry = () => {
                       <td className={td}>{row.productName}</td>
                       <td className={`${td} text-right tabular-nums`}>
                         {thousandSeparator(Number(row.qty))} {row.unit}
+                      </td>
+                      <td className={`${td} whitespace-nowrap`}>
+                        {row.expiry ? displayDate(row.expiry) : <span className="text-[rgb(var(--c-text-muted))]">—</span>}
                       </td>
                       <td className={`${td} text-right tabular-nums`}>
                         {Number(row.price) > 0 ? (
@@ -927,7 +945,7 @@ const ProductionEntry = () => {
                       <td className={td}>{rowActions(() => editOut(row.id), () => deleteOut(row.id))}</td>
                     </tr>
                   ))}
-                  {form.outputs.length === 0 && emptyRow(6, 'Pick the product this batch made and press Add. Add more than one if the batch made several.')}
+                  {form.outputs.length === 0 && emptyRow(7, 'Pick the product this batch made and press Add. Add more than one if the batch made several.')}
                 </tbody>
               </table>
             </div>
@@ -986,6 +1004,7 @@ const ProductionEntry = () => {
                   <th className={th}>Batch</th>
                   <th className={th}>Date</th>
                   <th className={th}>Products</th>
+                  <th className={th}>Expiry</th>
                   <th className={`${th} text-right`}>Unit cost</th>
                   <th className={th}>Status</th>
                   <th className={`${th} text-right`} />
@@ -1010,6 +1029,11 @@ const ProductionEntry = () => {
                               </div>
                             ))
                           : row.output_product}
+                      </td>
+                      <td className={`${td} whitespace-nowrap`}>
+                        {made.length
+                          ? made.map((o) => <div key={o.product_id}>{displayDate(o.expiry_date)}</div>)
+                          : '—'}
                       </td>
                       <td className={`${td} text-right tabular-nums`}>
                         {made.length > 1
@@ -1047,7 +1071,7 @@ const ProductionEntry = () => {
                     </tr>
                   );
                 })}
-                {batches.length === 0 && emptyRow(6, 'No batch yet. Save a draft and it appears here.')}
+                {batches.length === 0 && emptyRow(7, 'No batch yet. Save a draft and it appears here.')}
               </tbody>
             </table>
           </div>,

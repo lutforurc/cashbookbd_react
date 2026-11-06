@@ -8,6 +8,7 @@ import {
   API_PRODUCTION_POST_URL,
   API_PRODUCTION_REGISTER_URL,
   API_PRODUCTION_REVERSE_URL,
+  API_PRODUCTION_SALES_RETURN_EDIT_URL,
   API_PRODUCTION_SALES_RETURN_STORE_URL,
   API_PRODUCTION_SALES_RETURN_UPDATE_URL,
   API_PRODUCTION_STOCK_URL,
@@ -141,7 +142,7 @@ export const getProductionDetails = createAsyncThunk<
 // A thin wrapper over a POST whose callback wants the RAW body: post and reverse
 // answer success or a refusal the screen must show word for word.
 const postAction =
-  (thunkName: string, urlFor: (id: number | string) => string) =>
+  (_thunkName: string, urlFor: (id: number | string) => string) =>
   (id: number | string, data: any, callback?: (response: any) => void) =>
   async () => {
     try {
@@ -188,6 +189,19 @@ export const storeProductionSalesReturn = (data: any, callback?: (response: any)
     if (typeof callback === 'function') callback({ success: false, message });
   }
 };
+
+// Look a production sales return up by its Vr. No., for the edit screen.
+// POST, because the number is a document reference rather than a row id.
+export const getProductionSalesReturnForEdit =
+  (invoiceNo: string, callback?: (response: any) => void) => async () => {
+    try {
+      const res = await httpService.post(API_PRODUCTION_SALES_RETURN_EDIT_URL, { invoiceNo });
+      if (typeof callback === 'function') callback(res.data);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || err?.message || 'Something went wrong';
+      if (typeof callback === 'function') callback({ success: false, message });
+    }
+  };
 
 export const updateProductionSalesReturn = (data: any, callback?: (response: any) => void) => async () => {
   try {

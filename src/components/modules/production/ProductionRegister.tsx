@@ -24,6 +24,14 @@ const perOutput = (row: any, single: React.ReactNode, pick: (o: any) => React.Re
     ? row.outputs.map((o: any, i: number) => <div key={i}>{pick(o)}</div>)
     : single;
 
+// Expiry is per output; a single-output batch still reads it off that output.
+const expiryOf = (row: any) =>
+  perOutput(
+    row,
+    row.outputs?.[0]?.expiry_date || '',
+    (o: any) => o.expiry_date || '',
+  );
+
 /**
  * Production Register: one row per batch, with what it cost and the TRUE gross
  * profit for the period.
@@ -123,6 +131,7 @@ const ProductionRegister = () => {
               <th className="px-2 py-2">Date</th>
               <th className="px-2 py-2">Output</th>
               <th className="px-2 py-2 text-right">Qty</th>
+              <th className="px-2 py-2">Expiry</th>
               <th className="px-2 py-2 text-right">Material</th>
               <th className="px-2 py-2 text-right">Allocated</th>
               <th className="px-2 py-2 text-right">True cost</th>
@@ -149,25 +158,28 @@ const ProductionRegister = () => {
                   {perOutput(row, row.output_product, (o) => o.product_name)}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {perOutput(row, thousandSeparator(Number(row.output_qty), 2), (o) => thousandSeparator(Number(o.qty), 2))}
+                  {perOutput(row, thousandSeparator(Number(row.output_qty)), (o) => thousandSeparator(Number(o.qty)))}
+                </td>
+                <td className="px-2 py-2 whitespace-nowrap text-gray-900 dark:text-[rgb(var(--c-text))]">
+                  {expiryOf(row)}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.material_cost), 2)}
+                  {thousandSeparator(Number(row.material_cost))}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.allocated_cost), 2)}
+                  {thousandSeparator(Number(row.allocated_cost))}
                 </td>
                 <td className="px-2 py-2 text-right font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.true_cost), 2)}
+                  {thousandSeparator(Number(row.true_cost))}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {perOutput(row, thousandSeparator(Number(row.unit_cost), 2), (o) => thousandSeparator(Number(o.unit_cost), 2))}
+                  {perOutput(row, thousandSeparator(Number(row.unit_cost)), (o) => thousandSeparator(Number(o.unit_cost)))}
                 </td>
                 <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.loss_actual), 2)}
+                  {thousandSeparator(Number(row.loss_actual))}
                   {Number(row.loss_abnormal) > 0 ? (
                     <span className="ml-1 text-xs text-red-600 dark:text-red-400">
-                      ({thousandSeparator(Number(row.loss_abnormal), 2)} abnormal)
+                      ({thousandSeparator(Number(row.loss_abnormal))} abnormal)
                     </span>
                   ) : null}
                 </td>
@@ -198,7 +210,7 @@ const ProductionRegister = () => {
             ))}
             {rows.length === 0 && (
               <tr className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
-                <td colSpan={11} className="px-2 py-3 text-center text-gray-500 dark:text-gray-300">
+                <td colSpan={12} className="px-2 py-3 text-center text-gray-500 dark:text-gray-300">
                   No batch in this period
                 </td>
               </tr>
@@ -227,7 +239,7 @@ const ProductionRegister = () => {
       <div style={{ display: 'none' }}>
         <div ref={printRef} className="production-register-print" style={{ color: '#000', background: '#fff' }}>
           <style>{`
-            .production-register-print, .production-register-print * { color: #000 !important; background: transparent !important; border-color: #000 !important; }
+            .production-register-print, .production-register-print * { color: #000 !important; background: transparent !important; border-color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .production-register-print table { width: 100%; border-collapse: collapse; }
             .production-register-print th, .production-register-print td { border: 1px solid #000; padding: 4px 6px; font-size: 11px; text-align: left; }
             .production-register-print .num { text-align: right; }
@@ -237,10 +249,10 @@ const ProductionRegister = () => {
             {from} to {to}
           </p>
           <p style={{ fontSize: 12 }}>
-            Net sales {thousandSeparator(Number(summary.net_sales), 2)} | Cost (with allocated){' '}
-            {thousandSeparator(Number(summary.cost_of_goods), 2)} | True gross profit{' '}
-            {thousandSeparator(Number(summary.true_gross_profit), 2)} | Abnormal loss{' '}
-            {thousandSeparator(Number(summary.abnormal_loss_total), 2)}
+            Net sales {thousandSeparator(Number(summary.net_sales))} | Cost (with allocated){' '}
+            {thousandSeparator(Number(summary.cost_of_goods))} | True gross profit{' '}
+            {thousandSeparator(Number(summary.true_gross_profit))} | Abnormal loss{' '}
+            {thousandSeparator(Number(summary.abnormal_loss_total))}
           </p>
           <table>
             <thead>
@@ -249,6 +261,7 @@ const ProductionRegister = () => {
                 <th>Date</th>
                 <th>Output</th>
                 <th className="num">Qty</th>
+                <th>Expiry</th>
                 <th className="num">Material</th>
                 <th className="num">Allocated</th>
                 <th className="num">True cost</th>
@@ -263,13 +276,14 @@ const ProductionRegister = () => {
                   <td>{row.date}</td>
                   <td>{perOutput(row, row.output_product, (o) => o.product_name)}</td>
                   <td className="num">
-                    {perOutput(row, thousandSeparator(Number(row.output_qty), 2), (o) => thousandSeparator(Number(o.qty), 2))}
+                    {perOutput(row, thousandSeparator(Number(row.output_qty)), (o) => thousandSeparator(Number(o.qty)))}
                   </td>
-                  <td className="num">{thousandSeparator(Number(row.material_cost), 2)}</td>
-                  <td className="num">{thousandSeparator(Number(row.allocated_cost), 2)}</td>
-                  <td className="num">{thousandSeparator(Number(row.true_cost), 2)}</td>
+                  <td>{expiryOf(row)}</td>
+                  <td className="num">{thousandSeparator(Number(row.material_cost))}</td>
+                  <td className="num">{thousandSeparator(Number(row.allocated_cost))}</td>
+                  <td className="num">{thousandSeparator(Number(row.true_cost))}</td>
                   <td className="num">
-                    {perOutput(row, thousandSeparator(Number(row.unit_cost), 2), (o) => thousandSeparator(Number(o.unit_cost), 2))}
+                    {perOutput(row, thousandSeparator(Number(row.unit_cost)), (o) => thousandSeparator(Number(o.unit_cost)))}
                   </td>
                   <td>{row.flag ? 'source changed' : row.status}</td>
                 </tr>
@@ -292,7 +306,7 @@ const SummaryCard = ({ label, value, highlight }: { label: string; value: any; h
   >
     <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</p>
     <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
-      {thousandSeparator(Number(value || 0), 2)}
+      {thousandSeparator(Number(value || 0))}
     </p>
   </div>
 );

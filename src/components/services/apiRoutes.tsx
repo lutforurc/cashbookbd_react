@@ -329,6 +329,7 @@ export const API_PRODUCT_IN_REASON_DESTROY_URL = `${API_BASE_URL}/product-in/rea
 // nothing -- and `/reverse` takes it back. The list, the posting and the two
 // reports all live under one prefix.
 export const API_PRODUCTION_LIST_URL = `${API_BASE_URL}/production/list`;
+export const API_PRODUCTION_VOUCHER_TYPES_URL = `${API_BASE_URL}/production/voucher-types`;
 export const API_PRODUCTION_DETAILS_URL = `${API_BASE_URL}/production/details`;
 // The posted expense lines a batch may be costed from (Factory Labour and the
 // like), with how much of each is still free.

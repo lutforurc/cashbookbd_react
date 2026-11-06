@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiXCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -8,7 +8,11 @@ import InputElement from '../../utils/fields/InputElement';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { storeProductionSalesReturn } from './productionSlice';
+import {
+  getProductionSalesReturnForEdit,
+  storeProductionSalesReturn,
+  updateProductionSalesReturn,
+} from './productionSlice';
 
 type Option = { value: string; label: string; label_3?: string; label_5?: string };
 
@@ -50,6 +54,11 @@ const ProductionSalesReturn = () => {
   const [line, setLine] = useState({ ...emptyLine });
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  // The voucher being corrected, found by its Vr. No. Null means this screen is
+  // writing a new return.
+  const [searchNo, setSearchNo] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [editing, setEditing] = useState<{ mtmId: string; vrNo: string } | null>(null);
 
   const setField = (name: string, value: any) => setForm((p) => ({ ...p, [name]: value }));
 
@@ -112,7 +121,7 @@ const ProductionSalesReturn = () => {
     }
   };
 
-  const resetForm = () =>
+  const resetForm = () => {
     setForm({
       account: '',
       accountName: '',
@@ -123,6 +132,63 @@ const ProductionSalesReturn = () => {
       notes: '',
       products: [],
     });
+    setLine({ ...emptyLine });
+    setEditingLineId(null);
+    setEditing(null);
+    setSearchNo('');
+  };
+
+  // Find a posted return by its Vr. No. and fill the form from it. The server
+  // answers by voucher_type, by name, so a number from another type is simply
+  // not found rather than read as a sale return.
+  const loadForEdit = () => {
+    const invoiceNo = searchNo.trim();
+    if (!invoiceNo) return toast.error('Enter the Vr. No. of the return');
+
+    setSearching(true);
+    dispatch(
+      getProductionSalesReturnForEdit(invoiceNo, (response: any) => {
+        setSearching(false);
+        if (!response?.success) return toast.error(response?.message || 'Could not load the return');
+
+        const found = response?.data?.data;
+        if (!found?.mtmId) return toast.error(response?.message || 'Production sales return not found');
+
+        const products: ReturnLine[] = (found.products || []).map((r: any) => ({
+          id: Number(r.id),
+          code: String(r.product),
+          name: r.product_name || '',
+          unit: r.unit || '',
+          qty: String(Number(r.qty)),
+          price: String(Number(r.price)),
+        }));
+
+        setForm({
+          account: String(found.account ?? ''),
+          accountName: found.accountName || '',
+          invoiceNo: found.invoice_no || '',
+          // The server sends the original sale's own date when the stored one is
+          // empty, so this never silently becomes today.
+          invoiceDate: found.invoice_date ? String(found.invoice_date).slice(0, 10) : today(),
+          discountAmt: Number(found.discount) > 0 ? String(Number(found.discount)) : '',
+          // The real cash paid, not the refund total. A reloaded credit return
+          // with a part refund must show that part.
+          receivedAmt: String(Number(found.cash_payment ?? found.netpayment ?? 0)),
+          notes: found.notes || '',
+          products,
+        });
+        setLine({ ...emptyLine });
+        setEditingLineId(null);
+        setEditing({ mtmId: String(found.mtmId), vrNo: found.vr_no || invoiceNo });
+        toast.success(`Editing ${found.vr_no || invoiceNo}`);
+      }) as any,
+    );
+  };
+
+  const cancelEdit = () => {
+    resetForm();
+    toast.info('Back to a new return');
+  };
 
   const save = () => {
     if (!form.account) return toast.error('Select the customer');
@@ -132,7 +198,7 @@ const ProductionSalesReturn = () => {
     if (Number(cashPayment) > refundTotal) return toast.error('The cash payment cannot be more than the refund');
 
     setSaving(true);
-    const payload = {
+    const payload: any = {
       supplier_id: form.account,
       sales_invoice_number: form.invoiceNo,
       sales_invoice_date: form.invoiceDate,
@@ -147,22 +213,74 @@ const ProductionSalesReturn = () => {
       })),
     };
 
-    dispatch(
-      storeProductionSalesReturn(payload, (response: any) => {
-        setSaving(false);
-        if (response?.success) {
-          toast.success(`Return saved — ${response?.data?.data?.vr_no || ''}`.trim());
-          resetForm();
-        } else {
-          toast.error(response?.message || 'Could not save the return');
-        }
-      }) as any,
-    );
+    // The edit endpoint corrects the voucher under its own number; the number
+    // is what the server hashes into `mtmId`, so it must travel back unchanged.
+    if (editing) payload.mtmId = editing.mtmId;
+
+    const action = editing
+      ? updateProductionSalesReturn(payload, (response: any) => {
+          setSaving(false);
+          if (response?.success) {
+            toast.success(`Return updated — ${editing.vrNo}`.trim());
+            resetForm();
+          } else {
+            toast.error(response?.message || 'Could not update the return');
+          }
+        })
+      : storeProductionSalesReturn(payload, (response: any) => {
+          setSaving(false);
+          if (response?.success) {
+            toast.success(`Return saved — ${response?.data?.data?.vr_no || ''}`.trim());
+            resetForm();
+          } else {
+            toast.error(response?.message || 'Could not save the return');
+          }
+        });
+
+    dispatch(action as any);
   };
 
   return (
     <div>
       <HelmetTitle title="Production Sales Return" />
+
+      {/* Correct an existing return under its own number. The server looks it up
+          by voucher_type (by name), so a number from another kind is refused. */}
+      <div className="mb-3 flex flex-wrap items-end gap-2 rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-2">
+        <InputElement
+          id="productionReturnSearch"
+          name="searchNo"
+          label="Vr. No. (find a return to edit)"
+          placeholder="e.g. 28-0001"
+          value={searchNo}
+          onChange={(e: any) => setSearchNo(e.target.value)}
+          onKeyDown={(e: any) => {
+            if (e.key === 'Enter') loadForEdit();
+          }}
+          className="w-full md:w-64"
+        />
+        <ButtonLoading
+          onClick={loadForEdit}
+          buttonLoading={searching}
+          label={searching ? 'Finding...' : 'Find'}
+          className="whitespace-nowrap text-center mr-0 py-2"
+          icon={<FiSearch className="text-lg ml-2 mr-2" />}
+        />
+        {editing && (
+          <>
+            <span className="rounded bg-[rgb(var(--c-table-head))] px-2 py-1 text-xs font-semibold text-[rgb(var(--c-text))]">
+              Editing {editing.vrNo}
+            </span>
+            <ButtonLoading
+              onClick={cancelEdit}
+              buttonLoading={false}
+              label="Cancel edit"
+              className="whitespace-nowrap text-center mr-0 py-2"
+              icon={<FiXCircle className="text-lg ml-2 mr-2" />}
+            />
+          </>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
         <div>
@@ -259,13 +377,13 @@ const ProductionSalesReturn = () => {
                 <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">{index + 1}</td>
                 <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.name}</td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.qty), 2)} {row.unit}
+                  {thousandSeparator(Number(row.qty))} {row.unit}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.price), 2)}
+                  {thousandSeparator(Number(row.price))}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.qty) * Number(row.price), 2)}
+                  {thousandSeparator(Number(row.qty) * Number(row.price))}
                 </td>
                 <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">
                   <Button onClick={() => deleteLine(row.id)} className="text-red-500 ml-2 text-center">
@@ -327,7 +445,7 @@ const ProductionSalesReturn = () => {
         <ButtonLoading
           onClick={save}
           buttonLoading={saving}
-          label={saving ? 'Saving...' : 'Save Return'}
+          label={saving ? 'Saving...' : editing ? 'Update Return' : 'Save Return'}
           className="whitespace-nowrap text-center mr-0 py-2"
           icon={<FiSave className="text-lg ml-2 mr-2" />}
         />

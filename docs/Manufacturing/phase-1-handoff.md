@@ -82,7 +82,7 @@ API (সবই permission + branch-এর `manufactur_control` দিয়ে �
 
 1. দুই repo-তে উপরের branch checkout।
 2. Backend-এ dependency ও `.env` আগের মতো (DB: `krishibitandatabase` বা যেটা ব্যবহার করেন)।
-3. Patch চালানো (দুবার চালালেও ক্ষতি নেই):
+3. Patch চালানো (দুবার চালালেও ক্ষতি নেই)। এটাই `cost_share_pct` আর `expiry_date` দুটোই যোগ করে:
 
 ```bash
 php artisan patch:add-unit-type
@@ -188,11 +188,11 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 
 **জেনে রাখা, এখন বদলানো হয়নি:**
 
-- Register-এর "Net sales" branch-এর সব বিক্রি ধরে, শুধু production-এর পণ্য নয়। শুধু কারখানার branch-এ ঠিক; branch-এ অন্য পণ্যও বিক্রি হলে "True gross profit" ভুল দেখাবে।
+- ~~Register-এর "Net sales" branch-এর সব বিক্রি ধরে...~~ **ঠিক করা হয়েছে (§৪-ঘ): Register এখন শুধু batch-এর output পণ্যের বিক্রি ধরে।**
 - Production-এর FIFO ক্রয়ের `purchase_pct` (rebate) বাদ দেয় না, closing stock দেয়। কোনো local DB-তে এখন কোনো ক্রয়ে এটা ব্যবহার হয়নি।
 - FIFO আর "On hand" গুদাম আলাদা করে না, পুরো branch ধরে।
 - Production Sales Return-এর ভাউচার তারিখ "Original Sale Date" ঘর থেকে আসে, পুরনো Sales Return-এর মতোই। আজকের ফেরত পুরনো বিক্রির তারিখে বসতে পারে।
-- Production Sales Return খুঁজে edit করার স্ক্রিন নেই (API `/sales-return/edit`, `/update` আছে)।
+- ~~Production Sales Return খুঁজে edit করার স্ক্রিন নেই।~~ **বানানো হয়েছে (§৪-ঘ): Vr. No. দিয়ে খুঁজে edit/update/cancel।**
 - Production-এর পাতায় `thousandSeparator(x, 2)`-এর `2` কাজ করে না; দশমিক branch setting থেকে আসে।
 
 ## ৪-গ. এক ব্যাচে একাধিক পণ্য (৫ নভেম্বর ২০২৬)
@@ -207,11 +207,75 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 - **যাচাই** (একই rollback probe, ২৬টা পরীক্ষা পাস): ৪০ × ২৫০ আর ২০০ × ২৯ → ৬৩.২৯% / ৩৬.৭১%, টাকা ৪,০৪৮.১০ + ২,৩৪৭.৯০ = ৬,৩৯৬.০০; হাতে ৭০/৩০ → ৪,৪৭৭.২০ + ১,৯১৮.৮০; মোট ১০০% না হলে আটকায়; দাম না থাকলে আটকায়; দ্বিতীয় output বিক্রির পর reverse আটকায়; অব্যবহৃত batch reverse হয়।
 - **বাকি:** উপজাত/ঝরতি মাল (খরচ ০) আলাদা চিহ্ন নেই; লাগলে বলবেন।
 
+## ৪-ঘ. ২৮- প্রিন্ট, return edit, Register net sales, print ও expiry (৬ নভেম্বর ২০২৬)
+
+| # | কোথায় | সমস্যা | ঠিক করা |
+| --- | --- | --- | --- |
+| ১ | ২৮- Production Sales Return-এর প্রিন্ট | ভয় ছিল voucher_type বা `13` prefix-এর ওপর নির্ভর করে | **নির্ভর করে না।** `electronics/sales/invoice-print` নম্বর ধরে voucher পড়ে, type জিজ্ঞেস করে না; `salesPrintData()` `sales_return_master.details` ও ledger-এর customer leg দুটোই পাঠায়। `ReturnPrint` সেটাই আঁকে। কোনো কোড বদল লাগেনি; শুধু যাচাই হয়েছে |
+| ২ | `ProductionSalesReturnPosting::rebuild()` | প্রতিবার edit-এ পুরনো `inventory_sales_return_masters/_details` রয়ে যেত; edit/print পুরনো সারি পড়তে পারত। এছাড়া cash payment বদলালেও `main_trx_master.transaction_type` বদলাত না, তাই Cash Book ধরত না | `clearVoucher()` এখন voucher-এর নিজের return master/details-ও মুছে নতুন করে লেখে; `transaction_type` = ২ (নগদ) / ৫ (বাকি) হয়, `vr_no` অপরিবর্তিত |
+| ৩ | `ProductionReportController::periodSummary()` | net sales পুরো branch-এর Sales head (১৫/১৯) ধরত, খরচ ধরত শুধু output পণ্যের | net sales এখন `inventory_sales_details` ও `inventory_sales_return_details` থেকে, শুধু batch-এর output পণ্যের জন্য (§ নিচে) |
+| ৪ | Production Register / Batch Costing-এর print | Register-এ ধূসর লেখার ঝুঁকি; Batch Costing-এ print-ই ছিল না | Register-এর print কঠোরভাবে solid black; Batch Costing-এ Print বোতাম ও সম্পূর্ণ কালো কাগজ যোগ |
+| ৫ | Expiry | কোথাও ঘর ছিল না | `production_outputs.expiry_date` DATE NULL (ঐচ্ছিক), output-ভিত্তিক; Entry-র Products out-এ ঘর ও কলাম, Recent batches / Register / Batch Costing-এ দেখা যায়; উৎপাদনের তারিখের আগে হলে স্ক্রিনে ও সার্ভারে আটকায় |
+
+### ২৮- প্রিন্ট (টাস্ক ১)
+
+`ProductionSalesReturnPosting::store()` আগের Sales Return-এরই `SalesReturn::SalesReturnMaster()` দিয়ে `inventory_sales_return_masters/_details` লেখে, `main_trx_id` সহ। `ElectronicsSalesController::salesPrintData()` (`:167`) কোনো type/prefix পরীক্ষা করে না; `salesReturnMaster.details.product.*` আর `AccTransactionMaster...coaL4.custPartyInfos` একসাথে আনে। `VoucherPrintRegistry`-র `default` শাখা `GET production/voucher-types` থেকে **নাম ধরে** production return-এর id নিয়ে `ReturnPrint kind="sales_return"` প্রিন্ট করে। ফলে `২৮-` voucher কাগজে ঠিক লাইন আর customer দেখায়; `১৩-` voucher-এর উত্তর হুবহু আগের মতোই থাকে।
+
+সীমাবদ্ধতা: Cash head (`coa4 17`) দিয়ে করা return-এ কাগজে `Name : -` আসে, ঠিক যেমন `১৩-` return-এ আসে; ledger-এ ওই head-এর কোনো party record নেই।
+
+### Production Sales Return edit (টাস্ক ২)
+
+- স্ক্রিনে **Vr. No.** লিখে **Find**; পাওয়া গেলে form ভরে যায়, **Update Return** দিয়ে একই নম্বরে save, **Cancel edit** দিয়ে নতুন return-এ ফেরা।
+- `edit()` এখন `cash_payment` (আসল নগদ ফেরত, `netpayment`-এরই নামান্তর) আর `sale_date` (মূল বিক্রির `vr_date`) পাঠায়; stored date খালি হলে `invoice_date`-ও ওই তারিখই হয়। reload করা বাকি return-এ আসল নগদ ফেরত দেখায়, refund total নয়।
+- Cash Payment নিয়ম অপরিবর্তিত: account 17-এ refund total বাঁধা, অন্যরা ০ থেকে শুরু করে বদলানো যায়।
+- Over-return guard আগের মতোই edit-কৃত voucher বাদ দেয় (`mtm.id <> $mtmId`); edit-এ qty বাড়ালে বিক্রির বাকি পরিমাণের বেশি হলে আটকায়।
+
+### Register net sales (টাস্ক ৩)
+
+`periodSummary()`-র net sales এখন শুধু batch-এর **output পণ্য** পড়ে (double-check: branch-এর অন্য পণ্য বাদ):
+
+| কী | কোথা থেকে | কীভাবে |
+| --- | --- | --- |
+| বিক্রির লাইন | `inventory_sales_details.quantity`, `.sales_price`, `.sales_pct`, `.line_net_total` | line net = `line_net_total` (থাকলে ও > ০), নয়তো `qty × price × (1 − sales_pct/100)`; কলাম না থাকলে `qty × price` |
+| বিক্রির invoice discount | `inventory_sales_masters.discount` | invoice-এর line net অনুপাতে ভাগ; output পণ্যের ভাগটুকুই বাদ |
+| ফেরতের লাইন | `inventory_sales_return_details.quantity`, `.return_price` | `qty × return_price` |
+| ফেরতের discount | `inventory_sales_return_masters.discount` | line value অনুপাতে ভাগ; output ভাগটুকু ফেরত যোগ (head ২৩ credit-এর মতো) |
+
+হিসাব: `net sales = (output বিক্রির line net − output-এর invoice discount share) − (output ফেরতের মান − output-এর return discount share)`। v4 খ-১৩-এ আগের মতোই **net sales ৯,০০০, true gross profit ১,২৯৮**।
+
+### Print (টাস্ক ৪)
+
+- `ProductionRegister.tsx`: print কাগজে সব লেখা `#000 !important`, `print-color-adjust: exact`; Expiry কলাম যোগ। স্ক্রিনের theme অপরিবর্তিত।
+- `BatchCosting.tsx`: **Print** বোতাম যোগ; আলাদা লুকানো কাগজে batch-এর সব section (Inputs, layers, allocations, Output layers) solid black; Output layers-এ Expiry কলাম। স্ক্রিনের theme অপরিবর্তিত।
+
+### Expiry (টাস্ক ৫)
+
+- **Schema:** `production_outputs.expiry_date` DATE NULL — `database/sql/2026_11_04_manufacturing_production.sql`-এ information_schema-guarded ALTER, আর `runProductionSchema()`-এ CREATE + guarded ALTER (cost_share_pct-এর মতোই)। `inventory_details` বা অন্য টেবিলে হাত নেই; নতুন artisan command নেই।
+- **API:** store/update-এ `outputs[].expiry_date`; post-এ planned সারি মুছে যে দুই rounded সারি লেখা হয় দুটোতেই expiry থাকে; `details`, `outputsByBatch` (তাই list/Recent batches/Register), `costing`—সবই ফেরত দেয়।
+- **স্ক্রিন:** Production Entry → Products out-এ ঐচ্ছিক তারিখ ও টেবিলে কলাম; Recent batches, Register (প্রতি output), Batch Costing-এ দেখা যায়।
+- **নিয়ম:** মেয়াদ ঐচ্ছিক; উৎপাদনের তারিখের আগে হলে স্ক্রিনে (save/add-এ) ও সার্ভারে (store/update এবং post) আটকায়।
+- **Reverse:** output সারি মোছে না, তাই reversed batch-এও expiry থাকে।
+
+**যাচাই** (rolled-back probe, `myappsaasdatabase`, company 18 / branch 18; কোনো test সারি থেকে যায়নি):
+
+| যাচাই | ফল |
+| --- | --- |
+| v4 খ-১৩ "গ": Register net sales ৯,০০০ / COGS ৭,৭০২ / true gross ১,২৯৮; P&L gross = net = ১,২৯৮; TB ৩০,০০০ = ৩০,০০০; BS ২১,২৯৮ = ২১,২৯৮ | পাস |
+| `২৮-` voucher-এর print payload: `sales_return_master.details` + ledger customer; `১৩-`-এর উত্তর অপরিবর্তিত | পাস |
+| Edit: qty কম/বেশি, নগদ ফেরত বদল — stock, head ১৯, head ১৭, Cash Book অনুসরণ করে; `vr_no` অপরিবর্তিত; return master একটি-ই থাকে | পাস |
+| Edit: বিক্রির বাকি পরিমাণের বেশি ফেরত চাইলে আটকায় | পাস |
+| একই period-এ production নয় এমন দ্বিতীয় পণ্য বিক্রি — Register net sales-এ ঢোকে না | পাস |
+| Expiry: draft-এ save, post-এ দুই সারিতে, reverse-এ টিকে থাকে; উৎপাদনের আগের তারিখ আটকায় | পাস |
+| Production নেই এমন branch: P&L / Monthly / Cash Flow / Product Ledger আগে-পরে হুবহু এক | পাস |
+| `php -l` (সব বদলানো PHP), `npm run build` exit 0, production ফাইলে নতুন TS error নেই | পাস |
+
+**ব্রাউজারে দেখা যায়নি:** ReturnPrint-এর কাগজ, Register/Batch Costing-এর print preview আর নতুন edit স্ক্রিনের চেহারা — কোড ও JSON payload দিয়ে যাচাই, ব্রাউজারে খুলে দেখা হয়নি। Cash head ১৭-এর return-এ কাগজের নাম `-`—এটাও ব্রাউজারে দেখা হয়নি।
+
 ## ৫. যা বাকি
 
 ### যাচাই
 
-- Production ছাড়া ব্রাঞ্চে P&L / Monthly / Cash Flow / দিনভিত্তিক / Balance Sheet আগে-পরে হুবহু এক (§৪-ক)। Product Ledger-এর আগে-পরে তুলনা এখনো হয়নি।
+- Production ছাড়া ব্রাঞ্চে P&L / Monthly / Cash Flow / দিনভিত্তিক / Balance Sheet আগে-পরে হুবহু এক (§৪-ক)। Product Ledger-এর কোডও এই কাজে বদলায়নি; non-production branch-এ চালিয়ে দেখা গেছে (§৪-ঘ)।
 - "গ"-এর সংখ্যা Command Code-এর বানানো fixture-এ যাচাই; branch 11-এর আসল test data (অন্য কম্পিউটারের `krishibitandatabase`)-তে P&L একবার খুলে gross ১,২৯৮ আর net ১,২৯৮ মিলিয়ে দেখা বাকি।
 - একই company-র ভিতরে অন্য branch-এর API call আলাদা করে পরীক্ষা হয়নি (অন্য company-রটা হয়েছে)।
 - নিজে মেনু খুলে পুরো ক্রম UI দিয়ে একবার চালানো।
@@ -219,7 +283,7 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 ### Phase 1-এর কাজ যা এখনো হয়নি
 
 - **Unit conversion / net contents (v4 খ-৪, গ-৭):** "১ বস্তা = ৫০ kg" ধরনের রূপান্তর নেই। Input-এর পরিমাণ পণ্যের নিজের stock unit-এ লিখতে হয়; `entered_unit_id` ঘর আছে কিন্তু ব্যবহার হয় না। কোন পথ (`measurement` ঘর নাকি নতুন টেবিল) তা ক্লায়েন্ট DB-র query (গ-৯) দেখে ঠিক হবে।
-- **Expiry (ক-২ #৬):** কোথাও ঘর নেই; মালিকের উত্তর লাগবে।
+- **মেয়াদ শেষের কাছাকাছি রিপোর্ট/সতর্কতা:** expiry এখন output-এ আছে (§৪-ঘ), কিন্তু near-expiry রিপোর্ট এখনো নেই; আলাদা কাজ।
 
 ### সিদ্ধান্ত হয়ে গেছে (৪ নভেম্বর ২০২৬)
 
@@ -230,7 +294,7 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 
 - **পুরনো Sales Return ফর্ম:** এটা ফেরত মাল stock-এ ফেরতের টাকার দামে ঢোকায় (যেমন ২০০, খরচ ১৭১.১৬), আর `(int)` দিয়ে ভগ্নাংশ কাটে; সব branch-এ লাভ বাড়িয়ে দেখায় (v4 গ-৪)। আলাদা কাজ হিসেবে ঠিক হবে কি না, সিদ্ধান্ত বাকি।
 - **ক্লায়েন্ট DB-তে query (v4 গ-৯):** পুরনো Manufacturing module-এর ব্যবহার, id-গুলো, unit/net contents। এখনো চালানো হয়নি।
-- ক-২ #৬ (expiry), #১০ (VAT), #১১ (কাঁচামালের উৎস, গুদাম)।
+- ক-২ #১০ (VAT), #১১ (কাঁচামালের উৎস, গুদাম)। #৬ (expiry) সিদ্ধান্ত হয়ে বানানো হয়েছে (§৪-ঘ)।
 
 ### পরের ধাপ
 
@@ -243,7 +307,7 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 ### Deploy-এর আগে (ক্লায়েন্ট সার্ভার)
 
 1. Backend আর frontend একসঙ্গে deploy।
-2. `php artisan patch:add-unit-type` → `permission:cache-reset` → `route:clear`।
+2. `php artisan patch:add-unit-type` → `permission:cache-reset` → `route:clear`। **এই patch-এ `cost_share_pct` আর `expiry_date` দুটোই যোগ হয়** (দুবার চালালেও ক্ষতি নেই); `route:clear` নতুন `GET production/voucher-types` route-এর জন্য।
 3. শুধু Manufacturing ব্রাঞ্চে "Control Manufacture?" চালু, দরকারি role-কে `production.*` permission।
 4. Patch না চালালেও Product Ledger/Statement ভাঙবে না, কিন্তু Production মেনু কাজ করবে না।
 5. "গ"-এর জন্য আলাদা patch লাগে না। Phase 1-এর patch না চালানো ক্লায়েন্টে `production_cost` ০ আসে, P&L আগের মতোই।

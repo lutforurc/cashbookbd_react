@@ -13,7 +13,31 @@ import httpService from '../../services/httpService';
 import {
   API_PRODUCT_IN_DETAILS_URL,
   API_PRODUCT_OUT_DETAILS_URL,
+  API_PRODUCTION_VOUCHER_TYPES_URL,
 } from '../../services/apiRoutes';
+
+/**
+ * Which production voucher a number prefix is, if it is one.
+ *
+ * ⚠️ FOR THE TYPES WHOSE NUMBER IS NOT FIXED. The production vouchers are
+ * created by name, and each database gives them its own next free id -- 27 and
+ * 28 on one, something else on the next -- so they cannot be cases in the
+ * switch below. The two ids are read once and kept for the session.
+ */
+let productionTypeIds: Record<string, string> | null = null;
+
+const productionVoucherKind = async (prefix: string): Promise<string | undefined> => {
+  if (!productionTypeIds) {
+    const res = await httpService.get(API_PRODUCTION_VOUCHER_TYPES_URL);
+    const ids = res?.data?.data?.data ?? res?.data?.data ?? {};
+    productionTypeIds = Object.fromEntries(
+      Object.entries(ids)
+        .filter(([, id]) => id != null)
+        .map(([kind, id]) => [String(id), kind]),
+    );
+  }
+  return productionTypeIds[prefix];
+};
 
 import ElectronicsSalesInvoicePrint from '../invoices/sales/ElectronicsSalesInvoicePrint';
 import PurchaseInvoicePrint from './print_items/PurchaseInvoicePrint';
@@ -360,8 +384,24 @@ export const VoucherPrintRegistry = forwardRef(
             printStockSlip('out', getPrintMtmId(row));
             break;
 
+          /* ================= BY NAME: THE PRODUCTION VOUCHERS ================= */
+          /**
+           * A Production Sales Return writes the ordinary return tables, so it
+           * prints on the Sales Return paper through the same fetch as 13. A
+           * Production batch has no paper; its sheet is Batch Costing.
+           */
           default:
-            toast.error(`Unknown voucher type: ${rawVoucherType || 'N/A'}`);
+            productionVoucherKind(voucherType)
+              .then((kind) => {
+                if (kind === 'production_sales_return') {
+                  printAs(salesReturnRef);
+                } else if (kind === 'production') {
+                  toast(`${row.vr_no} is a production batch. Open it from Production Register to see its costing.`);
+                } else {
+                  toast.error(`Unknown voucher type: ${rawVoucherType || 'N/A'}`);
+                }
+              })
+              .catch(() => toast.error(`Unknown voucher type: ${rawVoucherType || 'N/A'}`));
         }
       },
     }));

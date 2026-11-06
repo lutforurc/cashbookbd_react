@@ -136,7 +136,7 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 | ৩ | কোন কোন খরচ পণ্যের দামে ঢুকবে? | কারখানার মজুরি, প্যাকিং মজুরি, কারখানার পরিবহন; অফিস খরচ নয় |
 | ৪ | বিদ্যুৎ-ভাড়ার মতো মাসিক খরচ ভাগ হবে? | এখন না; খরচ হিসেবেই থাকবে। এর ফলে অবিক্রিত মালের দাম একটু কম দেখাবে, আর যে মাসে খরচ সেই মাসের লাভ একটু কম দেখাবে |
 | ৫ | কতটুকু নষ্ট "স্বাভাবিক"? | প্রতি পণ্যে সীমা, যেমন মশলা ৫%, চিনি ১%। বেশি হলে বাড়তিটা "অস্বাভাবিক নষ্ট", কারণ লিখতে হবে |
-| ৬ | ব্যাচ নম্বর ও মেয়াদ (expiry) লাগবে? | ব্যাচ নম্বর হ্যাঁ; মেয়াদ খাদ্যপণ্য হলে হ্যাঁ। **প্রথম ধাপ শুরুর আগেই জানাতে হবে** (মেয়াদের ঘর এখন কোথাও নেই, গ-৭) |
+| ৬ | ব্যাচ নম্বর ও মেয়াদ (expiry) লাগবে? | **সিদ্ধান্ত (৬ নভেম্বর ২০২৬): হ্যাঁ, লাগবে।** মেয়াদ **ঐচ্ছিক**, প্রতিটা output-এ আলাদা করে `production_outputs.expiry_date` (DATE) ঘরে রাখা হয়। উৎপাদনের তারিখের আগের মেয়াদ গ্রহণ করা হয় না (স্ক্রিনে ও সার্ভারে)। মেয়াদ শেষের কাছাকাছি রিপোর্ট/সতর্কতা এখন নয়, ভবিষ্যতের কাজ (গ-৭)। |
 | ৭ | পুরনো তারিখে এন্ট্রি চলবে? | চলবে, যদি সেই পণ্যের পরে কোনো লেনদেন না হয়ে থাকে |
 | ৮ | ফ্রির নিয়ম সবার জন্য এক, নাকি কাস্টমার/সময়ভেদে আলাদা? | শুরুতে সবার জন্য এক, তারিখ থেকে তারিখ পর্যন্ত |
 | ৯ | ফ্রি পণ্যের খরচ রিপোর্টে কোথায় দেখাবে? | বিক্রিত মালের খরচেই থাকবে; Production/ফ্রি রিপোর্টে আলাদা লাইন "ফ্রি দেওয়া মালের খরচ" (P&L নিজে বদলাবে না) |
@@ -152,7 +152,7 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 | ধাপ | ক্লায়েন্ট কী পাবেন |
 | --- | --- |
 | ০. যাচাই | **কোডের অংশ শেষ (অংশ গ)।** বাকি: ক্লায়েন্ট DB-তে query চালানো (গ-৯)। #১২, #১৩-এর সিদ্ধান্ত হয়ে গেছে |
-| ১. উৎপাদন | নতুন ব্রাঞ্চ; নতুন ফর্ম: Production Entry (রেসিপি ছাড়া), Production Sales Return; ক্রয়-খরচ-বিক্রি আগের ফর্মে; Item opening stock দশমিকে আপডেট; Production Register ও Costing রিপোর্ট; আগের তিন রিপোর্ট মেলে |
+| ১. উৎপাদন | নতুন ব্রাঞ্চ; নতুন ফর্ম: Production Entry (রেসিপি ছাড়া), Production Sales Return; ক্রয়-খরচ-বিক্রি আগের ফর্মে; Item opening stock দশমিকে আপডেট; প্রতিটা output-এ ঐচ্ছিক মেয়াদ (expiry) তারিখ; Production Register ও Costing রিপোর্ট; আগের তিন রিপোর্ট মেলে |
 | ২. রেসিপি | রেসিপি বাছলে লাইন নিজে ভরে যাবে; কাঁচামাল কম থাকলে আগেই জানাবে |
 | ৩. বিক্রিতে ফ্রি | নতুন Production Sales (ফ্রি রো, দাম ০), স্কিম সেটআপ, ফ্রিসহ ফেরত |
 | ৪. ক্রয়ে ফ্রি (উপরের সারির সঙ্গে) | নতুন Production Purchase (ফ্রি রো, দাম ০) |
@@ -373,6 +373,8 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 13. **(নতুন)** নতুন Production Sales Return (পরে Production Sales/Purchase) ফর্মের voucher আগের রিপোর্টে (Ledger, Cash Book, Trial Balance, P&L, Stock) আগের ফর্মের voucher-এর মতোই দেখায়: একই লেনদেন দুই ফর্মে দিলে রিপোর্টের অঙ্ক এক (ফেরতের stock দাম ছাড়া, যা ইচ্ছা করেই খরচের দামে)।
 14. **(নতুন)** Source Payment/Journal বা Purchase পরে edit করলে Production Register সেই batch লাল দেখায়।
 
+**Check ১২ ও ১৩-এর ফল (৬ নভেম্বর ২০২৬, rolled-back probe, company 18 / branch 18):** Check ১২ পাস — Product Ledger-এ production in/out সারি দেখা যায়, আর running balance পরের মাসের opening-এর সঙ্গে মেলে। Check ১৩ পাস — নতুন Production Sales Return-এর voucher পুরনো return-এর মতোই Ledger, Trial Balance, P&L ও Stock-এ পড়ে (শুধু ফেরত মালের stock দাম original sale-এর FIFO খরচ, ইচ্ছাকৃত); edit-এ cash payment বদলালে Cash Book এখন সেই পরিবর্তন ধরে (voucher নম্বর অপরিবর্তিত)।
+
 ## অংশ খ-১৫: Phase ও change boundary
 
 | Phase | কাজ | শেষের প্রমাণ |
@@ -449,7 +451,7 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 
 - **Unit:** `product_items`-এ `unit_id` (stock unit), `package_unit_id` + `package_size`, `measurement_unit_id` + `measurement` (`decimal(18,3)`), `pack_size_id` (`product_pack_size`, dev-এ ৭ সারি) আছে। কিন্তু "১ বস্তা = ৫০ kg" ধরনের conversion table নেই, আর কোনো stock writer এই ঘরগুলো দিয়ে qty রূপান্তর করে না। Phase 1-এ দুটো পথের একটা লাগবে: (ক) `measurement` + `measurement_unit_id`-কে net contents হিসেবে ব্যবহার, যদি ক্লায়েন্টের ডেটায় এগুলো ভরা থাকে; নয়তো (খ) ছোট নতুন conversion table। কোনটা, তা ক্লায়েন্ট DB দেখে ঠিক হবে (গ-৯)।
 - **Batch:** `inventory_details.batch_no`, `batch_date` আছে, কিন্তু writer-রা সাধারণত `date('Ymd')` বসায়। Production আসল batch ref লিখবে।
-- **Expiry:** কোথাও কোনো ঘর নেই। লাগলে নতুন কলাম বা production-এর নিজের টেবিলে (ক-২ #৬)।
+- **Expiry:** `production_outputs.expiry_date` DATE NULL (৬ নভেম্বর ২০২৬), output-ভিত্তিক; মেয়াদ ঐচ্ছিক; উৎপাদনের তারিখের আগে হলে আটকায়। `inventory_details` ও অন্য কোনো টেবিল অপরিবর্তিত (ক-২ #৬)।
 - **পূর্ণসংখ্যায় কাটা পথ:** sales return qty ও দাম (`InventoryMasterIn.php`), opening stock qty (`ItemController.php:3297`), পুরনো transfer qty (`InventoryTransferMaster.php:65`), পুরনো Manufacturing (`Manufacturing.php:202, 229`)। কেজির কাঁচামালে ভগ্নাংশ হারাবে। আগের পথ যেমন আছে থাকবে। Sales return-এর জন্য নতুন ফর্ম হচ্ছেই; opening stock-এর `(int)` মালিকের অনুমোদনে দশমিকে বদলাবে; transfer-এ পূর্ণ সংখ্যা (খ-৬)।
 - **Warehouse:** `inventory_details.godown_id` আছে, `inventory_godown` টেবিল আছে। আলাদা কাঁচামাল/তৈরি মালের গুদাম সম্ভব।
 
