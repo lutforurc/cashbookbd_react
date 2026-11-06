@@ -61,7 +61,14 @@ export const reportTotals = (
       summed.unit_price_amount += wholeTaka(unit.unit_price_amount);
       summed.parking_amount += wholeTaka(unit.parking_amount);
       summed.total_amount += wholeTaka(unit.total_amount);
-      summed.received_amount += wholeTaka(unit.received_amount);
+      // ⚠️ TWO POOLS, ONE COLUMN. The row prints its booking receipts and its
+      // installment money under Received as separate lines, and the API keeps
+      // them apart as well: due is total - received - installment. Summing only
+      // `received_amount` here left the installment column out of the total, so
+      // the grand total read short by exactly the installments while Due already
+      // deducted them. Each pool is still added once.
+      summed.received_amount +=
+        wholeTaka(unit.received_amount) + wholeTaka(unit.installment_received);
       summed.due_amount += wholeTaka(unit.due_amount);
     });
   });
