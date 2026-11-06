@@ -10,6 +10,25 @@ import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getProductionCosting } from './productionSlice';
 import routes from '../../services/appRoutes';
 
+// The ways a batch can stand above its recipe, in the same words the register
+// uses, so the red case reads the same on both screens.
+const varianceNotes = (variance: any): string[] => {
+  if (!variance) return [];
+
+  const notes: string[] = [];
+
+  if (Number(variance.inputs_over) > 0) {
+    notes.push(
+      `${variance.inputs_over} material${Number(variance.inputs_over) === 1 ? '' : 's'} used above the recipe`,
+    );
+  }
+
+  if (variance.output_short) notes.push('the batch made less than the recipe yield');
+  if (variance.loss_over) notes.push('the loss is above the recipe tolerance');
+
+  return notes;
+};
+
 /**
  * Batch Costing: everything one batch consists of, traced to its sources.
  *
@@ -57,6 +76,10 @@ const BatchCosting = () => {
   const layers: any[] = detail.layers ?? [];
   const allocations: any[] = detail.allocations ?? [];
   const outputs: any[] = detail.outputs ?? [];
+  // What the recipe expected, frozen when the draft was saved.
+  const recipe = detail.recipe ?? null;
+  const recipeLines: any[] = detail.recipe_lines ?? [];
+  const variance = detail.variance ?? null;
   // A batch may make several products; then the master's qty and unit cost
   // are only the first one's, and the output table carries each.
   const severalOutputs = new Set(outputs.map((r) => r.product_name)).size > 1;
@@ -109,6 +132,12 @@ const BatchCosting = () => {
         </div>
       )}
 
+      {variance?.over && (
+        <div className="mb-3 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-700/50 dark:bg-red-500/10 dark:text-red-300">
+          <strong>Above the recipe:</strong> {varianceNotes(variance).join('; ')}.
+        </div>
+      )}
+
       <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Fact label="Batch" value={m.batch_ref || `#${m.id}`} />
         <Fact label="Date" value={m.date} />
@@ -122,7 +151,87 @@ const BatchCosting = () => {
         <Fact label="Abnormal loss" value={thousandSeparator(Number(m.loss_abnormal))} />
         <Fact label="Abnormal cost" value={thousandSeparator(Number(m.abnormal_loss_cost))} />
         <Fact label="Total cost" value={thousandSeparator(Number(m.total_cost))} />
+        {recipe ? (
+          <Fact label="Recipe" value={`${recipe.name}${recipe.version ? ` v${recipe.version}` : ''}`} />
+        ) : null}
+        {variance ? (
+          <Fact
+            label="Loss allowed (recipe)"
+            value={
+              <span className={variance.loss_over ? 'text-red-600 dark:text-red-400' : ''}>
+                {thousandSeparator(Number(variance.loss_allowed))}
+              </span>
+            }
+          />
+        ) : null}
       </div>
+
+      {recipe ? (
+        <Section title={`Recipe — ${recipe.name}${recipe.version ? ` v${recipe.version}` : ''}`}>
+          <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
+            Saved against this batch on {recipe.effective_date || '-'}; it was filled for{' '}
+            {thousandSeparator(Number(recipe.target_qty))}.{' '}
+            {variance ? (
+              <span className={variance.output_short ? 'font-semibold text-red-600 dark:text-red-400' : ''}>
+                The batch made {thousandSeparator(Number(variance.output_actual))}
+                {variance.output_short ? ' — short of the recipe' : ''}.
+              </span>
+            ) : null}
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+              <thead className="text-xs text-gray-700 uppercase bg-[rgb(var(--c-table-head))] dark:text-gray-200">
+                <tr>
+                  <th className="px-2 py-2">Material</th>
+                  <th className="px-2 py-2 text-right">Recipe says</th>
+                  <th className="px-2 py-2 text-right">Actually used</th>
+                  <th className="px-2 py-2 text-right">Difference</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recipeLines.map((row, index) => {
+                  const difference = Number(row.difference) || 0;
+                  // `over` comes from the server: an input outside the recipe is
+                  // only red on a single-output batch, where it can belong to no
+                  // other product.
+                  const over = Boolean(row.over);
+
+                  return (
+                    <tr key={index} className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
+                      <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">
+                        {row.product_name || '-'}
+                        {row.line_type === 'packaging' ? (
+                          <span className="ml-1 text-xs text-gray-500">(packaging)</span>
+                        ) : null}
+                        {row.not_in_recipe ? (
+                          <span className="ml-1 text-xs text-gray-500">(not in recipe)</span>
+                        ) : null}
+                      </td>
+                      <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
+                        {thousandSeparator(Number(row.expected_qty))} {row.unit}
+                      </td>
+                      <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
+                        {thousandSeparator(Number(row.actual_qty))} {row.unit}
+                      </td>
+                      <td
+                        className={`px-2 py-2 text-right ${
+                          over
+                            ? 'font-semibold text-red-600 dark:text-red-400'
+                            : 'text-gray-900 dark:text-[rgb(var(--c-text))]'
+                        }`}
+                      >
+                        {difference > 0 ? '+' : ''}
+                        {difference === 0 ? '0' : thousandSeparator(difference)} {row.unit}
+                        {over ? ' over' : ''}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+      ) : null}
 
       <Section title="Inputs">
         <Table
@@ -196,6 +305,36 @@ const BatchCosting = () => {
               </tr>
             </tbody>
           </table>
+
+          {recipe ? (
+            <>
+              <h3>
+                Recipe — {recipe.name}
+                {recipe.version ? ` v${recipe.version}` : ''}
+              </h3>
+              <p style={{ fontSize: 12 }}>
+                Saved against this batch on {recipe.effective_date || '-'}; filled for{' '}
+                {recipe.target_qty}.{variance ? ` Made ${variance.output_actual}${variance.output_short ? ' (short)' : ''}.` : ''}
+              </p>
+              <table>
+                <thead><tr><th>Material</th><th>Recipe says</th><th>Actually used</th><th>Difference</th></tr></thead>
+                <tbody>
+                  {recipeLines.map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.product_name}{r.not_in_recipe ? ' (not in recipe)' : ''}</td>
+                      <td>{thousandSeparator(Number(r.expected_qty))} {r.unit}</td>
+                      <td>{thousandSeparator(Number(r.actual_qty))} {r.unit}</td>
+                      <td>
+                        {Number(r.difference) === 0
+                          ? '0'
+                          : `${Number(r.difference) > 0 ? '+' : ''}${thousandSeparator(Number(r.difference))}`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ) : null}
 
           <h3>Inputs</h3>
           <table>

@@ -32,6 +32,25 @@ const expiryOf = (row: any) =>
     (o: any) => o.expiry_date || '',
   );
 
+// How the batch stands against the recipe it was saved with. Anything above the
+// recipe -- more material, less output, more loss -- is the red case.
+const varianceText = (row: any): string => {
+  const variance = row.variance;
+
+  if (!variance) return '-';
+
+  const parts: string[] = [];
+
+  if (Number(variance.inputs_over) > 0) {
+    parts.push(`${variance.inputs_over} material${Number(variance.inputs_over) === 1 ? '' : 's'} over`);
+  }
+
+  if (variance.output_short) parts.push('output short');
+  if (variance.loss_over) parts.push('loss over');
+
+  return parts.length ? parts.join(', ') : 'On recipe';
+};
+
 /**
  * Production Register: one row per batch, with what it cost and the TRUE gross
  * profit for the period.
@@ -137,6 +156,8 @@ const ProductionRegister = () => {
               <th className="px-2 py-2 text-right">True cost</th>
               <th className="px-2 py-2 text-right">Unit cost</th>
               <th className="px-2 py-2">Loss</th>
+              <th className="px-2 py-2">Recipe</th>
+              <th className="px-2 py-2">Variance</th>
               <th className="px-2 py-2">Status</th>
               <th className="px-2 py-2 text-center">Detail</th>
             </tr>
@@ -146,7 +167,9 @@ const ProductionRegister = () => {
               <tr
                 key={row.id}
                 className={`border-b dark:border-gray-700 ${
-                  row.flag ? 'bg-red-50 dark:bg-red-500/10' : 'bg-[rgb(var(--c-table-body))]'
+                  row.flag || row.variance?.over
+                    ? 'bg-red-50 dark:bg-red-500/10'
+                    : 'bg-[rgb(var(--c-table-body))]'
                 }`}
               >
                 <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">
@@ -183,6 +206,26 @@ const ProductionRegister = () => {
                     </span>
                   ) : null}
                 </td>
+                <td className="px-2 py-2 whitespace-nowrap text-gray-900 dark:text-[rgb(var(--c-text))]">
+                  {row.recipe
+                    ? `${row.recipe.name}${row.recipe.version ? ` v${row.recipe.version}` : ''}`
+                    : '-'}
+                </td>
+                <td
+                  className={`px-2 py-2 whitespace-nowrap ${
+                    row.variance?.over
+                      ? 'font-semibold text-red-600 dark:text-red-400'
+                      : 'text-gray-900 dark:text-[rgb(var(--c-text))]'
+                  }`}
+                >
+                  {varianceText(row)}
+                  {row.variance?.loss_over ? (
+                    <div className="text-xs">
+                      loss {thousandSeparator(Number(row.variance.loss_actual))} over{' '}
+                      {thousandSeparator(Number(row.variance.loss_allowed))}
+                    </div>
+                  ) : null}
+                </td>
                 <td className="px-2 py-2">
                   {row.flag ? (
                     <span
@@ -210,7 +253,7 @@ const ProductionRegister = () => {
             ))}
             {rows.length === 0 && (
               <tr className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
-                <td colSpan={12} className="px-2 py-3 text-center text-gray-500 dark:text-gray-300">
+                <td colSpan={14} className="px-2 py-3 text-center text-gray-500 dark:text-gray-300">
                   No batch in this period
                 </td>
               </tr>
@@ -266,6 +309,8 @@ const ProductionRegister = () => {
                 <th className="num">Allocated</th>
                 <th className="num">True cost</th>
                 <th className="num">Unit cost</th>
+                <th>Recipe</th>
+                <th>Variance</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -285,6 +330,12 @@ const ProductionRegister = () => {
                   <td className="num">
                     {perOutput(row, thousandSeparator(Number(row.unit_cost)), (o) => thousandSeparator(Number(o.unit_cost)))}
                   </td>
+                  <td>
+                    {row.recipe
+                      ? `${row.recipe.name}${row.recipe.version ? ` v${row.recipe.version}` : ''}`
+                      : '-'}
+                  </td>
+                  <td>{varianceText(row)}</td>
                   <td>{row.flag ? 'source changed' : row.status}</td>
                 </tr>
               ))}

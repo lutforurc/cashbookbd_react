@@ -22,6 +22,7 @@ import {
   storeProduction,
   updateProduction,
 } from './productionSlice';
+import { getProductionRecipe, getProductionRecipes } from './productionRecipeSlice';
 
 type Option = { value: string; label: string; label_2?: string; label_3?: string; label_5?: string };
 
@@ -41,6 +42,34 @@ const emptyInput = { productId: '', productName: '', unit: '', godownId: '', qty
 type OutputLine = InputLine & { price: string; share: string; expiry: string };
 
 const emptyOutput = { ...emptyInput, price: '', share: '', expiry: '' };
+
+// What the chosen recipe expects, kept apart from the typed rows: the clerk may
+// change or delete an input line, and the comparison must still say what the
+// recipe wanted. baseQty is per the recipe's own yield; the target scales it.
+type RecipeLineLocal = {
+  productId: string;
+  productName: string;
+  unit: string;
+  baseQty: number;
+};
+
+type RecipeCheck = {
+  id: string;
+  name: string;
+  version: string;
+  yieldQty: number;
+  outputProductId: string;
+  outputProductName: string;
+  unit: string;
+  salesPrice: string;
+  lossBasis: string;
+  lossTolerancePct: number;
+  // The make quantity the inputs were last filled for. A changed Make has to be
+  // applied with Fill, or the server would snapshot a target the rows do not
+  // match.
+  filledQty: number;
+  lines: RecipeLineLocal[];
+};
 
 type Tab = 'output' | 'inputs' | 'costs' | 'batches';
 
@@ -103,6 +132,8 @@ const ProductionEntry = () => {
   const [editingOutId, setEditingOutId] = useState<number | null>(null);
   const [allocatable, setAllocatable] = useState<any[]>([]);
   const [stock, setStock] = useState<Record<string, number>>({});
+  const [recipes, setRecipes] = useState<any[]>([]);
+  const [recipeCheck, setRecipeCheck] = useState<RecipeCheck | null>(null);
 
   const [form, setForm] = useState({
     productionDate: today(),
@@ -115,6 +146,10 @@ const ProductionEntry = () => {
     lossBasis: 'kg',
     lossReason: '',
     allocations: {} as Record<string, string>,
+    recipeId: '',
+    recipeQty: '',
+    recipeName: '',
+    recipeVersion: '',
   });
   const [editing, setEditing] = useState<{ id: number; batchRef: string } | null>(null);
 
@@ -139,8 +174,23 @@ const ProductionEntry = () => {
     );
   }, [dispatch, form.productionDate]);
 
-  // What the branch holds of each input, at the batch date.
-  const inputProductIds = form.inputs.map((i) => i.productId).filter(Boolean).join(',');
+  // The recipe versions in force on the batch date. Re-read with the date, the
+  // same way the expense picker is: a version dated later is not offered.
+  useEffect(() => {
+    dispatch(getProductionRecipes({ date: form.productionDate })).then((action: any) =>
+      setRecipes(Array.isArray(action?.payload) ? action.payload : []),
+    );
+  }, [dispatch, form.productionDate]);
+
+  // What the branch holds of each input, at the batch date. The recipe's own
+  // materials are included even before their lines are applied, so the check
+  // table can name a shortage the clerk has not added yet.
+  const inputProductIds = [
+    ...new Set([
+      ...form.inputs.map((i) => i.productId).filter(Boolean),
+      ...(recipeCheck?.lines.map((l) => l.productId) ?? []),
+    ]),
+  ].join(',');
   useEffect(() => {
     if (!inputProductIds) {
       setStock({});
@@ -166,11 +216,16 @@ const ProductionEntry = () => {
       lossBasis: 'kg',
       lossReason: '',
       allocations: {},
+      recipeId: '',
+      recipeQty: '',
+      recipeName: '',
+      recipeVersion: '',
     });
     setLine({ ...emptyInput });
     setEditingLineId(null);
     setOutLine({ ...emptyOutput });
     setEditingOutId(null);
+    setRecipeCheck(null);
     setEditing(null);
     newKey();
   };
@@ -185,6 +240,143 @@ const ProductionEntry = () => {
       productName: option?.label || '',
       unit: option?.label_5 || '',
     }));
+  };
+
+  const round2 = (value: number) => Math.round(value * 100) / 100;
+
+  // Fill the batch from a recipe. The inputs are replaced (a recipe is the
+  // material set), the recipe's own output row is added or updated at the target,
+  // and the tolerance comes across. Every row stays editable, and any other
+  // output the batch makes is left alone.
+  const applyRecipe = (meta: any, lines: any[], targetQty: number) => {
+    const yieldQty = Number(meta.yield_qty) || 0;
+
+    if (yieldQty <= 0) {
+      toast.error('This recipe has no yield, so its quantities cannot be scaled.');
+      return;
+    }
+
+    const target = Number(targetQty) > 0 ? round2(Number(targetQty)) : round2(yieldQty);
+    const factor = target / yieldQty;
+    const now = Date.now();
+    const recipeProductId = String(meta.output_product_id || '');
+
+    setForm((prev) => {
+      const existing = prev.outputs.find((o) => o.productId === recipeProductId);
+      const outputs: OutputLine[] = existing
+        ? prev.outputs.map((o) => (o.productId === recipeProductId ? { ...o, qty: String(target) } : o))
+        : [
+            ...prev.outputs,
+            {
+              ...emptyOutput,
+              id: now + 500,
+              productId: recipeProductId,
+              productName: meta.output_product_name || '',
+              unit: meta.unit || '',
+              godownId: prev.outputs[0]?.godownId || '',
+              qty: String(target),
+              price: meta.sales_price != null ? String(Number(meta.sales_price)) : '',
+            },
+          ];
+
+      const godownId = outputs[0]?.godownId || '';
+
+      return {
+        ...prev,
+        recipeId: String(meta.id),
+        recipeQty: String(target),
+        recipeName: meta.name || '',
+        recipeVersion: meta.version != null ? String(meta.version) : '',
+        lossTolerance: String(Number(meta.loss_tolerance_pct) || 0),
+        lossBasis: meta.loss_basis || prev.lossBasis,
+        inputs: lines.map((row, index) => ({
+          id: now + index,
+          productId: String(row.product_id),
+          productName: row.product_name || '',
+          unit: row.unit || '',
+          godownId,
+          qty: String(round2(Number(row.base_qty) * factor)),
+        })),
+        outputs,
+      };
+    });
+
+    setRecipeCheck({
+      id: String(meta.id),
+      name: meta.name || '',
+      version: meta.version != null ? String(meta.version) : '',
+      yieldQty,
+      outputProductId: recipeProductId,
+      outputProductName: meta.output_product_name || '',
+      unit: meta.unit || '',
+      salesPrice: meta.sales_price != null ? String(Number(meta.sales_price)) : '',
+      lossBasis: meta.loss_basis || '',
+      lossTolerancePct: Number(meta.loss_tolerance_pct) || 0,
+      filledQty: target,
+      lines: lines.map((row) => ({
+        productId: String(row.product_id),
+        productName: row.product_name || '',
+        unit: row.unit || '',
+        baseQty: Number(row.base_qty),
+      })),
+    });
+  };
+
+  const chooseRecipe = (id: string) => {
+    if (!id) {
+      setRecipeCheck(null);
+      setForm((p) => ({ ...p, recipeId: '', recipeQty: '', recipeName: '', recipeVersion: '' }));
+      return;
+    }
+
+    dispatch(
+      getProductionRecipe({
+        id,
+        callback: (response: any) => {
+          if (!response?.success) {
+            toast.error(response?.message || 'Could not open the recipe');
+            return;
+          }
+
+          const recipe = response.data?.recipe ?? {};
+          const lines: any[] = Array.isArray(response.data?.lines) ? response.data.lines : [];
+
+          applyRecipe(recipe, lines, Number(recipe.yield_qty));
+          toast.success(`Filled from ${recipe.name} v${recipe.version}. Change anything you need.`);
+        },
+      }) as any,
+    );
+  };
+
+  // Re-apply the same recipe at the make quantity on the form. Uses what was
+  // filled, not the recipe as it stands now -- a saved batch keeps its snapshot.
+  const refillRecipe = () => {
+    if (!recipeCheck) {
+      toast.error('Choose a recipe first, then press Fill.');
+      return;
+    }
+
+    applyRecipe(
+      {
+        id: recipeCheck.id,
+        name: recipeCheck.name,
+        version: recipeCheck.version,
+        yield_qty: recipeCheck.yieldQty,
+        output_product_id: recipeCheck.outputProductId,
+        output_product_name: recipeCheck.outputProductName,
+        unit: recipeCheck.unit,
+        sales_price: recipeCheck.salesPrice,
+        loss_basis: recipeCheck.lossBasis,
+        loss_tolerance_pct: recipeCheck.lossTolerancePct,
+      },
+      recipeCheck.lines.map((row) => ({
+        product_id: row.productId,
+        product_name: row.productName,
+        unit: row.unit,
+        base_qty: row.baseQty,
+      })),
+      Number(form.recipeQty),
+    );
   };
 
   const addLine = () => {
@@ -319,6 +511,10 @@ const ProductionEntry = () => {
     idempotency_key: idempotencyKey.current,
     production_date: form.productionDate,
     batch_ref: form.batchRef || null,
+    // The recipe the batch was filled from, and the make quantity. The server
+    // freezes both in its own snapshot; a batch entered by hand sends null.
+    recipe_id: form.recipeId ? Number(form.recipeId) : null,
+    recipe_qty: form.recipeQty ? Number(form.recipeQty) : null,
     outputs: form.outputs.map((o) => ({
       product_id: Number(o.productId),
       godown_id: o.godownId ? Number(o.godownId) : null,
@@ -358,6 +554,11 @@ const ProductionEntry = () => {
   };
 
   const save = () => {
+    if (recipeQtyChanged) {
+      setTab('inputs');
+      return toast.error('The make quantity changed. Press Fill to apply it before saving.');
+    }
+
     const problem = validate();
     if (problem) {
       setTab(problem.tab);
@@ -390,6 +591,7 @@ const ProductionEntry = () => {
         const inputs: any[] = response.data?.inputs ?? [];
         const outputs: any[] = response.data?.outputs ?? [];
         const allocations: any[] = response.data?.allocations ?? [];
+        const snapshot = response.data?.recipe ?? null;
         const typed = outputs.length > 1 && outputs.every((o) => o.cost_share_pct != null);
         const allocMap: Record<string, string> = {};
         allocations.forEach((a) => {
@@ -423,7 +625,45 @@ const ProductionEntry = () => {
           lossBasis: m.loss_basis || 'kg',
           lossReason: m.loss_reason || '',
           allocations: allocMap,
+          recipeId: snapshot?.recipe_id ? String(snapshot.recipe_id) : m.recipe_id ? String(m.recipe_id) : '',
+          recipeQty: m.recipe_qty != null ? String(Number(m.recipe_qty)) : snapshot?.target_qty ? String(Number(snapshot.target_qty)) : '',
+          recipeName: snapshot?.name || '',
+          recipeVersion: snapshot?.version != null ? String(snapshot.version) : '',
         });
+
+        // The check table comes from the frozen snapshot, not the recipe as it
+        // stands today -- that is what the batch was saved against.
+        if (snapshot) {
+          const factor = Number(snapshot.factor) || 1;
+          const output = outputs.find((o) => String(o.product_id) === String(snapshot.output_product_id));
+
+          setRecipeCheck({
+            id: String(snapshot.recipe_id),
+            name: snapshot.name || '',
+            version: snapshot.version != null ? String(snapshot.version) : '',
+            yieldQty: Number(snapshot.yield_qty) || 0,
+            outputProductId: snapshot.output_product_id ? String(snapshot.output_product_id) : '',
+            outputProductName: output?.product_name || '',
+            unit: output?.unit || '',
+            salesPrice: output?.sales_price != null ? String(Number(output.sales_price)) : '',
+            lossBasis: snapshot.loss_basis || '',
+            lossTolerancePct: Number(snapshot.loss_tolerance_pct) || 0,
+            // A reopened draft is filled for the quantity it was saved with, so
+            // it is not stale on open.
+            filledQty: Number(m.recipe_qty ?? snapshot.target_qty ?? 0),
+            lines: (snapshot.lines ?? []).map((row: any) => ({
+              productId: String(row.product_id),
+              productName: row.product_name || '',
+              unit: row.unit || '',
+              // expected_qty is at the snapshot's target; divide out the factor
+              // so a re-fill at another target scales from the per-yield figure.
+              baseQty: factor > 0 ? Number(row.expected_qty) / factor : Number(row.expected_qty),
+            })),
+          });
+        } else {
+          setRecipeCheck(null);
+        }
+
         setEditing({ id: Number(m.id), batchRef: m.batch_ref || '' });
         setTab('inputs');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -556,6 +796,34 @@ const ProductionEntry = () => {
     />
   );
 
+  // A reopened draft may name a recipe the picker no longer offers (retired, or
+  // no longer in force on the date). Keep it visible rather than silently drop.
+  const recipeOptions = [...recipes];
+
+  if (form.recipeId && !recipeOptions.some((r) => String(r.id) === form.recipeId)) {
+    recipeOptions.unshift({
+      id: form.recipeId,
+      name: form.recipeName || `Recipe #${form.recipeId}`,
+      version: form.recipeVersion,
+      output_product: '',
+    });
+  }
+
+  // What the recipe needs at the make quantity on the form.
+  const recipeFactor =
+    recipeCheck && recipeCheck.yieldQty > 0
+      ? (Number(form.recipeQty) > 0 ? Number(form.recipeQty) : recipeCheck.yieldQty) / recipeCheck.yieldQty
+      : 0;
+
+  // The Make box no longer matches the quantity the rows were filled for. The
+  // save is held back until Fill applies it -- otherwise the server would freeze
+  // a target the inputs were never scaled to.
+  const recipeQtyChanged =
+    !!recipeCheck &&
+    Math.abs(
+      (Number(form.recipeQty) > 0 ? Number(form.recipeQty) : recipeCheck.yieldQty) - recipeCheck.filledQty,
+    ) > 0.005;
+
   return (
     <div className="pb-6">
       <HelmetTitle title="Production Entry" />
@@ -608,6 +876,70 @@ const ProductionEntry = () => {
             />
           </div>
         </div>
+
+        {/* A recipe fills the batch: materials, tolerance and its own output.
+            Everything stays editable, and other outputs are left alone. */}
+        <div className="mt-3 grid grid-cols-1 items-end gap-3 border-t border-[rgb(var(--c-border))] pt-3 md:grid-cols-4">
+          <div className="md:col-span-2">
+            <label className="text-sm text-[rgb(var(--c-text))]">Recipe (optional)</label>
+            <select
+              id="recipeId"
+              name="recipeId"
+              value={form.recipeId}
+              onChange={(event) => chooseRecipe(event.target.value)}
+              className="h-9.5 w-full rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-2 text-sm text-[rgb(var(--c-text))]"
+            >
+              <option value="">Enter by hand</option>
+              {recipeOptions.map((recipe: any) => (
+                <option key={String(recipe.id)} value={String(recipe.id)}>
+                  {recipe.name}
+                  {recipe.version ? ` v${recipe.version}` : ''}
+                  {recipe.output_product ? ` — ${recipe.output_product}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          <InputElement
+            id="recipeQty"
+            name="recipeQty"
+            type="number"
+            step="0.01"
+            label="Make"
+            placeholder="The recipe's own yield"
+            value={form.recipeQty}
+            onChange={(e: any) => setField('recipeQty', e.target.value)}
+            className="w-full"
+          />
+          <div className="flex gap-2">
+            <ButtonLoading
+              onClick={refillRecipe}
+              buttonLoading={false}
+              label="Fill"
+              className="w-full whitespace-nowrap text-center mr-0 py-2"
+              icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+            />
+            {form.recipeId ? (
+              <ButtonLoading
+                onClick={() => chooseRecipe('')}
+                buttonLoading={false}
+                label="Clear"
+                className="w-full whitespace-nowrap text-center mr-0 py-2"
+                icon={<FiTrash2 className="text-lg ml-2 mr-2" />}
+              />
+            ) : null}
+          </div>
+        </div>
+        {recipeCheck ? (
+          <p className="mt-2 text-sm text-[rgb(var(--c-text-muted))]">
+            Filled from <strong className="text-[rgb(var(--c-text))]">{recipeCheck.name}</strong>
+            {recipeCheck.version ? ` v${recipeCheck.version}` : ''} — the batch is still yours to change.
+          </p>
+        ) : null}
+        {recipeQtyChanged ? (
+          <p role="alert" className="mt-2 text-sm font-medium text-[rgb(var(--c-danger))]">
+            The make quantity changed. Press <strong>Fill</strong> to apply it before saving.
+          </p>
+        ) : null}
       </section>
 
       {/* ---- The flow: materials in, waste and labour, products out ---- */}
@@ -734,6 +1066,54 @@ const ProductionEntry = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Required against what the branch holds, for the recipe as
+                chosen -- so a shortage is named even if the clerk has not
+                added that material yet. */}
+            {recipeCheck ? (
+              <div className="mt-4 rounded border border-[rgb(var(--c-border))] p-3">
+                <h3 className="text-sm font-semibold text-[rgb(var(--c-text))]">
+                  Recipe needs at {thousandSeparator(Number(form.recipeQty) || recipeCheck.yieldQty)}{' '}
+                  {recipeCheck.unit}
+                </h3>
+                <p className="mb-2 mt-0.5 text-xs text-[rgb(var(--c-text-muted))]">
+                  Required by {recipeCheck.name}
+                  {recipeCheck.version ? ` v${recipeCheck.version}` : ''}, against what the branch holds
+                  on {form.productionDate}.
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className={headCls}>
+                      <tr>
+                        <th className={th}>Material</th>
+                        <th className={`${th} text-right`}>Recipe needs</th>
+                        <th className={`${th} text-right`}>In stock on the date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recipeCheck.lines.map((row) => {
+                        const required = round2(row.baseQty * recipeFactor);
+                        const onHand = stock[row.productId];
+                        const short = onHand !== undefined && required > Number(onHand);
+
+                        return (
+                          <tr key={row.productId} className={rowCls}>
+                            <td className={td}>{row.productName || '-'}</td>
+                            <td className={`${td} text-right tabular-nums`}>
+                              {thousandSeparator(required)} {row.unit}
+                            </td>
+                            <td className={`${td} text-right tabular-nums ${short ? 'font-semibold !text-[rgb(var(--c-danger))]' : ''}`}>
+                              {onHand === undefined ? '-' : thousandSeparator(Number(onHand))}
+                              {short && <span className="ml-2 text-xs">short</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
           </>,
         )}
 

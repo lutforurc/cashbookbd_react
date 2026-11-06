@@ -350,6 +350,17 @@ export const API_PRODUCTION_COSTING_URL = `${API_BASE_URL}/production/report/cos
 export const API_PRODUCTION_SALES_RETURN_STORE_URL = `${API_BASE_URL}/production/sales-return/store`;
 export const API_PRODUCTION_SALES_RETURN_EDIT_URL = `${API_BASE_URL}/production/sales-return/edit`;
 export const API_PRODUCTION_SALES_RETURN_UPDATE_URL = `${API_BASE_URL}/production/sales-return/update`;
+// Recipe -- the standard materials for ONE product, versioned and dated. With
+// ?date= the list is only the version in force on that date (the entry form's
+// picker); without it, every version (the Recipe screen).
+export const API_PRODUCTION_RECIPE_LIST_URL = `${API_BASE_URL}/production/recipes`;
+// One version with its lines: `${URL}/${id}`.
+export const API_PRODUCTION_RECIPE_DETAILS_URL = `${API_BASE_URL}/production/recipes`;
+export const API_PRODUCTION_RECIPE_STORE_URL = `${API_BASE_URL}/production/recipes/store`;
+export const API_PRODUCTION_RECIPE_UPDATE_URL = `${API_BASE_URL}/production/recipes/update`;
+// Copy a version forward: `${URL}/${id}`.
+export const API_PRODUCTION_RECIPE_NEW_VERSION_URL = `${API_BASE_URL}/production/recipes/new-version`;
+export const API_PRODUCTION_RECIPE_DESTROY_URL = `${API_BASE_URL}/production/recipes/destroy`;
 
 // Chart of Accounts
 // COAL1

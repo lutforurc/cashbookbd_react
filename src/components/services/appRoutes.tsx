@@ -100,6 +100,7 @@ const ROUTES = {
   // feature owns. Only reachable on a branch whose Manufacture switch is on.
   production_entry: '/production/entry',
   production_sales_return: '/production/sales-return',
+  production_recipe: '/production/recipe',
   production_register: '/production/register',
   production_costing: '/production/costing/:id',
 

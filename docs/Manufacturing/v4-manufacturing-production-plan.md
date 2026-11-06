@@ -264,6 +264,16 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 - **ঘাটতি দেখা:** recipe ও target qty দিলে প্রতিটা input-এর প্রয়োজন বনাম available stock, কম থাকলে লাল।
 - VAT প্রযোজ্য হলে recipe-র input-output অনুপাত মূসক-৪.৩-এর সঙ্গে মিলিয়ে রাখার ব্যবস্থা (খ-১০)।
 
+**বাস্তবায়ন (Phase 2, ৬ নভেম্বর ২০২৬):**
+
+- **এক output per recipe (মালিকের সম্মতি):** recipe একটাই পণ্য ও তার yield বলে; এক ব্যাচে আরও output থাকলে ক্লার্ক হাতে যোগ করে, আর খ-৪-এর বিক্রয়মূল্য-অনুপাতের ভাগ অপরিবর্তিত থাকে। Variance শুধু recipe-র নিজের পণ্য ও input দেখে, অন্য output-কে বিচার করে না।
+- **স্ক্রিন:** Recipe = নাম, output product, yield, loss basis, normal loss %, ঐচ্ছিক suggested cost, version, effective date আর input লাইন (প্রতি লাইনে "material" বা "packaging")। Packaging আলাদা কলাম নয় — খালি প্যাকেট/লেবেল/কার্টন আগের মতোই stock item, শুধু লাইনে `line_type` দিয়ে চিহ্নিত।
+- **Snapshot:** ব্যাচ draft হিসেবে save হওয়ার সময় `production_recipe_snapshots` / `_lines`-এ recipe, version, yield, target আর প্রতিটা input-এর প্রত্যাশিত পরিমাণ কপি হয়। পরে recipe বদলালে বা মোছা হলে ব্যাচ অপরিবর্তিত থাকে; snapshot কেবল recipe বা target বদলালে নতুন করে লেখে।
+- **Version:** একই (output product + নাম)-এর সর্বোচ্চ version, যার `effective_date` ব্যাচের তারিখের আগে বা সমান, সেটাই picker-এ আসে। "New version" আগের version কপি করে নতুন version ও তারিখে রাখে; পুরনো version যেমন ছিল তেমন থাকে।
+- **Production Entry:** recipe বাছলে input লাইন, loss tolerance/basis আর recipe-র নিজের output row (target পরিমাণে) ভরে যায়; clerk সব হাতে বদলাতে পারে। "Make" বদলে **Fill** চাপলে একই recipe নতুন target-এ স্কেল হয়। Materials in-এ "Recipe needs" টেবিলে প্রয়োজন বনাম ব্যাচের তারিখের stock, কম হলে লাল।
+- **Variance:** Register-এ Recipe ও Variance কলাম; Batch Costing-এ প্রতি input-এর "Recipe says / Actually used / Difference" আর "Loss allowed (recipe)"। বেশি ব্যবহার, কম output বা recipe-র সীমার বেশি loss — লাল।
+- **অনুমতি:** নতুন key নেই; পড়ায় `production.view`, লেখায় `production.create`। `recipe.*` v4 খ-১১ অনুযায়ী ভবিষ্যতের কাজ।
+
 ## অংশ খ-৯: Free goods (Phase 3, 4)
 
 **নিয়ম (মালিক, ৪ নভেম্বর ২০২৬): ফ্রি আলাদা কলাম নয়, আলাদা রো।** ফ্রি মাল invoice-এ নিজের একটা সারি, দাম ০, আর সারির পাশে লেখা থাকবে "ফ্রি"। যেমন: "চিনি ২৫০ গ্রাম, ১০০ × ৩৫ = ৩,৫০০" আর তার নিচে "চিনি ২৫০ গ্রাম (ফ্রি), ২ × ০ = ০"।
@@ -381,7 +391,7 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 | --- | --- | --- |
 | 0 | কোড/schema audit **শেষ (অংশ গ)**; ক-২ #১২ ("গ") ও #১৩-এর সিদ্ধান্ত লেখা হয়েছে; বাকি: ক্লায়েন্ট DB query (গ-৯) | গ-৯-এর ফল লেখা |
 | 1 | নতুন ফর্ম: Production Entry, Production Sales Return; Item opening stock-এ দশমিক qty; manual single-output production, source-linked cost, abnormal loss, stock integration, Product Ledger শাখা, Register ও Costing | Check ১–১০, ১২–১৪ পাস |
-| 2 | Recipe, version, ঘাটতি দেখা | Recipe থেকে ভরা batch-এ check ১, ৭ পাস |
+| 2 | Recipe, version, ঘাটতি দেখা — **শেষ (৬ নভেম্বর ২০২৬)** | Recipe থেকে ভরা batch-এ check ১, ৭ পাস; snapshot, variance, effective date ও multi-output যাচাই (handoff §৪-ঙ) |
 | 3 | নতুন Production Sales (ফ্রি রো), scheme, ফ্রিসহ return | Check ১১ পাস |
 | 4 | নতুন Production Purchase (ফ্রি রো) | Purchase free দিয়ে check ২ পাস |
 

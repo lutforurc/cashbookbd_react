@@ -8,6 +8,7 @@ title: "Manufacturing Phase 1 — কাজের অবস্থা ও অন�
 ## ১. এক নজরে
 
 - Phase 1-এর backend আর frontend দুটোই তৈরি ও যাচাই করা (dev DB, test branch 11)।
+- **Phase 2 (Recipe) শেষ (৬ নভেম্বর ২০২৬):** version ও effective date, snapshot, Production Entry-তে recipe থেকে ভরা, ঘাটতি দেখা, Register/Batch Costing-এ variance। বিস্তারিত §৪-ঙ।
 - কোড লিখেছে Command Code; প্রতিটা ধাপ Claude Code মিলিয়ে দেখেছে।
 - ধাপ ১-এ নতুন ফর্ম মাত্র দুটো: **Production Entry** আর **Production Sales Return**। ক্রয়, খরচ/মজুরি, বিক্রি আর Branch Transfer আগের ফর্মেই চলে।
 - আগের ফর্মে একটাই অনুমোদিত বদল: **Item opening stock পরিমাণ দুই দশমিকে** নেয়।
@@ -52,7 +53,9 @@ git -C <backend-folder> checkout Manufacturing-API
 | `app/Services/Production/ProductionCostAllocator.php` | খরচ বণ্টন: row lock, একই মাস, বেশি বণ্টন বন্ধ, released বাদ |
 | `app/Services/Production/ProductionSalesReturnPosting.php` | ফেরত মাল original বিক্রির FIFO খরচে stock-এ; ledger আগের Sales Return-এর মতো |
 | `app/Services/Production/ProductionAccountHead.php` | `PROD_EXPENSE_*` marker দিয়ে head খোঁজা |
-| `app/Http/Controllers/Production/` | `ProductionController`, `ProductionReportController`, `ProductionSalesReturnController` |
+| `app/Services/Production/ProductionRecipeSnapshot.php` | Recipe apply/snapshot, `forBatch()`, `variance()` (Phase 2) |
+| `app/Services/Production/ProductionLoss.php` | Loss basis unit-এর হিসাব; poster আর snapshot একই নিয়ম ব্যবহার করে (Phase 2) |
+| `app/Http/Controllers/Production/` | `ProductionController`, `ProductionReportController`, `ProductionSalesReturnController`, `ProductionRecipeController` |
 | `routes/api.php` | `/api/production/*` (নিচে) |
 | `app/Http/Controllers/Products/ItemController.php` | opening stock qty ও মোট টাকা দুই দশমিকে (অনুমোদিত বদল) |
 | `app/Http/Controllers/Reports/ReportsController.php` | `productLedgerData()` ও `productStatementData()`-এ production শাখা যোগ, `Schema::hasTable('production_master')` দিয়ে সুরক্ষিত; আগের ছয় শাখা অপরিবর্তিত। "গ": `profitLossData()` নতুন key `production_cost` পাঠায় (`productionCostData()`); পণ্যভিত্তিক লাভের Adjustment আর `apiProfitLossDateWise()` সেটা ধরে |
@@ -65,12 +68,14 @@ API (সবই permission + branch-এর `manufactur_control` দিয়ে �
 - `POST /api/production/store`, `/update`, `/post/{id}`, `/reverse/{id}`, `/destroy/{id}`
 - `GET /api/production/report/register`, `/report/costing/{id}`
 - `POST /api/production/sales-return/store`, `/edit`, `/update`
+- `GET /api/production/recipes` (`?date=` দিলে ওই দিনে চালু version), `/recipes/{id}`
+- `POST /api/production/recipes/store`, `/update`, `/new-version/{id}`, `/destroy/{id}`
 
 ### Frontend (`cashbookbd_react`)
 
 | ফাইল | কী |
 | --- | --- |
-| `src/components/modules/production/` | `productionSlice.tsx`, `ProductionEntry.tsx`, `ProductionSalesReturn.tsx`, `ProductionRegister.tsx`, `BatchCosting.tsx` |
+| `src/components/modules/production/` | `productionSlice.tsx`, `ProductionEntry.tsx`, `ProductionSalesReturn.tsx`, `ProductionRegister.tsx`, `BatchCosting.tsx`, `productionRecipeSlice.tsx`, `Recipe.tsx` |
 | `src/components/Sidebar/index.tsx`, `menuPermissions.ts`, `menuRoutes.ts` | "Production" মেনু গ্রুপ (Requisition আর Real Estate-এর মাঝে) |
 | `src/App.tsx`, `services/appRoutes.tsx`, `services/apiRoutes.tsx`, `store.tsx` | route, endpoint, slice যোগ |
 | `modules/product/AddProduct.tsx`, `Product.tsx` | opening qty input-এ `step="0.01"` |
@@ -271,6 +276,61 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 
 **ব্রাউজারে দেখা যায়নি:** ReturnPrint-এর কাগজ, Register/Batch Costing-এর print preview আর নতুন edit স্ক্রিনের চেহারা — কোড ও JSON payload দিয়ে যাচাই, ব্রাউজারে খুলে দেখা হয়নি। Cash head ১৭-এর return-এ কাগজের নাম `-`—এটাও ব্রাউজারে দেখা হয়নি।
 
+## ৪-ঙ. Phase 2 — Recipe (৬ নভেম্বর ২০২৬)
+
+**কী যোগ হলো:** version ও effective date-সহ Recipe; Production Entry-তে recipe বাছলে input, tolerance ও নিজের output row ভরে যাওয়া; ব্যাচের তারিখে প্রয়োজন বনাম stock (কম হলে লাল); Register ও Batch Costing-এ recipe-র তুলনায় variance (বেশি হলে লাল)। আগের কোনো এন্ট্রি ফর্ম, P&L বা shared report বদলায়নি।
+
+### Schema (এক SQL ফাইল + `AddUnitTypeToBuildingUnits::runProductionRecipeSchema()`)
+
+- `production_recipes` — company/branch, নাম, output product, `yield_qty`, `loss_basis`, `loss_tolerance_pct`, ঐচ্ছিক `suggested_cost`, `version`, `effective_date`, `status` (active/retired)। Unique: (company, branch, output, name, version)।
+- `production_recipe_lines` — product, `base_qty`, `line_type` (material/packaging), `sort_order`, note।
+- `production_recipe_snapshots` / `production_recipe_snapshot_lines` — ব্যাচের নিজের কপি: recipe id/নাম/version/effective date, yield, target, factor, loss basis/tolerance/base qty, প্রতি input-এর `expected_qty`।
+- `production_master`-এ দুই guarded কলাম: `recipe_id`, `recipe_qty`।
+- নতুন permission নেই; `production.view` / `production.create`। নতুন artisan command নেই।
+
+### নিয়ম
+
+- **Snapshot save-এ, post-এ নয়।** Draft save করার সময় recipe কপি হয়; একই recipe + target আবার save করলে snapshot অপরিবর্তিত থাকে, তাই পরে recipe বদলালে বা মোছা হলে ব্যাচ বদলায় না। Recipe/target বদলালে বা recipe সরালে snapshot নতুন করে লেখে/মুছে।
+- **এক output per recipe।** এক ব্যাচে আরও output থাকলে হাতে যোগ হয়; খ-৪-এর বিক্রয়মূল্য-অনুপাতের ভাগ অপরিবর্তিত। Variance শুধু recipe-র পণ্য ও input দেখে।
+- **Version:** একই (output + নাম)-এর সর্বোচ্চ version, যার effective date ব্যাচের তারিখের ≤, সেটাই picker-এ। "New version" পুরনো version কপি করে নতুন version/তারিখে রাখে; old version অপরিবর্তিত।
+- **Packaging:** আলাদা কলাম নয় — `line_type = packaging`; খালি প্যাকেট/লেবেল আগের মতোই stock input, loss base-এ ধরা হয় না (খ-৩-এর নিয়ম)।
+- **Suggested cost** শুধু দেখানো হয়, কখনো capitalize হয় না।
+
+### স্ক্রিন
+
+- নতুন পাতা `/production/recipe` (Sidebar → Production → Recipe): list + form; header fields, input lines (material/packaging), Save / New version / Retire-Delete। কোনো batch ওই version ব্যবহার করলে delete নয়, retire।
+- Production Entry: header-এ Recipe select + "Make" qty + Fill। বাছলে input, tolerance/basis আর recipe-র output row ভরে; clerk সব বদলাতে পারে। Materials in-এ "Recipe needs at …" টেবিল — required vs stock, short হলে লাল।
+- Production Register: Recipe ও Variance কলাম; বেশি ব্যবহার/কম output/বেশি loss হলে সারি ও ঘর লাল।
+- Batch Costing: Recipe section (expected vs actual প্রতি input, difference) ও "Loss allowed (recipe)"; print-এও একই, সব কালো।
+
+### যাচাই (rolled-back probe, `ppdhotelmoteldb`, company 1 / branch 1; কোনো সারি থেকে যায়নি)
+
+| যাচাই | ফল |
+| --- | --- |
+| v4 খ-১৩ "গ" (recipe থেকে ভরা): closing ৮,৫৫৮; net sales ৯,০০০; allocated ৩,০৬০; COGS ৭,৭০২; gross ও net ১,২৯৮ | পাস |
+| Check ৭ repack: loss base ৫০ kg (packet বাদ); ১ @৩৫.৯৬ + ১৯৭ @৩৫.৩২ = ৬,৯৯৪.০০; normal ০.৫, abnormal ০ | পাস |
+| Snapshot: chilli/turmeric ৬০/৪০, target ৯৫, loss base ১০০; post-এর পরে recipe বদলালেও snapshot অপরিবর্তিত | পাস |
+| ঘাটতি: post-এর আগে ৬০ available = ৬০ required; post-এর পরে ০ < ৬০ | পাস |
+| Variance: chilli ৬২ বনাম ৬০ → register লাল, costing-এ +২; output ৯০ < ৯৫; loss ৮ > ৫.৪ | পাস |
+| Effective date/version: ১৫ নভেম্বর v1, ২ ডিসেম্বর v2 | পাস |
+| Multi-output: recipe পণ্য ৯৫ + হাতে যোগ করা output ৪০ → share ১০০%, variance শুধু ৯৫ | পাস |
+| Recipe সরালে snapshot যায় | পাস |
+| Production নেই এমন branch: P&L JSON আগে-পরে হুবহু এক, trading row ০, production cost ০ | পাস |
+| Table counts আগে-পরে এক; `php -l` পাস; `npm run build` exit 0; changed production ফাইলে নতুন TS error নেই | পাস |
+
+পর্যালোচনার পরের probe: **১০১টি check, ০ fail** — উপরের সবগুলো এবং নিচের সংশোধনের check একসাথে, একই rolled-back transaction-এ।
+
+**ব্রাউজারে দেখা হয়নি:** Recipe স্ক্রিনের চেহারা ও list/form, Production Entry-তে picker/Fill ও লাল shortage টেবিল, Register-এর নতুন কলাম/লাল tint, Batch Costing-এর variance section, দুই রিপোর্টের print, Sidebar-এ Recipe লিংক।
+
+### সংশোধন (পর্যালোচনার পর, ৬ নভেম্বর ২০২৬)
+
+- **Recipe-তে না থাকা কাঁচামাল:** variance এখন ব্যাচের সব input দেখে; recipe-তে না থাকলে `expected_qty` ০, `not_in_recipe = true`। এক output-এর ব্যাচে এটা over গোনা হয় ও ব্যাচ লাল হয়; একাধিক output-এর ব্যাচে শুধু দেখানো হয়, লাল হয় না (ওই মাল অন্য output-এর হতে পারে)। Batch Costing ও তার print-এ "(not in recipe)" লেখা আসে।
+- **Recipe validation:** output ও প্রতিটা line-এর পণ্য caller-এর company-র হতে হবে; না থাকলে বা Non Asset (type 2) হলে recipe save-ই হয় না। আগে এমন recipe save হতো, আর প্রতিটা batch post-এ stock shortage-এ আটকাত।
+- **Make/Fill:** "Make" বদলে Fill না চাপলে স্ক্রিনে লাল বার্তা দেখায় এবং Save আটকায় ("The make quantity changed. Press Fill…"); Fill ছাড়া save হলে server যে নতুন target snapshot করত, inputs তার সঙ্গে মিলত না। recipe না বেছে Fill চাপলে এখন স্পষ্ট বার্তা আসে।
+- **Retired recipe:** নতুন batch-এ retired recipe দিলে server আটকায়; পুরনো draft যেটা আগে থেকেই ওই recipe-তে save করা, সেটা অপরিবর্তিত save/post হতে পারে (validateDraft-এ, snapshot-এর আগে)।
+- **Permission:** Recipe স্ক্রিনে `production.create` না থাকলে Save ও New version disabled, delete লুকানো; আগে চাপার পরেই server refusal আসত।
+- **Patch বাধ্যতামূলক:** উপরের deploy ধাপ ৪ দেখুন; `ProductionRecipeSnapshot::apply()`-এর মন্তব্যও সংশোধিত।
+
 ## ৫. যা বাকি
 
 ### যাচাই
@@ -300,16 +360,16 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 
 | ধাপ | কাজ |
 | --- | --- |
-| ২ | Recipe, version, ঘাটতি দেখা |
+| ~~২~~ | ~~Recipe, version, ঘাটতি দেখা~~ — **শেষ (§৪-ঙ)** |
 | ৩ | নতুন Production Sales (ফ্রি আলাদা রো, দাম ০, "ফ্রি" লেখা), স্কিম, ফ্রিসহ ফেরত |
 | ৪ | নতুন Production Purchase (ফ্রি রো) |
 
 ### Deploy-এর আগে (ক্লায়েন্ট সার্ভার)
 
 1. Backend আর frontend একসঙ্গে deploy।
-2. `php artisan patch:add-unit-type` → `permission:cache-reset` → `route:clear`। **এই patch-এ `cost_share_pct` আর `expiry_date` দুটোই যোগ হয়** (দুবার চালালেও ক্ষতি নেই); `route:clear` নতুন `GET production/voucher-types` route-এর জন্য।
+2. `php artisan patch:add-unit-type` → `permission:cache-reset` → `route:clear`। **এই patch-এ `cost_share_pct`, `expiry_date`, চারটি recipe টেবিল আর `production_master.recipe_id`/`recipe_qty` যোগ হয়** (দুবার চালালেও ক্ষতি নেই); `route:clear` নতুন `GET production/voucher-types` ও `/production/recipes*` route-এর জন্য।
 3. শুধু Manufacturing ব্রাঞ্চে "Control Manufacture?" চালু, দরকারি role-কে `production.*` permission।
-4. Patch না চালালেও Product Ledger/Statement ভাঙবে না, কিন্তু Production মেনু কাজ করবে না।
+4. **Phase 2 থেকে patch বাধ্যতামূলক।** Production batch save করলে `production_master.recipe_id`/`recipe_qty` সর্বদা লেখা হয়, তাই patch না চালানো DB-তে batch save-ই হবে না (insert ব্যর্থ হবে)। শুধু Product Ledger/Statement আগের মতো চলবে।
 5. "গ"-এর জন্য আলাদা patch লাগে না। Phase 1-এর patch না চালানো ক্লায়েন্টে `production_cost` ০ আসে, P&L আগের মতোই।
 
 ## ৬. Command Code-এর সঙ্গে কাজের নিয়ম
