@@ -107,6 +107,19 @@ const parseDisplayDate = (value: any) => {
   return fallback.isValid() ? fallback.toDate() : null;
 };
 
+// The API sends DD/MM/YYYY. A bare dayjs(value) reads that month-first, which
+// swaps day and month -- and Edit would then save the swapped date.
+const toRowDate = (value: any) => {
+  const parsed = parseDisplayDate(value);
+  return parsed ? dayjs(parsed).format('DD/MM/YYYY') : value;
+};
+
+// Display only: rows keep DD/MM/YYYY, which parseDisplayDate reads back on edit.
+const formatDueDate = (value: any) => {
+  const parsed = parseDisplayDate(value);
+  return parsed ? dayjs(parsed).format('DD/MM/YY') : value;
+};
+
 const sumInstallmentAmounts = (rows: InstallmentRow[]) =>
   rows.reduce((total, row) => total + toNumber(row.amount), 0);
 
@@ -283,16 +296,10 @@ export default function RealEstateInstallmentCreate() {
           id: row?.id ?? row?.installment_id ?? null,
           installment_id: row?.installment_id ?? row?.id ?? null,
           installment_no: row?.installment_no ?? row?.inst_no ?? '-',
-          due_date: dayjs(row?.due_date ?? row?.installment_date ?? row?.inst_date).isValid()
-            ? dayjs(row?.due_date ?? row?.installment_date ?? row?.inst_date).format('DD/MM/YYYY')
-            : row?.due_date ?? row?.installment_date ?? row?.inst_date ?? '',
+          due_date: toRowDate(row?.due_date ?? row?.installment_date ?? row?.inst_date ?? ''),
           amount: toNumber(row?.amount ?? row?.due_amount ?? row?.installment_amount),
           invoice_no: row?.invoice_no ?? row?.sales_invoice ?? row?.receipt_no ?? null,
-          early_payment_date: row?.early_payment_date
-            ? dayjs(row.early_payment_date).isValid()
-              ? dayjs(row.early_payment_date).format('DD/MM/YYYY')
-              : row.early_payment_date
-            : null,
+          early_payment_date: row?.early_payment_date ? toRowDate(row.early_payment_date) : null,
           early_payment_discount: toNumber(row?.early_payment_discount ?? row?.early_discount),
         }))
       : [];
@@ -840,7 +847,7 @@ export default function RealEstateInstallmentCreate() {
                 previewRows.map((row) => (
                   <tr key={`${row.installment_no}-${row.due_date}`} className="border-t border-[rgb(var(--c-border))]">
                     <td className="p-2 text-center">{row.installment_no}</td>
-                    <td className="p-2">{row.due_date}</td>
+                    <td className="p-2">{formatDueDate(row.due_date)}</td>
                     <td className="p-2 text-right">{formatAmount(row.amount)}</td>
                     <td className="p-2 text-gray-500">-</td>
                     <td className="p-2 text-right text-gray-500">-</td>
@@ -871,7 +878,7 @@ export default function RealEstateInstallmentCreate() {
                             className="w-36 text-sm"
                           />
                         ) : (
-                          row.due_date
+                          formatDueDate(row.due_date)
                         )}
                       </td>
                       <td className="p-2 text-right">
