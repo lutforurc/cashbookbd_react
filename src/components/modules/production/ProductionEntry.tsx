@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
+import InputDatePicker from '../../utils/fields/DatePicker';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import WarehouseDropdown from '../../utils/utils-functions/WarehouseDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
@@ -37,15 +38,30 @@ const emptyInput = { productId: '', productName: '', unit: '', godownId: '', qty
 
 // One product the batch makes. `price` is the product's sales price, which the
 // batch cost is split by; `share` is a typed override ('' = work it out).
-type OutputLine = InputLine & { price: string; share: string };
+type OutputLine = InputLine & { price: string; share: string; expiry: string };
 
-const emptyOutput = { ...emptyInput, price: '', share: '' };
+const emptyOutput = { ...emptyInput, price: '', share: '', expiry: '' };
 
 type Tab = 'output' | 'inputs' | 'costs' | 'batches';
 
 const today = () => {
   const d = new Date();
   return d.toISOString().slice(0, 10);
+};
+
+// The shared picker works in Date objects; the form and the API keep the
+// ISO yyyy-mm-dd string. Parse/build in local time so a timezone west of UTC
+// never turns 2026-11-06 into the 5th.
+const dateFromIso = (value: string | null | undefined): Date | null => {
+  const [year, month, day] = String(value || '').split('-').map(Number);
+  return year && month && day ? new Date(year, month - 1, day) : null;
+};
+
+const isoFromDate = (date: Date | null): string => {
+  if (!date) return '';
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 };
 
 /**
@@ -548,13 +564,13 @@ const ProductionEntry = () => {
           )}
         </div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-          <InputElement
+          <InputDatePicker
             id="productionDate"
             name="productionDate"
-            type="date"
             label="Production date"
-            value={form.productionDate}
-            onChange={(e: any) => setField('productionDate', e.target.value)}
+            selectedDate={dateFromIso(form.productionDate)}
+            setSelectedDate={(date) => setField('productionDate', isoFromDate(date))}
+            setCurrentDate={() => undefined}
             className="w-full"
           />
           <InputElement
@@ -813,7 +829,7 @@ const ProductionEntry = () => {
           'What the batch made. With more than one product, the cost is shared by sales value; type a share to set it yourself.',
           <>
             <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-12">
-              <div className="md:col-span-5">
+              <div className="md:col-span-4">
                 <label className="text-sm text-[rgb(var(--c-text))]">Product made</label>
                 <ProductDropdown
                   id="outputProduct"
@@ -823,7 +839,7 @@ const ProductionEntry = () => {
                   value={productOption(outLine.productId, outLine.productName)}
                 />
               </div>
-              <div className="md:col-span-3">
+              <div className="md:col-span-2">
                 <label className="text-sm text-[rgb(var(--c-text))]">Warehouse</label>
                 <WarehouseDropdown
                   id="outputGodownId"
@@ -843,6 +859,19 @@ const ProductionEntry = () => {
                   label={`Good quantity${outLine.unit ? ` (${outLine.unit})` : ''}`}
                   value={outLine.qty}
                   onChange={(e: any) => setOutLine((p) => ({ ...p, qty: e.target.value }))}
+                  className="w-full"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <InputDatePicker
+                  id="outputExpiry"
+                  name="outputExpiry"
+                  label="Expiry (optional)"
+                  selectedDate={dateFromIso(outLine.expiry)}
+                  setSelectedDate={(date) => setOutLine((p) => ({ ...p, expiry: isoFromDate(date) }))}
+                  setCurrentDate={() => undefined}
+                  minDate={dateFromIso(form.productionDate)}
+                  isClearable
                   className="w-full"
                 />
               </div>
