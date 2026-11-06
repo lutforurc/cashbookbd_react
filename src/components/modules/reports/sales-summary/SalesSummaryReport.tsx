@@ -17,7 +17,11 @@ import { fetchBuildingDdl } from "../../real-estate/buildings/buildingsSlice";
 // on the allotment letter must be written the same way.
 import { money } from "../../real-estate/sales/soldUnitReport";
 import { formatMobile, useMobileFormat } from "../../../utils/utils-functions/mobileFormat";
-import { fetchSalesSummary, SalesSummaryCustomer } from "./salesSummarySlice";
+import {
+  fetchSalesSummary,
+  SalesSummaryCustomer,
+  SalesSummaryTotals,
+} from "./salesSummarySlice";
 import { placeOf, unitOf } from "./salesSummaryLines";
 import SalesSummaryPrint from "./SalesSummaryPrint";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
@@ -84,20 +88,33 @@ const SalesSummaryReport: React.FC = () => {
   const projectOptions = useMemo(() => toOptions(projectDdl, "All Projects"), [projectDdl]);
   const buildingOptions = useMemo(() => toOptions(buildingDdl, "All Buildings"), [buildingDdl]);
 
-  // Added up from the rows on screen rather than read off the payload, so the
-  // foot of the report can never disagree with the column above it.
-  const totals = useMemo(
-    () =>
-      customers.reduce(
-        (sum, customer) => ({
-          total: sum.total + Number(customer.total_amount || 0),
-          received: sum.received + Number(customer.received_amount || 0),
-          due: sum.due + Number(customer.due_amount || 0),
-        }),
-        { total: 0, received: 0, due: 0 }
-      ),
-    [customers]
-  );
+  // ⚠️ FROM THE API TOTALS, WHICH COVER EVERY ROW THE FILTERS MATCHED -- not
+  // from the rows currently on screen. The two agree while the whole report is
+  // fetched, but a page limit (or the print sheet's own page split) would make
+  // a foot added up from the visible rows a total of one page.
+  const totals = useMemo(() => {
+    const fromApi = rows?.totals as SalesSummaryTotals | undefined;
+
+    if (fromApi) {
+      return {
+        total: Number(fromApi.total_amount || 0),
+        received: Number(fromApi.received_amount || 0),
+        due: Number(fromApi.due_amount || 0),
+        customerCount: Number(fromApi.customer_count || 0),
+      };
+    }
+
+    const summed = customers.reduce(
+      (sum, customer) => ({
+        total: sum.total + Number(customer.total_amount || 0),
+        received: sum.received + Number(customer.received_amount || 0),
+        due: sum.due + Number(customer.due_amount || 0),
+      }),
+      { total: 0, received: 0, due: 0 }
+    );
+
+    return { ...summed, customerCount: customers.length };
+  }, [rows?.totals, customers]);
 
   const loadData = (override?: Record<string, any>) => {
     const params = {
@@ -291,6 +308,7 @@ const SalesSummaryReport: React.FC = () => {
           ref={printRef}
           customers={customers}
           totals={totals}
+          customerCount={totals.customerCount}
           filterLine={filterLine}
         />
       </div>

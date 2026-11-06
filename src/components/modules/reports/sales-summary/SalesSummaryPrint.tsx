@@ -17,6 +17,11 @@ type Totals = {
 type Props = {
   customers: SalesSummaryCustomer[];
   totals: Totals;
+  /**
+   * Buyers across the whole filtered report. Read from the API totals, not the
+   * rows on this sheet, so a split across pages does not shorten the count.
+   */
+  customerCount?: number;
   /** "Location: All Locations | Project: Baganbari | Building: All Buildings" */
   filterLine?: string;
   fontSize?: number;
@@ -54,7 +59,7 @@ const chunk = <T,>(data: T[], size: number): T[][] => {
  * sheet -- none of which the inline block had.
  */
 const SalesSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ customers, totals, filterLine, fontSize = 10, customersPerPage = 14 }, ref) => {
+  ({ customers, totals, customerCount, filterLine, fontSize = 10, customersPerPage = 14 }, ref) => {
     const rows = Array.isArray(customers) ? customers : [];
     const mobileFormat = useMobileFormat();
     const fs = fontSize;
@@ -155,7 +160,7 @@ const SalesSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
                   <tfoot>
                     <tr className="bg-gray-100 font-bold">
                       <td style={{ fontSize: fs }} className={`${cell} text-right`} colSpan={2}>
-                        Grand Total ({rows.length} customer)
+                        Grand Total ({customerCount ?? rows.length} customer)
                       </td>
                       <td style={{ fontSize: fs }} className={`${cell} text-right`}>
                         {money(totals.total)}
