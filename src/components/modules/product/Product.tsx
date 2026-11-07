@@ -827,6 +827,7 @@ const Product = (user: any) => {
         return (
           <InputElement
             type="number"
+            step="0.01"
             className="text-right w-16"
             placeholder="Qty"
             min={0}

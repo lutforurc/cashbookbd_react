@@ -93,6 +93,8 @@ import branchTransferSlice from './components/modules/warehouse-transfer/warehou
 import materialIssueSlice from './components/modules/material-issue/materialIssueSlice';
 import productOutSlice from './components/modules/product-out/productOutSlice';
 import productInSlice from './components/modules/product-in/productInSlice';
+import productionSlice from './components/modules/production/productionSlice';
+import productionRecipeSlice from './components/modules/production/productionRecipeSlice';
 import branchReceivedSlice from './components/modules/warehouse-received/warehouseReceivedSlice';
 import smsSlice from './components/modules/sms/smsSlice';
 import journalSlice from './components/modules/transactions/journal/journalSlice';
@@ -200,6 +202,8 @@ const store = configureStore({
     materialIssue: materialIssueSlice,
     productOut: productOutSlice,
     productIn: productInSlice,
+    production: productionSlice,
+    productionRecipe: productionRecipeSlice,
     branchReceived: branchReceivedSlice,
     sms: smsSlice,
     journal: journalSlice,

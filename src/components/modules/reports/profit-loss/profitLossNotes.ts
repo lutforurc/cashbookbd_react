@@ -240,18 +240,27 @@ export const buildProfitLossNotes = (
       n: index.acquisition,
       title: "Direct acquisition costs",
       body:
-        "No freight, unloading or handling cost is carried into the value of the " +
-        "inventory, and none is included in the cost of goods sold above. Stock is " +
-        "valued at the price recorded on each purchase line, and the stock records " +
-        "hold no separate part for such a cost; the accounts that take them book " +
-        "them as expenses of the period they were incurred in. Whether some of " +
-        "that expenditure is directly attributable to bringing goods in, and so " +
-        "belongs in the cost of that inventory, has not been decided and no " +
-        "allocation has been made. Settling it is not a matter of adding an amount " +
-        "here: the same cost would have to come out of the expense it currently " +
-        "sits in, or it is counted once in the stock and again in the expenses. " +
-        "The treatment is therefore a limitation of this account as it stands, and " +
-        "the figures are as the vouchers posted them.",
+        Number(cogs.directAcquisitionCosts) > 0
+          ? `The production labour and transport of ${money(cogs.directAcquisitionCosts)} ` +
+            "allocated to batches posted in this period is carried into the value " +
+            "of the stock those batches produced. It is shown above as a direct " +
+            "acquisition cost in the cost of goods sold, and the same amount has " +
+            "been taken out of the Production Cost expense group below, so it is " +
+            "counted once: the gross profit is stated after that cost and the net " +
+            "profit is unchanged. No other expense has been moved, and stock is " +
+            "otherwise valued at the price recorded on each purchase line."
+          : "No freight, unloading or handling cost is carried into the value of the " +
+            "inventory, and none is included in the cost of goods sold above. Stock is " +
+            "valued at the price recorded on each purchase line, and the stock records " +
+            "hold no separate part for such a cost; the accounts that take them book " +
+            "them as expenses of the period they were incurred in. Whether some of " +
+            "that expenditure is directly attributable to bringing goods in, and so " +
+            "belongs in the cost of that inventory, has not been decided and no " +
+            "allocation has been made. Settling it is not a matter of adding an amount " +
+            "here: the same cost would have to come out of the expense it currently " +
+            "sits in, or it is counted once in the stock and again in the expenses. " +
+            "The treatment is therefore a limitation of this account as it stands, and " +
+            "the figures are as the vouchers posted them.",
     },
     ...(index.income
       ? [

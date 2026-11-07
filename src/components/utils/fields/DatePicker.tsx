@@ -26,9 +26,13 @@ interface DatePickerProps {
   /** Also pick a time — for fields that schedule something, not just date it. */
   showTime?: boolean;
   disabled?: boolean;
+  /** Show the built-in clear (×) so an optional date can be emptied again. */
+  isClearable?: boolean;
+  /** Earliest day the calendar will offer, when a field has a lower bound. */
+  minDate?: Date | null;
 }
 
-const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder, month = false, year = false, showTime = false, disabled = false }) => {
+const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder, month = false, year = false, showTime = false, disabled = false, isClearable = false, minDate = null }) => {
   const datePickerRef = React.useRef<ReactDatePicker>(null);
   const safeSelectedDate =
     selectedDate instanceof Date && !Number.isNaN(selectedDate.getTime()) ? selectedDate : null;
@@ -79,7 +83,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
     }, 0);
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Enter') {
       const today = new Date();
       setSelectedDate(today);
@@ -87,7 +91,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
       datePickerRef.current?.setOpen(false);
     }
 
-    onKeyDown?.(event);
+    onKeyDown?.(event as React.KeyboardEvent<HTMLInputElement>);
   };
 
   return (
@@ -115,6 +119,8 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         onKeyDown={handleKeyDown}
         shouldCloseOnSelect
         disabled={disabled}
+        isClearable={isClearable}
+        minDate={minDate ?? undefined}
         className={`${FIELD_BASE} pl-3 ${className}`}
         showMonthYearPicker={month}
         showYearPicker={year}

@@ -264,6 +264,11 @@ import ProductOutReport from './components/modules/product-out/ProductOutReport'
 import ProductIn from './components/modules/product-in/ProductIn';
 import ProductInReason from './components/modules/product-in/ProductInReason';
 import ProductInReport from './components/modules/product-in/ProductInReport';
+import ProductionEntry from './components/modules/production/ProductionEntry';
+import Recipe from './components/modules/production/Recipe';
+import ProductionSalesReturn from './components/modules/production/ProductionSalesReturn';
+import ProductionRegister from './components/modules/production/ProductionRegister';
+import BatchCosting from './components/modules/production/BatchCosting';
 import SendSms from './components/modules/sms/SendSms';
 import SmsTemplateList from './components/modules/sms/SmsTemplateList';
 import SmsTemplateCreate from './components/modules/sms/SmsTemplateCreate';
@@ -1064,6 +1069,25 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.report.view']} loading={permissionsLoading} />}>
               <Route path={routes.product_in_report} element={<ProductInReport />} />
+            </Route>
+            {/* Production (Manufacturing). The screens are additionally GATED
+                BY THE BRANCH SERVER-SIDE -- the menu hides them off a
+                non-manufacturing branch, and the API refuses them there too
+                (ProductionController::ensureProductionBranch). */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['production.create']} loading={permissionsLoading} />}>
+              <Route path={routes.production_entry} element={<ProductionEntry />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['production.create']} loading={permissionsLoading} />}>
+              <Route path={routes.production_sales_return} element={<ProductionSalesReturn />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['production.view']} loading={permissionsLoading} />}>
+              <Route path={routes.production_recipe} element={<Recipe />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['production.report.view']} loading={permissionsLoading} />}>
+              <Route path={routes.production_register} element={<ProductionRegister />} />
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['production.report.view']} loading={permissionsLoading} />}>
+              <Route path={routes.production_costing} element={<BatchCosting />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.reason.manage']} loading={permissionsLoading} />}>
               <Route path={routes.product_in_reason} element={<ProductInReason />} />

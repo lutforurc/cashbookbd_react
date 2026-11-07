@@ -1,5 +1,14 @@
 name: Staging React App CI/CD Pipeline
 
+# Builds on the runner, not on the target server: the server has 1.8 GB of RAM
+# and is already into swap, where a vite build of this app would be OOM-killed -
+# and the kernel would likely take MySQL with it, dropping every site on the
+# box. The runner has memory to spare, so the build belongs here.
+#
+# Staging only. cashbookbdaccountseworld is a live site and is deployed by
+# prod-multi-site.yml from react-main; it must not be published from this
+# branch.
+
 on:
   push:
     branches:
@@ -9,6 +18,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     strategy:
       fail-fast: false
@@ -16,7 +26,6 @@ jobs:
         site:
           [
             cashbookbdaccountsstaging,
-            cashbookbdaccountseworld
           ]
 
     steps:
@@ -39,7 +48,6 @@ jobs:
         run: |
           case "${{ matrix.site }}" in
             cashbookbdaccountsstaging) URL="https://staging.cashbookbd.com" ;;
-            cashbookbdaccountseworld) URL="https://eworld.cashbookbd.com" ;;
             *) echo "Unknown site"; exit 1 ;;
           esac
 
@@ -63,13 +71,15 @@ jobs:
         id: tgt
         run: echo "host=${{ secrets.REACT_MAIN_HOST }}" >> $GITHUB_OUTPUT
 
-      # 8) Resolve Deploy Path
+      # 8) Resolve Deploy Path. `site` is the public host of what we deploy,
+      #    which is what the smoke test has to ask.
       - name: Resolve deploy path
         id: path
         run: |
           case "${{ matrix.site }}" in
-            cashbookbdaccountsstaging) echo "dir=/home/cashbookbdaccountsstaging/htdocs/accounts.staging.cashbookbd.com" ;;
-            cashbookbdaccountseworld) echo "dir=/home/cashbookbdaccountseworld/htdocs/accounts.eworld.cashbookbd.com" ;;
+            cashbookbdaccountsstaging)
+              echo "dir=/home/cashbookbdaccountsstaging/htdocs/accounts.staging.cashbookbd.com"
+              echo "site=accounts.staging.cashbookbd.com" ;;
             *) echo "Unknown site"; exit 1 ;;
           esac >> $GITHUB_OUTPUT
 
@@ -100,6 +110,10 @@ jobs:
         run: ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}" \
                "systemctl reload nginx"
 
-      # 13) Smoke Test
+      # 13) Smoke Test. This asks the site that was just deployed; it used to
+      #     curl the API host instead, which answers 200 whether or not the
+      #     deploy worked.
       - name: Smoke Test
-        run: curl -I "${{ steps.api.outputs.url }}" | grep -q "200"
+        run: |
+          curl -fsS -o /dev/null -w '%{http_code}\n' \
+            "https://${{ steps.path.outputs.site }}/" | grep -qx 200

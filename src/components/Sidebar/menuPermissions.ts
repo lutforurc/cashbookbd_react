@@ -71,6 +71,17 @@ export const MENU_PERMISSIONS = {
     'general.ledger',
   ],
   requisition: ['requisition.view', 'requisition.create', 'requisition.comparison'],
+  // Production (Manufacturing). Any one of the five keys opens the menu; each
+  // child is then gated on its own. The group also needs the branch's
+  // Manufacture switch on (com_branches.manufactur_control), so it stays out of
+  // the way on every ordinary branch -- see the sidebar.
+  production: [
+    'production.view',
+    'production.create',
+    'production.post',
+    'production.reverse',
+    'production.report.view',
+  ],
   // Opens on any of the three: the settings screen and the two reports each
   // stand on their own permission, and holding just one has to be enough to
   // reach the menu, or that permission gates a screen its holder cannot see.

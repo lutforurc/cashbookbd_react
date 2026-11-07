@@ -100,6 +100,14 @@ const ROUTES = {
   product_in_reason: '/inventory/product-in/reasons',
   product_in_report: '/inventory/product-in/register',
 
+  // Production (Manufacturing). The batch, the return, and the two reports the
+  // feature owns. Only reachable on a branch whose Manufacture switch is on.
+  production_entry: '/production/entry',
+  production_sales_return: '/production/sales-return',
+  production_recipe: '/production/recipe',
+  production_register: '/production/register',
+  production_costing: '/production/costing/:id',
+
   journal: '/accounts/journal',
 
   // Inter-Branch money transfers: the Incoming / Outgoing views. There is no
