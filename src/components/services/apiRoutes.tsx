@@ -95,16 +95,33 @@ const RUNTIME_API_HOST_OVERRIDES: Record<string, string> = {
   'app.cashbookbd.com': 'https://my.cashbookbd.com',
 };
 
-const resolveApiRemoteUrl = (): string => {
-  if (typeof window !== 'undefined') {
-    const runtimeOverride = RUNTIME_API_HOST_OVERRIDES[window.location.hostname];
-    if (runtimeOverride) return runtimeOverride;
+const resolveTenantApiUrl = (): string => {
+  if(window.location.host == "accounts.nibirnirman.cashbookbd.com") {
+    return 'https://nibirnirman.cashbookbd.com';
   }
-
-  return import.meta.env.VITE_API_URL;
+  if(window.location.host == "accounts.staging.cashbookbd.com") {
+    return 'https://staging.cashbookbd.com';
+  }
+  if(window.location.host == "accounts.aft.cashbookbd.com") {
+    return 'https://aft.cashbookbd.com';
+  }
+  if(window.location.host == "accounts.kbr.cashbookbd.com") {
+    return 'https://kbr.cashbookbd.com';
+  }
+  if(window.location.host == "accounts.kps.cashbookbd.com") {
+    return 'https://kps.cashbookbd.com';
+  }
+  if(window.location.host == "my.cashbookbd.com") {
+    return 'https://app.cashbookbd.com';
+  }
+  if(window.location.host == "sinthia.cashbookbd.com") {
+    return 'https://accounts.sinthia.cashbookbd.com';
+  }
+  return '';
 };
 
-export const API_REMOTE_URL = resolveApiRemoteUrl();
+
+export const API_REMOTE_URL = resolveTenantApiUrl();
 
 
 export const API_CSRF_COOKIES = `${API_REMOTE_URL}/sanctum/csrf-cookie`;

@@ -32,16 +32,6 @@ jobs:
 
       # 1) Checkout
       - uses: actions/checkout@v4
-
-      # 2) Setup Node
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      # 3) Install deps
-      - run: npm ci
-
       # 4) Resolve API URL (No Secret - No Masking - Always Works)
       - name: Resolve API URL
         id: api
@@ -54,12 +44,6 @@ jobs:
           echo "url=$URL" >> $GITHUB_OUTPUT
 
       # 5) Build
-      - name: Build
-        env:
-          VITE_SITE_NAME: ${{ matrix.site }}
-          VITE_API_URL: ${{ steps.api.outputs.url }}
-        run: npm run build -- --mode production
-
       # 6) Upload artifact
       - uses: actions/upload-artifact@v4
         with:

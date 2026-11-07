@@ -1,0 +1,163 @@
+{
+  "hotel-setup": {
+    "title": "হোটেল সেটআপ",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি প্রপার্টির ঘর, হল, সুবিধা ও টাকার নিয়ম একবার এখানে ঠিক করা হয়। উপরে Property বাছতে হয়।",
+    "sections": [
+      { "heading": "ট্যাবগুলো", "menu": "Hotel → Hotel Setup", "steps": ["Buildings — New Building দিয়ে Building name, Short label, Address ও Status দিন।", "Floors — Building, Floor name ও Level দিন।", "Room Types — Room type, Short code, Holds (guests), How it is sold, Beds, Whole room/Per seat দর, VAT % ও Description দিন।", "Facilities — Add the standard list চেপে Facility, Offered on ও Order ঠিক করুন।", "Rooms & Seats — Building, Floor, Room number, Holds, Status, Rent ও নতুন বেডের ভাড়া দিন।", "Shift, Amenity Kits, Layout, Charges ও Service Charge ট্যাবে হলের শিফট, কিট, ছবি ও চার্জের হার ঠিক করুন।"] },
+      { "heading": "যা মনে রাখবেন", "steps": ["প্রতিটি ফর্মে Save/Update ও Reset/Cancel আছে।", "Property না বাছলে উপরে Choose a property লেখা থাকে।"] },
+      { "heading": "সতর্কতা", "warning": "Room Type ও VAT আগে ঠিক না করলে বিলে দাম ও কর ভুল আসবে; Service Charge-এ VAT আলাদা করে বসে।" }
+    ]
+  },
+  "hotel-bookings": {
+    "title": "বুকিং তালিকা",
+    "module": "Hotel",
+    "updated": "07/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রপার্টির সব বুকিং দেখা যায় — কে কখন আসবে, কী অবস্থায় আছে এবং কোন কাজ করা যায়।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Hotel → Bookings", "steps": ["Property, Search, Start Date ও End Date দিন।", "Sold (Rooms & halls/Walk-in only/Everything) ও Show (All bookings/Confirmed/Held/Checked in/Checked out/Cancelled/Expired) বাছুন।", "New Booking চাপলে নতুন বুকিং খোলে।"] },
+      { "heading": "সারির কাজ", "steps": ["Booking Information-এ Guest, তারিখ ও ঘর/হল দেখা যায়; Status-এ Held/Confirmed/Checked in/Checked out/Cancelled/Expired।", "Action থেকে Guests, Check in, Bill, Check out, Edit, Transfer, Cancel করা যায়।"] },
+      { "heading": "টাকা নেওয়া ও হিসাব", "steps": ["নিচের নিয়ম খাটে যখন Branch → Hotel Setup → Income Setup-এ Income at Settlement বাছাই করা থাকে। Income at Bill থাকলে Bill চাপলেই Income ও VAT ওঠে, আর সেটেলের টাকা অ্যাডভান্স হেডে জমা হয়।", "অ্যাডভান্স নিলে টাকা Advance from Room Rent হেডে জমা হয়।", "Bill the nights চাপলে বিল Folio-তে ওঠে, তবে হিসাবে ওঠে সেটেলের সময়।", "Settlement নিলে নগদ টাকা রিসিট ভাউচারে আগে পুরো VAT-এ, বাকিটা Room Rent আয়ে ওঠে। অ্যাডভান্সের অংশ আলাদা জার্নালে আয়ে সমন্বয় হয়, তাই Cash Book-এ তা Payment হিসেবে দেখায় না।", "অতিথি বাকি রেখে checkout করলে বাকি টাকা Guest Receivable হেডে যায়। পরে টাকা পেলে ওই হেডেই জমা হয়।", "বিলে পয়সা থাকলে পয়সাসহই টাকা নেওয়া হয়, বিল টাকায় রাউন্ড হয় না।"] },
+      { "heading": "সতর্কতা", "warning": "Cancel করলে বুকিংয়ের টাকা ফেরত বা cancellation charge হিসেবে আয় হতে পারে — কোন হিসাব থেকে ফেরত যাবে তা বাছতে হবে।" }
+    ]
+  },
+  "hotel-booking-form": {
+    "title": "নতুন বুকিং",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "তারিখ ধরে কোন ঘর, বেড বা হল খালি আছে দেখে বুকিং ধরা হয় এবং কে বুক করছে তা লেখা হয়।",
+    "sections": [
+      { "heading": "বুকিং ধরা", "menu": "Hotel → Bookings → New Booking", "steps": ["Guest Type, Payment Type, Arrival ও Departure দিন।", "Building বাছুন; N free লেখা ঘর/বেড থেকে যেগুলো নিতে চান বাছুন।", "হল লাগলে Halls and function spaces থেকে শিফট বাছুন।", "Who is booking, Mobile, Adults, Children ও Notes দিন।", "Confirmed বা Held বাছুন, তারপর Book চাপুন।"] },
+      { "heading": "বিশেষ ধরন", "steps": ["Walk-in (no room) বুকিং কোনো ঘর ধরে না; Save করার পর Bill-এ যা বিক্রি হয়েছে যোগ করুন।", "Complimentary বা House use হলে ভাড়া বিল হয় না, তবে ঘর দখলে থাকে।"] },
+      { "heading": "সতর্কতা", "warning": "যে রাতের বিল হয়ে গেছে সেই রাত বুকিং থেকে বাদ দেওয়া যায় না — অতিথিকে check out করতে হবে।" }
+    ]
+  },
+  "hotel-hall-bookings": {
+    "title": "হল বুকিং",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এক তারিখে কোন হল কোন শিফটে খালি, তা দেখে বসার (sitting) হিসেবে হল বুকিং ধরা হয়।",
+    "sections": [
+      { "heading": "হল বুকিং", "menu": "Hotel → Bookings → Hall Bookings", "steps": ["Property ও Date বাছুন।", "Hall ও শিফটের ঘরে Free/Booked/Not for sale দেখা যায়; খালি ঘরে Taking it বাছুন।", "Booked by, Mobile ও Note দিন।", "Book these sittings চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "এখানে টাকা বিল হয় না — শুধু হল ধরা হয়; বিল হয় folio-তে।" }
+    ]
+  },
+  "hotel-reports": {
+    "title": "হোটেল রিপোর্ট",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "গত রাতে কে ছিল, কী টাকা এলো, প্রপার্টি কত ভরা ছিল এবং কিট কীভাবে খরচ হলো — চার রিপোর্ট এক স্ক্রিনে।",
+    "sections": [
+      { "heading": "রিপোর্টগুলো", "menu": "Hotel → Reports", "steps": ["Guest register — Night of, Showing (In the building/Arriving/Leaving), Find; তালিকায় Guest, Room, Mobile, NID, Stay ও Booking; Print আছে।", "Collection — From, To ও Method; উপরে Receipts, Taken, Given back ও In hand; নিচে By method ও By account।", "Performance — Occupancy, ADR, RevPAR ও Room revenue; By room type ও Night by night টেবিল।", "Amenity & issues — Room-nights, Kits, Issued this range ও Tagged to an event; Expected against issued ও What each event ate।"] },
+      { "heading": "সতর্কতা", "warning": "Performance-এ halls নেই — হল শিফটে বিক্রি হয়, রাতে নয়; Complimentary ঘর occupancy-তে গোনা হয় কিন্তু ADR/RevPAR-এ নয়।" }
+    ]
+  },
+  "hotel-booking-due": {
+    "title": "বুকিংয়ের বাকি",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "যে বুকিং checkout হয়ে গেছে কিন্তু অতিথি এখনো টাকা owes — তাদের তালিকা।",
+    "sections": [
+      { "heading": "তালিকা", "menu": "Hotel → Booking Due", "steps": ["Booking, Guest, Mobile, Checked out, Billed, Paid, Written off, Due, Days, Checked out by ও Reason দেখা যায়।", "নিচে Total due ও Advance held on open bookings।"] },
+      { "heading": "সতর্কতা", "warning": "কোনো ব্যালেন্স party-র খাতায় সরানো হলে সেটি এখানে আসবে না — ওই party-র লেজার দেখুন।" }
+    ]
+  },
+  "hotel-calendar": {
+    "title": "হোটেল ক্যালেন্ডার",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "মাসজুড়ে প্রপার্টি কত ভরা ছিল এবং কোন রাত খালি — তা দেখা যায়। এটি শুধু পড়ার স্ক্রিন, কিছু বুক হয় না।",
+    "sections": [
+      { "heading": "দেখা", "menu": "Hotel → Calendar", "steps": ["The month বা Room by room ট্যাব বাছুন।", "Property ও Month ঠিক করুন; From ও How far দিয়ে দিনের সংখ্যা বাছুন।", "Occupancy, Seat-nights sold, Held, not sold, ADR ও RevPAR দেখা যায়।"] },
+      { "heading": "সতর্কতা", "warning": "ক্যালেন্ডার কিছু বুক করে না — বুকিং Bookings স্ক্রিনে করতে হবে।" }
+    ]
+  },
+  "hotel-housekeeping": {
+    "title": "হাউসকিপিং বোর্ড",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "ঘর তৈরি কি না — Dirty, Being cleaned, Ready ও Out of order অবস্থা ধরে ঘরগুলো দেখা যায়।",
+    "sections": [
+      { "heading": "অবস্থা বদল", "menu": "Hotel → Housekeeping", "steps": ["Property বাছুন।", "উপরে Dirty, Being cleaned, Ready ও Out of order সংখ্যা দেখা যায়।", "ঘরের কার্ডে অন্য অবস্থার বাটনে চাপ দিলে অবস্থা বদলায়।", "Out of order-এ What is wrong with it লিখে নিশ্চিত করুন।"] },
+      { "heading": "সতর্কতা", "warning": "Out of order ঘর বুকিং স্ক্রিনে আর দেখাবে না, যতক্ষণ কেউ সেটি ঠিক না করে।" }
+    ]
+  },
+  "hotel-amenity-issue": {
+    "title": "অ্যামেনিটি স্টোর",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "হোটেলের খরচের মাল (কিট, সাবান ইত্যাদি) কত আছে, কে নিল এবং কত খরচ হলো — তা দেখা যায়।",
+    "sections": [
+      { "heading": "এন্ট্রি ও স্টক", "menu": "Hotel → Amenity & Issues", "steps": ["Entries ট্যাবে Search, Type, From ও To দিয়ে তালিকা দেখুন; No, Date, Type, Building, Event, Received by, Items ও Total qty থাকে।", "Stock Balance ট্যাবে Item, Head, Opening, Bought, Opening/Count, Issued, Balance ও Approx. value দেখা যায়।", "Issue, Opening বা Count Adjustment চেপে নতুন এন্ট্রি করুন।"] },
+      { "heading": "সতর্কতা", "warning": "মাল কেনার সময় খরচের খাতে দাম ধরা হয়; এখানে শুধু পরিমাণের হিসাব থাকে।" }
+    ]
+  },
+  "hotel-amenity-issue-form": {
+    "title": "অ্যামেনিটি এন্ট্রি",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "স্টোরের একটি এন্ট্রি লেখা হয় — Issue, Opening Stock বা Count Adjustment।",
+    "sections": [
+      { "heading": "এন্ট্রি", "menu": "Hotel → Amenity & Issues → Issue / Opening / Count Adjustment", "steps": ["Date দিন।", "Issue হলে Building, For which booking / event ও Received by দিন।", "Nights from ও To দিয়ে Load from amenity kits চাপলে পরিমাণ আসে; প্রতিটি বদলানো যায়।", "Item ও Quantity/Counted দিয়ে Add item করুন।", "Save চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "Event-এর নাম পরে যোগ করা যায় না — এখনই লিখুন, নাহলে ওই ইস্যুর material cost পাওয়া যাবে না।" }
+    ]
+  },
+  "hotel-asset-purchase": {
+    "title": "অ্যাসেট ও ইনভেন্টরি ক্রয়",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "হোটেলের ফার্নিচার বা খরচের মাল এক ভাউচারে কেনা হয়, সাথে টাকা পরিশোধ।",
+    "sections": [
+      { "heading": "ক্রয় লেখা", "menu": "Hotel → Asset Purchase", "steps": ["Accounts Head, Select Item, Quantity ও Rate দিয়ে Add Item চাপুন।", "Payment Details-এ Cash, Bank বা Credit বাছুন; Bank হলে Bank Account ও Cheque No দিন।", "Supplier ও Payment Amount দিন; Notes লিখুন।", "Save Transaction চাপুন।"] },
+      { "heading": "হিসাব", "steps": ["Cash/Bank হলে পরিশোধের ভাউচার ক্যাশ বা ব্যাংক বইয়ে যায়।", "Credit হলে পুরো বিল সরবরাহকারীর কাছে বাকি থাকে।", "Print দিয়ে ভাউচার ছাপা হয়।"] },
+      { "heading": "সতর্কতা", "warning": "Payment Amount-এ আংশিক পরিশোধ এখনো চলে না — Cash/Bank হলে পুরো টাকা, Credit হলে শূন্য।" }
+    ]
+  },
+  "hotel-payment-entry": {
+    "title": "একাধিক খাতে পরিশোধ",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এক ভাউচারে একাধিক হিসাবের টাকা পরিশোধ করা হয়।",
+    "sections": [
+      { "heading": "পরিশোধ লেখা", "menu": "Hotel → Payment Entry", "steps": ["Account Heads-এ Account Head, Amount (Tk.) ও Notes দিয়ে Add Row করুন।", "Cash বা Bank বাছুন; Bank হলে Bank Account দিন।", "Voucher No ও Notes লিখুন।", "Total Debit, Total Credit ও Total Payment মিলিয়ে Save Payment চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "মোট debit ও credit সমান না হলে ভাউচার লেখা যাবে না।" }
+    ]
+  },
+  "hotel-received-entry": {
+    "title": "একাধিক খাতে আদায়",
+    "module": "Hotel",
+    "updated": "06/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "এক ভাউচারে একাধিক হিসাবের টাকা গ্রহণ করা হয়।",
+    "sections": [
+      { "heading": "আদায় লেখা", "menu": "Hotel → Received Entry", "steps": ["Account Heads-এ Account Head, Received Amount (Tk.) ও Received From দিয়ে Add Row করুন।", "Cash বা Bank বাছুন; Bank হলে Bank Account দিন।", "Notes লিখুন।", "Received Summary মিলিয়ে Save Received চাপুন।"] },
+      { "heading": "সতর্কতা", "warning": "Total Debit, Total Credit ও Total Received না মিললে ভাউচার লেখা যাবে না।" }
+    ]
+  }
+}
