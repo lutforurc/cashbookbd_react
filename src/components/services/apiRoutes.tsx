@@ -117,7 +117,7 @@ const resolveTenantApiUrl = (): string => {
   if(window.location.host == "sinthia.cashbookbd.com") {
     return 'https://accounts.sinthia.cashbookbd.com';
   }
-  return '';
+  return import.meta.env.VITE_API_URL ?? '';
 };
 
 
