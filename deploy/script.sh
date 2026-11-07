@@ -13,6 +13,9 @@
 #
 #   tail -f ~/deploy/<site-key>.log
 #   kill -- "-$(cat ~/deploy/<site-key>.lock/pid)"   # stop it
+#
+# ~/deploy/env on the server, if present, is sourced first - that is where to
+# put PATH for a Node that only an interactive login can see.
 
 set -eu
 
@@ -36,9 +39,30 @@ cashbookbdaccountseworld)
 	;;
 esac
 
+# A non-interactive ssh session reads neither .bashrc nor .profile, so Node put
+# there by nvm or CloudPanel is not on PATH even though an interactive login
+# finds it. Let the server state it once in ~/deploy/env, else go looking.
+[ -r "$HOME/deploy/env" ] && . "$HOME/deploy/env"
+
+if ! command -v npm >/dev/null 2>&1; then
+	for d in "$HOME"/.nvm/versions/node/*/bin /usr/local/bin /usr/bin /opt/node/bin; do
+		[ -x "$d/npm" ] && { PATH="$d:$PATH"; break; }
+	done
+	export PATH
+fi
+
 # Checked before the reply so a broken server fails the workflow step loudly,
 # instead of dying quietly in a log nobody is tailing.
-command -v npm >/dev/null 2>&1 || { echo "npm not on PATH for $(whoami)" >&2; exit 1; }
+command -v npm >/dev/null 2>&1 || {
+	echo "npm not on PATH for $(whoami)." >&2
+	echo "Looked in: ~/.nvm/versions/node/*/bin /usr/local/bin /usr/bin /opt/node/bin" >&2
+	echo "Fix: on the server, put a line like" >&2
+	echo "  PATH=/path/to/node/bin:\$PATH" >&2
+	echo "in ~/deploy/env (find the path with: ssh <user>@<host> 'bash -lc \"command -v npm\"')" >&2
+	exit 1
+}
+echo "node $(node -v 2>/dev/null || echo '?') npm $(npm -v 2>/dev/null || echo '?') at $(command -v npm)"
+
 [ -d "$DEST" ] || { echo "deploy dir missing: $DEST" >&2; exit 1; }
 
 # The build happens right here, in the checkout this script came up with - not
