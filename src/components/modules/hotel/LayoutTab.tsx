@@ -312,6 +312,7 @@ const LayoutTab = ({ branchId }: { branchId: number }) => {
             // The booking screen passes many.
             selectedIds={selected ? [selected.id] : []}
             onSelect={openRoom}
+            fullWidth
           />
         ) : (
           // Reachable only with the switch on: a property whose every room is

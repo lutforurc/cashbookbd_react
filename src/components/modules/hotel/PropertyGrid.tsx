@@ -46,6 +46,9 @@ interface PropertyGridProps {
 
   /** Drawn under the header. The booking screen puts the rent for the stay here. */
   summaryOf?: (building: LayoutBuilding) => string | null;
+
+  /** One building to a row, each the full width. The setup Layout tab asks for it. */
+  fullWidth?: boolean;
 }
 
 const PropertyGrid = ({
@@ -57,6 +60,7 @@ const PropertyGrid = ({
   picking,
   ownIds,
   summaryOf,
+  fullWidth,
 }: PropertyGridProps) => (
   <div className="flex flex-wrap items-start gap-4">
     {buildings.map((building) => (
@@ -70,6 +74,7 @@ const PropertyGrid = ({
         picking={picking}
         ownIds={ownIds}
         summary={summaryOf?.(building) ?? null}
+        fullWidth={fullWidth}
       />
     ))}
   </div>
@@ -86,6 +91,7 @@ const BuildingCard = ({
   picking,
   ownIds,
   summary,
+  fullWidth,
 }: {
   building: LayoutBuilding;
   mode: ColourMode;
@@ -99,6 +105,7 @@ const BuildingCard = ({
    */
   ownIds?: number[];
   summary: string | null;
+  fullWidth?: boolean;
 }) => {
   // Top floor first. The API sends them ground-first because that is their
   // natural order; standing them up is the drawing's business.
@@ -119,7 +126,11 @@ const BuildingCard = ({
         : `${money(building.seat_rent_min)} – ${money(building.seat_rent_max)}/bed`;
 
   return (
-    <div className="max-w-full rounded border border-stroke dark:border-strokedark print:break-inside-avoid">
+    <div
+      className={`max-w-full rounded border border-stroke dark:border-strokedark print:break-inside-avoid ${
+        fullWidth ? 'w-full' : ''
+      }`}
+    >
       <div className="border-b border-stroke px-3 py-2 dark:border-strokedark">
         <div className="flex items-baseline gap-2">
           <span className="font-semibold text-black dark:text-white">{building.name}</span>
@@ -166,6 +177,7 @@ const BuildingCard = ({
             picking={picking}
             ownIds={ownIds}
             dimmed={Number(floor.status) !== 1}
+            fullWidth={fullWidth}
           />
         ))}
 
@@ -180,6 +192,7 @@ const BuildingCard = ({
             onSelect={onSelect}
             picking={picking}
             ownIds={ownIds}
+            fullWidth={fullWidth}
           />
         ) : null}
 
@@ -193,6 +206,11 @@ const BuildingCard = ({
 
 /* ================= One floor ================= */
 
+/** A floor of a convention centre: nothing on it is sold by the night. */
+const isHallFloor = (rooms: LayoutRoom[]) =>
+  rooms.length > 0
+  && rooms.every((room) => room.kind === 'hall' || room.kind === 'community_centre');
+
 const FloorRow = ({
   label,
   title,
@@ -204,6 +222,7 @@ const FloorRow = ({
   picking,
   ownIds,
   dimmed,
+  fullWidth,
 }: {
   label: string;
   title?: string;
@@ -215,6 +234,7 @@ const FloorRow = ({
   picking?: boolean;
   dimmed?: boolean;
   ownIds?: number[];
+  fullWidth?: boolean;
 }) => (
   // A band, because a floor of twenty rooms folds onto several lines and the band
   // is what holds those lines together as one floor.
@@ -232,7 +252,8 @@ const FloorRow = ({
       <span className="text-base font-bold leading-tight text-primary dark:text-secondary">{label}</span>
       {rooms.length ? (
         <span className="text-[0.65rem] leading-tight text-gray-500 dark:text-gray-400">
-          {rooms.length} {rooms.length === 1 ? 'room' : 'rooms'}
+          {rooms.length} {isHallFloor(rooms) ? 'hall' : 'room'}
+          {rooms.length === 1 ? '' : 's'}
         </span>
       ) : null}
     </span>
@@ -240,8 +261,21 @@ const FloorRow = ({
     {/* ⚠️ A FLOOR WITH MANY ROOMS FOLDS ONTO MORE LINES. It used to scroll
         sideways inside itself, and a room out of sight past the edge is a room
         nobody sells. The tiles are all one width, so they still line up into
-        columns, across the lines and across the floors. */}
-    <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
+        columns, across the lines and across the floors.
+
+        Seven to a line at most. Full width (the Layout tab) is seven equal
+        columns, so the tiles reach the edge and line up across every floor, and
+        a hall shares out the whole line. Otherwise the cap is seven tiles of
+        RoomTile's 8rem and the six gaps between them. */}
+    <div
+      className={`min-w-0 flex-1 gap-1.5 ${
+        !fullWidth
+          ? 'flex max-w-[58.25rem] flex-wrap'
+          : isHallFloor(rooms)
+            ? 'grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]'
+            : 'grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7'
+      }`}
+    >
       {rooms.length ? (
         rooms.map((room) => (
           <RoomTile
@@ -249,6 +283,7 @@ const FloorRow = ({
             room={room}
             mode={mode}
             typeIndex={typeIndex}
+            stretch={fullWidth}
             selected={selectedIds.includes(room.id)}
             /**
              * ⚠️ A ROOM ALREADY PICKED IS ALWAYS CLICKABLE, whatever the

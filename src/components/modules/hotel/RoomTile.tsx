@@ -21,6 +21,8 @@ import { useTooltip } from '../../utils/others/useTooltip';
  */
 
 interface RoomTileProps {
+  /** Fill its grid cell instead of standing at the fixed tile width. */
+  stretch?: boolean;
   room: LayoutRoom;
   mode: ColourMode;
   typeIndex: Record<number, number>;
@@ -85,7 +87,7 @@ const shortDate = (value?: string | null): string => {
   return `${Number(parts[3])} ${MONTHS[Number(parts[2]) - 1] ?? ''}`.trim();
 };
 
-const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, disabled, onSelect }) => {
+const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, disabled, stretch, onSelect }) => {
   const look = lookOf(room, mode, typeIndex);
 
   const active = room.active_beds ?? 0;
@@ -278,7 +280,7 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
       }}
       {...anchorProps}
       className={`
-        relative flex w-[calc(50%-0.1875rem)] shrink-0 flex-col items-start gap-1.5 rounded-md border px-3 py-3.5 shadow-sm sm:w-32
+        relative flex ${stretch ? 'w-full min-w-0' : 'w-[calc(50%-0.1875rem)] shrink-0 sm:w-32'} flex-col items-start gap-1.5 rounded-md border px-3 py-3.5 shadow-sm
         text-left transition
         ${look.className}
         ${/*
