@@ -296,13 +296,14 @@
   "branch-form": {
     "title": "শাখা তৈরি ও সম্পাদনা",
     "module": "Company",
-    "updated": "06/11/2026",
+    "updated": "07/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একটি শাখার ধরন, ছাপা, ফর্ম, গ্রাহক ও পণ্যের নিয়ম ধাপে ধাপে ঠিক করা হয়।",
     "sections": [
       { "heading": "ধাপগুলো", "menu": "Setup → Branch List → Add Branch", "steps": ["Basic Info-তে Select Branch Type, Select Business Type, Select Inventory System, Select Status ও যোগাযোগ দিন।", "Print Setup, Invoice Setup ও Forms Setup-এ ছাপা ও ভাউচার ফর্মের ধরন ঠিক করুন।", "Customer Setup, Product Setup ও Dropdown-এ গ্রাহক-পণ্যের ঘর বাছুন।", "Real Estate Setup, Hotel Setup, Feature Controls ও SaaS Setup দিয়ে বাকি সুবিধা চালু করুন।", "প্রতিটি ধাপে Next, শেষে Save / Update চাপুন।"] },
-      { "heading": "সতর্কতা", "warning": "Stock With Zero, Multiple Warehouse, Opening ongoing ও Block Negative Stock Sale-এর মতো সুইচ পরে বদলালে পুরনো লেনদেনে প্রভাব পড়তে পারে। SMS Service বন্ধ থাকলে এসএমএস যাবে না।" }
+      { "heading": "সতর্কতা", "warning": "Stock With Zero, Multiple Warehouse, Opening ongoing ও Block Negative Stock Sale-এর মতো সুইচ পরে বদলালে পুরনো লেনদেনে প্রভাব পড়তে পারে। SMS Service বন্ধ থাকলে এসএমএস যাবে না।" },
+      { "heading": "হোটেলের Income Setup", "steps": ["Hotel Setup ধাপে Income Setup থেকে ঠিক করুন আয় কখন হিসাবে উঠবে।", "Income at Bill: বিল হলেই Income ও VAT ওঠে। এটি ডিফল্ট।", "Income at Settlement: বিল সেটেলের টাকার সাথে একটি রিসিট ভাউচারে Income ও VAT ওঠে। বাকি থাকলে টাকা Guest Receivable হেডে যায়।", "Income at Settlement বাছতে Guest Receivable হেড থাকতে হবে।", "সেটিং বদলালে শুধু নতুন বিলে প্রভাব পড়ে। Guest Receivable-এ আগের বাকি ওই হেড থেকেই আদায় হয়।"] }
     ]
   }
 }

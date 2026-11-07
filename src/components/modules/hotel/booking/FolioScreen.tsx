@@ -1111,6 +1111,13 @@ const FolioScreen = () => {
         <FiArrowLeft size={18} /> Back to bookings
       </button>
 
+      {folio.awaiting_settlement ? (
+        <p className="mb-3 rounded border border-stroke bg-gray-2 p-2.5 text-xs dark:border-strokedark dark:bg-meta-4">
+          This bill reaches the accounts when it is settled, or at check-out if the guest leaves
+          owing.
+        </p>
+      ) : null}
+
       {/* ⚠️ Only for what is actually behind, and it names the number. The old
           blanket "nothing is in the accounts" banner came down when the vouchers
           were written; this replaces it and says something narrower and true.

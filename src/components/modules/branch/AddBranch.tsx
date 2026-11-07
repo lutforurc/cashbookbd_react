@@ -221,6 +221,10 @@ interface branchItem {
   hotel_vat_mode: string;
   /** 'customer' (default): a balance at check-out goes to a party. 'bill': it may stay on the booking. */
   hotel_due_mode: string;
+  /** 'bill' (default): income is posted with the bill. 'settlement': with the money, on one voucher. */
+  hotel_income_mode: string;
+  /** False when the company has no Guest Receivable head, so 'settlement' cannot be chosen. */
+  hotel_guest_receivable_ready?: boolean;
   salutation_male: string;
   salutation_female: string;
   salutation_other: string;
@@ -513,6 +517,85 @@ const metaNumberOr = (value: unknown, fallback: number): number => {
 };
 
 /**
+ * The choice cards on the Hotel Setup step. Every option has its own colour.
+ * Whole class names, because Tailwind only ships what it can read in the source.
+ */
+const HOTEL_RADIO_TONES = {
+  blue: {
+    bar: 'border-l-blue-500',
+    card: 'border-blue-500 bg-blue-50 dark:bg-blue-500/15',
+    title: 'text-blue-700 dark:text-blue-300',
+    ring: 'border-blue-500',
+    fill: 'border-blue-600 bg-blue-600',
+  },
+  violet: {
+    bar: 'border-l-violet-500',
+    card: 'border-violet-500 bg-violet-50 dark:bg-violet-500/15',
+    title: 'text-violet-700 dark:text-violet-300',
+    ring: 'border-violet-500',
+    fill: 'border-violet-600 bg-violet-600',
+  },
+  amber: {
+    bar: 'border-l-amber-500',
+    card: 'border-amber-500 bg-amber-50 dark:bg-amber-500/15',
+    title: 'text-amber-700 dark:text-amber-300',
+    ring: 'border-amber-500',
+    fill: 'border-amber-600 bg-amber-600',
+  },
+  teal: {
+    bar: 'border-l-teal-500',
+    card: 'border-teal-500 bg-teal-50 dark:bg-teal-500/15',
+    title: 'text-teal-700 dark:text-teal-300',
+    ring: 'border-teal-500',
+    fill: 'border-teal-600 bg-teal-600',
+  },
+  indigo: {
+    bar: 'border-l-indigo-500',
+    card: 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/15',
+    title: 'text-indigo-700 dark:text-indigo-300',
+    ring: 'border-indigo-500',
+    fill: 'border-indigo-600 bg-indigo-600',
+  },
+  emerald: {
+    bar: 'border-l-emerald-500',
+    card: 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/15',
+    title: 'text-emerald-700 dark:text-emerald-300',
+    ring: 'border-emerald-500',
+    fill: 'border-emerald-600 bg-emerald-600',
+  },
+};
+
+type HotelRadioTone = keyof typeof HOTEL_RADIO_TONES;
+
+const hotelRadioCard = (chosen: boolean, tone: HotelRadioTone, disabled = false) =>
+  `relative flex items-start gap-3 rounded-lg border-2 border-l-[6px] p-4 transition ${
+    disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md'
+  } ${
+    chosen
+      ? `${HOTEL_RADIO_TONES[tone].card} shadow-md`
+      : `border-[rgb(var(--c-border))] ${HOTEL_RADIO_TONES[tone].bar}`
+  }`;
+
+const hotelRadioTitle = (tone: HotelRadioTone) =>
+  `block text-base font-bold ${HOTEL_RADIO_TONES[tone].title}`;
+
+/** The radio itself, drawn; the real input stays in the label for the keyboard. */
+const HotelRadioMark = ({ chosen, tone }: { chosen: boolean; tone: HotelRadioTone }) => (
+  <span
+    aria-hidden="true"
+    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition peer-focus-visible:ring-2 peer-focus-visible:ring-primary/50 ${
+      chosen ? HOTEL_RADIO_TONES[tone].fill : `bg-white dark:bg-transparent ${HOTEL_RADIO_TONES[tone].ring}`
+    }`}
+  >
+    {chosen && (
+      <svg viewBox="0 0 16 16" className="h-4 w-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <path d="M3 8.5l3.2 3.2L13 4.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    )}
+  </span>
+);
+
+/**
  * VAT Setup — the two ways a hotel bill can read its own rate card.
  *
  * ⚠️ THIS IS ABOUT WHAT A RATE MEANS, NOT WHAT A TAX IS. Both modes charge the
@@ -742,6 +825,7 @@ const AddBranch = () => {
     // The way every property has billed so far: the rate is before tax.
     hotel_vat_mode: 'exclusive',
     hotel_due_mode: 'customer',
+    hotel_income_mode: 'bill',
     salutation_male: '',
     salutation_female: '',
     salutation_other: '',
@@ -1027,6 +1111,8 @@ const AddBranch = () => {
         // does not know how to bill.
         hotel_vat_mode: metaTextOr(b.hotel_vat_mode, 'exclusive') === 'inclusive' ? 'inclusive' : 'exclusive',
         hotel_due_mode: metaTextOr(b.hotel_due_mode, 'customer') === 'bill' ? 'bill' : 'customer',
+        hotel_income_mode: metaTextOr(b.hotel_income_mode, 'bill') === 'settlement' ? 'settlement' : 'bill',
+        hotel_guest_receivable_ready: b.hotel_guest_receivable_ready !== false,
         salutation_male: b.salutation_male ? String(b.salutation_male) : '',
         salutation_female: b.salutation_female ? String(b.salutation_female) : '',
         salutation_other: b.salutation_other ? String(b.salutation_other) : '',
@@ -1136,6 +1222,8 @@ const AddBranch = () => {
   // already has rather than on one it was never set up for.
   const hotelVatMode = String(formData?.hotel_vat_mode || '') === 'inclusive' ? 'inclusive' : 'exclusive';
   const hotelDueMode = String(formData?.hotel_due_mode || '') === 'bill' ? 'bill' : 'customer';
+  const hotelIncomeMode = String(formData?.hotel_income_mode || '') === 'settlement' ? 'settlement' : 'bill';
+  const canIncomeAtSettlement = formData?.hotel_guest_receivable_ready !== false;
 
   // A form may only be chosen by someone who may open it: the four separate
   // cash/bank forms on their own create permission, and each unified entry on
@@ -2893,15 +2981,12 @@ const AddBranch = () => {
                     <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
                       {HOTEL_VAT_MODES.map((mode) => {
                         const chosen = hotelVatMode === mode.id;
+                        const tone: HotelRadioTone = mode.id === 'inclusive' ? 'violet' : 'blue';
 
                         return (
                           <label
                             key={mode.id}
-                            className={`flex cursor-pointer items-start gap-2 rounded-xs border p-3 transition ${
-                              chosen
-                                ? 'border-primary bg-primary/5'
-                                : 'border-[rgb(var(--c-border))] hover:border-primary'
-                            }`}
+                            className={hotelRadioCard(chosen, tone)}
                           >
                             {/* The name IS the meta key, so the same handler that
                                 serves every other field writes it -- and what is
@@ -2913,12 +2998,11 @@ const AddBranch = () => {
                               value={mode.id}
                               checked={chosen}
                               onChange={handleOnChange}
-                              className="mt-0.5"
+                              className="peer sr-only"
                             />
+                            <HotelRadioMark chosen={chosen} tone={tone} />
                             <span className="min-w-0 text-sm">
-                              <strong className="block text-black dark:text-white">
-                                {mode.label}
-                              </strong>
+                              <strong className={hotelRadioTitle(tone)}>{mode.label}</strong>
                               <span className="mt-0.5 block text-xs leading-snug text-gray-500 dark:text-gray-400">
                                 {mode.blurb}
                               </span>
@@ -2982,11 +3066,13 @@ const AddBranch = () => {
                       {[
                         {
                           id: 'customer',
+                          tone: 'amber' as HotelRadioTone,
                           label: 'Customer-wise due',
                           blurb: 'A balance at check-out must be taken or billed to a party. The default.',
                         },
                         {
                           id: 'bill',
+                          tone: 'teal' as HotelRadioTone,
                           label: 'Bill-wise due',
                           blurb:
                             'With the Check-out With Due permission, a guest may leave owing. The balance stays on the booking and is collected, billed to a party or written off later.',
@@ -2994,11 +3080,7 @@ const AddBranch = () => {
                       ].map((mode) => (
                         <label
                           key={mode.id}
-                          className={`flex cursor-pointer items-start gap-2 rounded-xs border p-3 transition ${
-                            hotelDueMode === mode.id
-                              ? 'border-primary bg-primary/5'
-                              : 'border-[rgb(var(--c-border))] hover:border-primary'
-                          }`}
+                          className={hotelRadioCard(hotelDueMode === mode.id, mode.tone)}
                         >
                           <input
                             type="radio"
@@ -3006,10 +3088,11 @@ const AddBranch = () => {
                             value={mode.id}
                             checked={hotelDueMode === mode.id}
                             onChange={handleOnChange}
-                            className="mt-0.5"
+                            className="peer sr-only"
                           />
+                          <HotelRadioMark chosen={hotelDueMode === mode.id} tone={mode.tone} />
                           <span className="min-w-0 text-sm">
-                            <strong className="block text-black dark:text-white">{mode.label}</strong>
+                            <strong className={hotelRadioTitle(mode.tone)}>{mode.label}</strong>
                             <span className="mt-0.5 block text-xs leading-snug text-gray-500 dark:text-gray-400">
                               {mode.blurb}
                             </span>
@@ -3017,6 +3100,65 @@ const AddBranch = () => {
                         </label>
                       ))}
                     </div>
+
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Income Setup
+                    </h4>
+
+                    <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                      {[
+                        {
+                          id: 'bill',
+                          tone: 'indigo' as HotelRadioTone,
+                          label: 'Income at Bill',
+                          blurb:
+                            'Income and VAT post when the bill is made. Advance and settlement money both go to the advance head. The default.',
+                          disabled: false,
+                        },
+                        {
+                          id: 'settlement',
+                          tone: 'emerald' as HotelRadioTone,
+                          label: 'Income at Settlement',
+                          blurb:
+                            'The bill posts with the settlement on one receipt voucher, so the money goes to income and VAT. A balance left at check-out goes to Guest Receivable.',
+                          disabled: !canIncomeAtSettlement,
+                        },
+                      ].map((mode) => (
+                        <label
+                          key={mode.id}
+                          className={hotelRadioCard(hotelIncomeMode === mode.id, mode.tone, mode.disabled)}
+                        >
+                          <input
+                            type="radio"
+                            name="hotel_income_mode"
+                            value={mode.id}
+                            checked={hotelIncomeMode === mode.id}
+                            disabled={mode.disabled}
+                            onChange={handleOnChange}
+                            className="peer sr-only"
+                          />
+                          <HotelRadioMark chosen={hotelIncomeMode === mode.id} tone={mode.tone} />
+                          <span className="min-w-0 text-sm">
+                            <strong className={hotelRadioTitle(mode.tone)}>{mode.label}</strong>
+                            <span className="mt-0.5 block text-xs leading-snug text-gray-500 dark:text-gray-400">
+                              {mode.blurb}
+                            </span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {!canIncomeAtSettlement && (
+                      <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                        Income at Settlement needs a Guest Receivable head, which this company does
+                        not have yet.
+                      </p>
+                    )}
+
+                    <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                      Changing this affects new bills only. Money already in Guest Receivable is
+                      collected from that head.
+                    </p>
 
                     <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       What the guest signs
