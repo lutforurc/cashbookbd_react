@@ -3120,7 +3120,7 @@ const AddBranch = () => {
                           tone: 'emerald' as HotelRadioTone,
                           label: 'Income at Settlement',
                           blurb:
-                            'The bill posts with the settlement on one receipt voucher, so the money goes to income and VAT. A balance left at check-out goes to Guest Receivable.',
+                            'The bill posts with the settlement, so the money goes to income and VAT. A balance left at check-out goes to Guest Receivable.',
                           disabled: !canIncomeAtSettlement,
                         },
                       ].map((mode) => (
