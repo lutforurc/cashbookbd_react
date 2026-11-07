@@ -1,5 +1,10 @@
 name: Staging React App CI/CD Pipeline
 
+# The build no longer runs here. This workflow ships the source to the server
+# and pokes deploy/script.sh, which builds and publishes there. The trigger
+# returns at once, so a dropped ssh connection can no longer kill a build
+# half-way; the wait step below is what decides whether the deploy worked.
+
 on:
   push:
     branches:
@@ -9,6 +14,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     strategy:
       fail-fast: false
@@ -24,56 +30,7 @@ jobs:
       # 1) Checkout
       - uses: actions/checkout@v4
 
-      # 2) Setup Node
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      # 3) Install deps
-      - run: npm ci
-
-      # 4) Resolve API URL (No Secret - No Masking - Always Works)
-      - name: Resolve API URL
-        id: api
-        run: |
-          case "${{ matrix.site }}" in
-            cashbookbdaccountsstaging) URL="https://staging.cashbookbd.com" ;;
-            cashbookbdaccountseworld) URL="https://eworld.cashbookbd.com" ;;
-            *) echo "Unknown site"; exit 1 ;;
-          esac
-
-          echo "url=$URL" >> $GITHUB_OUTPUT
-
-      # 5) Build
-      - name: Build
-        env:
-          VITE_SITE_NAME: ${{ matrix.site }}
-          VITE_API_URL: ${{ steps.api.outputs.url }}
-        run: npm run build -- --mode production
-
-      # 6) Upload artifact
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist-${{ matrix.site }}
-          path: dist
-
-      # 7) Resolve Host
-      - name: Resolve host
-        id: tgt
-        run: echo "host=${{ secrets.REACT_MAIN_HOST }}" >> $GITHUB_OUTPUT
-
-      # 8) Resolve Deploy Path
-      - name: Resolve deploy path
-        id: path
-        run: |
-          case "${{ matrix.site }}" in
-            cashbookbdaccountsstaging) echo "dir=/home/cashbookbdaccountsstaging/htdocs/accounts.staging.cashbookbd.com" ;;
-            cashbookbdaccountseworld) echo "dir=/home/cashbookbdaccountseworld/htdocs/accounts.eworld.cashbookbd.com" ;;
-            *) echo "Unknown site"; exit 1 ;;
-          esac >> $GITHUB_OUTPUT
-
-      # 9) Setup SSH
+      # 2) Setup SSH
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -81,25 +38,55 @@ jobs:
           chmod 600 ~/.ssh/key
           echo -e "Host *\n  IdentityFile ~/.ssh/key\n  StrictHostKeyChecking=accept-new" > ~/.ssh/config
 
-      # 10) Download artifact
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist-${{ matrix.site }}
-          path: dist
-
-      # 11) Deploy
-      - name: Deploy
+      # 3) Resolve the public host, to confirm later that it serves this commit.
+      #    The deploy dir and API URL live in deploy/script.sh, next to the build.
+      - name: Resolve site host
+        id: site
         run: |
-          rsync -avz --delete \
+          case "${{ matrix.site }}" in
+            cashbookbdaccountsstaging) echo "host=accounts.staging.cashbookbd.com" ;;
+            cashbookbdaccountseworld) echo "host=accounts.eworld.cashbookbd.com" ;;
+            *) echo "Unknown site"; exit 1 ;;
+          esac >> $GITHUB_OUTPUT
+
+      # 4) Ship the source. Its own directory per site, so the two matrix jobs
+      #    cannot build over each other. node_modules and dist are rebuilt on
+      #    the server and .git is not needed there.
+      - name: Upload source
+        run: |
+          rsync -az --delete \
+            --exclude .git --exclude node_modules --exclude dist \
             -e "ssh -p 22" \
-            dist/ \
-            "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}:${{ steps.path.outputs.dir }}/"
+            ./ \
+            "${{ secrets.REACT_MAIN_SSH_USER }}@${{ secrets.REACT_MAIN_HOST }}:deploy/src/${{ matrix.site }}/"
 
-      # 12) Reload nginx
-      - name: Reload nginx
-        run: ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}" \
-               "systemctl reload nginx"
+      # 5) Build (on the server). Returns as soon as the build is accepted.
+      #    Run through `sh` so a lost +x bit on the checkout cannot break this.
+      - name: Trigger build
+        run: |
+          ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ secrets.REACT_MAIN_HOST }}" \
+            "sh deploy/src/${{ matrix.site }}/deploy/script.sh '${{ matrix.site }}' '${{ github.sha }}'"
 
-      # 13) Smoke Test
-      - name: Smoke Test
-        run: curl -I "${{ steps.api.outputs.url }}" | grep -q "200"
+      # 6) Wait for the live site to serve this commit. The build writes its sha
+      #    into dist last, so this is only true once it finished and published.
+      - name: Wait for the deploy to go live
+        run: |
+          URL="https://${{ steps.site.outputs.host }}/build-sha.txt"
+          for _ in $(seq 1 60); do
+            GOT=$(curl -fsS --max-time 10 "$URL?t=$(date +%s)" | tr -d '[:space:]' || true)
+            if [ "$GOT" = "${{ github.sha }}" ]; then
+              echo "live: ${{ matrix.site }} is serving ${{ github.sha }}"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::${{ matrix.site }} did not serve ${{ github.sha }} within 15 minutes"
+          exit 1
+
+      # 7) The build output never reaches this runner, so on failure fetch the
+      #    tail of the server log - otherwise there is nothing to go on.
+      - name: Server build log
+        if: failure()
+        run: |
+          ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ secrets.REACT_MAIN_HOST }}" \
+            "tail -n 60 'deploy/${{ matrix.site }}.log'" || true
