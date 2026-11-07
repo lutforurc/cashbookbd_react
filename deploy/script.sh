@@ -63,6 +63,18 @@ command -v npm >/dev/null 2>&1 || {
 }
 echo "node $(node -v 2>/dev/null || echo '?') npm $(npm -v 2>/dev/null || echo '?') at $(command -v npm)"
 
+# This project's vite needs node ^20.19 || >=22.12, and a server may well have
+# an older one in /usr/bin that the search above would happily pick. Say so now
+# rather than let the build die ten minutes in on a version error.
+# ponytail: major version only; a 20.0-20.18 would slip through, npm's own
+# engines warning catches that.
+NODE_MAJOR=$(node -v 2>/dev/null | sed 's/^v//; s/\..*//')
+if [ "${NODE_MAJOR:-0}" -lt 20 ] 2>/dev/null; then
+	echo "node $(node -v 2>/dev/null) is too old - vite needs 20.19+ or 22.12+" >&2
+	echo "Fix: install a newer node, then point ~/deploy/env at its bin dir." >&2
+	exit 1
+fi
+
 [ -d "$DEST" ] || { echo "deploy dir missing: $DEST" >&2; exit 1; }
 
 # The build happens right here, in the checkout this script came up with - not
