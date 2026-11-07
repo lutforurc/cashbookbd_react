@@ -50,6 +50,9 @@ LOCK=$HOME/deploy/$SITE.lock
 LOG=$HOME/deploy/$SITE.log
 export SITE SHA API_URL DEST SRC LOCK
 
+# The lock below is a bare mkdir, so its parent has to be there already.
+mkdir -p "$HOME/deploy"
+
 # A crashed run leaves the lock behind; drop it only if its pid is really gone.
 if [ -d "$LOCK" ] && ! kill -0 "$(cat "$LOCK/pid" 2>/dev/null || echo 0)" 2>/dev/null; then
 	rm -rf "$LOCK"

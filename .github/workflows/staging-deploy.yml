@@ -54,11 +54,14 @@ jobs:
       #    the server and .git is not needed there.
       - name: Upload source
         run: |
+          SSH="${{ secrets.REACT_MAIN_SSH_USER }}@${{ secrets.REACT_MAIN_HOST }}"
+          # rsync creates only the last component of the destination, so the
+          # parents have to exist first.
+          ssh "$SSH" "mkdir -p 'deploy/src/${{ matrix.site }}'"
           rsync -az --delete \
             --exclude .git --exclude node_modules --exclude dist \
             -e "ssh -p 22" \
-            ./ \
-            "${{ secrets.REACT_MAIN_SSH_USER }}@${{ secrets.REACT_MAIN_HOST }}:deploy/src/${{ matrix.site }}/"
+            ./ "$SSH:deploy/src/${{ matrix.site }}/"
 
       # 5) Build (on the server). Returns as soon as the build is accepted.
       #    Run through `sh` so a lost +x bit on the checkout cannot break this.
