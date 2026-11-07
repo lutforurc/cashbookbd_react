@@ -29,12 +29,12 @@
   "hotel-booking-form": {
     "title": "নতুন বুকিং",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "08/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "তারিখ ধরে কোন ঘর, বেড বা হল খালি আছে দেখে বুকিং ধরা হয় এবং কে বুক করছে তা লেখা হয়।",
     "sections": [
-      { "heading": "বুকিং ধরা", "menu": "Hotel → Bookings → New Booking", "steps": ["Guest Type, Payment Type, Arrival ও Departure দিন।", "Building বাছুন; N free লেখা ঘর/বেড থেকে যেগুলো নিতে চান বাছুন।", "হল লাগলে Halls and function spaces থেকে শিফট বাছুন।", "Who is booking, Mobile, Adults, Children ও Notes দিন।", "Confirmed বা Held বাছুন, তারপর Book চাপুন।"] },
+      { "heading": "বুকিং ধরা", "menu": "Hotel → Bookings → New Booking", "steps": ["Guest Type, Payment Type, Arrival ও Departure দিন।", "Building বাছুন, Search চাপুন; N free লেখা ঘর/বেড থেকে যেগুলো নিতে চান বাছুন। রং বদলাতে Colour by ব্যবহার করুন।", "হল লাগলে Halls and function spaces থেকে শিফট বাছুন।", "যা বাছলেন তা ডান পাশে Booking summary-তে ভাড়াসহ ওঠে, নিচে Total দেখায়। ছোট স্ক্রিনে এই অংশটি ঘরের তালিকার নিচে আসে।", "Booking summary-তে Who is booking, Mobile, Adults, Children ও Notes দিন। Corporate হলে Company Name, Complimentary বা House use হলে কারণও এখানে লিখুন।", "Confirmed বা Held বাছুন, তারপর Book চাপুন।", "Who is booking থেকে Enter চাপলে কার্সর পরের ঘরে যায়; Notes-এর পর Book বাটনে গিয়ে আরেকবার Enter দিলে বুকিং সেভ হয়।"] },
       { "heading": "বিশেষ ধরন", "steps": ["Walk-in (no room) বুকিং কোনো ঘর ধরে না; Save করার পর Bill-এ যা বিক্রি হয়েছে যোগ করুন।", "Complimentary বা House use হলে ভাড়া বিল হয় না, তবে ঘর দখলে থাকে।"] },
       { "heading": "সতর্কতা", "warning": "যে রাতের বিল হয়ে গেছে সেই রাত বুকিং থেকে বাদ দেওয়া যায় না — অতিথিকে check out করতে হবে।" }
     ]
@@ -42,12 +42,12 @@
   "hotel-hall-bookings": {
     "title": "হল বুকিং",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "08/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক তারিখে কোন হল কোন শিফটে খালি, তা দেখে বসার (sitting) হিসেবে হল বুকিং ধরা হয়।",
     "sections": [
-      { "heading": "হল বুকিং", "menu": "Hotel → Bookings → Hall Bookings", "steps": ["Property ও Date বাছুন।", "Hall ও শিফটের ঘরে Free/Booked/Not for sale দেখা যায়; খালি ঘরে Taking it বাছুন।", "Booked by, Mobile ও Note দিন।", "Book these sittings চাপুন।"] },
+      { "heading": "হল বুকিং", "menu": "Hotel → Bookings → Hall Bookings", "steps": ["Property ও Date বাছুন।", "প্রতিটি হলের কার্ডে তারিখের পাশে শিফটের টাইল দেখা যায়: FREE খালি, BKD বুক করা। খালি টাইলে চাপলে TAKING লেখা ওঠে।", "যা বাছলেন তা ডান পাশে Booking summary-তে ভাড়াসহ ওঠে; তারিখ বদলালেও আগের বাছাই থাকে। বাদ দিতে পাশের × চাপুন।", "Booking summary-তে Booked by, Mobile ও Note দিন।", "Book these sittings চাপুন।"] },
       { "heading": "সতর্কতা", "warning": "এখানে টাকা বিল হয় না — শুধু হল ধরা হয়; বিল হয় folio-তে।" }
     ]
   },

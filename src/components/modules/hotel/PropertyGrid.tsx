@@ -119,7 +119,7 @@ const BuildingCard = ({
         : `${money(building.seat_rent_min)} – ${money(building.seat_rent_max)}/bed`;
 
   return (
-    <div className="rounded border border-stroke dark:border-strokedark print:break-inside-avoid">
+    <div className="max-w-full rounded border border-stroke dark:border-strokedark print:break-inside-avoid">
       <div className="border-b border-stroke px-3 py-2 dark:border-strokedark">
         <div className="flex items-baseline gap-2">
           <span className="font-semibold text-black dark:text-white">{building.name}</span>
@@ -149,15 +149,11 @@ const BuildingCard = ({
         ) : null}
       </div>
 
-      {/* One gap, stated once, and it governs both directions.
-
-          The floors used to space themselves with `py-1` and a bottom border
-          while the tiles inside a floor used `gap-1` -- two rules in two files
-          for what the eye reads as one grid, so the space between 501 and 502
-          was never the space between 501 and 401. Saying it here, as the flex
-          gap of the column, leaves the rows exactly as far apart as the tiles
-          are: change this number and both move together. */}
-      <div className="flex flex-col gap-1 p-2">
+      {/* Each floor is its own band, spaced here and nowhere else. A floor can
+          run to several lines now, so the space between floors has to be wider
+          than the space between lines of tiles -- or the eye cannot tell where
+          the second floor ends and the third begins. */}
+      <div className="flex flex-col gap-2 p-2">
         {stacked.map((floor) => (
           <FloorRow
             key={floor.id}
@@ -220,36 +216,32 @@ const FloorRow = ({
   dimmed?: boolean;
   ownIds?: number[];
 }) => (
-  // No padding and no rule of its own. The column above spaces these, so a
-  // row that also padded itself would add to that space on one axis only --
-  // which is exactly how the rows came to sit further apart than the tiles.
-  // The dividing line went with it: it drew a fourth horizontal edge into a
-  // grid already made of bordered tiles, and the floor chip names the row far
-  // better than a hairline separates it.
-  <div className={`flex items-center gap-2 ${dimmed ? 'opacity-50' : ''}`}>
-    {/* The floor marker: large and bold, and carrying no colour of its own.
-        Big enough to find the third floor on a five-storey card at a glance,
-        which the old grey whisper in the margin was not.
-
-        No background, and no accent. On this screen colour MEANS something --
-        the tiles are painted by room type, sale mode, status or availability,
-        and the legend above explains that scheme. A filled chip in the gutter
-        joins that conversation without having anything to say. Ink alone says
-        "label", not "data". */}
+  // A band, because a floor of twenty rooms folds onto several lines and the band
+  // is what holds those lines together as one floor.
+  //
+  // ⚠️ THE ROOMS ARE THE POINT OF THIS ROW. A solid block naming the floor was
+  // tried (2026-11-08) and it outweighed every tile beside it, so the marker is a
+  // thin edge and coloured ink: enough to find the floor, never more than a room.
+  <div className={`flex items-stretch gap-2 rounded-r border-l-[3px] border-primary bg-gray-50 p-1.5 dark:border-secondary dark:bg-white/5 ${dimmed ? 'opacity-50' : ''}`}>
+    {/* The floor marker: big enough to find the third floor on a five-storey
+        card at a glance. */}
     <span
       title={title}
-      className="w-10 shrink-0 text-center text-sm font-bold text-gray-700 dark:text-gray-200"
+      className="flex w-14 shrink-0 flex-col items-center justify-center whitespace-nowrap text-center"
     >
-      {label}
+      <span className="text-base font-bold leading-tight text-primary dark:text-secondary">{label}</span>
+      {rooms.length ? (
+        <span className="text-[0.65rem] leading-tight text-gray-500 dark:text-gray-400">
+          {rooms.length} {rooms.length === 1 ? 'room' : 'rooms'}
+        </span>
+      ) : null}
     </span>
 
-    {/* A floor with many rooms scrolls inside itself rather than widening the
-        card -- and rather than paging, which a plan cannot be read in.
-
-        Note that `overflow-x: auto` makes the vertical axis auto as well, so
-        this row clips anything a tile paints above or below itself. That is why
-        the selected tile marks itself on the inside -- see RoomTile. */}
-    <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto print:overflow-visible print:flex-wrap">
+    {/* ⚠️ A FLOOR WITH MANY ROOMS FOLDS ONTO MORE LINES. It used to scroll
+        sideways inside itself, and a room out of sight past the edge is a room
+        nobody sells. The tiles are all one width, so they still line up into
+        columns, across the lines and across the floors. */}
+    <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
       {rooms.length ? (
         rooms.map((room) => (
           <RoomTile

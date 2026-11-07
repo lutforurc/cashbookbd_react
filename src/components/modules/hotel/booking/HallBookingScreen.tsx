@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiCalendar, FiCheck } from 'react-icons/fi';
+import { FiArrowLeft, FiCheck, FiX } from 'react-icons/fi';
 
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
@@ -16,6 +16,7 @@ import routes from '../../../services/appRoutes';
 import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import { money } from '../setupHelpers';
 import { bookingSave, hallsRead } from './bookingSlice';
+import HallCards from './HallCards';
 
 /**
  * Letting a hall -- the community centre screen.
@@ -91,8 +92,18 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
     load();
   }, [load]);
 
-  const slots: any[] = halls?.slots ?? [];
   const rows: any[] = halls?.halls ?? [];
+
+  // One date asked, so one day on each card.
+  const cards = useMemo(
+    () =>
+      rows.map((hall) => ({
+        ...hall,
+        name: hall.name || hall.code,
+        days: [{ date, sittings: hall.sittings }],
+      })),
+    [rows, date],
+  );
 
   const key = (hallId: number, slotId: number, on: string) => `${hallId}|${slotId}|${on}`;
 
@@ -175,22 +186,22 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
     }
   };
 
-  const cellClass = (cell: any, isChosen: boolean) => {
-    if (isChosen) return 'border-primary bg-primary/10 dark:border-secondary';
-    if (cell.state === 'free') return 'border-stroke hover:border-primary dark:border-strokedark';
-
-    return 'cursor-not-allowed border-stroke bg-gray-100 opacity-70 dark:border-strokedark dark:bg-boxdark-2';
-  };
-
   return (
-    <div>
+    <div className="@container">
       <HelmetTitle title="Hall Booking" />
 
-      <div className="mb-4 flex flex-wrap items-end gap-3">
-        <div className="w-60">
-          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Property
-          </span>
+      <button
+        type="button"
+        onClick={() => navigate(routes.hotel_bookings)}
+        className="mb-3 -ml-1 flex items-center gap-2 rounded px-1 py-1 text-base font-semibold text-primary hover:underline dark:text-secondary"
+      >
+        <FiArrowLeft size={18} />
+        Back to bookings
+      </button>
+
+      <div className="mb-4 flex flex-wrap items-end gap-3 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-4">
+        <div className="w-60 max-w-full">
+          <label className="text-sm text-black dark:text-white">Property</label>
           <BranchDropdown
             id="hall_branch"
             name="branch_id"
@@ -217,211 +228,164 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
             className="w-full"
           />
         </div>
-
-        {/* ⚠️ Said on the page, every time. A list of free sittings is out of
-            date the moment it is drawn, and a screen that does not admit it is
-            one somebody treats as a reservation. */}
-        {/* <p className="mb-1 flex-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
-          What was free a moment ago. A sitting is not yours until it is booked —
-          somebody else may be looking at this same evening.
-        </p> */}
       </div>
 
-      {loading && !halls ? <Loader /> : null}
+      {/* The same two columns as New Booking, read from this page's own width:
+          picking on the left, what was picked and who takes it on the right. */}
+      <div className="grid grid-cols-1 items-start gap-4 @5xl:grid-cols-[minmax(0,1fr)_23rem]">
+        <div className="min-w-0 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-4">
+          {loading && !halls ? <Loader /> : null}
 
-      {!loading && !halls ? (
-        <p className="rounded border border-stroke p-6 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
-          {error
-            || 'Nothing to show. Set a hall up on Hotel Setup, and the sittings it is let for.'}
-        </p>
-      ) : null}
+          {!loading && !halls ? (
+            <p className="rounded border border-dashed border-stroke p-10 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
+              {error
+                || 'Nothing to show. Set a hall up on Hotel Setup, and the sittings it is let for.'}
+            </p>
+          ) : null}
 
-      {halls ? (
-        <div className="mb-5 overflow-x-auto rounded border border-stroke dark:border-strokedark">
-          <table className="w-full min-w-[640px] table-auto">
-            <thead>
-              <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                <th className="px-4 py-3 text-sm font-medium text-black dark:text-white">Hall</th>
-                {slots.map((slot: any) => (
-                  <th
-                    key={slot.id}
-                    className="px-4 py-3 text-sm font-medium text-black dark:text-white"
-                  >
-                    {slot.label ?? slot.name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+          {halls ? (
+            <>
+              <div className="mb-3 flex flex-wrap items-baseline gap-x-3">
+                <span className="text-lg font-semibold text-black dark:text-white">
+                  Halls and function spaces
+                </span>
+                <span className="text-sm text-gray-700 dark:text-gray-100">
+                  sold by the sitting, not by the night
+                </span>
+              </div>
 
-            <tbody>
-              {rows.map((hall: any) => (
-                <tr key={hall.id} className="border-t border-stroke dark:border-strokedark">
-                  <td className="px-4 py-3 align-top">
-                    <div className="font-medium text-black dark:text-white">
-                      {hall.name || hall.code}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {hall.building ? `${hall.building} · ` : ''}
-                      {hall.capacity ? `${hall.capacity} seats · ` : ''}
-                      {/* §2.8: the rent on a hall is the price of ONE sitting,
-                          never of a night. Labelled, because the room screen
-                          right beside it means the other thing by "rent". */}
-                      {hall.rent === null ? 'no rate set' : `${money(hall.rent)} a sitting`}
-                    </div>
-                  </td>
+              <HallCards
+                cards={cards}
+                isChosen={(hall, slot, on) => chosen.has(key(hall, slot, on))}
+                onToggle={toggle}
+              />
+            </>
+          ) : null}
+        </div>
 
-                  {hall.sittings.map((cell: any) => {
-                    const isChosen = chosen.has(key(hall.id, cell.slot_id, date));
+        <aside className="min-w-0 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark @5xl:sticky @5xl:top-24 @5xl:flex @5xl:max-h-[calc(100vh-7.5rem)] @5xl:flex-col">
+          <div className="flex items-baseline justify-between gap-2 border-b border-stroke px-4 py-3 dark:border-strokedark">
+            <h3 className="text-base font-semibold text-black dark:text-white">Booking summary</h3>
 
-                    return (
-                      <td key={cell.slot_id} className="px-2 py-2 align-top">
+            {picked.length ? (
+              <button
+                type="button"
+                onClick={() => setPicked([])}
+                className="text-xs font-medium text-primary hover:underline dark:text-secondary"
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+            {picked.length ? (
+              <>
+                {/* ⚠️ Kept across a change of date on purpose. A wedding is the
+                    evening of the 29th AND the morning of the 30th, and a screen
+                    that forgot the first while the clerk looked for the second
+                    could not take that booking at all. */}
+                <ul className="mb-3 divide-y divide-stroke text-sm dark:divide-strokedark">
+                  {picked.map((one) => (
+                    <li
+                      key={key(one.resource_id, one.slot_id, one.date)}
+                      className="flex items-baseline justify-between gap-3 py-1.5"
+                    >
+                      <span className="min-w-0 text-black dark:text-white">
+                        {one.hall}, {one.sitting}
+                        <span className="block text-xs text-gray-500 dark:text-gray-400">
+                          {formatDayMonthYear(one.date)}
+                        </span>
+                      </span>
+
+                      <span className="flex shrink-0 items-center gap-2 text-gray-600 dark:text-gray-300">
+                        {money(one.rent)}
                         <button
                           type="button"
-                          disabled={cell.state !== 'free'}
-                          onClick={() => toggle(hall, cell)}
-                          className={`w-full rounded border p-2 text-left text-xs ${cellClass(cell, isChosen)}`}
+                          aria-label={`Remove ${one.hall}, ${one.sitting}`}
+                          onClick={() =>
+                            setPicked((prev) =>
+                              prev.filter(
+                                (other) =>
+                                  key(other.resource_id, other.slot_id, other.date)
+                                  !== key(one.resource_id, one.slot_id, one.date),
+                              ),
+                            )
+                          }
+                          className="self-center text-danger"
                         >
-                          <span className="block font-medium text-black dark:text-white">
-                            {isChosen ? (
-                              <span className="flex items-center gap-1">
-                                <FiCheck size={13} /> Taking it
-                              </span>
-                            ) : cell.state === 'free' ? (
-                              'Free'
-                            ) : cell.state === 'closed' ? (
-                              'Not for sale'
-                            ) : (
-                              'Booked'
-                            )}
-                          </span>
-
-                          {/* The reason is a sentence, not a colour: "roof leak"
-                              and "held for the whole day" are different
-                              problems with different answers. */}
-                          {cell.blocked_reason ? (
-                            <span className="mt-0.5 block text-gray-500 dark:text-gray-400">
-                              {cell.blocked_reason}
-                            </span>
-                          ) : null}
-
-                          {cell.taken_by ? (
-                            <span className="mt-0.5 block text-gray-500 dark:text-gray-400">
-                              {cell.taken_by}
-                            </span>
-                          ) : null}
+                          <FiX size={14} />
                         </button>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
 
-      {picked.length ? (
-        <div className="mb-5 rounded border border-stroke p-3 dark:border-strokedark">
-          <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-            <div className="text-sm font-medium text-black dark:text-white">
-              {picked.length} {picked.length === 1 ? 'sitting' : 'sittings'} picked
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {money(total)}{' '}
-              <span className="text-xs">
+                <div className="flex flex-col gap-3">
+                  <InputElement
+                    id="hall_booker"
+                    name="booker_name"
+                    label="Booked by"
+                    placeholder="Who is taking it"
+                    value={booker}
+                    onChange={(e: any) => setBooker(e.target.value)}
+                  />
+
+                  <InputElement
+                    id="hall_mobile"
+                    name="booker_mobile"
+                    label="Mobile"
+                    placeholder="01…"
+                    value={mobile}
+                    onChange={(e: any) => setMobile(e.target.value)}
+                  />
+
+                  <InputElement
+                    id="hall_notes"
+                    name="notes"
+                    label="Note (optional)"
+                    placeholder="Wedding — 300 guests"
+                    value={notes}
+                    onChange={(e: any) => setNotes(e.target.value)}
+                  />
+                </div>
+              </>
+            ) : (
+              <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                Sittings you pick appear here.
+              </p>
+            )}
+          </div>
+
+          {picked.length ? (
+            <div className="border-t border-stroke px-4 py-3 dark:border-strokedark">
+              <div className="mb-3 flex items-baseline justify-between gap-3">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Total</span>
+                <span className="text-xl font-semibold text-black dark:text-white">{money(total)}</span>
+              </div>
+              <p className="-mt-2 mb-3 text-right text-xs text-gray-500 dark:text-gray-400">
                 {inclusive ? 'including service charge and VAT' : 'before service charge and VAT'}
-              </span>
+              </p>
+
+              <ButtonLoading
+                onClick={() => setAsking(true)}
+                buttonLoading={saving}
+                label="Book these sittings"
+                variant="primary"
+                icon={<FiCheck size={16} />}
+                disabled={!booker.trim()}
+                className="w-full"
+              />
+
+              {!booker.trim() ? (
+                <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+                  Say who is taking it first.
+                </p>
+              ) : null}
             </div>
-          </div>
-
-          {/* ⚠️ Kept across a change of date on purpose. A wedding is the
-              evening of the 29th AND the morning of the 30th, and a screen that
-              forgot the first while the clerk looked for the second could not
-              take that booking at all. */}
-          <ul className="mb-3 flex flex-wrap gap-2">
-            {picked.map((one) => (
-              <li
-                key={key(one.resource_id, one.slot_id, one.date)}
-                className="flex items-center gap-2 rounded border border-primary bg-primary/5 px-2 py-1 text-xs dark:border-secondary"
-              >
-                <FiCalendar size={12} />
-                <span className="text-black dark:text-white">
-                  {one.hall} · {one.sitting} · {formatDayMonthYear(one.date)}
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setPicked((prev) =>
-                      prev.filter(
-                        (other) =>
-                          key(other.resource_id, other.slot_id, other.date)
-                          !== key(one.resource_id, one.slot_id, one.date),
-                      ),
-                    )
-                  }
-                  className="text-danger hover:underline"
-                >
-                  remove
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <InputElement
-              id="hall_booker"
-              name="booker_name"
-              label="Booked by"
-              placeholder="Who is taking it"
-              value={booker}
-              onChange={(e: any) => setBooker(e.target.value)}
-            />
-
-            <InputElement
-              id="hall_mobile"
-              name="booker_mobile"
-              label="Mobile"
-              placeholder="01…"
-              value={mobile}
-              onChange={(e: any) => setMobile(e.target.value)}
-            />
-
-            <InputElement
-              id="hall_notes"
-              name="notes"
-              label="Note (optional)"
-              placeholder="Wedding — 300 guests"
-              value={notes}
-              onChange={(e: any) => setNotes(e.target.value)}
-            />
-          </div>
-
-          <div className="mt-3 flex items-center gap-3">
-            <ButtonLoading
-              onClick={() => setAsking(true)}
-              buttonLoading={saving}
-              label="Book these sittings"
-              variant="primary"
-              icon={<FiCheck size={16} />}
-              disabled={!booker.trim()}
-            />
-
-            {!booker.trim() ? (
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Say who is taking it first.
-              </span>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={() => setPicked([])}
-              className="text-sm text-gray-500 hover:underline dark:text-gray-400"
-            >
-              Clear
-            </button>
-          </div>
-        </div>
-      ) : null}
+          ) : null}
+        </aside>
+      </div>
 
       <ConfirmModal
         show={asking}
@@ -453,14 +417,6 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
           </>
         }
       />
-
-      <button
-        type="button"
-        onClick={() => navigate(routes.hotel_bookings)}
-        className="text-sm font-medium text-primary hover:underline dark:text-secondary"
-      >
-        Room bookings →
-      </button>
     </div>
   );
 };

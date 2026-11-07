@@ -278,16 +278,11 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
       }}
       {...anchorProps}
       className={`
-        relative flex w-24 shrink-0 flex-col items-start gap-1 rounded border px-2.5 py-3
+        relative flex w-[calc(50%-0.1875rem)] shrink-0 flex-col items-start gap-1.5 rounded-md border px-3 py-3.5 shadow-sm sm:w-32
         text-left transition
         ${look.className}
         ${/*
             The selection is drawn INSIDE the tile -- ring-inset, and no offset.
-            An outset ring is painted outside the border box, and the floor it
-            sits on scrolls sideways: `overflow-x: auto` makes the other axis
-            auto too, so the row clips top and bottom. The result was a mark on
-            three sides with the top edge shaved off.
-
             Inside the box it cannot be clipped by anything, at any tile size,
             and it reads as a highlighted tile rather than a halo around one.
          */ ''}
@@ -300,18 +295,18 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
         ${disabled ? 'cursor-not-allowed' : ''}
         ${
           selected
-            ? 'ring-2 ring-inset ring-primary'
+            ? 'shadow-md ring-2 ring-inset ring-primary'
             : disabled
               ? ''
-              : 'hover:brightness-95 dark:hover:brightness-125'
+              : 'hover:-translate-y-0.5 hover:shadow-md hover:brightness-95 dark:hover:brightness-125'
         }
         print:break-inside-avoid
       `}
     >
       <div className="flex w-full items-baseline justify-between gap-1">
-        <span className="text-[1rem] font-semibold leading-none">{room.code}</span>
+        <span className="text-lg font-semibold leading-none">{room.code}</span>
         {/* Beside the colour, never instead of it -- see layoutPalette.ts */}
-        <span className="text-[0.55rem] font-bold uppercase leading-none opacity-70">
+        <span className="text-[0.6rem] font-bold uppercase leading-none opacity-70">
           {look.badge}
         </span>
       </div>
@@ -321,7 +316,7 @@ const RoomTile: React.FC<RoomTileProps> = ({ room, mode, typeIndex, selected, di
             at a glance. A hall has none of them; it has chairs, and four
             hundred of those is a number rather than a row of marks. */}
         {isHall ? (
-          <span className="text-[0.55rem] leading-none opacity-75">
+          <span className="text-[0.65rem] leading-none opacity-75">
             {seats ? `${seats} seats` : 'no seating'}
             {sittings.length
               ? ` · ${sittings.length} ${sittings.length === 1 ? 'shift' : 'shifts'}`

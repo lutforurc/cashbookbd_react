@@ -19,7 +19,6 @@ import routes from '../../../services/appRoutes';
 import PropertyGrid from '../PropertyGrid';
 import {
   BOOKING_COLOUR_MODES,
-  BOOKING_LOOKS,
   ColourMode,
   buildTypeIndex,
   lookOf,
@@ -39,7 +38,9 @@ import {
 import { BookingType, StayKind } from './types';
 import formatDate from '../../../utils/utils-functions/formatDate';
 import { hasPermission } from '../../../utils/permissionChecker';
+import { handleInputKeyDown } from '../../../utils/utils-functions/handleKeyDown';
 import GuestProfileDrawer, { GuestKey } from './GuestProfileDrawer';
+import HallCards from './HallCards';
 
 /**
  * Taking a booking, and changing one -- its own page.
@@ -735,21 +736,6 @@ const BookingFormScreen = ({ user }: any) => {
     return [...byHall.values()];
   }, [hallRows]);
 
-  /**
-   * What a sitting cell looks like -- the ROOM GRID's own palette.
-   *
-   * ⚠️ Teal is free and rose is booked on both halves of this screen. A
-   * second colour scheme for halls would mean learning twice which colour can
-   * be clicked, on one page, in one act.
-   */
-  const lookOfSitting = (cell: any, isChosen: boolean) => {
-    if (isChosen) return BOOKING_LOOKS.checked_in ?? BOOKING_LOOKS.booked;
-    if (cell.state === 'free') return BOOKING_LOOKS.free;
-    if (cell.state === 'closed') return BOOKING_LOOKS.closed ?? BOOKING_LOOKS.booked;
-
-    return BOOKING_LOOKS[cell.state] ?? BOOKING_LOOKS.booked;
-  };
-
   const chosenSittings = useMemo(
     () => new Set(pickedSittings.map((one) => sittingKey(one.resource_id, one.slot_id, one.date))),
     [pickedSittings],
@@ -997,8 +983,30 @@ const BookingFormScreen = ({ user }: any) => {
           .join(' and ')}`
         : 'Book';
 
+  /**
+   * Enter walks the form, the way it does on Cash Received, and ends on the Book
+   * button, where one more Enter presses it.
+   *
+   * Built from what is drawn: a box that is not on screen cannot take the focus,
+   * and Enter would simply stop there.
+   */
+  const enterOrder = [
+    'booker_name',
+    'booker_mobile',
+    'stated_adults',
+    'stated_children',
+    form?.booking_type === 'corporate' && !form?.id ? 'bill_name' : null,
+    !isWalkIn && mayGiveRooms && form?.stay_kind !== 'paid' ? 'stay_kind_reason' : null,
+    isWalkIn ? null : 'booking_status',
+    'booking_notes',
+    'booking_save',
+  ].filter(Boolean) as string[];
+
+  const enterTo = (field: string) => (event: any) =>
+    handleInputKeyDown(event, enterOrder[enterOrder.indexOf(field) + 1]);
+
   return (
-    <div>
+    <div className="@container">
       <HelmetTitle title={id ? 'Edit Booking' : 'New Booking'} />
 
       <button
@@ -1010,12 +1018,17 @@ const BookingFormScreen = ({ user }: any) => {
         Back to bookings
       </button>
 
-      <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-4 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-4">
+        {form?.id || times || branches.length > 1 ? (
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-black dark:text-white">
-              {form?.id ? `Booking ${form.booking_no ?? ''}` : 'New Booking'}
-            </h2>
+            {/* Only a booking that exists needs a heading of its own: "New
+                Booking" is already the page's title, directly above this box. */}
+            {form?.id ? (
+              <h2 className="text-lg font-semibold text-black dark:text-white">
+                Booking {form.booking_no ?? ''}
+              </h2>
+            ) : null}
 
             {/* ⚠️ The two times, said here as well as on the list. The
                 commonest question on the telephone is "what time do we have to
@@ -1049,12 +1062,12 @@ const BookingFormScreen = ({ user }: any) => {
             </div>
           ) : null}
         </div>
+        ) : null}
 
         {reading || !form ? (
           <Loader />
         ) : (
           <>
-            <>
               {/* 0 -- WHAT IS BEING SOLD, above everything else, because it
           decides whether the rest of this form is about a room at all.
           It used to sit in section 3, which is drawn only once a room
@@ -1158,92 +1171,23 @@ const BookingFormScreen = ({ user }: any) => {
                       />
                     </div>
 
-                    {/* ⚠️ It came back to this row when the form left the list. It
-                belongs to the grid, and the grid is here now -- on the list's
-                toolbar it would be a control colouring something on another
-                page. It appears with the grid it colours and not before, in
-                the space the button leaves. */}
-                    {availability ? (
-                      <DropdownCommon
-                        id="booking_colour_mode"
-                        name="booking_colour_mode"
-                        label="Colour by"
-                        data={BOOKING_COLOUR_MODES}
-                        value={mode}
-                        onChange={(e: any) => setMode(e.target.value as ColourMode)}
-                      />
-                    ) : null}
                   </>
                 )}
               </div>
+          </>
+        )}
+      </div>
 
-              {/* ⚠️ THE BOX THE HINT USED TO POINT AT. The hint said "name the
-          company on the bill" and there was nowhere to name one, so every
-          corporate booking was refused by the server for a field the form had
-          never had. Said where it applies rather than under the dropdown for
-          ever: a hint that is always there is furniture; one that appears when
-          the answer needs it is read. */}
-              {form.booking_type === 'corporate' ? (
-                <div className="mt-2 max-w-lg">
-                  {/* ⚠️ TYPED, NOT PICKED (owner, 2026-10-26). The company's name
-                      as the bill is to carry it -- saved as bill_name, which is
-                      what the bill prints under "Billed to". */}
-                  <InputElement
-                    id="bill_name"
-                    name="bill_name"
-                    label="Company Name"
-                    placeholder="Company name for the bill"
-                    value={form.bill_name ?? ''}
-                    onChange={(e: any) =>
-                      setForm((prev: any) => ({ ...prev, bill_name: e.target.value }))
-                    }
-                    disabled={Boolean(form.id)}
-                  />
-
-                  <p className="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
-                    {form.id ? (
-                      /* ⚠️ Shown, not editable, and the sentence says where to go
-                         instead. The save on an edit does not carry this field, so a
-                         live picker here would be a control that quietly does nothing
-                         -- worse than no control, because the clerk would believe the
-                         bill had moved. Moving it IS a voucher (§6.4), which is why it
-                         belongs at check-out and not on this form. */
-                      <>
-                        Set when the booking was made. To send the bill somewhere else, move it at
-                        check-out — that is a voucher, so the money follows it.
-                      </>
-                    ) : (
-                      <>
-                        The bill and the other papers are made out in this name.
-                      </>
-                    )}
-                  </p>
-                </div>
-              ) : null}
-
-              {/* Why the room is given. Required on an unpaid kind, for the reason a
-          discount needs one: a room given away that nobody has to explain is
-          the hole a hotel's rooms go down. Written into the booking with who
-          allowed it. */}
-              {!isWalkIn && form.stay_kind && form.stay_kind !== 'paid' ? (
-                <div className="mt-2 max-w-lg">
-                  <InputElement
-                    id="stay_kind_reason"
-                    name="stay_kind_reason"
-                    label={`Why ${form.stay_kind === 'house_use' ? 'house use' : 'complimentary'}`}
-                    placeholder="Owner's guest, inspecting officer, night shift…"
-                    value={form.stay_kind_reason ?? ''}
-                    onChange={set('stay_kind_reason')}
-                    disabled={!mayGiveRooms}
-                  />
-                  <p className="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
-                    The rooms are held and occupied like any other stay, but their rent is never billed —
-                    no line, no voucher, no VAT. Meals and laundry still go on the bill. In occupancy, out of
-                    ADR and RevPAR.
-                  </p>
-                </div>
-              ) : null}
-
+      {reading || !form ? null : (
+        <>
+          {/* ⚠️ TWO COLUMNS ONCE THERE IS ROOM FOR THEM, and the room is read from
+              this page rather than from the screen: with the sidebar open a
+              1500px screen has far less than 1500px here. Picking on the left,
+              what was picked and who it is for on the right -- so the total and
+              the Book button stay in sight however tall the property is, instead
+              of waiting at the bottom under every floor and every hall. */}
+          <div className="grid grid-cols-1 items-start gap-4 @5xl:grid-cols-[minmax(0,1fr)_23rem]">
+            <div className="min-w-0 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-4">
               {/* A walk-in sale has nothing to look up and nothing to pick, so
           the whole middle of this form is skipped. What it needs is a
           name to bill and, afterwards, the meal itself -- which is
@@ -1258,31 +1202,28 @@ const BookingFormScreen = ({ user }: any) => {
 
               {/* 2 -- the answer */}
               {(availability || dayOnly) && !isWalkIn ? (
-                <div className="mt-4">
+                <div>
                   {/* The rooms, only when a stay of nights was asked. A day
                       booking shows the halls alone, with a line saying why. */}
                   {availability ? (
                   <>
-                  <div className="mb-2 flex flex-wrap items-baseline gap-x-3 text-sm">
-                    <span className="font-medium text-black dark:text-white">
+                  <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+                  <div className="min-w-0">
+                  <div className="mb-2 flex flex-wrap items-baseline gap-x-3">
+                    <span className="text-lg font-semibold text-black dark:text-white">
                       {availability.free_count} free
                     </span>
-                    <span className="text-xs text-gray-700 dark:text-gray-100">
-                      {formatDate(availability.check_in_date)} → {formatDate(availability.check_out_date)} ·{' '}
+                    <span className="text-sm text-gray-700 dark:text-gray-100">
+                      {formatDate(availability.check_in_date)} → {formatDate(availability.check_out_date)},{' '}
                       {nights} {nights === 1 ? 'night' : 'nights'}
                     </span>
-                    {/* Said out loud, every time. It is the one thing about this
-                screen that somebody could reasonably get wrong. */}
-                    {/* <span className="text-xs italic text-gray-400">
-              what was free a moment ago — a room is not yours until it is booked
-            </span> */}
                   </div>
 
                   {/* The key. It carries the badge as well as the colour,
               because the colour is the half that does not survive a
               grey printer -- and because FREE and BKD are read faster
               than teal and rose are told apart. */}
-                  <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
                     {legend.map((entry) => (
                       <span key={entry.badge + entry.label} className="flex items-center gap-1.5 text-xs">
                         <span
@@ -1293,6 +1234,21 @@ const BookingFormScreen = ({ user }: any) => {
                         <span className="text-gray-700 dark:text-gray-100">{entry.label}</span>
                       </span>
                     ))}
+                  </div>
+                  </div>
+
+                  {/* It colours the grid, so it stands with the grid and comes and
+                      goes with it. */}
+                  <div className="w-44 shrink-0">
+                    <DropdownCommon
+                      id="booking_colour_mode"
+                      name="booking_colour_mode"
+                      label="Colour by"
+                      data={BOOKING_COLOUR_MODES}
+                      value={mode}
+                      onChange={(e: any) => setMode(e.target.value as ColourMode)}
+                    />
+                  </div>
                   </div>
 
                   {buildings.length ? (
@@ -1419,14 +1375,16 @@ const BookingFormScreen = ({ user }: any) => {
               read that fills it fails quietly for exactly that
               reason. */}
                   {hallRows.length ? (
-                    <div className="mt-4">
-                      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-                        <span className="text-sm font-medium text-black dark:text-white">
-                          Halls and function spaces
-                          <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-300">
+                    <div className={availability ? 'mt-5 border-t border-stroke pt-4 dark:border-strokedark' : ''}>
+                      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+                        <div className="flex flex-wrap items-baseline gap-x-3">
+                          <span className="text-lg font-semibold text-black dark:text-white">
+                            Halls and function spaces
+                          </span>
+                          <span className="text-sm text-gray-700 dark:text-gray-100">
                             sold by the sitting, not by the night
                           </span>
-                        </span>
+                        </div>
 
                         {pickedSittings.length ? (
                           <button
@@ -1439,175 +1397,87 @@ const BookingFormScreen = ({ user }: any) => {
                         ) : null}
                       </div>
 
-                      {/*  + W + ONE CARD PER HALL, drawn the way a BUILDING is drawn --
-                  a heading, then a row per day, then a tile per
-                  sitting. The room grid stands right above this one,
-                  and a table of tick-boxes underneath it was a second
-                  visual language on one screen: the clerk had to learn
-                  twice which colour meant taken.
-
-                  The colours are the room grid's own (layoutPalette),
-                  so teal is free and rose is booked in both halves. */}
-                      <div className="flex flex-wrap items-start gap-4">
-                        {hallCards.map((card: any) => (
-                          <div
-                            key={card.id}
-                            className="rounded border border-stroke dark:border-strokedark"
-                          >
-                            <div className="border-b border-stroke px-3 py-2 dark:border-strokedark">
-                              <div className="flex items-baseline gap-2">
-                                <span className="font-semibold text-black dark:text-white">
-                                  {card.name}
-                                </span>
-                                <span className="text-xs text-gray-300">{card.code}</span>
-                              </div>
-
-                              <div className="text-xs text-gray-500 dark:text-gray-200">
-                                {card.capacity ? `${card.capacity} seats` : 'no seating set'}
-                                {/* \u00a72.8: on a hall the rent is the price of ONE
-                            sitting. The room card beside it means the
-                            other thing by "rent". */}
-                                {card.rent === null
-                                  ? ' · no rate set'
-                                  : ` · ${money(card.rent)} a sitting`}
-                              </div>
-                            </div>
-
-                            <div className="px-3 py-2">
-                              {card.days.map((day: any) => (
-                                <div key={day.date} className="flex items-center gap-2 py-1">
-                                  {/* The day label sits where a floor number
-                              sits on the room grid, for the same
-                              reason: the eye runs down it. */}
-                                  <span className="w-16 shrink-0 text-[0.8rem] text-gray-500 dark:text-gray-200 mr-1">
-                                    {formatDate(day.date)}
-                                  </span>
-
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {day.sittings.map((cell: any) => {
-                                      const on = sittingKey(card.id, cell.slot_id, day.date);
-                                      const isChosen = chosenSittings.has(on);
-                                      const look = lookOfSitting(cell, isChosen);
-
-                                      const dead =
-                                        cell.state !== 'free'
-                                        && !isChosen
-                                        && !ownSittings.includes(on);
-
-                                      return (
-                                        <button
-                                          key={cell.slot_id}
-                                          type="button"
-                                          disabled={dead}
-                                          onClick={() => toggleSitting(card, cell, day.date)}
-                                          title={
-                                            cell.blocked_reason
-                                            || cell.taken_by
-                                            || cell.label
-                                            || cell.slot
-                                          }
-                                          className={`flex w-28 flex-col items-start gap-0.5 rounded border px-2 py-1.5 text-left ${look.className} ${dead ? 'cursor-not-allowed opacity-60' : ''
-                                            } ${isChosen ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-boxdark' : ''}`}
-                                        >
-                                          <span className="flex w-full items-baseline justify-between gap-1">
-                                            <span className="text-[0.8rem] font-semibold leading-none">
-                                              {cell.slot}
-                                            </span>
-                                            {/* Beside the colour, never
-                                        instead of it -- the same rule
-                                        the room tiles follow. */}
-                                            <span className="text-[0.5rem] font-bold uppercase leading-none opacity-70">
-                                              {look.badge}
-                                            </span>
-                                          </span>
-
-                                          {/* The reason is a sentence, not a
-                                      colour: "roof leak" and "held for
-                                      the whole day" are different
-                                      problems. */}
-                                          <span className="text-[0.55rem] leading-tight opacity-80">
-                                            {cell.blocked_reason || cell.taken_by || ''}
-                                          </span>
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      <HallCards
+                        cards={hallCards}
+                        isChosen={(hall, slot, on) => chosenSittings.has(sittingKey(hall, slot, on))}
+                        isOurs={(hall, slot, on) => ownSittings.includes(sittingKey(hall, slot, on))}
+                        onToggle={toggleSitting}
+                      />
                     </div>
                   ) : null}
                 </div>
               ) : (
-                <p className="mt-4 rounded border border-dashed border-stroke p-6 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
-                  Pick the dates, then <strong>See what is free</strong>.
+                <p className="rounded border border-dashed border-stroke p-10 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
+                  Choose the dates and press <strong>Search</strong> to see what is free.
                 </p>
               )}
+            </div>
 
-              {/* 3 -- who it is for. Drawn only once there is something to book,
-          because asking for a guest's name before there is a room to put
-          them in is a form in the wrong order. */}
-              {anyPicked || isWalkIn ? (
-                <>
-                  <div className="mt-4 max-w-6xl rounded border border-stroke p-3 dark:border-strokedark">
-                    <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-                      <span className="text-sm font-medium text-black dark:text-white">
-                        {isWalkIn
-                          ? 'Walk-in sale'
-                          : [
-                            ...pickedRooms.map((room) => room.display_name),
-                            // Named by room and bed together: "GDN / 301 bed 2"
-                            // is what the clerk says out loud, and "bed 2" alone
-                            // means nothing across four dormitories.
-                            ...pickedBeds.map(({ seat, room }) => `${room.display_name} bed ${seat.code}`),
-                          ].join(', ')}
-                      </span>
-                      <span className="text-sm">
-                        {isWalkIn ? (
-                          // No rooms and no nights, so there is nothing to
-                          // price here. What it comes to is decided on the
-                          // bill, one charge at a time.
-                          <span className="text-gray-500 dark:text-gray-400">
-                            Nothing held · priced on the bill
-                          </span>
-                        ) : (
-                          <>
-                            <span className="text-gray-500 dark:text-gray-400">
-                              {anyPicked} × {nights} {nights === 1 ? 'night' : 'nights'} ·{' '}
+            {/* ⚠️ THE RAIL'S HEIGHT IS CAPPED AND ONLY ITS MIDDLE SCROLLS. Sticky
+                and taller than a laptop screen, its Book button would be
+                unreachable until the page had been scrolled past every floor.
+                top-24 clears the sticky header. */}
+            <aside className="min-w-0 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark @5xl:sticky @5xl:top-24 @5xl:flex @5xl:max-h-[calc(100vh-7.5rem)] @5xl:flex-col">
+              <h3 className="border-b border-stroke px-4 py-3 text-base font-semibold text-black dark:border-strokedark dark:text-white">
+                Booking summary
+              </h3>
+
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+                {/* 3 -- who it is for. Drawn only once there is something to book,
+                    because asking for a guest's name before there is a room to
+                    put them in is a form in the wrong order. */}
+                {anyPicked || isWalkIn ? (
+                  <>
+                    {isWalkIn ? (
+                      <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">
+                        Nothing is held. The sale is priced on the bill.
+                      </p>
+                    ) : (
+                      <ul className="mb-3 divide-y divide-stroke text-sm dark:divide-strokedark">
+                        {pickedRooms.map((room) => (
+                          <li key={`room-${room.id}`} className="flex items-baseline justify-between gap-3 py-1.5">
+                            <span className="min-w-0 text-black dark:text-white">{room.display_name}</span>
+                            <span className="shrink-0 text-gray-600 dark:text-gray-300">
+                              {money(Number(room.rent ?? 0) * nights)}
                             </span>
-                            {form.stay_kind && form.stay_kind !== 'paid' ? (
-                              // The tariff, struck through, and the word beside it:
-                              // what the rooms would have earned, and that they will
-                              // not.
-                              <>
-                                <span className="text-gray-400 line-through">{money(total)}</span>{' '}
-                                <span className="font-semibold text-amber-700 dark:text-amber-300">
-                                  not charged
-                                </span>
-                              </>
-                            ) : (
-                              <span className="font-semibold text-black dark:text-white">
-                                {money(total)}
+                          </li>
+                        ))}
+                        {/* Named by room and bed together: "GDN / 301 bed 2" is what
+                            the clerk says out loud, and "bed 2" alone means nothing
+                            across four dormitories. */}
+                        {pickedBeds.map(({ seat, room }) => (
+                          <li key={`bed-${seat.id}`} className="flex items-baseline justify-between gap-3 py-1.5">
+                            <span className="min-w-0 text-black dark:text-white">
+                              {room.display_name} bed {seat.code}
+                            </span>
+                            <span className="shrink-0 text-gray-600 dark:text-gray-300">
+                              {money(Number(seat.rent ?? 0) * nights)}
+                            </span>
+                          </li>
+                        ))}
+                        {/* Once each: a sitting is never multiplied by the nights. */}
+                        {pickedSittings.map((one) => (
+                          <li
+                            key={sittingKey(one.resource_id, one.slot_id, one.date)}
+                            className="flex items-baseline justify-between gap-3 py-1.5"
+                          >
+                            <span className="min-w-0 text-black dark:text-white">
+                              {one.hall}, {one.sitting}
+                              <span className="block text-xs text-gray-500 dark:text-gray-400">
+                                {formatDate(one.date)}
                               </span>
-                            )}
-                          </>
-                        )}
-                      </span>
-                    </div>
+                            </span>
+                            <span className="shrink-0 text-gray-600 dark:text-gray-300">{money(one.rent)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
 
-                    {/* ⚠️ A NAME IS NOT THE SAME WIDTH AS A COUNT OF CHILDREN.
-                Four equal columns gave "0" a box as wide as the name on
-                the telephone, which is what made this block read as
-                scattered parts. Six columns, and each field takes what
-                goes in it: name and mobile two apiece, the two counts
-                one each. */}
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
-                      <div className="xl:col-span-2">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="col-span-2">
                         <InputElement
                           id="booker_name"
+                          onKeyDown={enterTo('booker_name')}
                           name="booker_name"
                           label="Who is booking"
                           placeholder="The name on the telephone"
@@ -1616,9 +1486,10 @@ const BookingFormScreen = ({ user }: any) => {
                           onChange={set('booker_name')}
                         />
                       </div>
-                      <div className="xl:col-span-2">
+                      <div className="col-span-2">
                         <InputElement
                           id="booker_mobile"
+                          onKeyDown={enterTo('booker_mobile')}
                           name="booker_mobile"
                           label="Mobile"
                           placeholder="01711000000"
@@ -1663,6 +1534,7 @@ const BookingFormScreen = ({ user }: any) => {
                       </div>
                       <InputElement
                         id="stated_adults"
+                        onKeyDown={enterTo('stated_adults')}
                         name="stated_adults"
                         label="Adults"
                         type="number"
@@ -1673,6 +1545,7 @@ const BookingFormScreen = ({ user }: any) => {
                       />
                       <InputElement
                         id="stated_children"
+                        onKeyDown={enterTo('stated_children')}
                         name="stated_children"
                         label="Children"
                         type="number"
@@ -1681,17 +1554,76 @@ const BookingFormScreen = ({ user }: any) => {
                         value={String(form.stated_children ?? 0)}
                         onChange={set('stated_children')}
                       />
-                    </div>
+                      {/* The name the bill carries, and why a room is free: both are
+                          about who pays, so they stand with the rest of the party. */}
+                      {form.booking_type === 'corporate' ? (
+                        <div className="col-span-2">
+                  {/* ⚠️ TYPED, NOT PICKED (owner, 2026-10-26). The company's name
+                      as the bill is to carry it -- saved as bill_name, which is
+                      what the bill prints under "Billed to". */}
+                  <InputElement
+                    id="bill_name"
+                    onKeyDown={enterTo('bill_name')}
+                    name="bill_name"
+                    label="Company Name"
+                    placeholder="Company name for the bill"
+                    value={form.bill_name ?? ''}
+                    onChange={(e: any) =>
+                      setForm((prev: any) => ({ ...prev, bill_name: e.target.value }))
+                    }
+                    disabled={Boolean(form.id)}
+                  />
 
-                    <div className="mt-3 grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-6">
+                  <p className="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                    {form.id ? (
+                      /* ⚠️ Shown, not editable, and the sentence says where to go
+                         instead. The save on an edit does not carry this field, so a
+                         live picker here would be a control that quietly does nothing
+                         -- worse than no control, because the clerk would believe the
+                         bill had moved. Moving it IS a voucher (§6.4), which is why it
+                         belongs at check-out and not on this form. */
+                      <>
+                        Set when the booking was made. To send the bill somewhere else, move it at
+                        check-out — that is a voucher, so the money follows it.
+                      </>
+                    ) : (
+                      <>
+                        The bill and the other papers are made out in this name.
+                      </>
+                    )}
+                  </p>
+                </div>
+                      ) : null}
+
+                      {!isWalkIn && form.stay_kind && form.stay_kind !== 'paid' ? (
+                        <div className="col-span-2">
+                  <InputElement
+                    id="stay_kind_reason"
+                    onKeyDown={enterTo('stay_kind_reason')}
+                    name="stay_kind_reason"
+                    label={`Why ${form.stay_kind === 'house_use' ? 'house use' : 'complimentary'}`}
+                    placeholder="Owner's guest, inspecting officer, night shift…"
+                    value={form.stay_kind_reason ?? ''}
+                    onChange={set('stay_kind_reason')}
+                    disabled={!mayGiveRooms}
+                  />
+                  <p className="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                    The rooms are held and occupied like any other stay, but their rent is never billed —
+                    no line, no voucher, no VAT. Meals and laundry still go on the bill. In occupancy, out of
+                    ADR and RevPAR.
+                  </p>
+                </div>
+                      ) : null}
+
                       {/* ⚠️ Not on a walk-in. A hold keeps a bed off sale until
                         a deadline; this sale holds no bed, so the choice
                         would mean nothing and the sweep would expire a meal
                         that has been eaten. The server forces it confirmed. */}
                       {!isWalkIn ? (
-                        <div className="xl:col-span-2">
+                        <div className="col-span-2">
                           <DropdownCommon
                             id="booking_status"
+                            onKeyDown={enterTo('booking_status')}
                             name="booking_status"
                             label="Confirmed or held"
                             data={STATUS_OPTIONS}
@@ -1701,9 +1633,10 @@ const BookingFormScreen = ({ user }: any) => {
                           />
                         </div>
                       ) : null}
-                      <div className={isWalkIn ? 'sm:col-span-2 xl:col-span-6' : 'sm:col-span-2 xl:col-span-4'}>
+                      <div className="col-span-2">
                         <InputElement
                           id="booking_notes"
+                          onKeyDown={enterTo('booking_notes')}
                           name="notes"
                           label="Notes"
                           placeholder="Late arrival, sea-facing asked for…"
@@ -1712,39 +1645,61 @@ const BookingFormScreen = ({ user }: any) => {
                         />
                       </div>
                     </div>
-                  </div>
 
-                  <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
-                    Guest names, NIDs and which bed each takes are recorded when they arrive, not
-                    now. All the rooms are booked together — if one of them has gone in the
-                    meantime, none is booked and you are told which.
+                    <p className="mt-3 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                      Guest names, NIDs and beds are recorded on arrival. All the rooms are booked
+                      together: if one has gone in the meantime, none is booked and you are told which.
+                    </p>
+                  </>
+                ) : (
+                  <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                    Rooms, beds and sittings you pick appear here.
                   </p>
-                </>
-              ) : null}
-            </>
+                )}
+              </div>
 
-            {/* ⚠️ At the bottom, where the form ends, rather than at the top.
-                Reading down and then having to go back up to press Save is what
-                a panel on a list made people do; a page can put the button
-                after the last question. */}
-            <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-stroke pt-4 dark:border-strokedark">
-              <ButtonLoading
-                onClick={save}
-                buttonLoading={saving}
-                label={saveLabel}
-                variant="primary"
-                icon={<FiSave size={16} />}
-              />
-              <ButtonLoading
-                onClick={() => navigate(backTo())}
-                buttonLoading={false}
-                label="Cancel"
-                icon={<FiX size={16} />}
-              />
-            </div>
-          </>
-        )}
-      </div>
+              {/* ⚠️ Save lives here, under the total it commits to, and never
+                  scrolls away with the fields above it. */}
+              <div className="border-t border-stroke px-4 py-3 dark:border-strokedark">
+                {anyPicked && !isWalkIn ? (
+                  <div className="mb-3 flex items-baseline justify-between gap-3">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Total</span>
+                    {form.stay_kind && form.stay_kind !== 'paid' ? (
+                      // The tariff, struck through, and the word beside it: what
+                      // the rooms would have earned, and that they will not.
+                      <span>
+                        <span className="text-sm text-gray-400 line-through">{money(total)}</span>{' '}
+                        <span className="font-semibold text-amber-700 dark:text-amber-300">not charged</span>
+                      </span>
+                    ) : (
+                      <span className="text-xl font-semibold text-black dark:text-white">{money(total)}</span>
+                    )}
+                  </div>
+                ) : null}
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <ButtonLoading
+                    id="booking_save"
+                    onClick={save}
+                    buttonLoading={saving}
+                    label={saveLabel}
+                    variant="primary"
+                    icon={<FiSave size={16} />}
+                    className="basis-full"
+                  />
+                  <ButtonLoading
+                    onClick={() => navigate(backTo())}
+                    buttonLoading={false}
+                    label="Cancel"
+                    icon={<FiX size={16} />}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+            </aside>
+          </div>
+        </>
+      )}
 
       <GuestProfileDrawer guest={profileOf} branchId={branchId} onClose={() => setProfileOf(null)} />
 
