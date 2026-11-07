@@ -87,9 +87,16 @@ jobs:
           exit 1
 
       # 7) The build output never reaches this runner, so on failure fetch the
-      #    tail of the server log - otherwise there is nothing to go on.
-      - name: Server build log
+      #    tail of the server log - otherwise there is nothing to go on. The
+      #    login-shell probe answers the one thing the script cannot see: where
+      #    Node actually is, or that the server has none.
+      - name: Server diagnostics
         if: failure()
         run: |
-          ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ secrets.REACT_MAIN_HOST }}" \
-            "tail -n 60 'deploy/${{ matrix.site }}.log'" || true
+          SSH="${{ secrets.REACT_MAIN_SSH_USER }}@${{ secrets.REACT_MAIN_HOST }}"
+          echo "--- node/npm as a login shell sees them ---"
+          ssh "$SSH" 'bash -lc "command -v node npm || echo NONE-IN-LOGIN-SHELL; node -v 2>/dev/null"' || true
+          echo "--- candidate locations ---"
+          ssh "$SSH" 'ls -d ~/.nvm/versions/node/*/bin /usr/local/bin/node /usr/bin/node /opt/node*/bin 2>/dev/null || echo "none of the usual spots"' || true
+          echo "--- build log ---"
+          ssh "$SSH" "tail -n 60 'deploy/${{ matrix.site }}.log'" || true
