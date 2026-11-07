@@ -1,9 +1,13 @@
 name: Staging React App CI/CD Pipeline
 
-# The build no longer runs here. This workflow ships the source to the server
-# and pokes deploy/script.sh, which builds and publishes there. The trigger
-# returns at once, so a dropped ssh connection can no longer kill a build
-# half-way; the wait step below is what decides whether the deploy worked.
+# Builds on the runner, not on the target server: the server has 1.8 GB of RAM
+# and is already into swap, where a vite build of this app would be OOM-killed -
+# and the kernel would likely take MySQL with it, dropping every site on the
+# box. The runner has memory to spare, so the build belongs here.
+#
+# Staging only. cashbookbdaccountseworld is a live site and is deployed by
+# prod-multi-site.yml from react-main; it must not be published from this
+# branch.
 
 on:
   push:
@@ -22,7 +26,6 @@ jobs:
         site:
           [
             cashbookbdaccountsstaging,
-            cashbookbdaccountseworld
           ]
 
     steps:
@@ -30,7 +33,57 @@ jobs:
       # 1) Checkout
       - uses: actions/checkout@v4
 
-      # 2) Setup SSH
+      # 2) Setup Node
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # 3) Install deps
+      - run: npm ci
+
+      # 4) Resolve API URL (No Secret - No Masking - Always Works)
+      - name: Resolve API URL
+        id: api
+        run: |
+          case "${{ matrix.site }}" in
+            cashbookbdaccountsstaging) URL="https://staging.cashbookbd.com" ;;
+            *) echo "Unknown site"; exit 1 ;;
+          esac
+
+          echo "url=$URL" >> $GITHUB_OUTPUT
+
+      # 5) Build
+      - name: Build
+        env:
+          VITE_SITE_NAME: ${{ matrix.site }}
+          VITE_API_URL: ${{ steps.api.outputs.url }}
+        run: npm run build -- --mode production
+
+      # 6) Upload artifact
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.site }}
+          path: dist
+
+      # 7) Resolve Host
+      - name: Resolve host
+        id: tgt
+        run: echo "host=${{ secrets.REACT_MAIN_HOST }}" >> $GITHUB_OUTPUT
+
+      # 8) Resolve Deploy Path. `site` is the public host of what we deploy,
+      #    which is what the smoke test has to ask.
+      - name: Resolve deploy path
+        id: path
+        run: |
+          case "${{ matrix.site }}" in
+            cashbookbdaccountsstaging)
+              echo "dir=/home/cashbookbdaccountsstaging/htdocs/accounts.staging.cashbookbd.com"
+              echo "site=accounts.staging.cashbookbd.com" ;;
+            *) echo "Unknown site"; exit 1 ;;
+          esac >> $GITHUB_OUTPUT
+
+      # 9) Setup SSH
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -38,65 +91,29 @@ jobs:
           chmod 600 ~/.ssh/key
           echo -e "Host *\n  IdentityFile ~/.ssh/key\n  StrictHostKeyChecking=accept-new" > ~/.ssh/config
 
-      # 3) Resolve the public host, to confirm later that it serves this commit.
-      #    The deploy dir and API URL live in deploy/script.sh, next to the build.
-      - name: Resolve site host
-        id: site
-        run: |
-          case "${{ matrix.site }}" in
-            cashbookbdaccountsstaging) echo "host=accounts.staging.cashbookbd.com" ;;
-            cashbookbdaccountseworld) echo "host=accounts.eworld.cashbookbd.com" ;;
-            *) echo "Unknown site"; exit 1 ;;
-          esac >> $GITHUB_OUTPUT
+      # 10) Download artifact
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ matrix.site }}
+          path: dist
 
-      # 4) Ship the source. Its own directory per site, so the two matrix jobs
-      #    cannot build over each other. node_modules and dist are rebuilt on
-      #    the server and .git is not needed there.
-      - name: Upload source
+      # 11) Deploy
+      - name: Deploy
         run: |
-          SSH="${{ secrets.REACT_MAIN_SSH_USER }}@${{ secrets.REACT_MAIN_HOST }}"
-          # rsync creates only the last component of the destination, so the
-          # parents have to exist first.
-          ssh "$SSH" "mkdir -p 'deploy/src/${{ matrix.site }}'"
-          rsync -az --delete \
-            --exclude .git --exclude node_modules --exclude dist \
+          rsync -avz --delete \
             -e "ssh -p 22" \
-            ./ "$SSH:deploy/src/${{ matrix.site }}/"
+            dist/ \
+            "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}:${{ steps.path.outputs.dir }}/"
 
-      # 5) Build (on the server). Returns as soon as the build is accepted.
-      #    Run through `sh` so a lost +x bit on the checkout cannot break this.
-      - name: Trigger build
-        run: |
-          ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ secrets.REACT_MAIN_HOST }}" \
-            "sh deploy/src/${{ matrix.site }}/deploy/script.sh '${{ matrix.site }}' '${{ github.sha }}'"
+      # 12) Reload nginx
+      - name: Reload nginx
+        run: ssh "${{ secrets.REACT_MAIN_SSH_USER }}@${{ steps.tgt.outputs.host }}" \
+               "systemctl reload nginx"
 
-      # 6) Wait for the live site to serve this commit. The build writes its sha
-      #    into dist last, so this is only true once it finished and published.
-      - name: Wait for the deploy to go live
+      # 13) Smoke Test. This asks the site that was just deployed; it used to
+      #     curl the API host instead, which answers 200 whether or not the
+      #     deploy worked.
+      - name: Smoke Test
         run: |
-          URL="https://${{ steps.site.outputs.host }}/build-sha.txt"
-          for _ in $(seq 1 60); do
-            GOT=$(curl -fsS --max-time 10 "$URL?t=$(date +%s)" | tr -d '[:space:]' || true)
-            if [ "$GOT" = "${{ github.sha }}" ]; then
-              echo "live: ${{ matrix.site }} is serving ${{ github.sha }}"
-              exit 0
-            fi
-            sleep 15
-          done
-          echo "::error::${{ matrix.site }} did not serve ${{ github.sha }} within 15 minutes"
-          exit 1
-
-      # 7) The build output never reaches this runner, so on failure fetch the
-      #    tail of the server log - otherwise there is nothing to go on. The
-      #    login-shell probe answers the one thing the script cannot see: where
-      #    Node actually is, or that the server has none.
-      - name: Server diagnostics
-        if: failure()
-        run: |
-          SSH="${{ secrets.REACT_MAIN_SSH_USER }}@${{ secrets.REACT_MAIN_HOST }}"
-          echo "--- node/npm as a login shell sees them ---"
-          ssh "$SSH" 'bash -lc "command -v node npm || echo NONE-IN-LOGIN-SHELL; node -v 2>/dev/null"' || true
-          echo "--- candidate locations ---"
-          ssh "$SSH" 'ls -d ~/.nvm/versions/node/*/bin /usr/local/bin/node /usr/bin/node /opt/node*/bin 2>/dev/null || echo "none of the usual spots"' || true
-          echo "--- build log ---"
-          ssh "$SSH" "tail -n 60 'deploy/${{ matrix.site }}.log'" || true
+          curl -fsS -o /dev/null -w '%{http_code}\n' \
+            "https://${{ steps.path.outputs.site }}/" | grep -qx 200
