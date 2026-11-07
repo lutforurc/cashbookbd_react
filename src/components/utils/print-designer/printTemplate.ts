@@ -4727,6 +4727,62 @@ const retargetLedgerProductColumn = (bands: Band[]): void => {
   });
 };
 
+/** The fields that print a ledger row's product block, whichever form they take. */
+const LEDGER_PRODUCT_FIELDS = new Set([
+  'product_details_lines',
+  'product_details_flat',
+  'products',
+]);
+
+/** Whether a ledger column prints the voucher's product lines at all. */
+const writesLedgerProducts = (column: TableColumn): boolean => {
+  if (LEDGER_PRODUCT_FIELDS.has(String(column.field))) return true;
+
+  if (column.field === 'product_details_format') {
+    return composedPattern(column).includes('{products}');
+  }
+
+  // A pattern saved on any other composed column can name the block's token
+  // too -- an `own_format` of "{coa_name} / {products}" is a product column,
+  // whatever the field is called.
+  return ['own_format', 'description_format', 'product_flat'].includes(
+    String(column.field),
+  ) && composedPattern(column).includes('{products}');
+};
+
+/**
+ * A ledger layout whose Product & Details column prints only the account.
+ *
+ * ⚠️ WHY A SAVED LAYOUT IS REWRITTEN. A tenant who met the blank Product &
+ * Details cell above could repair it in the designer by pointing the column at
+ * "Account" -- or by cutting its pattern down to `{coa_name}` -- because those
+ * were the only ways to get anything onto the paper. Both leave a heading that
+ * promises Product & Details over a column holding the customer's name, while
+ * the figures beside it are still one per product line. The heading is the
+ * paper's own promise, so the column is put back on the voucher's block: the
+ * account, a product per line, the note.
+ *
+ * ⚠️ EXACT LABEL ONLY. The standard ledger presets have always labelled this
+ * column "Product & Details"; a layout that keeps a separate Account column of
+ * its own is left exactly as its tenant arranged it, and a tenant who renamed
+ * the column keeps the name they chose.
+ */
+const restoreLedgerProductColumn = (bands: Band[]): void => {
+  bands.forEach((item) => {
+    if (item.type !== 'table') return;
+
+    item.columns = item.columns.map((column) => {
+      if (String(column.label ?? '').trim().toLowerCase() !== 'product & details') {
+        return column;
+      }
+
+      if (writesLedgerProducts(column)) return column;
+
+      return { ...column, field: 'product_details_format', pattern: undefined };
+    });
+  });
+};
+
 /**
  * A bill layout saved while the second line was the room type's alone.
  *
@@ -4932,7 +4988,10 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
   // Safe to do in place: every band above was built here out of the saved JSON,
   // so nothing else is holding one.
   if (docType === 'sales_order') tokenizeOrderCaptions(bands);
-  if (isLedger(docType)) retargetLedgerProductColumn(bands);
+  if (isLedger(docType)) {
+    retargetLedgerProductColumn(bands);
+    restoreLedgerProductColumn(bands);
+  }
   if (docType === 'hotel_bill') {
     retargetBillSubLine(bands);
     addBillAccountLine(bands);

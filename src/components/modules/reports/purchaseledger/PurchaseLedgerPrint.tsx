@@ -31,6 +31,18 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return out;
 };
 
+/**
+ * The rule under one product line on the printed sheet -- the screen's rule in
+ * the paper's own ink. -mx-2/px-2 runs it to the cell edges, since the print
+ * table's cells are px-2, and border-gray-900 is the colour of every other rule
+ * on this sheet.
+ */
+const printDetailLineClass = '-mx-2 border-b border-gray-900 px-2';
+
+/** ...and the row's last line is left to the cell's own border to close. */
+const printDetailRule = (hasNote: boolean, index: number, length: number) =>
+  index < length - 1 || hasNote ? printDetailLineClass : '';
+
 const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
   (
     {
@@ -239,7 +251,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                       
                                         <div
                                           key={detail?.id ?? i}
-                                          className="leading-normal whitespace-nowrap"
+                                          className={`leading-normal whitespace-nowrap ${printDetailRule(Boolean(row?.purchase_master?.notes), i, details.length)}`}
                                           style={{ fontSize: getProductFs(label, fs) }}
                                         >
                                           {label}
@@ -259,64 +271,100 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {showProductDetails && details.length
-                                ? details.map((detail: any, i: number) => {
-                                  const label = ledgerProductLabel(detail, String(stockReportType) === "1");
-
-                                  return (
+                              {showProductDetails && details.length ? (
+                                <>
+                                  {/* The account line the product cell draws above
+                                      its products, stood in for here so the rules
+                                      below it land level across the row. */}
+                                  {coaName ? (
                                     <div
-                                      key={detail?.id ?? i}
-                                      className="leading-normal"
-                                      style={{ fontSize: getProductFs(label, fs) }}
+                                      className="leading-normal invisible select-none"
+                                      style={{ fontSize: fs }}
+                                      aria-hidden="true"
                                     >
-                                      { thousandSeparator(detail?.quantity ?? 0) }
+                                      &nbsp;
                                     </div>
-                                  );
-                                })
-                                : "-"}
+                                  ) : null}
+                                  {details.map((detail: any, i: number) => {
+                                    const label = ledgerProductLabel(detail, String(stockReportType) === "1");
+
+                                    return (
+                                      <div
+                                        key={detail?.id ?? i}
+                                        className={`leading-normal ${printDetailRule(Boolean(row?.purchase_master?.notes), i, details.length)}`}
+                                        style={{ fontSize: getProductFs(label, fs) }}
+                                      >
+                                        { thousandSeparator(detail?.quantity ?? 0) }
+                                      </div>
+                                    );
+                                  })}
+                                </>
+                              ) : "-"}
                             </td>
                             <td
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {showProductDetails && details.length
-                                ? details.map((detail: any, i: number) => {
-                                  const label = ledgerProductLabel(detail, String(stockReportType) === "1");
-
-                                  return (
+                              {showProductDetails && details.length ? (
+                                <>
+                                  {coaName ? (
                                     <div
-                                      key={detail?.id ?? i}
-                                      className="leading-normal"
-                                      style={{ fontSize: getProductFs(label, fs) }}
+                                      className="leading-normal invisible select-none"
+                                      style={{ fontSize: fs }}
+                                      aria-hidden="true"
                                     >
-                                      {thousandSeparator(
-                                        (detail?.purchase_price || 0) )}
+                                      &nbsp;
                                     </div>
-                                  );
-                                })
-                                : "-"}
+                                  ) : null}
+                                  {details.map((detail: any, i: number) => {
+                                    const label = ledgerProductLabel(detail, String(stockReportType) === "1");
+
+                                    return (
+                                      <div
+                                        key={detail?.id ?? i}
+                                        className={`leading-normal ${printDetailRule(Boolean(row?.purchase_master?.notes), i, details.length)}`}
+                                        style={{ fontSize: getProductFs(label, fs) }}
+                                      >
+                                        {thousandSeparator(
+                                          (detail?.purchase_price || 0) )}
+                                      </div>
+                                    );
+                                  })}
+                                </>
+                              ) : "-"}
                             </td>
 
                             <td
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {showProductDetails && details.length
-                                ? details.map((detail: any, i: number) => {
-                                  const label = ledgerProductLabel(detail, String(stockReportType) === "1");
-
-                                  return (
+                              {showProductDetails && details.length ? (
+                                <>
+                                  {coaName ? (
                                     <div
-                                      key={detail?.id ?? i}
-                                      className="leading-normal"
-                                      style={{ fontSize: getProductFs(label, fs) }}
+                                      className="leading-normal invisible select-none"
+                                      style={{ fontSize: fs }}
+                                      aria-hidden="true"
                                     >
-                                      {thousandSeparator(
-                                        (detail?.purchase_price || 0) * (detail?.quantity || 0))}
+                                      &nbsp;
                                     </div>
-                                  );
-                                })
-                                : (invoiceTotal ? thousandSeparator(invoiceTotal) : "-")}
+                                  ) : null}
+                                  {details.map((detail: any, i: number) => {
+                                    const label = ledgerProductLabel(detail, String(stockReportType) === "1");
+
+                                    return (
+                                      <div
+                                        key={detail?.id ?? i}
+                                        className={`leading-normal ${printDetailRule(Boolean(row?.purchase_master?.notes), i, details.length)}`}
+                                        style={{ fontSize: getProductFs(label, fs) }}
+                                      >
+                                        {thousandSeparator(
+                                          (detail?.purchase_price || 0) * (detail?.quantity || 0))}
+                                      </div>
+                                    );
+                                  })}
+                                </>
+                              ) : (invoiceTotal ? thousandSeparator(invoiceTotal) : "-")}
                             </td>
 
                             <td

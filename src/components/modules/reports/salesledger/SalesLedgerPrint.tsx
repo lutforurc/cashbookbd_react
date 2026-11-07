@@ -31,6 +31,20 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return out;
 };
 
+/**
+ * The rule under one product line on the printed sheet -- the screen's rule in
+ * the paper's own ink.
+ *
+ * ⚠️ -mx-2/px-2 IS WHAT MAKES IT CROSS THE CELL: the print table's cells carry
+ * px-2, so a plain `border-b` would stop an 8px gutter short on each side.
+ * `border-gray-900` is the colour every other rule on this sheet is drawn in.
+ */
+const printDetailLineClass = '-mx-2 border-b border-gray-900 px-2';
+
+/** ...and the row's last line is left to the cell's own border to close. */
+const printDetailRule = (hasNote: boolean, index: number, length: number) =>
+  index < length - 1 || hasNote ? printDetailLineClass : '';
+
 const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
   (
     {
@@ -326,7 +340,7 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                     return (
                                       <div
                                         key={detail?.id ?? i}
-                                        className="whitespace-nowrap font-semibold"
+                                        className={`whitespace-nowrap font-semibold ${printDetailRule(Boolean(notes), i, details.length)}`}
                                         style={{
                                           fontSize: getProductFs(label, fs),
                                           lineHeight: getCompactLineHeight(
@@ -356,13 +370,26 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {showProductDetails && details?.length
-                                ? details.map((detail: any, i: number) => {
+                              {showProductDetails && details?.length ? (
+                                <>
+                                  {/* The account line the product cell draws above
+                                      its products, stood in for here so the rules
+                                      below it land level across the row. */}
+                                  {coaName ? (
+                                    <div
+                                      className="invisible select-none"
+                                      style={{ fontSize: fs, lineHeight: getCompactLineHeight(fs) }}
+                                      aria-hidden="true"
+                                    >
+                                      &nbsp;
+                                    </div>
+                                  ) : null}
+                                  {details.map((detail: any, i: number) => {
                                     const label = makeLabel(detail);
                                     return (
                                       <div
                                         key={detail?.id ?? i}
-                                        className="leading-normal"
+                                        className={`leading-normal ${printDetailRule(Boolean(notes), i, details.length)}`}
                                         style={{
                                           fontSize: getProductFs(label, fs),
                                           lineHeight: getCompactLineHeight(
@@ -374,21 +401,32 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                         {/* {detail?.product?.unit?.name ?? ""} */}
                                       </div>
                                     );
-                                  })
-                                : "-"}
+                                  })}
+                                </>
+                              ) : "-"}
                             </td>
 
                             <td
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {showProductDetails && details?.length
-                                ? details.map((detail: any, i: number) => {
+                              {showProductDetails && details?.length ? (
+                                <>
+                                  {coaName ? (
+                                    <div
+                                      className="invisible select-none"
+                                      style={{ fontSize: fs, lineHeight: getCompactLineHeight(fs) }}
+                                      aria-hidden="true"
+                                    >
+                                      &nbsp;
+                                    </div>
+                                  ) : null}
+                                  {details.map((detail: any, i: number) => {
                                     const label = makeLabel(detail);
                                     return (
                                       <div
                                         key={detail?.id ?? i}
-                                        className="leading-normal"
+                                        className={`leading-normal ${printDetailRule(Boolean(notes), i, details.length)}`}
                                         style={{
                                           fontSize: getProductFs(label, fs),
                                           lineHeight: getCompactLineHeight(
@@ -399,21 +437,32 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                         {detail?.sales_price ? thousandSeparator(detail?.sales_price) : "-"}
                                       </div>
                                     );
-                                  })
-                                : "-"}
+                                  })}
+                                </>
+                              ) : "-"}
                             </td>
 
                             <td
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-right align-top"
                             >
-                              {showProductDetails && details?.length
-                                ? details.map((detail: any, i: number) => {
+                              {showProductDetails && details?.length ? (
+                                <>
+                                  {coaName ? (
+                                    <div
+                                      className="invisible select-none"
+                                      style={{ fontSize: fs, lineHeight: getCompactLineHeight(fs) }}
+                                      aria-hidden="true"
+                                    >
+                                      &nbsp;
+                                    </div>
+                                  ) : null}
+                                  {details.map((detail: any, i: number) => {
                                     const label = makeLabel(detail);
                                     return (
                                       <div
                                         key={detail?.id ?? i}
-                                        className="leading-normal"
+                                        className={`leading-normal ${printDetailRule(Boolean(notes), i, details.length)}`}
                                         style={{
                                           fontSize: getProductFs(label, fs),
                                           lineHeight: getCompactLineHeight(
@@ -430,8 +479,9 @@ const SalesLedgerPrint = forwardRef<HTMLDivElement, Props>(
                                           : "-"}
                                       </div>
                                     );
-                                  })
-                                : (total ? thousandSeparator(total) : "-")}
+                                  })}
+                                </>
+                              ) : (total ? thousandSeparator(total) : "-")}
                             </td>
 
                             <td

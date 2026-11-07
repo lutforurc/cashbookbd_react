@@ -116,6 +116,29 @@ const formatAmountOrZeroMark = (value: unknown) => (
 const joinedZeroMarkClass =
   'block -mx-3 border-red-600 px-3 leading-5 text-red-600';
 
+/**
+ * The rule under one product line, carried across the four columns that stack
+ * products -- Product & Details, Quantity, Rate and Total.
+ *
+ * ⚠️ -mx-3/px-3 IS WHAT MAKES IT SPAN THE CELL. The stacked lines sit inside
+ * the cell's 12px side padding, so a plain `border-b` stops short and the rule
+ * breaks at every cell edge instead of running across the row. Pulling the line
+ * out to the padding edge leaves the text exactly where it was.
+ *
+ * `leading-normal` is shared by all four columns on purpose: a line in one
+ * column must be the same height as the line beside it, or the rules stagger
+ * by a pixel per row.
+ */
+const detailLineClass =
+  '-mx-3 border-b border-[rgb(var(--c-border))] px-3 leading-normal';
+
+/** The note a ledger row prints under its products, and one line for the cell. */
+const rowNoteText = (row: any) =>
+  row?.sales_master?.notes ||
+  row?.notes ||
+  row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]?.remarks ||
+  '';
+
 const SalesLedger = (user: any) => {
   const dispatch = useDispatch();
   const highlightRules = useHighlightRules();
@@ -697,6 +720,34 @@ const SalesLedger = (user: any) => {
     }
   };
 
+  /**
+   * The blank lines a numeric cell needs so its rules land level with the
+   * product column's.
+   *
+   * The product cell draws the row's account name above its products and, when
+   * there is one, a note below them -- lines the Quantity, Rate and Total cells
+   * have not got. A cell whose content is shorter is centred by the table's
+   * `align-middle`, which drops every rule half a line below its neighbour, so
+   * the missing lines are stood in for here: invisible, but the same height.
+   */
+  const detailTopSpacer = (row: any) =>
+    getRelevantCoaName(row) ? (
+      <div className="mt-1 text-sm invisible select-none" aria-hidden="true">&nbsp;</div>
+    ) : null;
+
+  const detailBottomSpacer = (row: any) =>
+    rowNoteText(row) ? (
+      <div className="invisible select-none" aria-hidden="true">&nbsp;</div>
+    ) : null;
+
+  /**
+   * A rule under every product line but the row's last, which the cell's own
+   * border already closes. `length` is the product count, and a row carrying a
+   * note keeps its last product ruled so the note stays part of the stack.
+   */
+  const detailLineClassName = (row: any, index: number, length: number) =>
+    index < length - 1 || rowNoteText(row) ? detailLineClass : 'leading-normal';
+
   const columns = [
     {
       key: 'sl_number',
@@ -740,10 +791,7 @@ const SalesLedger = (user: any) => {
       render: (row: any) => {
         const coaName = getRelevantCoaName(row);
         const details = row?.sales_master?.details ?? [];
-        const notes = row?.sales_master?.notes ?? row?.notes ?? '';
-        const remarks =
-          row?.acc_transaction_master?.[0]?.acc_transaction_details?.[0]?.remarks ?? '';
-        const detailText = notes || remarks;
+        const detailText = rowNoteText(row);
 
         return (
           <div className="min-w-52 wrap-break-word align-top">
@@ -758,7 +806,10 @@ const SalesLedger = (user: any) => {
               Array.isArray(details) &&
               details.length > 0 &&
               details.map((detail: any, i: number) => (
-                <div key={detail?.id ?? i} className="leading-normal">
+                <div
+                  key={detail?.id ?? i}
+                  className={detailLineClassName(row, i, details.length)}
+                >
                   {ledgerProductLabel(detail, String(stockReportType) === '1')}
                 </div>
               ))}
@@ -798,20 +849,28 @@ const SalesLedger = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
       width: '120px',
-      render: (row: any) =>
-        showProductDetails ? (
+      render: (row: any) => {
+        const details = row?.sales_master?.details ?? [];
+
+        return showProductDetails ? (
           <>
-            {(row?.sales_master?.details ?? []).map((detail: any, index: number) => (
-              <div key={detail?.id ?? index}>
+            {detailTopSpacer(row)}
+            {details.map((detail: any, index: number) => (
+              <div
+                key={detail?.id ?? index}
+                className={detailLineClassName(row, index, details.length)}
+              >
                 {thousandSeparator(detail?.quantity)} {detail?.product?.unit?.name}
               </div>
             ))}
+            {detailBottomSpacer(row)}
           </>
         ) : (
           // Product information off: the invoice is one summary line, so the
           // per-product quantity gives way to a dash.
           <div>-</div>
-        ),
+        );
+      },
     },
     {
       key: 'rate',
@@ -819,26 +878,34 @@ const SalesLedger = (user: any) => {
       width: '120px',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
-      render: (row: any) =>
-        showProductDetails ? (
+      render: (row: any) => {
+        const details = row?.sales_master?.details ?? [];
+
+        return showProductDetails ? (
           <>
-            {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
+            {detailTopSpacer(row)}
+            {details.map((detail: any, index: number) => {
               const rate = detail?.sales_price;
               const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
               const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
 
               return (
-                <div key={detail?.id ?? index}>
+                <div
+                  key={detail?.id ?? index}
+                  className={detailLineClassName(row, index, details.length)}
+                >
                   <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-l` : undefined}>
                     {formatAmountOrZeroMark(rate)}
                   </span>
                 </div>
               );
             })}
+            {detailBottomSpacer(row)}
           </>
         ) : (
           <div>-</div>
-        ),
+        );
+      },
     },
     {
       key: 'total',
@@ -846,29 +913,37 @@ const SalesLedger = (user: any) => {
       width: '130px',
       headerClass: 'text-right',
       cellClass: 'text-right align-center',
-      render: (row: any) =>
-        showProductDetails ? (
+      render: (row: any) => {
+        const details = row?.sales_master?.details ?? [];
+
+        return showProductDetails ? (
           <>
-            {(row?.sales_master?.details ?? []).map((detail: any, index: number) => {
+            {detailTopSpacer(row)}
+            {details.map((detail: any, index: number) => {
               const rate = detail?.sales_price;
               const total = Math.floor((detail?.quantity || 0) * (detail?.sales_price || 0));
               const shouldJoinZeroMark = isZeroAmount(rate) && isZeroAmount(total);
 
               return (
-                <div key={detail?.id ?? index}>
+                <div
+                  key={detail?.id ?? index}
+                  className={detailLineClassName(row, index, details.length)}
+                >
                   <span className={shouldJoinZeroMark ? `${joinedZeroMarkClass} border-y border-r` : undefined}>
                     {formatAmountOrZeroMark(total)}
                   </span>
                 </div>
               );
             })}
+            {detailBottomSpacer(row)}
           </>
         ) : (
           // One summary line per invoice: the invoice's own total, once. It is
           // the gross figure -- the discount is a column of its own beside it,
           // so it is never taken off here twice.
           <div>{formatAmountOrZeroMark(row?.sales_master?.total)}</div>
-        ),
+        );
+      },
     },
     {
       key: 'discount',

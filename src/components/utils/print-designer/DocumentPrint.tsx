@@ -71,6 +71,16 @@ const blank = (value: any) =>
   value === null || value === undefined || String(value).trim() === '';
 
 /**
+ * The ledger columns that hold one figure per product line.
+ *
+ * ⚠️ ONLY THE TWO LEDGERS STACK THESE. A voucher's table has one row per
+ * product, so every cell holds one value; a ledger row is one voucher, and
+ * these three hold its figures as a LIST. The rules below have to know which
+ * cells they may pad, hence the list.
+ */
+const LEDGER_LINE_LIST_FIELDS = new Set(['qty_lines', 'rate_lines', 'amount_lines']);
+
+/**
  * A registration number as it should appear on paper.
  *
  * ⚠️ One function because a designed sheet can carry the SAME field twice --
@@ -1308,6 +1318,10 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
 
       const widths = columnWidths(columns);
       const border = band.bordered ? 'border border-gray-800' : '';
+      // The two report papers whose cells stack one line per product -- see
+      // LEDGER_LINE_LIST_FIELDS and the rules drawn in each row below.
+      const isLedgerPaper =
+        template.docType === 'sales_ledger' || template.docType === 'purchase_ledger';
 
       /**
        * The footing row.
@@ -1542,6 +1556,40 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                         : null
                       : lines(row, column.field);
 
+                  /**
+                   * A ledger row's rules, carried across the cells that stack
+                   * products.
+                   *
+                   * ⚠️ THE PRODUCT CELL HAS LINES ITS NEIGHBOURS HAVE NOT: the
+                   * account above the products and the note below them. Every
+                   * other stacked cell is exactly one line per product, so
+                   * without standing those lines in -- a blank line of the same
+                   * height -- a rule under the products sits half a line off in
+                   * the figures beside it. With the cells holding the same
+                   * number of lines, every cell draws its rule in the same
+                   * place: under every line but the last.
+                   *
+                   * Scoped to the two ledgers, and to a row that carries
+                   * products: no other paper stacks per-product figures, and a
+                   * branch that has switched product information off has
+                   * nothing to rule.
+                   */
+                  const ledgerProductCount =
+                    isLedgerPaper && Array.isArray(row?.products)
+                      ? row.products.length
+                      : 0;
+
+                  const ruledLines: Array<string | null> | null =
+                    stacked && ledgerProductCount > 0
+                      ? LEDGER_LINE_LIST_FIELDS.has(String(column.field))
+                        ? [
+                            ...(blank(row?.coa_name) ? [] : [null]),
+                            ...stacked,
+                            ...(blank(row?.notes) ? [] : [null]),
+                          ]
+                        : stacked
+                      : stacked;
+
                   return (
                     <td
                       key={`${column.field}-${index}`}
@@ -1565,12 +1613,26 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
                         (marked ? 'font-bold' : '')
                       }
                     >
-                      {stacked
-                        ? stacked.map((line, lineIndex) => (
-                            <div key={lineIndex} className="leading-snug">
-                              {line}
-                            </div>
-                          ))
+                      {ruledLines
+                        ? ruledLines.map((line, lineIndex) => {
+                            // null is a stand-in line -- the account or the note
+                            // a neighbouring cell carries and this one has not.
+                            const spacer = line === null;
+                            const ruled =
+                              ledgerProductCount > 0 && lineIndex < ruledLines.length - 1;
+
+                            return (
+                              <div
+                                key={lineIndex}
+                                className={
+                                  `leading-snug${spacer ? ' invisible' : ''}` +
+                                  (ruled ? ' -mx-1 border-b border-gray-800 px-1' : '')
+                                }
+                              >
+                                {spacer ? '\u00a0' : line}
+                              </div>
+                            );
+                          })
                         : composed
                           ? composed.join(' ')
                           : cell(row, startIndex + rowIndex, column.field)}
