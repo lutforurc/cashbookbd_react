@@ -357,6 +357,7 @@ import {
   FiHome,
   FiMapPin,
   FiPieChart,
+  FiTool,
   FiTrendingUp,
   FiUser,
   FiUsers,
