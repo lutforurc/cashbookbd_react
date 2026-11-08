@@ -30,6 +30,15 @@ export const getVoucherType = (vrNo: unknown) => {
   return Number.isNaN(parsed) ? prefix : String(parsed);
 };
 
+export const getTransactionTypeLabel = (value?: string | null) => {
+  const label = String(value ?? '').trim();
+
+  if (label === 'Cash Received') return 'Received';
+  if (label === 'Cash Payment') return 'Payment';
+
+  return label;
+};
+
 export const isOpeningRow = (row: LedgerWithProductRow) =>
   String(row?.vr_no || '').toLowerCase() === 'opening' ||
   /opening balance/i.test(String(row?.remarks || ''));

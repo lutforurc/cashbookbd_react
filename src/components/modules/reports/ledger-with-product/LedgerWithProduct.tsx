@@ -67,6 +67,7 @@ import {
   getPurchaseQty,
   getSalesAmount,
   getSalesQty,
+  getTransactionTypeLabel,
   parseAmount,
   shouldShowZeroProductAmountMark,
   isZeroAmount,
@@ -479,8 +480,8 @@ const LedgerWithProduct = (user: any) => {
   const transactionTypeLabel =
     (
       {
-        '1': 'Cash Received',
-        '2': 'Cash Payment',
+        '1': 'Received',
+        '2': 'Payment',
         '3': 'Sales',
         '4': 'Purchase',
       } as Record<string, string>
@@ -751,8 +752,10 @@ const LedgerWithProduct = (user: any) => {
     const tableRows = rows
       .map((row) => {
         const description = [
-          row.cash_transaction_type ? `[${row.cash_transaction_type}]` : '',
-          row.transaction_name,
+          row.cash_transaction_type
+            ? `[${getTransactionTypeLabel(row.cash_transaction_type)}]`
+            : '',
+          getTransactionTypeLabel(row.transaction_name),
           row.sales_item_name ? `(${row.sales_item_name})` : '',
           row.remarks,
           row.order_number,
@@ -928,7 +931,9 @@ const LedgerWithProduct = (user: any) => {
       render: (row: any) => (
         <div>
           <div className="whitespace-normal">
-            { row.cash_transaction_type ? row.cash_transaction_type :  row.transaction_name}
+            {getTransactionTypeLabel(
+              row.cash_transaction_type || row.transaction_name,
+            )}
             { row.sales_item_name && (
             <span className="mt-1 text-xs text-green-400"> &nbsp;({row.sales_item_name})</span>
           )}

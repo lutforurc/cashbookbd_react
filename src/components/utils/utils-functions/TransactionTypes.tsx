@@ -19,7 +19,7 @@ const TransactionTypes: React.FC<OrderProps> = ({
   className,
   id,
   value,
-  selectOption = 'Select Transaction Type',
+  selectOption = 'All Transactions',
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>("");
 
@@ -43,14 +43,14 @@ const TransactionTypes: React.FC<OrderProps> = ({
       name={name}
       className={`${FIELD_SELECT} block p-2 text-sm ${className}`}
     >
-      <option disabled value="">
+      <option value="">
         {selectOption}
       </option>
       {/* acc_vr_type ids; the server matches them on the voucher prefix --
           1 is 1-, 2 is 2-. They were labelled Sales / Purchase, which is not
           what either value ever returned. */}
-      <option value="1">Cash Received</option>
-      <option value="2">Cash Payment</option>
+      <option value="1">Received</option>
+      <option value="2">Payment</option>
       {/* 3 matches 3- and 10- (cash + credit sales), 4 matches 4- and 9-. */}
       <option value="3">Sales</option>
       <option value="4">Purchase</option>
