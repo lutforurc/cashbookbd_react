@@ -63,11 +63,15 @@ import {
   buildRowsWithRunningBalance,
   getBalanceCreditValue,
   getBalanceDebitValue,
+  getCreditColumnValue,
+  getDebitColumnValue,
+  getInvoiceAmountValue,
   getPurchaseAmount,
   getPurchaseQty,
   getSalesAmount,
   getSalesQty,
   getTransactionTypeLabel,
+  isInvoiceRow,
   parseAmount,
   shouldShowZeroProductAmountMark,
   isZeroAmount,
@@ -422,6 +426,10 @@ const LedgerWithProduct = (user: any) => {
         (sum: number, row: any) => sum + getSalesAmount(row),
         0,
       ),
+      inv_amt: rows.reduce(
+        (sum: number, row: any) => sum + getInvoiceAmountValue(row),
+        0,
+      ),
       total_amount: rows.reduce(
         (sum: number, row: any) => sum + Number(row?.total || 0),
         0,
@@ -774,8 +782,9 @@ const LedgerWithProduct = (user: any) => {
           ${excelCell(Number(row.rate || 0) || '', 'td', 'right')}
           ${excelCell(getPurchaseAmount(row) || '', 'td', 'right')}
           ${excelCell(getSalesAmount(row) || '', 'td', 'right')}
-          ${excelCell(getBalanceDebitValue(row) || '', 'td', 'right')}
-          ${excelCell(getBalanceCreditValue(row) || '', 'td', 'right')}
+          ${excelCell(getInvoiceAmountValue(row) || '', 'td', 'right')}
+          ${excelCell(getDebitColumnValue(row) || '', 'td', 'right')}
+          ${excelCell(getCreditColumnValue(row) || '', 'td', 'right')}
           ${excelCell(parseAmount(row.running_balance ?? row.balance), 'td', 'right')}
         </tr>`;
       })
@@ -792,6 +801,8 @@ const LedgerWithProduct = (user: any) => {
       ${excelCell(Number(summary?.purchase_amt || 0), 'td', 'right')}
       ${excelCell('Sal. Amt', 'th')}
       ${excelCell(Number(summary?.sales_amt || 0), 'td', 'right')}
+      ${excelCell('Inv. Amt', 'th')}
+      ${excelCell(Number(summary?.inv_amt || 0), 'td', 'right')}
       ${excelCell('Debit', 'th')}
       ${excelCell(footerReceivedValue, 'td', 'right')}
       ${excelCell('Credit', 'th')}
@@ -826,9 +837,10 @@ const LedgerWithProduct = (user: any) => {
               <col style="width:105px" />
               <col style="width:105px" />
               <col style="width:105px" />
+              <col style="width:105px" />
             </colgroup>
             <tr>
-              <th colspan="13" style="border:.5pt solid rgb(var(--c-gray-300));padding:5px;text-align:center;font-size:16px;font-weight:700;">
+              <th colspan="14" style="border:.5pt solid rgb(var(--c-gray-300));padding:5px;text-align:center;font-size:16px;font-weight:700;">
                 Ledger Details
               </th>
             </tr>
@@ -866,6 +878,7 @@ const LedgerWithProduct = (user: any) => {
               ${excelCell('Rate', 'th')}
               ${excelCell('Pur. Total', 'th')}
               ${excelCell('Sal. Total', 'th')}
+              ${excelCell('Inv. Amt', 'th')}
               ${excelCell('Debit', 'th')}
               ${excelCell('Credit', 'th')}
               ${excelCell('Balance', 'th')}
@@ -1083,14 +1096,33 @@ const LedgerWithProduct = (user: any) => {
       },
     },
     {
+      key: 'inv_amount',
+      header: 'Inv. Amt',
+      headerClass: 'w-[7.5%] text-right',
+      cellClass: 'w-[7.5%] text-right',
+      render: (row: any) => {
+        const invoiceAmount = getInvoiceAmountValue(row);
+
+        return (
+          <div>
+            {invoiceAmount ? thousandSeparator(invoiceAmount) : ''}
+          </div>
+        );
+      },
+    },
+    {
       key: 'debit',
       header: 'Debit',
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
-        const debitValue = getBalanceDebitValue(row);
+        const debitValue = getDebitColumnValue(row);
 
-        return <div>{debitValue ? thousandSeparator(debitValue) : '-'}</div>;
+        return (
+          <div>
+            {isInvoiceRow(row) ? '' : debitValue ? thousandSeparator(debitValue) : '-'}
+          </div>
+        );
       },
     },
     {
@@ -1099,9 +1131,13 @@ const LedgerWithProduct = (user: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => {
-        const creditValue = getBalanceCreditValue(row);
+        const creditValue = getCreditColumnValue(row);
 
-        return <div>{creditValue ? thousandSeparator(creditValue) : '-'}</div>;
+        return (
+          <div>
+            {isInvoiceRow(row) ? '' : creditValue ? thousandSeparator(creditValue) : '-'}
+          </div>
+        );
       },
     },
     {
@@ -1203,6 +1239,14 @@ const LedgerWithProduct = (user: any) => {
                 </span>
               </div>
             ) : null}
+            <div>
+              <span className="text-slate-500 dark:text-slate-400">
+                Inv. Amt:
+              </span>{' '}
+              <span className="font-semibold text-slate-800 dark:text-slate-100">
+                {thousandSeparator(Number(summary?.inv_amt || 0))}
+              </span>
+            </div>
             <div>
               <span className="text-slate-500 dark:text-slate-400">Debit:</span>{' '}
               <span className="font-semibold text-slate-800 dark:text-slate-100">

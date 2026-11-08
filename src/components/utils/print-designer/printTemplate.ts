@@ -1698,6 +1698,7 @@ export const LEDGER_DETAILS_INFO_FIELDS: FieldDef[] = [
   { key: 'total_sal_qty', name: 'Total Sales Quantity', group: 'total', numeric: true },
   { key: 'total_pur_total', name: 'Total Purchase Value', group: 'total', numeric: true },
   { key: 'total_sal_total', name: 'Total Sales Value', group: 'total', numeric: true },
+  { key: 'total_inv_amt', name: 'Total Inv. Amt', group: 'total', numeric: true },
   { key: 'total_debit', name: 'Total Debit', group: 'total', numeric: true },
   { key: 'total_credit', name: 'Total Credit', group: 'total', numeric: true },
 
@@ -1744,6 +1745,7 @@ export const LEDGER_DETAILS_LINE_FIELDS: FieldDef[] = [
   { key: 'rate', name: 'Rate', group: 'line', numeric: true },
   { key: 'pur_total', name: 'Purchase Value', group: 'line', numeric: true },
   { key: 'sal_total', name: 'Sales Value', group: 'line', numeric: true },
+  { key: 'inv_amt', name: 'Inv. Amt', group: 'line', numeric: true },
   { key: 'debit', name: 'Debit', group: 'line', numeric: true },
   { key: 'credit', name: 'Credit', group: 'line', numeric: true },
   { key: 'running_balance', name: 'Balance', group: 'line', numeric: true },
@@ -3742,6 +3744,7 @@ const ledgerStatement = (): PrintTemplate => ({
         { field: 'rate', label: 'Rate', width: 6, align: 'right' },
         { field: 'pur_total', label: 'Pur. Total', width: 8, align: 'right' },
         { field: 'sal_total', label: 'Sal. Total', width: 8, align: 'right' },
+        { field: 'inv_amt', label: 'Inv. Amt', width: 7, align: 'right' },
         { field: 'debit', label: 'Debit', width: 7, align: 'right' },
         { field: 'credit', label: 'Credit', width: 7, align: 'right' },
         // ⚠️ No foot under this one, and the renderer is what decides that --
@@ -3766,6 +3769,7 @@ const ledgerStatement = (): PrintTemplate => ({
         { field: 'total_sal_qty', label: 'Sal. Qty', hideIfEmpty: true },
         { field: 'total_pur_total', label: 'Pur. Amt', hideIfEmpty: true },
         { field: 'total_sal_total', label: 'Sal. Amt', hideIfEmpty: true },
+        { field: 'total_inv_amt', label: 'Inv. Amt', hideIfEmpty: true },
         { field: 'total_debit', label: 'Debit', hideIfEmpty: true },
         { field: 'total_credit', label: 'Credit', hideIfEmpty: true },
         { field: 'closing_balance', label: 'Closing' },

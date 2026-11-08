@@ -8,6 +8,9 @@ import type {
 import {
   getBalanceCreditValue,
   getBalanceDebitValue,
+  getCreditColumnValue,
+  getDebitColumnValue,
+  getInvoiceAmountValue,
   getPurchaseAmount,
   getPurchaseQty,
   getSalesAmount,
@@ -107,8 +110,11 @@ export const toLedgerDetailsDocumentData = ({
     rate: Number(row?.rate || 0),
     pur_total: getPurchaseAmount(row),
     sal_total: getSalesAmount(row),
-    debit: getBalanceDebitValue(row),
-    credit: getBalanceCreditValue(row),
+    inv_amt: getInvoiceAmountValue(row),
+    debit: getDebitColumnValue(row),
+    credit: getCreditColumnValue(row),
+    debit_full: getBalanceDebitValue(row),
+    credit_full: getBalanceCreditValue(row),
     // Carried down from the row above, so it is read off the row the rows
     // helper already walked -- never re-added here, which is what would make it
     // a second, different balance.
@@ -149,6 +155,12 @@ export const toLedgerDetailsDocumentData = ({
       closing_balance: list.length
         ? parseAmount(list[list.length - 1]?.running_balance ?? list[list.length - 1]?.balance)
         : parseAmount(summary?.closing_balance),
+      total_inv_amt: list.reduce(
+        (sum, row) => sum + getInvoiceAmountValue(row),
+        0,
+      ),
+      total_debit: footDebit,
+      total_credit: footCredit,
       branch_name: branchName ?? '',
     },
     products,

@@ -10,13 +10,15 @@ import type {
   LedgerWithProductSummary,
 } from './ledgerWithProductTypes';
 import {
-  getBalanceCreditValue,
-  getBalanceDebitValue,
+  getCreditColumnValue,
+  getDebitColumnValue,
+  getInvoiceAmountValue,
   getPurchaseAmount,
   getPurchaseQty,
   getSalesAmount,
   getSalesQty,
   getTransactionTypeLabel,
+  isInvoiceRow,
   parseAmount,
 } from './ledgerWithProductUtils';
 
@@ -135,6 +137,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
       Number(summary.sales_qty || 0) > 0 ? ['Sal. Qty', summary.sales_qty] : null,
       Number(summary.purchase_amt || 0) > 0 ? ['Pur. Amt', summary.purchase_amt] : null,
       Number(summary.sales_amt || 0) > 0 ? ['Sal. Amt', summary.sales_amt] : null,
+      Number(summary.inv_amt || 0) !== 0 ? ['Inv. Amt', summary.inv_amt] : null,
       Number(summary.total_received || 0) !== 0 ? ['Debit', summary.total_received] : null,
       Number(summary.total_payment || 0) !== 0 ? ['Credit', summary.total_payment] : null,
       ['Closing', summary.closing_balance],
@@ -307,6 +310,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-14 text-center">Rate</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Pur. Total</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Sal. Total</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Inv. Amt</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Debit</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Credit</th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Balance</th>
@@ -361,14 +365,25 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {(() => {
-                        const displayValue = getBalanceDebitValue(row);
+                        const invoiceAmount = getInvoiceAmountValue(row);
+
+                        return invoiceAmount ? formatAmount(invoiceAmount) : '';
+                      })()}
+                    </td>
+                    <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
+                      {(() => {
+                        const displayValue = getDebitColumnValue(row);
+
+                        if (isInvoiceRow(row)) return '';
 
                         return displayValue ? formatAmount(displayValue) : '-';
                       })()}
                     </td>
                     <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right">
                       {(() => {
-                        const displayValue = getBalanceCreditValue(row);
+                        const displayValue = getCreditColumnValue(row);
+
+                        if (isInvoiceRow(row)) return '';
 
                         return displayValue ? formatAmount(displayValue) : '-';
                       })()}
@@ -388,7 +403,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
                 */}
                 {continuous && pageIndex === pages.length - 1 ? (
                   <tr>
-                    <td colSpan={12} className="border-0 p-0">
+                    <td colSpan={13} className="border-0 p-0">
                       {summaryBar}
                     </td>
                   </tr>

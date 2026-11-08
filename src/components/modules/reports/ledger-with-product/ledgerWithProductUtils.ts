@@ -235,6 +235,28 @@ export const isSalesRow = (row: LedgerWithProductRow) => {
   return trxType ? trxType === 'sales' : getVoucherType(row?.vr_no) === '3';
 };
 
+export const isInvoiceRow = (row: LedgerWithProductRow) =>
+  !isOpeningRow(row) && (isPurchaseRow(row) || isSalesRow(row));
+
+/**
+ * The cash/discount leg of an invoice voucher: the side opposite the invoice
+ * amount. A purchase carries its bill on the credit side, so its settlement
+ * sits in debit; a sale is the other way round. Standalone vouchers (payments,
+ * receipts, journals) have no invoice leg and answer zero here.
+ */
+export const getInvoiceAmountValue = (row: LedgerWithProductRow) => {
+  if (isPurchaseRow(row)) return getBalanceDebitValue(row);
+  if (isSalesRow(row)) return getBalanceCreditValue(row);
+
+  return 0;
+};
+
+export const getDebitColumnValue = (row: LedgerWithProductRow) =>
+  isInvoiceRow(row) ? 0 : getBalanceDebitValue(row);
+
+export const getCreditColumnValue = (row: LedgerWithProductRow) =>
+  isInvoiceRow(row) ? 0 : getBalanceCreditValue(row);
+
 export const getPurchaseQty = (row: LedgerWithProductRow) => {
   if (isOpeningRow(row)) return 0;
   return isPurchaseRow(row) ? Number(row?.quantity || 0) : 0;
