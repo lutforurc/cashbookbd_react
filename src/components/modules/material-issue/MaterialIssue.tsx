@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
@@ -50,12 +50,24 @@ const emptyLine = {
   note: '',
 };
 
+// One token per submission, kept across retries of it. The server uses it to
+// answer a repeated save with the issue it already wrote instead of deducting
+// the same stock a second time.
+const newIdempotencyKey = () =>
+  typeof window !== 'undefined' && window.crypto && 'randomUUID' in window.crypto
+    ? window.crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
 const MaterialIssue = () => {
   const dispatch = useDispatch<any>();
   const warehouseState = useSelector((s: any) => s.activeWarehouse);
   const warehouseOptions = Array.isArray(warehouseState?.data) ? warehouseState.data : [];
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const [idempotencyKey, setIdempotencyKey] = useState<string>(() => newIdempotencyKey());
+  // A ref, not the state above: two clicks inside one render both see the old
+  // state, and the second would post the same issue again.
+  const savingRef = useRef(false);
   const [listRefreshKey, setListRefreshKey] = useState(0);
   const [issueDate, setIssueDate] = useState<Date | null>(dayjs().toDate());
   const [isUpdatingLine, setIsUpdatingLine] = useState(false);
@@ -146,6 +158,9 @@ const MaterialIssue = () => {
     });
     setIssueDate(today.toDate());
     clearLineForm();
+    // A reset starts a new submission: its own token, so a later save is not
+    // mistaken for a retry of the one just finished.
+    setIdempotencyKey(newIdempotencyKey());
   };
 
   const validateLineItem = () => {
@@ -225,6 +240,7 @@ const MaterialIssue = () => {
   };
 
   const handleSave = () => {
+    if (savingRef.current) return;
     if (!formData.projectId) {
       toast.error('Please select a project');
       return;
@@ -235,6 +251,9 @@ const MaterialIssue = () => {
     }
 
     const payload = {
+      // The same token is kept until this save succeeds, so a retried
+      // submission cannot deduct the same stock twice.
+      idempotency_key: idempotencyKey,
       issue_date: formData.issueDate || null,
       from_warehouse_id: formData.warehouseId ? Number(formData.warehouseId) : null,
       project_id: Number(formData.projectId),
@@ -249,6 +268,7 @@ const MaterialIssue = () => {
       })),
     };
 
+    savingRef.current = true;
     setSaveButtonLoading(true);
     dispatch(
       storeMaterialIssue(payload, (response: any) => {
@@ -259,6 +279,7 @@ const MaterialIssue = () => {
         } else {
           toast.error(response?.message || 'Failed to save material issue');
         }
+        savingRef.current = false;
         setSaveButtonLoading(false);
       }),
     );
@@ -421,6 +442,7 @@ const MaterialIssue = () => {
         <ButtonLoading
           onClick={handleSave}
           buttonLoading={saveButtonLoading}
+          disabled={saveButtonLoading}
           label={saveButtonLoading ? 'Saving...' : 'Save'}
           className="whitespace-nowrap text-center mr-0 py-2"
           icon={<FiSave className="text-lg ml-2 mr-2" />}
