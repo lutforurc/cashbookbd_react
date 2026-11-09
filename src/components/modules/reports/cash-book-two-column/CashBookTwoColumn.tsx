@@ -264,6 +264,8 @@ const CashBookTwoColumn = ({ user }: any) => {
           start_date: fromText,
           end_date: toText,
           bank_account_id: bank || undefined,
+          // One row per head with its own amount, like the Cash Book.
+          split_heads: 1,
         },
       });
 
@@ -768,7 +770,7 @@ const CashBookTwoColumn = ({ user }: any) => {
           data={bodyRows}
           headerRows={headerRows}
           footerRows={footerRows}
-          getRowKey={(row: any) => row.mtm_id}
+          getRowKey={(row: any) => row.row_key ?? row.mtm_id}
           rowClassName={(row: any) => (row.is_opening ? 'font-semibold' : 'align-top')}
           noDataMessage="Choose a period and press Apply."
         />

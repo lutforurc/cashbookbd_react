@@ -101,7 +101,7 @@ const CashBookTwoColumnPrint = React.forwardRef<HTMLDivElement, Props>(
                   ) : null}
 
                   {pageRows.map((row: any) => (
-                    <tr key={row.mtm_id} className="avoid-break align-top">
+                    <tr key={row.row_key ?? row.mtm_id}className="avoid-break align-top">
                       <td className={`${cell} whitespace-nowrap`}>{day(row.vr_date)}</td>
                       <td className={`${cell} whitespace-nowrap`}>{row.vr_no}</td>
                       <td className={cell}>
