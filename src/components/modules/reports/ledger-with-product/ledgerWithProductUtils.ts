@@ -243,9 +243,11 @@ export const isInvoiceRow = (row: LedgerWithProductRow) =>
  * amount. A purchase carries its bill on the credit side, so its settlement
  * sits in debit; a sale is the other way round. Standalone vouchers (payments,
  * receipts, journals) have no invoice leg and answer zero here.
+ * Signed: purchase cash is paid out (-), sale cash comes in (+), so the
+ * footer total is the net cash across the invoices.
  */
 export const getInvoiceAmountValue = (row: LedgerWithProductRow) => {
-  if (isPurchaseRow(row)) return getBalanceDebitValue(row);
+  if (isPurchaseRow(row)) return -getBalanceDebitValue(row);
   if (isSalesRow(row)) return getBalanceCreditValue(row);
 
   return 0;

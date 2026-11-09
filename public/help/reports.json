@@ -686,13 +686,13 @@
   "ledger-with-product": {
     "title": "পণ্যসহ গ্রাহক/সরবরাহকারীর বিবরণ",
     "module": "Reports",
-    "updated": "06/11/2026",
+    "updated": "09/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একজন গ্রাহক বা সরবরাহকারীর প্রতিটি ভাউচারে কোন পণ্য কত পরিমাণে ও কোন দামে ছিল, সাথে চলমান ব্যালেন্স — এক কাগজে।",
     "sections": [
       { "heading": "রিপোর্ট দেখা", "menu": "Reports → Ledger with Product", "steps": ["Select Branch ও Select Ledger বাছুন।", "Transaction Type, Select Product, Start Date ও End Date দিন।", "Search-এ Vr / Order / Vehicle No. / Rate লিখে ছোট করুন।", "Apply চাপুন।"] },
-      { "heading": "ফল পড়া", "steps": ["Vr No. & Date, Description, Vehicle No, Pur./Sal. Qty, Rate, Pur./Sal. Total, Debit, Credit ও Balance দেখা যায়।", "নিচে Opening, Qty, Amt, Debit, Credit ও Closing মোট থাকে।", "Print ও Excel আছে; Rows ও Font ঠিক করা যায়।"] },
+      { "heading": "ফল পড়া", "steps": ["Vr No. & Date, Description, Vehicle No, Pur./Sal. Qty, Rate, Pur./Sal. Total, Inv. Amt, Debit, Credit ও Balance দেখা যায়।", "Inv. Amt-এ শুধু ইনভয়েসের নগদ অংশ থাকে: Cash Purchase হলে মাইনাস (-), Cash Sales হলে প্লাস (+)।", "নিচে Opening, Qty, Amt, Inv. Amt, Debit, Credit ও Closing মোট থাকে; Inv. Amt মোট = সব নগদের যোগফল (যেমন -52,000 + 32,000 = -20,000)।", "Print ও Excel আছে; Rows ও Font ঠিক করা যায়।"] },
       { "heading": "সতর্কতা", "warning": "Branch ও গ্রাহক/সরবাপরাহকারী না বাছলে রিপোর্ট আসবে না।" }
     ]
   },
