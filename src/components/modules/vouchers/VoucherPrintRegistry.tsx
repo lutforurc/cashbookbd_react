@@ -231,6 +231,19 @@ export const VoucherPrintRegistry = forwardRef(
           return;
         }
 
+        /**
+         * ⚠️ A MATERIAL ISSUE IS NOT A PURCHASE, THOUGH THEY SHARE "4-".
+         * A material issue's own number is MI-... — the ledger shows that, not
+         * the shared voucher number — because the switch below would otherwise
+         * read the "4-" prefix and pull up a purchase invoice that is not this
+         * document. Its challan prints from the Material Issue screen. Same
+         * shape as the production-batch answer further down.
+         */
+        if (/^MI-/i.test(String(row.vr_no))) {
+          toast(`${row.vr_no} is a material issue. Open Inventory → Material Issue to print its challan.`);
+          return;
+        }
+
         const printPayload = buildPrintPayload(mtmId, row);
 
         if (!printPayload.mt && !printPayload.voucher_no) {
