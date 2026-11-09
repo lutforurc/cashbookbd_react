@@ -1247,6 +1247,14 @@ export const HOTEL_BILL_FIELDS: FieldDef[] = [
   // accountant or by an officer. Empty on a bill with one rate, where the line
   // above already says it.
   { key: 'bill_vat_summary', name: 'VAT By Rate', group: 'bill' },
+  // A discounted bill's own lines (2026-11-09) -- nought, and hidden, on any
+  // other bill; see HotelPaper::bill.
+  { key: 'bill_charges_incl', name: 'Charges VAT Incl. (discounted bill)', group: 'bill', numeric: true, format: 'money2' },
+  { key: 'bill_net_ex_vat', name: 'Net Excl. VAT (discounted bill)', group: 'bill', numeric: true, format: 'money2' },
+  { key: 'bill_vat_on_net', name: 'VAT On Net (discounted bill)', group: 'bill', numeric: true, format: 'money2' },
+  { key: 'bill_vat_on_net_rate', name: 'VAT On Net Rate', group: 'bill' },
+  { key: 'bill_vat_on_net_2', name: 'VAT On Net, Other Rates', group: 'bill', numeric: true, format: 'money2' },
+  { key: 'bill_vat_on_net_2_rate', name: 'VAT On Net, Other Rates Rate', group: 'bill' },
   { key: 'bill_gross', name: 'Total (exact)', group: 'bill', numeric: true, format: 'money2' },
   { key: 'bill_rounding', name: 'Rounding', group: 'bill', numeric: true, format: 'money2' },
   // What is actually asked for at the counter.
@@ -3001,7 +3009,9 @@ const hotelBill = (): PrintTemplate => ({
         // the two taxes fall on the room and charges, they add up to the gross,
         // and the discount comes off THAT. A paper that put the discount higher
         // would be showing a subtraction the figures below it did not do.
-        { field: 'bill_base', label: 'Room & Charges' },
+        // Hidden (nought) on a discounted bill, which opens on
+        // bill_charges_incl instead -- see HotelPaper::bill.
+        { field: 'bill_base', label: 'Room & Charges', hideIfEmpty: true },
         // Both hidden when zero: a property whose rates are still at zero --
         // which is every install until the client's consultant answers §6.3 --
         // should print a bill with no tax lines on it, not two zeroes.
@@ -3010,7 +3020,12 @@ const hotelBill = (): PrintTemplate => ({
         // Drawn only where the bill carries more than one rate -- see the field.
         { field: 'bill_vat_summary', label: 'VAT by rate', hideIfEmpty: true },
         // Ruled off above: the charges and the two taxes add up to this.
-        { field: 'bill_gross', label: 'Gross', ruleAbove: true },
+        { field: 'bill_gross', label: 'Gross', ruleAbove: true, hideIfEmpty: true },
+        // ⚠️ A DISCOUNTED BILL (owner, 2026-11-09) reads downwards with the
+        // VAT once: Room Charges (VAT incl.) 1,150 / Discount 150 / Net Amount
+        // 1,000 / Rent (excl. VAT) 869.57 / VAT 15% 130.43. The four lines
+        // above are nought on it and hide; these are nought on any other bill.
+        { field: 'bill_charges_incl', label: 'Room Charges (VAT incl.)', hideIfEmpty: true },
         // Hidden on a bill with no discount: a paper that prints "Discount —"
         // on every stay invites the question every time, and the answer is
         // always "none was given".
@@ -3036,10 +3051,16 @@ const hotelBill = (): PrintTemplate => ({
           hideIfEqualTo: 'bill_gross',
           ruleAbove: true,
         },
+        // What the net is made of, VAT shown once.
+        { field: 'bill_net_ex_vat', label: 'Rent (excl. VAT)', hideIfEmpty: true },
+        { field: 'bill_vat_on_net', label: 'VAT {bill_vat_on_net_rate}', hideIfEmpty: true },
+        { field: 'bill_vat_on_net_2', label: 'VAT {bill_vat_on_net_2_rate}', hideIfEmpty: true },
         // ⚠️ No "In Words" line either, by the same decision. The field stays in
         // the catalogue -- a property that wants the amount spelled out adds it
         // back in the designer -- it is simply not on the bill as it ships.
-        { field: 'bill_paid', label: 'Paid' },
+        //
+        // Ruled off above so the breakdown above does not read into it.
+        { field: 'bill_paid', label: 'Paid', ruleAbove: true },
         // Only on a bill that had a balance forgiven after check-out; the
         // nought on every other bill is hidden.
         { field: 'bill_written_off', label: 'Written off', hideIfEmpty: true },

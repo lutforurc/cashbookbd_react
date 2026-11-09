@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
@@ -1233,7 +1233,36 @@ const FolioScreen = () => {
             Each part is drawn only where it is not nothing. A property that
             charges no VAT should not have a "VAT 0.00" on every screen; what it
             should have is a bill that says what it says. */}
-        {totals ? (
+        {totals && Number(totals.discount) ? (
+          /* ⚠️ A DISCOUNTED BILL reads the way its paper does (owner,
+             2026-11-09), VAT once: charges with VAT, less the discount, the net
+             -- and what the net is made of. */
+          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+            <span>
+              Charges (VAT incl.) <strong className="text-black dark:text-white">{money(totals.gross)}</strong>
+            </span>
+            <span className="text-primary dark:text-secondary">
+              less discount{' '}
+              {Number(totals.discount_rate) ? `${Number(totals.discount_rate)}% ` : ''}
+              <strong>{money(totals.discount)}</strong>
+            </span>
+            <span>
+              net <strong className="text-black dark:text-white">{money(totals.net)}</strong>
+            </span>
+            <span>
+              = rent (excl. VAT){' '}
+              <strong className="text-black dark:text-white">
+                {money(Number(totals.net) - Number(totals.vat_payable ?? 0))}
+              </strong>
+              {(totals.vat_bands ?? []).map((band: any) => (
+                <Fragment key={band.rate}>
+                  {' '}+ VAT {Number(band.rate)}%{' '}
+                  <strong className="text-black dark:text-white">{money(band.vat)}</strong>
+                </Fragment>
+              ))}
+            </span>
+          </p>
+        ) : totals ? (
           <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
             <span>
               Charges <strong className="text-black dark:text-white">{money(totals.base)}</strong>
@@ -1276,14 +1305,6 @@ const FolioScreen = () => {
             {Number(totals.gross) !== Number(totals.base) ? (
               <span>
                 gross <strong className="text-black dark:text-white">{money(totals.gross)}</strong>
-              </span>
-            ) : null}
-
-            {Number(totals.discount) ? (
-              <span className="text-primary dark:text-secondary">
-                less discount{' '}
-                {Number(totals.discount_rate) ? `${Number(totals.discount_rate)}% ` : ''}
-                <strong>{money(totals.discount)}</strong>
               </span>
             ) : null}
 
