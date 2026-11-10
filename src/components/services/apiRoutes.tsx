@@ -1284,6 +1284,11 @@ export const API_HOTEL_AMENITY_KIT_URL = `${API_BASE_URL}/hotel-setup/amenity-ki
 // the tagging half; the room half simply comes back empty.
 export const API_HOTEL_AMENITY_VARIANCE_URL = `${API_BASE_URL}/hotel-setup/reports/amenity-variance`;
 
+// How much VAT was collected at each rate between two dates, for the VAT
+// return. Grouped by the rate RECORDED ON EACH BILL LINE rather than today's
+// rate card — a rate changed since must not restate what was collected.
+export const API_HOTEL_VAT_SUMMARY_URL = `${API_BASE_URL}/hotel-setup/reports/vat-summary`;
+
 // The store of expense items (Assets → Items, kind Expense): issue, opening,
 // count adjustment, Stock Balance and an item's ledger. Quantity only -- the
 // cost was charged to the expense head when the item was bought.

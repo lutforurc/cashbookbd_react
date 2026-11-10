@@ -54,13 +54,13 @@
   "hotel-reports": {
     "title": "হোটেল রিপোর্ট",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "10/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "গত রাতে কে ছিল, কী টাকা এলো, প্রপার্টি কত ভরা ছিল এবং কিট কীভাবে খরচ হলো — চার রিপোর্ট এক স্ক্রিনে।",
+    "intro": "গত রাতে কে ছিল, কী টাকা এলো, কত ভ্যাট কোন হারে জমা হলো, প্রপার্টি কত ভরা ছিল এবং কিট কীভাবে খরচ হলো — পাঁচ রিপোর্ট এক স্ক্রিনে।",
     "sections": [
-      { "heading": "রিপোর্টগুলো", "menu": "Hotel → Reports", "steps": ["Guest register — Night of, Showing (In the building/Arriving/Leaving), Find; তালিকায় Guest, Room, Mobile, NID, Stay ও Booking; Print আছে।", "Collection — From, To ও Method; উপরে Receipts, Taken, Given back ও In hand; নিচে By method ও By account।", "Performance — Occupancy, ADR, RevPAR ও Room revenue; By room type ও Night by night টেবিল।", "Amenity & issues — Room-nights, Kits, Issued this range ও Tagged to an event; Expected against issued ও What each event ate।"] },
-      { "heading": "সতর্কতা", "warning": "Performance-এ halls নেই — হল শিফটে বিক্রি হয়, রাতে নয়; Complimentary ঘর occupancy-তে গোনা হয় কিন্তু ADR/RevPAR-এ নয়।" }
+      { "heading": "রিপোর্টগুলো", "menu": "Hotel → Reports", "steps": ["Guest register — Night of, Showing (In the building/Arriving/Leaving), Find; তালিকায় Guest, Room, Mobile, NID, Stay ও Booking; Print আছে।", "Collection — From, To ও Method; উপরে Receipts, Taken, Given back ও In hand; নিচে By method ও By account।", "VAT by rate — From ও To দিন (দুই তারিখই ধরা হয়); প্রতিটি হারে মোট VAT Collected এবং নিচে Grand Total দেখা যায়।", "Performance — Occupancy, ADR, RevPAR ও Room revenue; By room type ও Night by night টেবিল।", "Amenity & issues — Room-nights, Kits, Issued this range ও Tagged to an event; Expected against issued ও What each event ate।"] },
+      { "heading": "সতর্কতা", "warning": "VAT by rate-এ হার বিলের লাইনে যেভাবে লেখা হয়েছিল সেভাবেই দেখায় — পরে হার বদলালেও আগের বিল বদলাবে না; ডিসকাউন্ট থাকলে VAT-ও সেই অনুপাতে কমে। Performance-এ halls নেই — হল শিফটে বিক্রি হয়, রাতে নয়; Complimentary ঘর occupancy-তে গোনা হয় কিন্তু ADR/RevPAR-এ নয়।" }
     ]
   },
   "hotel-booking-due": {

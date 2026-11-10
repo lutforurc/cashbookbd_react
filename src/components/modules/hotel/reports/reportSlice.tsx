@@ -6,6 +6,7 @@ import {
   API_HOTEL_COLLECTION_URL,
   API_HOTEL_PERFORMANCE_URL,
   API_HOTEL_REGISTER_URL,
+  API_HOTEL_VAT_SUMMARY_URL,
 } from '../../../services/apiRoutes';
 
 /**
@@ -105,11 +106,29 @@ export const amenityRead = createAsyncThunk<any, Record<string, any>, { rejectVa
   },
 );
 
+/**
+ * VAT collected at each rate between two dates — the figure the person
+ * filling in the VAT return needs, grouped by the rate recorded on the lines.
+ */
+export const vatSummaryRead = createAsyncThunk<any, Record<string, any>, { rejectValue: string }>(
+  'hotelReport/vatSummaryRead',
+  async (params, { rejectWithValue }) => {
+    try {
+      const res = await httpService.get(API_HOTEL_VAT_SUMMARY_URL, { params });
+      if (res.data?.success === true) return unwrap(res);
+      return rejectWithValue(res.data?.message || 'Could not read the VAT summary');
+    } catch (error: any) {
+      return rejectWithValue(said(error, 'Could not read the VAT summary'));
+    }
+  },
+);
+
 interface ReportState {
   register: any | null;
   collection: any | null;
   performance: any | null;
   amenity: any | null;
+  vatSummary: any | null;
   loading: boolean;
   error: string | null;
 }
@@ -119,6 +138,7 @@ const initialState: ReportState = {
   collection: null,
   performance: null,
   amenity: null,
+  vatSummary: null,
   loading: false,
   error: null,
 };
@@ -140,14 +160,15 @@ const reportSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    const slotOf: Record<string, 'register' | 'collection' | 'performance' | 'amenity'> = {
+    const slotOf: Record<string, 'register' | 'collection' | 'performance' | 'amenity' | 'vatSummary'> = {
       [registerRead.typePrefix]: 'register',
       [collectionRead.typePrefix]: 'collection',
       [performanceRead.typePrefix]: 'performance',
       [amenityRead.typePrefix]: 'amenity',
+      [vatSummaryRead.typePrefix]: 'vatSummary',
     };
 
-    [registerRead, collectionRead, performanceRead, amenityRead].forEach((thunk: any) => {
+    [registerRead, collectionRead, performanceRead, amenityRead, vatSummaryRead].forEach((thunk: any) => {
       builder
         .addCase(thunk.pending, (state: any) => {
           state.loading = true;
@@ -180,6 +201,10 @@ const reportSlice = createSlice({
       .addCase(amenityRead.fulfilled, (state, action) => {
         state.loading = false;
         state.amenity = action.payload;
+      })
+      .addCase(vatSummaryRead.fulfilled, (state, action) => {
+        state.loading = false;
+        state.vatSummary = action.payload;
       });
   },
 });

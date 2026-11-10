@@ -26,6 +26,7 @@ import {
   collectionRead,
   performanceRead,
   registerRead,
+  vatSummaryRead,
 } from './reportSlice';
 import RegisterPrint from './RegisterPrint';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
@@ -167,6 +168,7 @@ const HotelReports = () => {
   const collection = useSelector((state: any) => state.hotelReport.collection);
   const performance = useSelector((state: any) => state.hotelReport.performance);
   const amenity = useSelector((state: any) => state.hotelReport.amenity);
+  const vatSummary = useSelector((state: any) => state.hotelReport.vatSummary);
   const reportError = useSelector((state: any) => state.hotelReport.error);
   const loading = useSelector((state: any) => state.hotelReport.loading);
   const branchDdl = useSelector((state: any) => state.branchDdl);
@@ -183,7 +185,7 @@ const HotelReports = () => {
    */
   const isLodging = currentBranch?.is_lodging === true;
 
-  const [tab, setTab] = useState<'register' | 'collection' | 'performance' | 'amenity'>(
+  const [tab, setTab] = useState<'register' | 'collection' | 'performance' | 'amenity' | 'vat'>(
     'register',
   );
   const [branchId, setBranchId] = useState<string>('');
@@ -269,6 +271,20 @@ const HotelReports = () => {
   useEffect(() => {
     if (tab === 'amenity') loadAmenity();
   }, [tab, loadAmenity]);
+
+  /**
+   * The VAT return's own question — same pair of dates as performance and
+   * amenity, because all three ask about a stretch of days rather than one
+   * night, and both ends are included.
+   */
+  const loadVatSummary = useCallback(() => {
+    if (!branchId) return;
+    dispatch(vatSummaryRead({ from: runFrom, to: runTo, branch_id: branchId }));
+  }, [dispatch, runFrom, runTo, branchId]);
+
+  useEffect(() => {
+    if (tab === 'vat') loadVatSummary();
+  }, [tab, loadVatSummary]);
 
   /**
    * A tab that stops being allowed cannot stay open.
@@ -517,6 +533,31 @@ const HotelReports = () => {
   );
 
   /**
+   * The VAT return, one row per rate recorded on the bills of the period.
+   *
+   * The rate is shown exactly as it was frozen onto the line (7.5% stays
+   * 7.5%), and the grand total is what the person paying VAT has to account
+   * for — so it is also drawn in the table's own footer, not only on a tile.
+   */
+  const vatColumns = useMemo(
+    () => [
+      {
+        key: 'rate',
+        header: 'VAT Rate',
+        render: (row: any) => `${Number(row.rate)}%`,
+      },
+      {
+        key: 'vat',
+        header: 'VAT Collected',
+        headerClass: 'text-right',
+        cellClass: 'text-right tabular-nums',
+        render: (row: any) => money(row.vat),
+      },
+    ],
+    [],
+  );
+
+  /**
    * Expected against issued, one row per product.
    *
    * ⚠️ Sorted by the SIZE of the gap, server-side, so the line worth looking at
@@ -645,6 +686,18 @@ const HotelReports = () => {
           Collection
         </button>
 
+        <button
+          type="button"
+          onClick={() => setTab('vat')}
+          className={`${TAB} ${
+            tab === 'vat'
+              ? 'border-primary text-primary dark:border-secondary dark:text-secondary'
+              : 'border-transparent text-gray-500 dark:text-gray-400'
+          }`}
+        >
+          VAT by rate
+        </button>
+
         {/* Only on a property that lets rooms. The server refuses the figures
             for anything else anyway — this is so nobody is invited to ask. */}
         {isLodging ? (
@@ -691,7 +744,7 @@ const HotelReports = () => {
           />
         </div>
 
-        {tab === 'performance' || tab === 'amenity' ? (
+        {tab === 'performance' || tab === 'amenity' || tab === 'vat' ? (
           <>
             <InputDatePicker
               id="performance_from"
@@ -772,7 +825,7 @@ const HotelReports = () => {
         )}
       </div>
 
-      {loading && !register && !collection && !performance && !amenity ? <Loader /> : null}
+      {loading && !register && !collection && !performance && !amenity && !vatSummary ? <Loader /> : null}
 
       {tab === 'amenity' ? (
         <>
@@ -982,6 +1035,49 @@ const HotelReports = () => {
                 data={performance?.daily ?? []}
                 noDataMessage="No nights in that range."
               />
+            </>
+          ) : null}
+        </>
+      ) : tab === 'vat' ? (
+        <>
+          {!vatSummary && reportError ? (
+            <p className="rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+              {reportError}
+            </p>
+          ) : null}
+
+          {vatSummary ? (
+            <>
+              <div className="mb-3 grid grid-cols-1 gap-2 sm:max-w-xs">
+                <div className="rounded border border-primary px-3 py-2 text-center dark:border-secondary">
+                  <div className="text-lg font-semibold text-primary dark:text-secondary">
+                    {money(vatSummary.totals?.vat)}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    VAT collected · {vatSummary.totals?.rates ?? 0} rate
+                    {(vatSummary.totals?.rates ?? 0) === 1 ? '' : 's'}
+                  </div>
+                </div>
+              </div>
+
+              <Table
+                columns={vatColumns}
+                data={vatSummary.rows ?? []}
+                footerRows={[
+                  [
+                    { label: 'Grand Total', className: 'text-right' },
+                    {
+                      label: money(vatSummary.totals?.vat),
+                      className: 'text-right tabular-nums',
+                    },
+                  ],
+                ]}
+                noDataMessage="No VAT was charged in that range."
+              />
+
+              <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                {vatSummary.note}
+              </p>
             </>
           ) : null}
         </>

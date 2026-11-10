@@ -15,26 +15,26 @@
   "hotel-bookings": {
     "title": "বুকিং তালিকা",
     "module": "Hotel",
-    "updated": "07/11/2026",
+    "updated": "09/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "প্রপার্টির সব বুকিং দেখা যায় — কে কখন আসবে, কী অবস্থায় আছে এবং কোন কাজ করা যায়।",
     "sections": [
       { "heading": "তালিকা", "menu": "Hotel → Bookings", "steps": ["Property, Search, Start Date ও End Date দিন।", "Sold (Rooms & halls/Walk-in only/Everything) ও Show (All bookings/Confirmed/Held/Checked in/Checked out/Cancelled/Expired) বাছুন।", "New Booking চাপলে নতুন বুকিং খোলে।"] },
       { "heading": "সারির কাজ", "steps": ["Booking Information-এ Guest, তারিখ ও ঘর/হল দেখা যায়; Status-এ Held/Confirmed/Checked in/Checked out/Cancelled/Expired।", "Action থেকে Guests, Check in, Bill, Check out, Edit, Transfer, Cancel করা যায়।"] },
-      { "heading": "টাকা নেওয়া ও হিসাব", "steps": ["নিচের নিয়ম খাটে যখন Branch → Hotel Setup → Income Setup-এ Income at Settlement বাছাই করা থাকে। Income at Bill থাকলে Bill চাপলেই Income ও VAT ওঠে, আর সেটেলের টাকা অ্যাডভান্স হেডে জমা হয়।", "অ্যাডভান্স নিলে টাকা Advance from Room Rent হেডে জমা হয়।", "Bill the nights চাপলে বিল Folio-তে ওঠে, তবে হিসাবে ওঠে সেটেলের সময়।", "Settlement নিলে নগদ টাকা রিসিট ভাউচারে আগে পুরো VAT-এ, বাকিটা Room Rent আয়ে ওঠে। অ্যাডভান্সের অংশ আলাদা জার্নালে আয়ে সমন্বয় হয়, তাই Cash Book-এ তা Payment হিসেবে দেখায় না।", "অতিথি বাকি রেখে checkout করলে বাকি টাকা Guest Receivable হেডে যায়। পরে টাকা পেলে ওই হেডেই জমা হয়।", "বিলে পয়সা থাকলে পয়সাসহই টাকা নেওয়া হয়, বিল টাকায় রাউন্ড হয় না।"] },
+      { "heading": "টাকা নেওয়া ও হিসাব", "steps": ["নিচের নিয়ম খাটে যখন Branch → Hotel Setup → Income Setup-এ Income at Settlement বাছাই করা থাকে। Income at Bill থাকলে Bill চাপলেই Income ও VAT ওঠে, আর সেটেলের টাকা অ্যাডভান্স হেডে জমা হয়।", "অ্যাডভান্স নিলে টাকা Advance from Room Rent হেডে জমা হয়।", "Bill the nights চাপলে বিল Folio-তে ওঠে, তবে হিসাবে ওঠে সেটেলের সময়।", "Settlement নিলে নগদ টাকা রিসিট ভাউচারে আগে পুরো VAT-এ, বাকিটা Room Rent আয়ে ওঠে। অ্যাডভান্সের অংশ আলাদা জার্নালে আয়ে সমন্বয় হয়, তাই Cash Book-এ তা Payment হিসেবে দেখায় না।", "অতিথি বাকি রেখে checkout করলে বাকি টাকা Guest Receivable হেডে যায়। পরে টাকা পেলে ওই হেডেই জমা হয়।", "বিলে পয়সা থাকলে পয়সাসহই টাকা নেওয়া হয়, বিল টাকায় রাউন্ড হয় না।", "ডিসকাউন্ট বিলের মোট টাকা (ভ্যাটসহ) থেকে বাদ যায়, আর VAT বসে যা অতিথি দেন তার ওপর। ভ্যাটসহ 1,150 টাকার রুমে 150 ডিসকাউন্টে বিল পড়া যায় ওপর থেকে নিচে: Room Charges (VAT incl.) 1,150 → Discount 150 → Net Amount 1,000 → Rent (excl. VAT) 869.57 + VAT 15% 130.43। ডিসকাউন্ট না থাকলে বিল আগের মতো (Room & Charges, VAT, Gross)। হিসাবে VAT Payable 130.43, আর Discount Allowed-এ যায় ভাড়ার অংশ 130.43 (বাকি 19.57 ভ্যাটের অংশ, যা আর সরকারকে দিতে হয় না)।", "ডিসকাউন্ট রিসিট ভাউচারে থাকে না, আলাদা জার্নালে যায় (Dr Hotel Discount Allowed / Cr Room Rent)। তাই Cash Book ও Cash & Bank Book-এ শুধু হাতে আসা টাকা দেখায়: Room Rent 869.57 + VAT 130.43 = 1,000।"] },
       { "heading": "সতর্কতা", "warning": "Cancel করলে বুকিংয়ের টাকা ফেরত বা cancellation charge হিসেবে আয় হতে পারে — কোন হিসাব থেকে ফেরত যাবে তা বাছতে হবে।" }
     ]
   },
   "hotel-booking-form": {
     "title": "নতুন বুকিং",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "08/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "তারিখ ধরে কোন ঘর, বেড বা হল খালি আছে দেখে বুকিং ধরা হয় এবং কে বুক করছে তা লেখা হয়।",
     "sections": [
-      { "heading": "বুকিং ধরা", "menu": "Hotel → Bookings → New Booking", "steps": ["Guest Type, Payment Type, Arrival ও Departure দিন।", "Building বাছুন; N free লেখা ঘর/বেড থেকে যেগুলো নিতে চান বাছুন।", "হল লাগলে Halls and function spaces থেকে শিফট বাছুন।", "Who is booking, Mobile, Adults, Children ও Notes দিন।", "Confirmed বা Held বাছুন, তারপর Book চাপুন।"] },
+      { "heading": "বুকিং ধরা", "menu": "Hotel → Bookings → New Booking", "steps": ["Guest Type, Payment Type, Arrival ও Departure দিন।", "Building বাছুন, Search চাপুন; N free লেখা ঘর/বেড থেকে যেগুলো নিতে চান বাছুন। রং বদলাতে Colour by ব্যবহার করুন।", "হল লাগলে Halls and function spaces থেকে শিফট বাছুন।", "যা বাছলেন তা ডান পাশে Booking summary-তে ভাড়াসহ ওঠে, নিচে Total দেখায়। ছোট স্ক্রিনে এই অংশটি ঘরের তালিকার নিচে আসে।", "Booking summary-তে Who is booking, Mobile, Adults, Children ও Notes দিন। Corporate হলে Company Name, Complimentary বা House use হলে কারণও এখানে লিখুন।", "Confirmed বা Held বাছুন, তারপর Book চাপুন।", "Who is booking থেকে Enter চাপলে কার্সর পরের ঘরে যায়; Notes-এর পর Book বাটনে গিয়ে আরেকবার Enter দিলে বুকিং সেভ হয়।"] },
       { "heading": "বিশেষ ধরন", "steps": ["Walk-in (no room) বুকিং কোনো ঘর ধরে না; Save করার পর Bill-এ যা বিক্রি হয়েছে যোগ করুন।", "Complimentary বা House use হলে ভাড়া বিল হয় না, তবে ঘর দখলে থাকে।"] },
       { "heading": "সতর্কতা", "warning": "যে রাতের বিল হয়ে গেছে সেই রাত বুকিং থেকে বাদ দেওয়া যায় না — অতিথিকে check out করতে হবে।" }
     ]
@@ -42,25 +42,25 @@
   "hotel-hall-bookings": {
     "title": "হল বুকিং",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "08/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক তারিখে কোন হল কোন শিফটে খালি, তা দেখে বসার (sitting) হিসেবে হল বুকিং ধরা হয়।",
     "sections": [
-      { "heading": "হল বুকিং", "menu": "Hotel → Bookings → Hall Bookings", "steps": ["Property ও Date বাছুন।", "Hall ও শিফটের ঘরে Free/Booked/Not for sale দেখা যায়; খালি ঘরে Taking it বাছুন।", "Booked by, Mobile ও Note দিন।", "Book these sittings চাপুন।"] },
+      { "heading": "হল বুকিং", "menu": "Hotel → Bookings → Hall Bookings", "steps": ["Property ও Date বাছুন।", "প্রতিটি হলের কার্ডে তারিখের পাশে শিফটের টাইল দেখা যায়: FREE খালি, BKD বুক করা। খালি টাইলে চাপলে TAKING লেখা ওঠে।", "যা বাছলেন তা ডান পাশে Booking summary-তে ভাড়াসহ ওঠে; তারিখ বদলালেও আগের বাছাই থাকে। বাদ দিতে পাশের × চাপুন।", "Booking summary-তে Booked by, Mobile ও Note দিন।", "Book these sittings চাপুন।"] },
       { "heading": "সতর্কতা", "warning": "এখানে টাকা বিল হয় না — শুধু হল ধরা হয়; বিল হয় folio-তে।" }
     ]
   },
   "hotel-reports": {
     "title": "হোটেল রিপোর্ট",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "10/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "গত রাতে কে ছিল, কী টাকা এলো, প্রপার্টি কত ভরা ছিল এবং কিট কীভাবে খরচ হলো — চার রিপোর্ট এক স্ক্রিনে।",
+    "intro": "গত রাতে কে ছিল, কী টাকা এলো, কত ভ্যাট কোন হারে জমা হলো, প্রপার্টি কত ভরা ছিল এবং কিট কীভাবে খরচ হলো — পাঁচ রিপোর্ট এক স্ক্রিনে।",
     "sections": [
-      { "heading": "রিপোর্টগুলো", "menu": "Hotel → Reports", "steps": ["Guest register — Night of, Showing (In the building/Arriving/Leaving), Find; তালিকায় Guest, Room, Mobile, NID, Stay ও Booking; Print আছে।", "Collection — From, To ও Method; উপরে Receipts, Taken, Given back ও In hand; নিচে By method ও By account।", "Performance — Occupancy, ADR, RevPAR ও Room revenue; By room type ও Night by night টেবিল।", "Amenity & issues — Room-nights, Kits, Issued this range ও Tagged to an event; Expected against issued ও What each event ate।"] },
-      { "heading": "সতর্কতা", "warning": "Performance-এ halls নেই — হল শিফটে বিক্রি হয়, রাতে নয়; Complimentary ঘর occupancy-তে গোনা হয় কিন্তু ADR/RevPAR-এ নয়।" }
+      { "heading": "রিপোর্টগুলো", "menu": "Hotel → Reports", "steps": ["Guest register — Night of, Showing (In the building/Arriving/Leaving), Find; তালিকায় Guest, Room, Mobile, NID, Stay ও Booking; Print আছে।", "Collection — From, To ও Method; উপরে Receipts, Taken, Given back ও In hand; নিচে By method ও By account।", "VAT by rate — From ও To দিন (দুই তারিখই ধরা হয়); প্রতিটি হারে মোট VAT Collected এবং নিচে Grand Total দেখা যায়।", "Performance — Occupancy, ADR, RevPAR ও Room revenue; By room type ও Night by night টেবিল।", "Amenity & issues — Room-nights, Kits, Issued this range ও Tagged to an event; Expected against issued ও What each event ate।"] },
+      { "heading": "সতর্কতা", "warning": "VAT by rate-এ হার বিলের লাইনে যেভাবে লেখা হয়েছিল সেভাবেই দেখায় — পরে হার বদলালেও আগের বিল বদলাবে না; ডিসকাউন্ট থাকলে VAT-ও সেই অনুপাতে কমে। Performance-এ halls নেই — হল শিফটে বিক্রি হয়, রাতে নয়; Complimentary ঘর occupancy-তে গোনা হয় কিন্তু ADR/RevPAR-এ নয়।" }
     ]
   },
   "hotel-booking-due": {
