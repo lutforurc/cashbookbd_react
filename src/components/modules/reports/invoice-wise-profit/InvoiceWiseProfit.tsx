@@ -6,6 +6,7 @@ import { useReactToPrint } from "react-to-print";
 import { FiCheckSquare, FiEdit, FiFilter, FiPrinter, FiRotateCcw } from "react-icons/fi";
 
 import HelmetTitle from "../../../utils/others/HelmetTitle";
+import Loader from "../../../../common/Loader";
 import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import InputElement from "../../../utils/fields/InputElement";
@@ -16,6 +17,7 @@ import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import httpService from "../../../services/httpService";
 import { API_REPORT_INVOICE_WISE_PROFIT_URL } from "../../../services/apiRoutes";
 import Table from "../../../utils/others/Table";
+import Pagination from "../../../utils/utils-functions/Pagination";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { formatDayMonthYear } from "../../../utils/utils-functions/formatDate";
 import { canEditVoucherRow } from "../../../utils/utils-functions/voucherEditPermission";
@@ -33,8 +35,37 @@ type InvoiceWiseProfitRow = {
   mid?: number | null;
   vr_no?: string | null;
   vr_date?: string | null;
+  customer_name?: string | null;
   invoice_amount?: number | null;
+  received_amount?: number | null;
+  discount?: number | null;
   profit?: number | null;
+};
+
+type InvoiceWiseProfitSummary = {
+  invoice_amount: number;
+  received_amount: number;
+  discount: number;
+  profit: number;
+};
+
+type ReportScope = {
+  branchId: number;
+  branchName: string;
+  search: string;
+  startDate: string;
+  endDate: string;
+  startDateLabel: string;
+  endDateLabel: string;
+};
+
+const PAGE_SIZE = 10;
+
+const EMPTY_SUMMARY: InvoiceWiseProfitSummary = {
+  invoice_amount: 0,
+  received_amount: 0,
+  discount: 0,
+  profit: 0,
 };
 
 const toNumber = (value: unknown) => {
@@ -57,16 +88,22 @@ const InvoiceWiseProfit = (user: any) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportRows, setReportRows] = useState<InvoiceWiseProfitRow[]>([]);
-  // What the rows on screen were actually fetched with. The print sheet names
-  // these rather than the boxes above, so a half-typed search cannot reach paper.
-  const [appliedFilters, setAppliedFilters] = useState<{
-    branchName: string;
-    search: string;
-    startDate: string;
-    endDate: string;
-  } | null>(null);
+  const [summary, setSummary] = useState<InvoiceWiseProfitSummary>(EMPTY_SUMMARY);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    perPage: PAGE_SIZE,
+    total: 0,
+  });
+  // What the rows on screen were actually fetched with. Paging and the print
+  // sheet name these rather than the boxes above, so a half-typed search
+  // cannot reach paper or pull a page from another statement.
+  const [appliedFilters, setAppliedFilters] = useState<ReportScope | null>(null);
+  const [printRequested, setPrintRequested] = useState(false);
+  const [printRows, setPrintRows] = useState<InvoiceWiseProfitRow[] | null>(null);
   const [rowsPerPage, setRowsPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -120,32 +157,89 @@ const InvoiceWiseProfit = (user: any) => {
     return branch?.name ?? "";
   }, [branchId, dropdownData]);
 
-  const tableData = useMemo(
-    () =>
-      reportRows.map((row, index) => ({
-        ...row,
-        sl: row?.sl ?? index + 1,
+  const decimalPlaces = useMemo(() => {
+    const raw = Number(settings?.data?.branch?.decimal_places ?? 0);
+    return Number.isFinite(raw) ? Math.min(Math.max(Math.trunc(raw), 0), 20) : 0;
+  }, [settings?.data?.branch?.decimal_places]);
+
+  /**
+   * An amount for the Received Amt column, where an invoice that took nothing
+   * is written "0.00" rather than the dash the shared formatter gives every
+   * other zero -- the column answers "how much of this bill was paid", and a
+   * dash reads as "not applicable" instead of "nothing".
+   */
+  const formatReceivedAmount = (value: unknown) => {
+    const amount = toNumber(value);
+
+    if (amount !== 0) return thousandSeparator(amount);
+
+    // An unpaid bill is written 0.00 even where the branch drops decimals from
+    // its amounts, which is what "nothing came in" is expected to look like.
+    const digits = Math.max(decimalPlaces, 2);
+
+    return (0).toLocaleString("en-IN", {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+    });
+  };
+
+  /**
+   * One page of the report, as the server built it: it filters, sorts (newest
+   * invoice first, then the newer id) and foots the whole result before it
+   * cuts. `per_page = 0` asks for every row, which is what the print sheet
+   * needs.
+   */
+  const requestReport = async ({
+    scope,
+    page,
+    perPage,
+  }: {
+    scope: ReportScope;
+    page: number;
+    perPage: number;
+  }) => {
+    const response = await httpService.post(API_REPORT_INVOICE_WISE_PROFIT_URL, {
+      branch_id: Number(scope.branchId),
+      startDate: scope.startDate,
+      endDate: scope.endDate,
+      search: scope.search,
+      page,
+      per_page: perPage,
+    });
+
+    const payload = response?.data;
+
+    if (!payload?.success) {
+      throw new Error(payload?.message || "Invoice wise profit load failed");
+    }
+
+    const reportData = payload?.data?.data ?? payload?.data ?? {};
+    const apiItems = Array.isArray(reportData?.items) ? reportData.items : [];
+    const apiSummary = reportData?.summary ?? {};
+    const apiPagination = reportData?.pagination ?? {};
+
+    return {
+      rows: apiItems.map((item: InvoiceWiseProfitRow) => ({
+        ...item,
+        invoice_amount: toNumber(item?.invoice_amount),
+        received_amount: toNumber(item?.received_amount),
+        discount: toNumber(item?.discount),
+        profit: toNumber(item?.profit),
       })),
-    [reportRows]
-  );
-
-  // Footed from the rows the report is showing, so the totals and the print
-  // sheet can never disagree with the list above them.
-  const totals = useMemo(
-    () =>
-      tableData.reduce(
-        (sum, row) => ({
-          invoiceAmount: sum.invoiceAmount + toNumber(row.invoice_amount),
-          profit: sum.profit + toNumber(row.profit),
-        }),
-        { invoiceAmount: 0, profit: 0 }
-      ),
-    [tableData]
-  );
-
-  const printRef = useRef<HTMLDivElement>(null);
-  const voucherRegistryRef = useRef<any>(null);
-  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+      summary: {
+        invoice_amount: toNumber(apiSummary?.invoice_amount),
+        received_amount: toNumber(apiSummary?.received_amount),
+        discount: toNumber(apiSummary?.discount),
+        profit: toNumber(apiSummary?.profit),
+      },
+      pagination: {
+        currentPage: Number(apiPagination?.current_page) || 1,
+        lastPage: Number(apiPagination?.last_page) || 1,
+        perPage: Number(apiPagination?.per_page) || perPage,
+        total: Number(apiPagination?.total) || 0,
+      },
+    };
+  };
 
   const handleRunReport = async () => {
     if (!branchId) {
@@ -163,42 +257,31 @@ const InvoiceWiseProfit = (user: any) => {
       return;
     }
 
+    const scope: ReportScope = {
+      branchId: Number(branchId),
+      branchName: selectedBranchName,
+      search: search.trim(),
+      startDate: dayjs(startDate).format("YYYY-MM-DD"),
+      endDate: dayjs(endDate).format("YYYY-MM-DD"),
+      startDateLabel: dayjs(startDate).format("DD/MM/YYYY"),
+      endDateLabel: dayjs(endDate).format("DD/MM/YYYY"),
+    };
+
     setButtonLoading(true);
     setError(null);
 
     try {
-      const response = await httpService.post(API_REPORT_INVOICE_WISE_PROFIT_URL, {
-        branch_id: Number(branchId),
-        startDate: dayjs(startDate).format("YYYY-MM-DD"),
-        endDate: dayjs(endDate).format("YYYY-MM-DD"),
-        search: search.trim(),
-      });
+      const result = await requestReport({ scope, page: 1, perPage: PAGE_SIZE });
 
-      const payload = response?.data;
-
-      if (!payload?.success) {
-        throw new Error(payload?.message || "Invoice wise profit load failed");
-      }
-
-      const reportData = payload?.data?.data ?? payload?.data ?? {};
-      const apiItems = Array.isArray(reportData?.items) ? reportData.items : [];
-
-      setReportRows(
-        apiItems.map((item: InvoiceWiseProfitRow) => ({
-          ...item,
-          invoice_amount: toNumber(item?.invoice_amount),
-          profit: toNumber(item?.profit),
-        }))
-      );
-      setAppliedFilters({
-        branchName: selectedBranchName,
-        search: search.trim(),
-        startDate: dayjs(startDate).format("DD/MM/YYYY"),
-        endDate: dayjs(endDate).format("DD/MM/YYYY"),
-      });
+      setAppliedFilters(scope);
+      setReportRows(result.rows);
+      setSummary(result.summary);
+      setPagination(result.pagination);
       setFilterOpen(false);
     } catch (err: any) {
       setReportRows([]);
+      setSummary(EMPTY_SUMMARY);
+      setPagination({ currentPage: 1, lastPage: 1, perPage: PAGE_SIZE, total: 0 });
       setAppliedFilters(null);
       setError(
         err?.response?.data?.message ||
@@ -207,6 +290,35 @@ const InvoiceWiseProfit = (user: any) => {
       );
     } finally {
       setButtonLoading(false);
+    }
+  };
+
+  const handlePageChange = async (nextPage: number) => {
+    if (!appliedFilters || tableLoading) return;
+    if (nextPage === pagination.currentPage) return;
+    if (nextPage < 1 || nextPage > pagination.lastPage) return;
+
+    setTableLoading(true);
+    setError(null);
+
+    try {
+      const result = await requestReport({
+        scope: appliedFilters,
+        page: nextPage,
+        perPage: pagination.perPage || PAGE_SIZE,
+      });
+
+      setReportRows(result.rows);
+      setSummary(result.summary);
+      setPagination(result.pagination);
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Invoice wise profit load failed"
+      );
+    } finally {
+      setTableLoading(false);
     }
   };
 
@@ -220,15 +332,12 @@ const InvoiceWiseProfit = (user: any) => {
   const handleResetFilters = () => {
     setSearch("");
     setReportRows([]);
+    setSummary(EMPTY_SUMMARY);
+    setPagination({ currentPage: 1, lastPage: 1, perPage: PAGE_SIZE, total: 0 });
     setAppliedFilters(null);
     setError(null);
     setFilterOpen(false);
   };
-
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: "Invoice Wise Profit",
-  });
 
   const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
@@ -239,6 +348,66 @@ const InvoiceWiseProfit = (user: any) => {
     const value = parseInt(e.target.value, 10);
     setFontSize(Number.isNaN(value) ? 12 : value);
   };
+
+  const printRef = useRef<HTMLDivElement>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
+
+  const printDocument = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Invoice Wise Profit",
+    onAfterPrint: () => {
+      setPrintRequested(false);
+      setPrintRows(null);
+    },
+  });
+
+  const handlePrint = () => {
+    if (!appliedFilters || tableLoading || printRequested) return;
+
+    setPrintRows(null);
+    setPrintRequested(true);
+  };
+
+  // The sheet carries the whole filtered set, so the rows for the paper are
+  // fetched for the print alone -- the screen only holds the page it shows.
+  useEffect(() => {
+    if (!printRequested || !appliedFilters) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const result = await requestReport({
+          scope: appliedFilters,
+          page: 1,
+          perPage: 0,
+        });
+
+        if (!cancelled) setPrintRows(result.rows);
+      } catch (err: any) {
+        if (!cancelled) {
+          setPrintRequested(false);
+          setError(
+            err?.response?.data?.message || err?.message || "Print failed"
+          );
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [printRequested]);
+
+  // react-to-print copies the DOM when it is called, so the sheet is printed
+  // only once the whole set is actually mounted.
+  useEffect(() => {
+    if (!printRequested || !printRows) return;
+
+    const timer = setTimeout(() => printDocument(), 150);
+    return () => clearTimeout(timer);
+  }, [printRows, printRequested]);
 
   /**
    * Opens the invoice on the screen that owns it.
@@ -259,16 +428,16 @@ const InvoiceWiseProfit = (user: any) => {
   const columns = [
     {
       key: "sl",
-      header: "Sl. No.",
+      header: "#",
       headerClass: "text-center",
       cellClass: "text-center",
-      width: "70px",
-      render: (row: InvoiceWiseProfitRow) => <div>{row?.sl ?? "-"}</div>,
+      width: "60px",
+      render: (row: InvoiceWiseProfitRow) => <div>{row?.sl ?? ""}</div>,
     },
     {
       key: "vr_no",
       header: "Inv. No.",
-      width: "170px",
+      width: "100px",
       render: (row: InvoiceWiseProfitRow) => (
         <div className="font-medium">{row?.vr_no || "-"}</div>
       ),
@@ -276,9 +445,17 @@ const InvoiceWiseProfit = (user: any) => {
     {
       key: "vr_date",
       header: "Date",
-      width: "110px",
+      width: "100px",
       render: (row: InvoiceWiseProfitRow) => (
         <div className="whitespace-nowrap">{formatDayMonthYear(row?.vr_date)}</div>
+      ),
+    },
+    {
+      key: "customer_name",
+      header: "Customer",
+      // width: "",
+      render: (row: InvoiceWiseProfitRow) => (
+        <div className="whitespace-normal">{row?.customer_name || "-"}</div>
       ),
     },
     {
@@ -286,10 +463,34 @@ const InvoiceWiseProfit = (user: any) => {
       header: "Inv. Amount",
       headerClass: "text-right",
       cellClass: "text-right",
-      width: "150px",
+      width: "130px",
       render: (row: InvoiceWiseProfitRow) => (
         <div className="whitespace-nowrap">
           {thousandSeparator(toNumber(row?.invoice_amount))}
+        </div>
+      ),
+    },
+    {
+      key: "received_amount",
+      header: "Received Amt",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      width: "130px",
+      render: (row: InvoiceWiseProfitRow) => (
+        <div className="whitespace-nowrap">
+          {formatReceivedAmount(row?.received_amount)}
+        </div>
+      ),
+    },
+    {
+      key: "discount",
+      header: "Discount",
+      headerClass: "text-right",
+      cellClass: "text-right",
+      width: "130px",
+      render: (row: InvoiceWiseProfitRow) => (
+        <div className="whitespace-nowrap">
+          {thousandSeparator(toNumber(row?.discount))}
         </div>
       ),
     },
@@ -298,7 +499,7 @@ const InvoiceWiseProfit = (user: any) => {
       header: "Profit",
       headerClass: "text-right",
       cellClass: "text-right",
-      width: "140px",
+      width: "100px",
       render: (row: InvoiceWiseProfitRow) => {
         const profit = toNumber(row?.profit);
 
@@ -347,20 +548,30 @@ const InvoiceWiseProfit = (user: any) => {
     },
   ];
 
-  const footerRows = tableData.length
+  // The foot is the server's summary, which covers every row the filters keep,
+  // not just the page on screen.
+  const footerRows = pagination.total
     ? [
         [
           {
             label: "Total",
-            colSpan: 3,
+            colSpan: 4,
             className: "text-left font-semibold",
           },
           {
-            label: thousandSeparator(totals.invoiceAmount),
+            label: thousandSeparator(summary.invoice_amount),
             className: "text-right font-semibold",
           },
           {
-            label: thousandSeparator(totals.profit),
+            label: formatReceivedAmount(summary.received_amount),
+            className: "text-right font-semibold",
+          },
+          {
+            label: thousandSeparator(summary.discount),
+            className: "text-right font-semibold",
+          },
+          {
+            label: thousandSeparator(summary.profit),
             className: "text-right font-semibold",
           },
           { label: "", className: "" },
@@ -519,7 +730,7 @@ const InvoiceWiseProfit = (user: any) => {
                   onClick={handlePrint}
                   label="Print"
                   className="px-6"
-                  disabled={tableData.length === 0}
+                  disabled={!appliedFilters || tableLoading || printRequested}
                 />
               </div>
             ) : (
@@ -566,7 +777,7 @@ const InvoiceWiseProfit = (user: any) => {
                     onClick={handlePrint}
                     label="Print"
                     className="px-6"
-                    disabled={tableData.length === 0}
+                    disabled={!appliedFilters || tableLoading || printRequested}
                   />
                 </div>
               </div>
@@ -581,22 +792,40 @@ const InvoiceWiseProfit = (user: any) => {
         </div>
 
         <div className="pt-2">
+          {tableLoading ? <Loader /> : null}
+
           <Table
             columns={columns}
-            data={tableData || []}
+            data={reportRows}
             footerRows={footerRows}
             noDataMessage="No report data found. Select branch and date range, then click Apply."
           />
+
+          {pagination.total > 0 ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="text-sm text-slate-500 dark:text-slate-300">
+                {tableLoading
+                  ? "Loading…"
+                  : `Page ${pagination.currentPage} of ${pagination.lastPage} · ${pagination.total} invoices`}
+              </span>
+
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.lastPage}
+                handlePageChange={handlePageChange}
+              />
+            </div>
+          ) : null}
         </div>
 
         <div className="hidden">
           <InvoiceWiseProfitPrint
             ref={printRef}
-            rows={tableData || []}
+            rows={printRows ?? []}
             branchName={appliedFilters?.branchName}
             search={appliedFilters?.search}
-            startDate={appliedFilters?.startDate}
-            endDate={appliedFilters?.endDate}
+            startDate={appliedFilters?.startDateLabel}
+            endDate={appliedFilters?.endDateLabel}
             rowsPerPage={Number(rowsPerPage)}
             fontSize={Number(fontSize)}
           />

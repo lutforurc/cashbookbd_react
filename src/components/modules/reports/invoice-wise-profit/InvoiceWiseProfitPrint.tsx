@@ -9,7 +9,10 @@ export type InvoiceWiseProfitPrintRow = {
   sl?: number;
   vr_no?: string | null;
   vr_date?: string | null;
+  customer_name?: string | null;
   invoice_amount?: number | null;
+  received_amount?: number | null;
+  discount?: number | null;
   profit?: number | null;
 };
 
@@ -56,9 +59,11 @@ const InvoiceWiseProfitPrint = React.forwardRef<HTMLDivElement, Props>(
     const totals = safeRows.reduce(
       (sum, row) => ({
         invoiceAmount: sum.invoiceAmount + toNumber(row?.invoice_amount),
+        received: sum.received + toNumber(row?.received_amount),
+        discount: sum.discount + toNumber(row?.discount),
         profit: sum.profit + toNumber(row?.profit),
       }),
-      { invoiceAmount: 0, profit: 0 }
+      { invoiceAmount: 0, received: 0, discount: 0, profit: 0 }
     );
 
     return (
@@ -91,16 +96,19 @@ const InvoiceWiseProfitPrint = React.forwardRef<HTMLDivElement, Props>(
 
             <table className="w-full table-fixed border-collapse">
               <colgroup>
-                <col style={{ width: "7%" }} />
-                <col style={{ width: "23%" }} />
-                <col style={{ width: "18%" }} />
-                <col style={{ width: "26%" }} />
-                <col style={{ width: "26%" }} />
+                <col style={{ width: "4%" }} />
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "10%" }} />
+                <col style={{ width: "21%" }} />
+                <col style={{ width: "14%" }} />
+                <col style={{ width: "13%" }} />
+                <col style={{ width: "11%" }} />
+                <col style={{ width: "12%" }} />
               </colgroup>
               <thead>
                 <tr>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-center text-black">
-                    Sl. No.
+                    #
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left text-black">
                     Inv. No.
@@ -108,8 +116,17 @@ const InvoiceWiseProfitPrint = React.forwardRef<HTMLDivElement, Props>(
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left text-black">
                     Date
                   </th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-left text-black">
+                    Customer
+                  </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right text-black">
                     Inv. Amount
+                  </th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right text-black">
+                    Received Amt
+                  </th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right text-black">
+                    Discount
                   </th>
                   <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 text-right text-black">
                     Profit
@@ -130,8 +147,17 @@ const InvoiceWiseProfitPrint = React.forwardRef<HTMLDivElement, Props>(
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-black">
                         {formatDayMonthYear(row?.vr_date)}
                       </td>
+                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-black">
+                        {row?.customer_name || "-"}
+                      </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right text-black">
                         {thousandSeparator(toNumber(row?.invoice_amount))}
+                      </td>
+                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right text-black">
+                        {thousandSeparator(toNumber(row?.received_amount))}
+                      </td>
+                      <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right text-black">
+                        {thousandSeparator(toNumber(row?.discount))}
                       </td>
                       <td style={{ fontSize: fs }} className="border border-gray-900 px-2 py-1 text-right text-black">
                         {thousandSeparator(toNumber(row?.profit))}
@@ -140,7 +166,7 @@ const InvoiceWiseProfitPrint = React.forwardRef<HTMLDivElement, Props>(
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="border border-gray-900 px-3 py-6 text-center text-black">
+                    <td colSpan={8} className="border border-gray-900 px-3 py-6 text-center text-black">
                       No data found
                     </td>
                   </tr>
@@ -158,13 +184,32 @@ const InvoiceWiseProfitPrint = React.forwardRef<HTMLDivElement, Props>(
                     Inv. Amount: {thousandSeparator(totals.invoiceAmount)}
                   </div>
                   <div style={{ fontSize: fs }} className="whitespace-nowrap text-right font-bold">
+                    Received: {thousandSeparator(totals.received)}
+                  </div>
+                  <div style={{ fontSize: fs }} className="whitespace-nowrap text-right font-bold">
+                    Discount: {thousandSeparator(totals.discount)}
+                  </div>
+                  <div style={{ fontSize: fs }} className="whitespace-nowrap text-right font-bold">
                     Profit: {thousandSeparator(totals.profit)}
                   </div>
                 </div>
               </div>
             ) : null}
 
-            <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} />
+            {/* ⚠️ AN UNBROKEN RUN IS PINNED TO THE PAPER.
+                Rows left blank (the default) puts every invoice in one block
+                and lets the browser decide where the sheets fall -- and a
+                footer in the flow prints once, at the end of the run, so the
+                sheets before it carry no software line at all. The pinned form
+                is repainted on every sheet the document runs to. It carries no
+                page count for the same reason: nothing here knows how many
+                sheets the browser made. Set Rows and the report cuts its own
+                pages, and then the foot says which one this is. */}
+            {rowsPerPage > 0 ? (
+              <PrintFooter page={pageIndex + 1} total={pages.length} fontSize={fs} />
+            ) : (
+              <PrintFooter fixed fontSize={fs} />
+            )}
 
             {pageIndex !== pages.length - 1 && <div className="page-break" />}
           </div>

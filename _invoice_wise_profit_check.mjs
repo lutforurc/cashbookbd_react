@@ -166,6 +166,26 @@ assert.ok(
 );
 
 assert.ok(
+  /received_amount: toNumber\(item\?\.received_amount\)/.test(page) &&
+    /discount: toNumber\(item\?\.discount\)/.test(page),
+  'the received and discount figures are not mapped from the response',
+);
+assert.ok(
+  /formatReceivedAmount/.test(page) &&
+    /toLocaleString\("en-IN"/.test(page),
+  'an invoice that took nothing does not print 0.00',
+);
+assert.ok(
+  /header: "#"/.test(page) &&
+    /header: "Received Amt"/.test(page) &&
+    /header: "Customer"/.test(page),
+  'the renamed columns or the Customer column are missing',
+);
+assert.ok(
+  /row\?\.customer_name/.test(page),
+  'the Customer column does not read the server field',
+);
+assert.ok(
   /canEditVoucherRow\(userPermissions, row\)/.test(page),
   'the pencil is not gated on the voucher edit permission',
 );
@@ -186,16 +206,38 @@ assert.ok(
 /* -- both feet are the same figure, over every row ---------------------------- */
 
 assert.ok(
-  /tableData\.reduce\(/.test(page),
-  'the on-screen total is not summed from the rows',
+  /reportData\?\.summary/.test(page) &&
+    /summary\.invoice_amount/.test(page),
+  'the on-screen foot is not the server summary',
 );
 assert.ok(
-  /footerRows = tableData\.length/.test(page),
+  /footerRows = pagination\.total/.test(page),
   'the table has no total row',
+);
+assert.ok(
+  /per_page: perPage/.test(page) &&
+    /pagination\.lastPage/.test(page) &&
+    /<Pagination/.test(page),
+  'the table does not page through the server, 10 invoices at a time',
+);
+assert.ok(
+  /row\?\.sl/.test(page),
+  'the row number is not the server-wide one carried across pages',
+);
+assert.ok(
+  /common\/Loader/.test(page) && /tableLoading \? <Loader \/> : null/.test(page),
+  'a page change does not run the app loader',
 );
 assert.ok(
   /safeRows\.reduce\(/.test(print),
   'the printed total is not summed from every row',
+);
+assert.ok(
+  /Customer/.test(print) &&
+    /Received Amt/.test(print) &&
+    /Discount/.test(print) &&
+    /customer_name/.test(print),
+  'the printed sheet is missing the customer or money columns',
 );
 assert.ok(
   /chunkRows\(safeRows, rowsPerPage\)/.test(print) &&
