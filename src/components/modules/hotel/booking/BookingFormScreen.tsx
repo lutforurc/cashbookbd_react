@@ -265,6 +265,9 @@ const BookingFormScreen = ({ user }: any) => {
    * could ever be dropped.
    */
   const [ownRooms, setOwnRooms] = useState<number[]>([]);
+  // ⚠️ And its own BEDS, for the same reason: a dormitory booking's beds come
+  // back "booked" by itself, and without this none of them could be let go.
+  const [ownSeats, setOwnSeats] = useState<number[]>([]);
   const [ownSittings, setOwnSittings] = useState<string[]>([]);
 
   // What the tiles are painted by. Availability first, because that is the
@@ -516,6 +519,7 @@ const BookingFormScreen = ({ user }: any) => {
       );
 
       setOwnRooms((booking.room_ids ?? []).map((id: any) => Number(id)));
+      setOwnSeats((booking.seat_ids ?? []).map((id: any) => Number(id)));
       setOwnSittings(
         (booking.sittings ?? []).map(
           (one: any) => `${one.resource_id}|${one.slot_id}|${one.date}`,
@@ -660,7 +664,12 @@ const BookingFormScreen = ({ user }: any) => {
     // back from availability marked "taken" -- by this very booking -- and
     // returning early here left the tile clickable but dead: the clerk pressed
     // it and nothing happened, which reads worse than a disabled tile.
-    const ours = picked.includes(room.id) || ownRooms.includes(room.id);
+    // A dormitory is ours where any of its beds is -- it has to open, or the
+    // beds inside could never be reached to release.
+    const ours =
+      picked.includes(room.id) ||
+      ownRooms.includes(room.id) ||
+      (room.seats ?? []).some((seat) => ownSeats.includes(seat.id));
 
     if (room.blocked_reason && !ours) return;
 
@@ -675,7 +684,8 @@ const BookingFormScreen = ({ user }: any) => {
   };
 
   const toggleSeat = (seat: LayoutSeat) => {
-    if (seat.state !== 'free') return;
+    // ⚠️ Free, or already ours -- see ownSeats.
+    if (seat.state !== 'free' && !ownSeats.includes(seat.id)) return;
 
     setPickedSeats((prev) =>
       prev.includes(seat.id) ? prev.filter((id) => id !== seat.id) : [...prev, seat.id],
@@ -1257,7 +1267,12 @@ const BookingFormScreen = ({ user }: any) => {
                       mode={mode}
                       typeIndex={typeIndex}
                       selectedIds={[...picked, ...(openBeds ? [openBeds.id] : [])]}
-                      ownIds={ownRooms}
+                      ownIds={[
+                        ...ownRooms,
+                        ...rooms
+                          .filter((room) => (room.seats ?? []).some((seat) => ownSeats.includes(seat.id)))
+                          .map((room) => room.id),
+                      ]}
                       onSelect={toggle}
                       // Tiles that carry a reason stop being clickable -- but
                       // keep their colour and their tooltip, because WHY is the
@@ -1320,7 +1335,9 @@ const BookingFormScreen = ({ user }: any) => {
                       <div className="flex flex-wrap gap-2">
                         {(rooms.find((r) => r.id === openBeds.id)?.seats ?? []).map((seat) => {
                           const chosen = pickedSeats.includes(seat.id);
-                          const free = seat.state === 'free';
+                          // A bed this booking already holds is "booked" -- by
+                          // us -- and stays pressable so it can be released.
+                          const free = seat.state === 'free' || ownSeats.includes(seat.id);
 
                           return (
                             <button

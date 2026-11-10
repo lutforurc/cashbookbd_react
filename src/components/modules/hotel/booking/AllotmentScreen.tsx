@@ -86,6 +86,8 @@ const AllotmentScreen = () => {
   const bookingId = Number(id);
 
   const allotment = useSelector((state: any) => state.hotelBooking.allotment);
+  /** Why the booking could not be read, where it could not. */
+  const [failed, setFailed] = useState<string | null>(null);
   const saving = useSelector((state: any) => state.hotelBooking.saving);
 
   // Which room's form is open. One at a time: five rooms of five guests each
@@ -159,7 +161,10 @@ const AllotmentScreen = () => {
   useEffect(() => {
     if (!bookingId) return;
 
-    dispatch(allotmentRead(bookingId));
+    setFailed(null);
+    dispatch(allotmentRead(bookingId))
+      .unwrap()
+      .catch((error: any) => setFailed(String(error || 'Could not open this booking')));
 
     return () => {
       dispatch(clearAllotment());
@@ -422,6 +427,20 @@ const AllotmentScreen = () => {
       toast.error(String(error));
     }
   };
+
+  // ⚠️ A read that failed is said, with a way back. The spinner below used to
+  // turn for ever on a booking that was never going to arrive.
+  if (!allotment && failed) {
+    return (
+      <div className="min-h-60">
+        <HelmetTitle title="Check in" />
+        <p className="mb-3 rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+          {failed}
+        </p>
+        <ButtonLoading onClick={back} label="Back" icon={<FiArrowLeft size={16} />} />
+      </div>
+    );
+  }
 
   if (!allotment) {
     return (

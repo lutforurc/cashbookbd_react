@@ -84,6 +84,8 @@ const AmenityKitsTab = ({ branchId }: { branchId: number }) => {
   const [form, setForm] = useState<any>(null);
   const [lines, setLines] = useState<KitLine[]>([]);
   const [line, setLine] = useState<KitLine>(blankLine());
+  /** Lines on the kit being edited that this form cannot carry -- see openEdit. */
+  const [dropped, setDropped] = useState(0);
   const [items, setItems] = useState<ExpenseItem[]>([]);
 
   // The expense items a kit may name -- loaded once, searched as typed.
@@ -147,6 +149,7 @@ const AmenityKitsTab = ({ branchId }: { branchId: number }) => {
   }, [roomTypes, form?.room_type_id]);
 
   const openNew = () => {
+    setDropped(0);
     setForm(blankKit());
     setLines([]);
     setLine(blankLine());
@@ -160,6 +163,9 @@ const AmenityKitsTab = ({ branchId }: { branchId: number }) => {
       notes: row.notes ?? '',
       status: row.status,
     });
+    // ⚠️ Counted so the form can SAY they are going. The save replaces the
+    // whole list, and a line dropped without a word is one nobody picks again.
+    setDropped((row.items ?? []).filter((item: any) => !item.item_id).length);
     setLines(
       // A line still on an old shop product has no item and cannot be saved
       // back; it is left off, and the kit is saved with what is picked again.
@@ -446,6 +452,15 @@ const AmenityKitsTab = ({ branchId }: { branchId: number }) => {
                   />
                 </div>
               </div>
+
+              {dropped ? (
+                <p className="mt-2 text-xs leading-snug text-warning">
+                  {dropped} {dropped === 1 ? 'line' : 'lines'} of this kit {dropped === 1 ? 'is' : 'are'} on
+                  an old product and {dropped === 1 ? 'is' : 'are'} not listed below. Saving removes{' '}
+                  {dropped === 1 ? 'it' : 'them'} — pick the item again first, or close the form to keep
+                  the kit as it is.
+                </p>
+              ) : null}
 
               {lines.length ? (
                 <div className="mt-3 overflow-x-auto">

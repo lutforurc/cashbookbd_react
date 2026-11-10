@@ -168,12 +168,14 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
       seat_rent: '',
       // ⚠️ From the ids the server sends beside the rows, never mapped back
       // from the names -- that map is the one that goes wrong the day two
-      // facilities are worded alike. An older answer without them leaves the
-      // ticks empty rather than undefined, so a save then clears the list it
-      // could not show; see the note on facility_ids in types.ts.
+      // facilities are worded alike. ⚠️ An answer carrying neither leaves the
+      // key UNDEFINED, and the save then leaves it off: a list this form could
+      // not show is not one it may clear. See facility_ids in types.ts.
       facility_ids:
         (editingResource as any).facility_ids ??
-        (editingResource.facilities ?? []).map((f: any) => f.id),
+        (editingResource.facilities
+          ? editingResource.facilities.map((f: any) => f.id)
+          : undefined),
       description: editingResource.description ?? '',
     });
   }, [editingResource]);
@@ -352,7 +354,11 @@ const RoomsTab = ({ branchId, branchName }: { branchId: number; branchName?: str
       // array is the answer "this room offers none of them" and clears the
       // list, where leaving the key off would keep whatever is stored. The
       // server tells the two apart -- see syncFacilities in the API.
-      facility_ids: form.facility_ids ?? [],
+      //
+      // ⚠️ Except on a room that EXISTS and whose ticks never arrived: there
+      // the key stays off (undefined is dropped from the JSON) and the stored
+      // list is kept.
+      facility_ids: form.facility_ids ?? (form.id ? undefined : []),
     };
 
     try {

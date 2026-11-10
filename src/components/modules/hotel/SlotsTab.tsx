@@ -201,21 +201,20 @@ const SlotsTab = ({ branchId }: { branchId: number }) => {
       }
       formOpen={form !== null}
       editing={!!form?.id}
-      onAdd={() => setForm(blankSlot())}
+      onNew={() => setForm(blankSlot())}
       onCancel={() => setForm(null)}
       onSave={handleSave}
       saving={saving}
       loading={loading}
       rows={slots?.data ?? []}
       columns={columns}
-      total={slots?.total ?? 0}
       page={slots?.current_page ?? page}
-      perPage={slots?.per_page ?? 10}
-      onPage={setPage}
+      totalPages={Math.ceil((slots?.total ?? 0) / (slots?.per_page || 10))}
+      onPageChange={setPage}
       emptyMessage="No shifts yet. A property that lets a hall needs at least one — an evening, usually."
-      fields={
+      form={
         form ? (
-          <>
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
             <InputElement
               id="slot_name"
               name="name"
@@ -285,7 +284,7 @@ const SlotsTab = ({ branchId }: { branchId: number }) => {
               value={form.status}
               onChange={set('status')}
             />
-          </>
+          </div>
         ) : null
       }
     />

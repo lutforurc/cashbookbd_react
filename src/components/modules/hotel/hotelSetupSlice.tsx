@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import httpService from '../../services/httpService';
+import { wholeBuildings } from './setupHelpers';
 import {
   API_HOTEL_BUILDING_URL,
   API_HOTEL_FACILITY_URL,
@@ -436,7 +437,7 @@ const hotelSetupSlice = createSlice({
       })
       .addCase(layoutRead.fulfilled, (state, action) => {
         state.layoutLoading = false;
-        state.layout = action.payload?.buildings ?? [];
+        state.layout = wholeBuildings(action.payload?.buildings);
         state.times = action.payload?.times ?? null;
       })
       // A property with no buildings answers 404 with a sentence, which axios

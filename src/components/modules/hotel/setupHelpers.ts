@@ -237,3 +237,15 @@ export const clockTime = (value?: string | null): string => {
 
   return `${hour}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
 };
+
+/**
+ * ⚠️ Every building leaves here with both lists, even where the server sent
+ * neither. A dozen places spread `floors` and `unfloored` without asking, and
+ * one answer missing either was a white screen.
+ */
+export const wholeBuildings = (buildings: any): any[] =>
+  (Array.isArray(buildings) ? buildings : []).map((building: any) => ({
+    ...building,
+    floors: (building?.floors ?? []).map((floor: any) => ({ ...floor, rooms: floor?.rooms ?? [] })),
+    unfloored: building?.unfloored ?? [],
+  }));

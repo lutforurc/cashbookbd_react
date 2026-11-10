@@ -1107,10 +1107,18 @@ const HotelReports = () => {
             />
           </div>
 
+          {/* ⚠️ A read that FAILED is not an empty list. Without this the
+              table below says nobody is here, which is an answer. */}
+          {reportError ? (
+            <p className="mb-2 rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+              {reportError}
+            </p>
+          ) : null}
+
           <Table
             columns={registerColumns}
             data={register?.rows ?? []}
-            noDataMessage="Nobody on this list for that night."
+            noDataMessage={reportError ? 'Could not read the register.' : 'Nobody on this list for that night.'}
           />
 
           <div className="hidden">
@@ -1175,7 +1183,7 @@ const HotelReports = () => {
                 {/* For the person reconciling the cash book rather than the
                     person counting the drawer — different question, same rows. */}
                 <div className="mb-1 font-semibold text-black dark:text-white">By account</div>
-                {totals.by_account.map((item: any) => (
+                {(totals.by_account ?? []).map((item: any) => (
                   <div key={item.name} className="text-gray-600 dark:text-gray-300">
                     {item.name}: {money(item.amount)}
                   </div>
@@ -1184,10 +1192,18 @@ const HotelReports = () => {
             </div>
           ) : null}
 
+          {/* ⚠️ A read that FAILED is not an empty list. Without this the
+              table below says nobody is here, which is an answer. */}
+          {reportError ? (
+            <p className="mb-2 rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+              {reportError}
+            </p>
+          ) : null}
+
           <Table
             columns={collectionColumns}
             data={collection?.rows ?? []}
-            noDataMessage="No money taken in that range."
+            noDataMessage={reportError ? 'Could not read the collection.' : 'No money taken in that range.'}
           />
         </>
       )}
