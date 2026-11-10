@@ -323,6 +323,7 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
   '/reports/product-ledger-data': 'product-ledger-data',
   '/reports/product-profit-loss': 'product-profit-loss',
   '/reports/product-profit-summary': 'product-profit-summary',
+  '/reports/invoice-wise-profit': 'invoice-wise-profit',
   '/reports/product-receivable-payable': 'product-receivable-payable',
   '/reports/profit-loss-date-wise': 'profit-loss-date-wise',
   '/reports/sales-referrer': 'sales-referrer',

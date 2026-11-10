@@ -153,6 +153,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   'financial_statement': [
     { id: 'product_profit_loss', title: "Product Profit Loss" },
     { id: 'product_profit_summary', title: "Product Profit Summary" },
+    { id: 'invoice_wise_profit', title: "Invoice Wise Profit" },
     { id: 'profit_loss_date_wise', title: "Profit Loss (Date Wise)" },
     { id: 'monthly_statement', title: "Monthly Statement" },
     { id: 'trial_balance_level4', title: "Trial Balance Details" },
@@ -2044,6 +2045,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Product Profit Summary
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'invoice.wise.profit') && (
+                            <li style={subSlot('financial_statement', 'invoice_wise_profit')}>
+                              <NavLink
+                                to={routes.invoice_wise_profit}
+                                className={subMenuLinkClass}
+                              >
+                                Invoice Wise Profit
                               </NavLink>
                             </li>
                           )}

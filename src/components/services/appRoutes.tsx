@@ -187,6 +187,7 @@ const ROUTES = {
   monthly_statement: '/reports/monthly-statement',
   product_profit_loss: '/reports/product-profit-loss',
   product_profit_summary: '/reports/product-profit-summary',
+  invoice_wise_profit: '/reports/invoice-wise-profit',
   business_summary: '/reports/business-summary',
   product_ledger_data: '/reports/product-ledger-data',
   product_statement: '/product/product-statement',

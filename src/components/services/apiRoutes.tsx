@@ -458,6 +458,8 @@ export const API_REPORT_MONTHLY_STATEMENT_URL = `${API_BASE_URL}/reports/monthly
 export const API_REPORT_PROFIT_LOSS_EXPENSE_SUMMARY_URL = `${API_BASE_URL}/reports/profit-loss-expense-summary`;
 export const API_REPORT_PRODUCT_PROFIT_LOSS_URL = `${API_BASE_URL}/reports/product-profit-loss`;
 export const API_REPORT_PRODUCT_PROFIT_SUMMARY_URL = `${API_BASE_URL}/reports/product-profit-summary`;
+// One row per sales invoice: its amount and the profit the goods on it made.
+export const API_REPORT_INVOICE_WISE_PROFIT_URL = `${API_BASE_URL}/reports/invoice-wise-profit`;
 export const API_REPORT_BUSINESS_SUMMARY_URL = `${API_BASE_URL}/reports/business-summary`;
 export const API_REPORT_BUSINESS_SUMMARY_DETAIL_URL = `${API_BASE_URL}/reports/business-summary-detail`;
 export const API_REPORT_PRODUCT_LEDGER_DATA_URL = `${API_BASE_URL}/reports/product-ledger-data`;

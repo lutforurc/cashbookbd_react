@@ -59,6 +59,7 @@ export const MENU_PERMISSIONS = {
   // product reports share one key, as they always have.
   financial_statement: [
     'productwise.profit',
+    'invoice.wise.profit',
     'profit.loss.date.wise',
     'monthly.statement',
     'trial.balance.l4',

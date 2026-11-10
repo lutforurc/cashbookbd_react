@@ -774,6 +774,19 @@
       { "heading": "সতর্কতা", "warning": "Category, Brand বা Group ভুল বাছলে পণ্য বাদ পড়বে।" }
     ]
   },
+  "invoice-wise-profit": {
+    "title": "ইনভয়েসভিত্তিক লাভ",
+    "module": "Reports",
+    "updated": "10/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রতিটি বিক্রয় ইনভয়েসের মোট টাকা এবং সেই ইনভয়েসের পণ্যগুলো মিলিয়ে কত লাভ বা ক্ষতি হলো, এক সারিতে দেখা যায়।",
+    "sections": [
+      { "heading": "রিপোর্ট দেখা", "menu": "Financial Statement → Invoice Wise Profit", "steps": ["Select Branch, Start Date ও End Date দিন।", "একটি ইনভয়েস দেখতে চাইলে Search Invoice ঘরে তার নম্বর লিখুন।", "Apply চাপুন।"] },
+      { "heading": "ফল পড়া", "steps": ["Sl. No., Inv. No., Date, Inv. Amount ও Profit দেখা যায়; নিচের Total সারিতে সব ইনভয়েসের মোট টাকা ও মোট লাভ থাকে।", "Action-এর পেন্সিল ওই ইনভয়েসটি Sales স্ক্রিনে খোলে, প্রিন্টার ইনভয়েসটি প্রিন্ট করে।", "Rows ও Font ঠিক করে Print চাপুন — ছাপা কাগজে তালিকার সব সারি ও মোট আসে।"] },
+      { "heading": "সতর্কতা", "warning": "ইনভয়েস নম্বর ভুল হলে বা ইনভয়েসটি বাছা তারিখের বাইরে হলে কোনো সারি আসবে না — আগে তারিখের সীমা ঠিক করুন, তারপর সার্চ করুন।" }
+    ]
+  },
   "product-receivable-payable": {
     "title": "পণ্যের receivable ও payable",
     "module": "Reports",

@@ -233,6 +233,7 @@ import ProfitLossDateWise from './components/modules/reports/profit-loss/ProfitL
 import MonthlyStatement from './components/modules/reports/monthly-statement/MonthlyStatement';
 import ProductProfitLoss from './components/modules/reports/product-profit-loss/ProductProfitLoss';
 import ProductProfitSummary from './components/modules/reports/product-profit-summary/ProductProfitSummary';
+import InvoiceWiseProfit from './components/modules/reports/invoice-wise-profit/InvoiceWiseProfit';
 import BusinessSummary from './components/modules/reports/business-summary/BusinessSummary';
 import ProductLedgerData from './components/modules/reports/product-ledger-data/ProductLedgerData';
 import ProductStatement from './components/modules/reports/product-statement/ProductStatement';
@@ -1219,6 +1220,11 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['productwise.profit']} loading={permissionsLoading} />}>
               <Route path={routes.product_profit_loss} element={<ProductProfitLoss user={me} />} />
               <Route path={routes.product_profit_summary} element={<ProductProfitSummary user={me} />} />
+            </Route>
+            {/* Its own key, granted to nobody by default like the other new
+                statements: a company switches it on by assigning it to a role. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['invoice.wise.profit']} loading={permissionsLoading} />}>
+              <Route path={routes.invoice_wise_profit} element={<InvoiceWiseProfit user={me} />} />
             </Route>
             {/* Both names are real permissions. The sidebar offers this screen on
                 'ledger.details' (the one named for it), so the guard has to admit

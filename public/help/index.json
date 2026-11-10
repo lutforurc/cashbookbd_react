@@ -83,6 +83,7 @@
         "product-ledger-data",
         "product-profit-loss",
         "product-profit-summary",
+        "invoice-wise-profit",
         "product-receivable-payable",
         "profit-loss-date-wise",
         "sales-referrer",

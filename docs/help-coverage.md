@@ -8,8 +8,8 @@
 > এই ফাইলটি ধরেই কাজ আবার শুরু করা যাবে; নতুন কোনো route এলে এটিতে সারি যোগ করতে হবে,
 > নাহলে `npm run help:check` ব্যর্থ হবে।
 
-- মোট route: **315**
-- done: **298**
+- মোট route: **316**
+- done: **299**
 - skipped: **17**
 - বাকি: **0**
 
@@ -170,6 +170,7 @@
 | inv_sales_return_tiles | Invoice → Sales Return → Tiles | `/invoice/sales-return` | `sales-return-tiles` | done |
 | inv_tiles_combined | Invoices → Tiles Combined | `/invoice/tiles-combined` | `combined-tiles` | done |
 | inv_trading_combined | Invoices → Trading Combined | `/invoice/trading-combined` | `combined-trading` | done |
+| invoice_wise_profit | Financial Statement → Invoice Wise Profit | `/reports/invoice-wise-profit` | `invoice-wise-profit` | done |
 | item_chart | Analytics → Item Chart | `/item/item-chart` | `item-chart` | done |
 | labour_category | Labour Items → Category | `/labour-items/category` | `labour-category` | done |
 | labour_category_create | Labour Items → Category → New Category | `/labour-items/category/create` | `labour-category` | done |

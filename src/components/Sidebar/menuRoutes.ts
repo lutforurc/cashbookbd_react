@@ -107,6 +107,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
   'financial_statement': [
     routes.product_profit_loss,
     routes.product_profit_summary,
+    routes.invoice_wise_profit,
     routes.profit_loss_date_wise,
     routes.monthly_statement,
     routes.trial_balance_level4,

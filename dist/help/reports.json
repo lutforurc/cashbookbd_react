@@ -505,13 +505,13 @@
   "cash-book-two-column": {
     "title": "দুই কলামের ক্যাশ বই",
     "module": "Reports",
-    "updated": "06/11/2026",
+    "updated": "09/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "ক্যাশের পাশে ব্যাংক কলাম রেখে এক সারিতে এক ভাউচার — শুরুতে Balance B/D, শেষে দুই কলামের ব্যালেন্স।",
+    "intro": "ক্যাশের পাশে ব্যাংক কলাম রেখে ভাউচারের প্রতিটি হেড আলাদা সারিতে, নিজের টাকাসহ — শুরুতে Balance B/D, শেষে দুই কলামের ব্যালেন্স।",
     "sections": [
       { "heading": "রিপোর্ট দেখা", "menu": "Reports → Cash Book (Two Column)", "steps": ["Select Branch, Start Date ও End Date দিন।", "Bank Account বাছুন, নাহলে Every bank account রাখুন।", "Apply চাপুন।"] },
-      { "heading": "ফল পড়া", "steps": ["Date, Voucher#, Description, Receive (Cash/Bank) ও Payment (Cash/Bank) দেখা যায়।", "নিচে Balance C/D ও Total সারি।", "Print কাগজ বের করে।"] },
+      { "heading": "ফল পড়া", "steps": ["Date, Voucher#, Description, Receive (Cash/Bank) ও Payment (Cash/Bank) দেখা যায়।", "এক ভাউচারে কয়েকটি হেড থাকলে প্রতিটি হেড আলাদা সারিতে নিজের টাকাসহ আসে, ভাউচার নম্বর প্রতি সারিতে থাকে (যেমন Room Rent 1,000 ও VAT Payable 150)। ক্যাশ থেকে ব্যাংকে টাকা নেওয়া (Contra) এক সারিতেই থাকে।","নিচে Balance C/D ও Total সারি।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "ডেবিট ও ক্রেডিট মিলছে না বলে লাল বার্তা এলে হিসাব থেকে কাজ করবেন না — আগে পার্থক্যটি ঠিক করুন।" }
     ]
   },
@@ -686,13 +686,13 @@
   "ledger-with-product": {
     "title": "পণ্যসহ গ্রাহক/সরবরাহকারীর বিবরণ",
     "module": "Reports",
-    "updated": "06/11/2026",
+    "updated": "09/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একজন গ্রাহক বা সরবরাহকারীর প্রতিটি ভাউচারে কোন পণ্য কত পরিমাণে ও কোন দামে ছিল, সাথে চলমান ব্যালেন্স — এক কাগজে।",
     "sections": [
       { "heading": "রিপোর্ট দেখা", "menu": "Reports → Ledger with Product", "steps": ["Select Branch ও Select Ledger বাছুন।", "Transaction Type, Select Product, Start Date ও End Date দিন।", "Search-এ Vr / Order / Vehicle No. / Rate লিখে ছোট করুন।", "Apply চাপুন।"] },
-      { "heading": "ফল পড়া", "steps": ["Vr No. & Date, Description, Vehicle No, Pur./Sal. Qty, Rate, Pur./Sal. Total, Debit, Credit ও Balance দেখা যায়।", "নিচে Opening, Qty, Amt, Debit, Credit ও Closing মোট থাকে।", "Print ও Excel আছে; Rows ও Font ঠিক করা যায়।"] },
+      { "heading": "ফল পড়া", "steps": ["Vr No. & Date, Description, Vehicle No, Pur./Sal. Qty, Rate, Pur./Sal. Total, Inv. Amt, Debit, Credit ও Balance দেখা যায়।", "Inv. Amt-এ শুধু ইনভয়েসের নগদ অংশ থাকে: Cash Purchase হলে মাইনাস (-), Cash Sales হলে প্লাস (+)।", "নিচে Opening, Qty, Amt, Inv. Amt, Debit, Credit ও Closing মোট থাকে; Inv. Amt মোট = সব নগদের যোগফল (যেমন -52,000 + 32,000 = -20,000)।", "Print ও Excel আছে; Rows ও Font ঠিক করা যায়।"] },
       { "heading": "সতর্কতা", "warning": "Branch ও গ্রাহক/সরবাপরাহকারী না বাছলে রিপোর্ট আসবে না।" }
     ]
   },
@@ -772,6 +772,19 @@
       { "heading": "রিপোর্ট দেখা", "menu": "Reports → Product Profit Summary", "steps": ["Select Branch, Category, Brand ও Group বাছুন।", "Start Date ও End Date দিন, Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Code - Product Name, Unit, Qty, Sales Amount, Cost Amount ও Profit Amount দেখা যায়।", "উপরে Qty, Sales ও Cost বাক্স থাকে।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "Category, Brand বা Group ভুল বাছলে পণ্য বাদ পড়বে।" }
+    ]
+  },
+  "invoice-wise-profit": {
+    "title": "ইনভয়েসভিত্তিক লাভ",
+    "module": "Reports",
+    "updated": "10/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রতিটি বিক্রয় ইনভয়েসের মোট টাকা এবং সেই ইনভয়েসের পণ্যগুলো মিলিয়ে কত লাভ বা ক্ষতি হলো, এক সারিতে দেখা যায়।",
+    "sections": [
+      { "heading": "রিপোর্ট দেখা", "menu": "Financial Statement → Invoice Wise Profit", "steps": ["Select Branch, Start Date ও End Date দিন।", "একটি ইনভয়েস দেখতে চাইলে Search Invoice ঘরে তার নম্বর লিখুন।", "Apply চাপুন।"] },
+      { "heading": "ফল পড়া", "steps": ["Sl. No., Inv. No., Date, Inv. Amount ও Profit দেখা যায়; নিচের Total সারিতে সব ইনভয়েসের মোট টাকা ও মোট লাভ থাকে।", "Action-এর পেন্সিল ওই ইনভয়েসটি Sales স্ক্রিনে খোলে, প্রিন্টার ইনভয়েসটি প্রিন্ট করে।", "Rows ও Font ঠিক করে Print চাপুন — ছাপা কাগজে তালিকার সব সারি ও মোট আসে।"] },
+      { "heading": "সতর্কতা", "warning": "ইনভয়েস নম্বর ভুল হলে বা ইনভয়েসটি বাছা তারিখের বাইরে হলে কোনো সারি আসবে না — আগে তারিখের সীমা ঠিক করুন, তারপর সার্চ করুন।" }
     ]
   },
   "product-receivable-payable": {

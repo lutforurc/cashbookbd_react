@@ -1,0 +1,146 @@
+{
+  "production-entry": {
+    "title": "উৎপাদন এন্ট্রি",
+    "module": "Production",
+    "updated": "10/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "কাঁচামাল থেকে তৈরি পণ্য বানানোর একটি ব্যাচ লেখা হয়। কাঁচামাল কেনা দামে (আগে কেনা আগে) স্টক থেকে বেরোয়, আর তৈরি পণ্য ঢোকে কাঁচামাল + বলে দেওয়া মজুরি/খরচ ÷ ভালো পরিমাণ দামে। মেনুটি শুধু সেই ব্রাঞ্চে দেখায় যেখানে Control Manufacture চালু।",
+    "sections": [
+      {
+        "heading": "ব্যাচের মাথা",
+        "menu": "Production → Production Entry",
+        "steps": [
+          "Production date নিজে থেকে ব্রাঞ্চের লেনদেনের তারিখ (উপরে Trx. Dt.) নেয়; দরকার হলে বদলান।",
+          "Batch ref খালি রাখলে ভাউচার নম্বরই ব্যাচের নাম হয়।",
+          "রেসিপি থাকলে Recipe বাছুন — উপকরণ, Make আর পণ্য নিজে ভরে যায়। Make বদলালে Fill চাপুন; Fill না করে সেভ হবে না।",
+          "রেসিপি ছাড়া হলে Enter by hand রেখে নিজে লাইন দিন।"
+        ]
+      },
+      {
+        "heading": "তিন ধাপ",
+        "steps": [
+          "Materials in: Material, Warehouse ও Quantity দিয়ে Add। পাশে ওই তারিখে কত স্টক আছে দেখায়; রেসিপির চেয়ে কম থাকলে লাল টেবিলে ঘাটতি দেখায়।",
+          "Waste and labour: Lost in this batch-এ নষ্ট, Normal tolerance %-এ স্বাভাবিক সীমা দিন; সীমার বেশি হলে Reason লাগে আর বাড়তিটা অস্বাভাবিক নষ্ট হিসেবে আলাদা থাকে। ডানে এই মাসের Factory Labour, Packing Labour, Factory Transport ভাউচার দেখায় — Spend on batch-এ যতটুকু এই ব্যাচে যাবে লিখুন।",
+          "Products out: তৈরি পণ্য, Good quantity ও ঐচ্ছিক Expiry দিয়ে Add। একাধিক পণ্য হলে খরচ বিক্রয়মূল্যের অনুপাতে ভাগ হয়, অথবা Share of cost %-এ নিজে লিখুন।"
+        ]
+      },
+      {
+        "heading": "Draft, Post ও Reverse",
+        "steps": [
+          "Save draft-এ কিছুই স্টকে নড়ে না।",
+          "Recent batches-এ Post চাপলে কাঁচামাল বেরোয়, পণ্য ঢোকে, আর প্রতি ইউনিট খরচ দেখায়।",
+          "পোস্ট করা ব্যাচ Reverse করা যায় যতক্ষণ তার পণ্য বিক্রি, ট্রান্সফার বা অন্য কাজে না লাগে।"
+        ]
+      },
+      {
+        "heading": "সতর্কতা",
+        "warning": "মজুরি/খরচ আগে Cash Payment বা Journal-এ Factory Labour ইত্যাদি হেডে লিখতে হয় — এখানে হাতে অঙ্ক লেখা যায় না, আর অন্য মাসের খরচ নেওয়া যায় না। পরে সেই খরচের ভাউচার বদলালে Production Register-এ ব্যাচটি লাল হয়।"
+      }
+    ]
+  },
+  "production-recipe": {
+    "title": "রেসিপি",
+    "module": "Production",
+    "updated": "10/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি তৈরি পণ্যের এক ব্যাচে কোন কাঁচামাল কতটুকু লাগে, তা আগে থেকে লিখে রাখা। Production Entry-তে রেসিপি বাছলে লাইন নিজে ভরে যায়।",
+    "sections": [
+      {
+        "heading": "রেসিপি লেখা",
+        "menu": "Production → Recipe",
+        "steps": [
+          "Recipe name, Product it makes দিন।",
+          "Yield-এ এক ব্যাচে কতটা ভালো পণ্য হয় তা লিখুন — ঘরে ধূসর 'e.g. 95' শুধু উদাহরণ, মান নয়।",
+          "Normal loss %-এ স্বাভাবিক নষ্টের সীমা, Loss measured in-এ একক দিন।",
+          "Effective from নিজে থেকে ব্রাঞ্চের লেনদেনের তারিখ নেয়; এই তারিখের আগের ব্যাচে রেসিপিটি দেখাবে না।",
+          "Materials-এ Material, Quantity ও Kind (Material বা Packaging) দিয়ে Add, তারপর Save recipe।"
+        ]
+      },
+      {
+        "heading": "নতুন সংস্করণ",
+        "steps": [
+          "উপকরণ বা পরিমাণ বড় করে বদলালে New version চাপুন — পুরনো সংস্করণ থাকে, নতুনটি তার নিজের তারিখ থেকে চলে।",
+          "আগে সেভ হওয়া ব্যাচ নিজের কপি রাখে, তাই রেসিপি বদলালে পুরনো ব্যাচের খরচ বদলায় না।"
+        ]
+      }
+    ]
+  },
+  "production-register": {
+    "title": "উৎপাদন রেজিস্টার",
+    "module": "Production",
+    "updated": "10/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "তারিখের মধ্যে প্রতিটি ব্যাচ এক সারিতে — কত কাঁচামাল, কত মজুরি, মোট খরচ, প্রতি ইউনিট খরচ আর নষ্ট — এবং সেই সময়ের আসল মোট লাভ।",
+    "sections": [
+      {
+        "heading": "দেখা",
+        "menu": "Production → Production Register",
+        "steps": [
+          "From (মাসের ১ তারিখ) ও To (ব্রাঞ্চের লেনদেনের তারিখ) বদলে Show চাপুন।",
+          "উপরে Net sales, Cost of goods (with allocated), True gross profit ও Abnormal loss।",
+          "Variance-এ রেসিপির তুলনা: On recipe, অথবা লাল লেখায় বেশি উপকরণ / কম উৎপাদন / বেশি নষ্ট।",
+          "Detail-এর চিহ্নে ব্যাচের পুরো খরচের হিসাব (Batch Costing) খোলে। Print-এ প্যাডসহ পুরো তালিকা ছাপা হয়।"
+        ]
+      },
+      {
+        "heading": "সতর্কতা",
+        "warning": "সারি লাল আর 'source changed' লেখা মানে যে খরচ বা কেনার ভাউচার থেকে ব্যাচের দাম হয়েছিল তা পরে বদলেছে বা মুছেছে। ঠিক করতে ব্যাচটি Reverse করে আবার Post করুন।"
+      }
+    ]
+  },
+  "production-costing": {
+    "title": "ব্যাচের খরচ",
+    "module": "Production",
+    "updated": "10/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি ব্যাচের খরচ কোথা থেকে এল তার পুরো হিসাব।",
+    "sections": [
+      {
+        "heading": "যা দেখায়",
+        "menu": "Production → Production Register → Detail",
+        "steps": [
+          "উপরে কাঁচামাল, বণ্টিত মজুরি, মোট খরচ, প্রতি ইউনিট খরচ ও নষ্ট।",
+          "রেসিপি অনুযায়ী লাগার কথা বনাম আসলে লাগা।",
+          "কোন কেনার ভাউচার থেকে কত কাঁচামাল কোন দামে গেছে, আর কোন খরচের ভাউচার থেকে কত টাকা।",
+          "তৈরি পণ্যের সারি: পয়সার হিসাব মেলাতে ১টি ইউনিট আলাদা দামে আগে লেখা থাকে (Rounding row)।",
+          "Print-এ প্যাডসহ পুরো পাতা ছাপা হয়; Back to Register-এ ফেরত।"
+        ]
+      }
+    ]
+  },
+  "production-sales-return": {
+    "title": "উৎপাদিত পণ্যের বিক্রয় ফেরত",
+    "module": "Production",
+    "updated": "10/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "Manufacturing ব্রাঞ্চে বিক্রি করা পণ্য ফেরত। গ্রাহককে টাকা ফেরত বিক্রির দামে, কিন্তু মাল স্টকে ঢোকে মূল বিক্রির খরচে — তাই ফেরতের কারণে লাভ বাড়িয়ে দেখায় না।",
+    "sections": [
+      {
+        "heading": "এন্ট্রি",
+        "menu": "Production → Production Sales Return",
+        "steps": [
+          "Customer ও Original Sale Invoice No. দিন — খরচ ওই ইনভয়েস থেকেই পড়া হয়, তাই এটি বাধ্যতামূলক।",
+          "Original Sale Date নিজে থেকে ব্রাঞ্চের লেনদেনের তারিখ নেয়; ফেরতের ভাউচার এই তারিখেই হয়।",
+          "Returned product, Quantity ও Refund price দিয়ে Add Item।",
+          "Discount ও Cash Payment দিন — ক্যাশ কাস্টমারে পুরো টাকা নিজে বসে; অন্যদের ০ থেকে শুরু, শুধু পাওনা কমে।",
+          "Save Return।"
+        ]
+      },
+      {
+        "heading": "সংশোধন",
+        "steps": [
+          "উপরে Vr. No.-এ ফেরতের নম্বর দিয়ে Find, বদলে Update Return। নম্বর একই থাকে।"
+        ]
+      },
+      {
+        "heading": "সতর্কতা",
+        "warning": "মূল বিক্রিতে যত পরিমাণ ছিল তার বেশি ফেরত নেওয়া যায় না, আগের ফেরতগুলো মিলিয়ে।"
+      }
+    ]
+  }
+}
