@@ -146,7 +146,7 @@ const BranchList = () => {
           <ButtonLoading
             onClick={handleSearchButton}
             buttonLoading={buttonLoading}
-            label=" + Add Branch"
+            label="Add Branch"
             icon={<FiPlus size={15} />}
           />
         )}

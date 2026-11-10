@@ -32,9 +32,9 @@ export const STATUS_OPTIONS = [
  * January, and "Either" is what that room is.
  */
 export const SALE_MODE_OPTIONS = [
-  { id: 'whole', name: 'Whole room only' },
-  { id: 'seat', name: 'By the seat only' },
-  { id: 'both', name: 'Either — whole or by the seat' },
+  { id: 'whole', name: 'Room' },
+  { id: 'seat', name: 'Dorm or Seat' },
+  { id: 'both', name: 'Room or seat' },
 ];
 
 /** Which rent a way of selling actually needs. */

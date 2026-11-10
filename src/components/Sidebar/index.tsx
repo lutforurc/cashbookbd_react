@@ -2094,7 +2094,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.trial_balance_level3}
                                 className={subMenuLinkClass}
                               >
-                                Trial Balance Group
+                                Trial Balance
                               </NavLink>
                             </li>
                           )}
@@ -2104,7 +2104,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.trial_balance}
                                 className={subMenuLinkClass}
                               >
-                                Trial Balance
+                                Trial Balance Details
                               </NavLink>
                             </li>
                           )}
