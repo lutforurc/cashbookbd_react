@@ -249,3 +249,23 @@ export const wholeBuildings = (buildings: any): any[] =>
     floors: (building?.floors ?? []).map((floor: any) => ({ ...floor, rooms: floor?.rooms ?? [] })),
     unfloored: building?.unfloored ?? [],
   }));
+
+/**
+ * A 'YYYY-MM-DD' (optionally followed by a time) as LOCAL midnight of that day.
+ *
+ * ⚠️ Never `new Date('2026-11-10')`: a bare date is read as UTC midnight, which
+ * is the evening before anywhere west of Greenwich and a 6 a.m. that
+ * getDay()/date pickers then disagree about. Read by parts, it is the day the
+ * text says on every clock. Anything else is left to Date, and nonsense is null.
+ */
+export const localDate = (value?: string | null): Date | null => {
+  const text = String(value ?? '');
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(text);
+
+  if (parts) return new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
+  if (!text) return null;
+
+  const at = new Date(text);
+
+  return Number.isNaN(at.getTime()) ? null : at;
+};

@@ -615,7 +615,15 @@ interface BookingState {
    */
   times: HotelTimes | null;
 
-  loading: boolean;
+  /**
+   * ⚠️ ONE FLAG PER READ. These four once shared one `loading`, so the list
+   * screen showed a spinner while a folio was being read in another tab of
+   * the app, and a finished read cleared the flag for one still running.
+   */
+  listLoading: boolean;
+  hallsLoading: boolean;
+  folioLoading: boolean;
+  checkoutLoading: boolean;
   checking: boolean;
   saving: boolean;
   error: string | null;
@@ -634,7 +642,10 @@ const initialState: BookingState = {
   bill: null,
   times: null,
 
-  loading: false,
+  listLoading: false,
+  hallsLoading: false,
+  folioLoading: false,
+  checkoutLoading: false,
   checking: false,
   saving: false,
   error: null,
@@ -701,11 +712,11 @@ const bookingSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(bookingList.pending, (state) => {
-        state.loading = true;
+        state.listLoading = true;
         state.error = null;
       })
       .addCase(bookingList.fulfilled, (state, action) => {
-        state.loading = false;
+        state.listLoading = false;
         state.bookings = action.payload?.bookings || { ...emptyPage };
         // Kept when a later read does not carry them, rather than blanked: the
         // line at the top of the screen should not flicker away on a search.
@@ -714,24 +725,24 @@ const bookingSlice = createSlice({
       // A list that comes back empty answers 404 with a sentence, which axios
       // throws. An empty table is the right thing to show for it.
       .addCase(bookingList.rejected, (state, action) => {
-        state.loading = false;
+        state.listLoading = false;
         state.bookings = { ...emptyPage };
         state.error = action.payload || null;
       })
 
       .addCase(hallsRead.pending, (state: any) => {
-        state.loading = true;
+        state.hallsLoading = true;
         state.error = null;
       })
       .addCase(hallsRead.fulfilled, (state: any, action: any) => {
-        state.loading = false;
+        state.hallsLoading = false;
         state.halls = action.payload;
       })
       // A property with no sittings, or no halls, answers 404 with a sentence
       // saying which. The grid is dropped so the screen cannot go on offering
       // one the server has just disowned.
       .addCase(hallsRead.rejected, (state: any, action: any) => {
-        state.loading = false;
+        state.hallsLoading = false;
         state.halls = null;
         state.error = action.payload || null;
       })
@@ -768,32 +779,32 @@ const bookingSlice = createSlice({
       })
 
       .addCase(folioRead.pending, (state) => {
-        state.loading = true;
+        state.folioLoading = true;
         state.error = null;
       })
       .addCase(folioRead.fulfilled, (state, action) => {
-        state.loading = false;
+        state.folioLoading = false;
         state.folio = action.payload;
       })
       .addCase(folioRead.rejected, (state, action) => {
-        state.loading = false;
+        state.folioLoading = false;
         state.folio = null;
         state.error = action.payload || null;
       })
 
       .addCase(checkoutRead.pending, (state) => {
-        state.loading = true;
+        state.checkoutLoading = true;
         state.error = null;
       })
       .addCase(checkoutRead.fulfilled, (state, action) => {
-        state.loading = false;
+        state.checkoutLoading = false;
         state.checkout = action.payload;
       })
       // A refused date -- an overstay, or a day nobody slept -- answers 422
       // with the sentence explaining it. The plan is dropped so the screen
       // cannot go on offering a button for a departure the server refused.
       .addCase(checkoutRead.rejected, (state, action) => {
-        state.loading = false;
+        state.checkoutLoading = false;
         state.checkout = null;
         state.error = action.payload || null;
       })

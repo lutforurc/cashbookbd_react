@@ -92,11 +92,17 @@ const HotelVoucherList = ({ kind, onClose, onPrint }: Props) => {
     {
       key: 'vr_date',
       header: 'Date',
+      // ⚠️ Fixed widths on every column but Particulars. Without them the
+      // table is laid out by content, the head names push it wider than the
+      // panel, and Amount and Print -- the two columns the list is for --
+      // end up scrolled off the right edge.
+      width: 100,
       render: (row: HotelVoucherRow) => dayjs(row.vr_date).format('DD/MM/YYYY'),
     },
     {
       key: 'vr_no',
       header: 'Voucher No',
+      width: 150,
       render: (row: HotelVoucherRow) => (
         <span>
           {row.vr_no}
@@ -108,10 +114,16 @@ const HotelVoucherList = ({ kind, onClose, onPrint }: Props) => {
         </span>
       ),
     },
-    { key: 'particulars', header: 'Particulars' },
+    {
+      key: 'particulars',
+      header: 'Particulars',
+      // Cut to the column, the whole of it on hover.
+      render: (row: HotelVoucherRow) => <span title={row.particulars}>{row.particulars}</span>,
+    },
     {
       key: 'amount',
       header: 'Amount',
+      width: 120,
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: HotelVoucherRow) => thousandSeparator(Number(row.amount)),
@@ -119,6 +131,7 @@ const HotelVoucherList = ({ kind, onClose, onPrint }: Props) => {
     {
       key: 'action',
       header: 'Print',
+      width: 70,
       headerClass: 'text-center w-20',
       cellClass: 'text-center',
       render: (row: HotelVoucherRow) => (
@@ -172,6 +185,9 @@ const HotelVoucherList = ({ kind, onClose, onPrint }: Props) => {
         <Table
           columns={columns}
           data={rows}
+          // The panel's width exactly, so the column widths above are obeyed
+          // and Particulars takes what is left rather than all it wants.
+          tableClassName="w-full"
           noDataMessage={failed ? 'Could not read the vouchers.' : 'No vouchers in that month.'}
         />
       </div>

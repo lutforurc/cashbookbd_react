@@ -44,6 +44,12 @@ interface PropertyGridProps {
    */
   picking?: boolean;
 
+  /**
+   * Rooms the booking being edited already holds -- clickable however the
+   * grid marks them. Passed on to each building card.
+   */
+  ownIds?: number[];
+
   /** Drawn under the header. The booking screen puts the rent for the stay here. */
   summaryOf?: (building: LayoutBuilding) => string | null;
 

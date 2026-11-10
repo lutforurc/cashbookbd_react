@@ -25,7 +25,7 @@ import {
 } from '../layoutPalette';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { buildingDdl } from '../hotelSetupSlice';
-import { clockTime, money, useDebounced } from '../setupHelpers';
+import { clockTime, money, useDebounced, localDate } from '../setupHelpers';
 import { DdlOption, LayoutBuilding, LayoutRoom, LayoutSeat } from '../types';
 import {
   availabilityRead,
@@ -108,7 +108,7 @@ const STAY_KIND_OPTIONS: { id: StayKind; name: string }[] = [
   { id: 'house_use', name: 'House use' },
 ];
 
-const asDate = (value?: string | null) => (value ? new Date(value) : null);
+const asDate = (value?: string | null) => localDate(value);
 
 const asText = (date: Date | null) => {
   if (!date) return '';

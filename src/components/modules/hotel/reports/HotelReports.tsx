@@ -15,7 +15,7 @@ import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { userCurrentBranch } from '../../branch/branchSlice';
-import { money, useDebounced } from '../setupHelpers';
+import { money, useDebounced, localDate } from '../setupHelpers';
 // The string form. formatDate returns JSX, which is right inside markup but
 // wrong anywhere a string is wanted -- and every use here is inside a cell that
 // also holds other text.
@@ -750,7 +750,7 @@ const HotelReports = () => {
               id="performance_from"
               name="run_from"
               label="From"
-              selectedDate={runFrom ? new Date(runFrom) : null}
+              selectedDate={localDate(runFrom)}
               setSelectedDate={(d: Date | null) => setRunFrom(asText(d))}
               setCurrentDate={(d: Date | null) => setRunFrom(asText(d))}
               className="w-full"
@@ -759,7 +759,7 @@ const HotelReports = () => {
               id="performance_to"
               name="run_to"
               label="To"
-              selectedDate={runTo ? new Date(runTo) : null}
+              selectedDate={localDate(runTo)}
               setSelectedDate={(d: Date | null) => setRunTo(asText(d))}
               setCurrentDate={(d: Date | null) => setRunTo(asText(d))}
               className="w-full"
@@ -771,7 +771,7 @@ const HotelReports = () => {
               id="register_date"
               name="date"
               label="Night of"
-              selectedDate={date ? new Date(date) : null}
+              selectedDate={localDate(date)}
               setSelectedDate={(d: Date | null) => setDate(asText(d))}
               setCurrentDate={(d: Date | null) => setDate(asText(d))}
               className="w-full"
@@ -799,7 +799,7 @@ const HotelReports = () => {
               id="collection_from"
               name="from"
               label="From"
-              selectedDate={from ? new Date(from) : null}
+              selectedDate={localDate(from)}
               setSelectedDate={(d: Date | null) => setFrom(asText(d))}
               setCurrentDate={(d: Date | null) => setFrom(asText(d))}
               className="w-full"
@@ -808,7 +808,7 @@ const HotelReports = () => {
               id="collection_to"
               name="to"
               label="To"
-              selectedDate={to ? new Date(to) : null}
+              selectedDate={localDate(to)}
               setSelectedDate={(d: Date | null) => setTo(asText(d))}
               setCurrentDate={(d: Date | null) => setTo(asText(d))}
               className="w-full"

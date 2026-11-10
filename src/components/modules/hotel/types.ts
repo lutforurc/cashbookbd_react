@@ -92,6 +92,11 @@ export interface HotelRoomType {
   default_sale_mode: SaleMode;
   default_whole_rent?: number | string | null;
   default_seat_rent?: number | string | null;
+  /**
+   * The VAT this room type is billed at, as a percentage -- 15 for an
+   * air-conditioned room, 7.5 for a fan one. Blank or 0 is no VAT.
+   */
+  vat_rate?: number | string | null;
   description?: string | null;
   sort_order?: number;
   status: number;

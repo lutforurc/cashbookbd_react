@@ -45,7 +45,7 @@ import { API_HOTEL_FOLIO_URL, API_HOTEL_PARTY_URL } from '../../../services/apiR
 import routes from '../../../services/appRoutes';
 import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import { trxDateToIso } from '../../../utils/utils-functions/transactionDate';
-import { money } from '../setupHelpers';
+import { money, localDate } from '../setupHelpers';
 import MoveRoomDialog from './MoveRoomDialog';
 import {
   AMOUNT_EXCEEDS_BALANCE,
@@ -372,7 +372,7 @@ const FolioScreen = () => {
   const { id } = useParams();
 
   const folio = useSelector((state: any) => state.hotelBooking.folio);
-  const loading = useSelector((state: any) => state.hotelBooking.loading);
+  const loading = useSelector((state: any) => state.hotelBooking.folioLoading);
   const saving = useSelector((state: any) => state.hotelBooking.saving);
   const tills = useSelector((state: any) => state.hotelBooking.tills);
 
@@ -1770,7 +1770,7 @@ const FolioScreen = () => {
               id="charge_date"
               name="charge_date"
               label="On"
-              selectedDate={charge.charge_date ? new Date(charge.charge_date) : null}
+              selectedDate={localDate(charge.charge_date)}
               setSelectedDate={(d: Date | null) => setCharge({ ...charge, charge_date: asText(d) })}
               setCurrentDate={(d: Date | null) => setCharge({ ...charge, charge_date: asText(d) })}
               className="w-full"
@@ -1974,7 +1974,7 @@ const FolioScreen = () => {
               id="payment_date"
               name="payment_date"
               label="On"
-              selectedDate={payment.payment_date ? new Date(payment.payment_date) : null}
+              selectedDate={localDate(payment.payment_date)}
               setSelectedDate={(d: Date | null) => setPayment({ ...payment, payment_date: asText(d) })}
               setCurrentDate={(d: Date | null) => setPayment({ ...payment, payment_date: asText(d) })}
               className="w-full"

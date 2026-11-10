@@ -14,7 +14,7 @@ import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 
 import routes from '../../../services/appRoutes';
 import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
-import { money } from '../setupHelpers';
+import { money, localDate } from '../setupHelpers';
 import { bookingSave, hallsRead } from './bookingSlice';
 import HallCards from './HallCards';
 
@@ -71,7 +71,7 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
 
   const halls = useSelector((state: any) => state.hotelBooking.halls);
   const branchDdl = useSelector((state: any) => state.branchDdl);
-  const loading = useSelector((state: any) => state.hotelBooking.loading);
+  const loading = useSelector((state: any) => state.hotelBooking.hallsLoading);
   const saving = useSelector((state: any) => state.hotelBooking.saving);
   const error = useSelector((state: any) => state.hotelBooking.error);
 
@@ -222,7 +222,7 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
             id="hall_date"
             name="date"
             label="Date"
-            selectedDate={date ? new Date(date) : null}
+            selectedDate={localDate(date)}
             setSelectedDate={(d: Date | null) => setDate(asText(d) || today())}
             setCurrentDate={(d: Date | null) => setDate(asText(d) || today())}
             className="w-full"

@@ -110,6 +110,11 @@ const FILTER_OPTIONS = [
   { id: 'checked_in', name: 'Checked in' },
   { id: 'checked_out', name: 'Checked out' },
   { id: 'cancelled', name: 'Cancelled' },
+  // ⚠️ Two different endings, named as their chips name them (STATUS_LOOK).
+  // "Hold expired" is a hold nobody confirmed in time; "Expired" is the desk's
+  // word for a no-show -- confirmed, and the guest never came. The lapsed
+  // holds had no entry here and could not be filtered for at all.
+  { id: 'expired', name: 'Hold expired' },
   { id: 'no_show', name: 'Expired' },
 ];
 
@@ -476,7 +481,7 @@ const BookingsScreen = ({ user }: any) => {
   // day, next to a toast library that dispatches on a timer.
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const bookings = useSelector((state: any) => state.hotelBooking.bookings);
-  const loading = useSelector((state: any) => state.hotelBooking.loading);
+  const loading = useSelector((state: any) => state.hotelBooking.listLoading);
   const saving = useSelector((state: any) => state.hotelBooking.saving);
   const times = useSelector((state: any) => state.hotelBooking.times);
 

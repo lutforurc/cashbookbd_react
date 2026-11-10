@@ -18,7 +18,7 @@ import httpService from '../../../services/httpService';
 import { API_HOTEL_PARTY_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
 import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
-import { money } from '../setupHelpers';
+import { money, localDate } from '../setupHelpers';
 import { checkoutRead, checkoutSave, clearCheckout } from './bookingSlice';
 
 /**
@@ -89,7 +89,7 @@ const CheckOutScreen = () => {
   const { id } = useParams();
 
   const plan = useSelector((state: any) => state.hotelBooking.checkout);
-  const loading = useSelector((state: any) => state.hotelBooking.loading);
+  const loading = useSelector((state: any) => state.hotelBooking.checkoutLoading);
   const saving = useSelector((state: any) => state.hotelBooking.saving);
 
   const [departure, setDeparture] = useState<string>(today());
@@ -298,7 +298,7 @@ const CheckOutScreen = () => {
             id="departure_retry"
             name="departure_date"
             label="Leaving on"
-            selectedDate={departure ? new Date(departure) : null}
+            selectedDate={localDate(departure)}
             setSelectedDate={(d: Date | null) => setDeparture(asText(d) || today())}
             setCurrentDate={(d: Date | null) => setDeparture(asText(d) || today())}
             className="w-full"
@@ -498,7 +498,7 @@ const CheckOutScreen = () => {
           id="departure_date"
           name="departure_date"
           label="Leaving on"
-          selectedDate={departure ? new Date(departure) : null}
+          selectedDate={localDate(departure)}
           setSelectedDate={(d: Date | null) => setDeparture(asText(d) || today())}
           setCurrentDate={(d: Date | null) => setDeparture(asText(d) || today())}
           className="w-full"

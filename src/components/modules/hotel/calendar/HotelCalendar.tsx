@@ -10,7 +10,7 @@ import Loader from '../../../../common/Loader';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
-import { money } from '../setupHelpers';
+import { money, localDate } from '../setupHelpers';
 import { clearCalendar, monthRead, timelineRead } from './calendarSlice';
 
 /**
@@ -207,7 +207,7 @@ const HotelCalendar = () => {
   }, [view, loadTape]);
 
   const shiftMonth = (by: number) => {
-    const date = new Date(anchor);
+    const date = localDate(anchor) ?? new Date();
     date.setMonth(date.getMonth() + by);
     setAnchor(asText(new Date(date.getFullYear(), date.getMonth(), 1)));
   };
@@ -226,7 +226,7 @@ const HotelCalendar = () => {
     const rows: any[][] = [];
     let week: any[] = [];
 
-    const firstWeekday = new Date(days[0].date).getDay();
+    const firstWeekday = (localDate(days[0].date) ?? new Date()).getDay();
     for (let blank = 0; blank < firstWeekday; blank += 1) week.push(null);
 
     days.forEach((day: any) => {
@@ -297,7 +297,7 @@ const HotelCalendar = () => {
                 <FiChevronLeft />
               </Button>
               <div className="min-w-40 text-center text-sm font-semibold text-black dark:text-white">
-                {new Date(anchor).toLocaleString('en-GB', { month: 'long', year: 'numeric' })}
+                {(localDate(anchor) ?? new Date()).toLocaleString('en-GB', { month: 'long', year: 'numeric' })}
               </div>
               <Button
                 type="button"
@@ -315,7 +315,7 @@ const HotelCalendar = () => {
               id="tape_from"
               name="from"
               label="From"
-              selectedDate={from ? new Date(from) : null}
+              selectedDate={localDate(from)}
               setSelectedDate={(d: Date | null) => setFrom(asText(d))}
               setCurrentDate={(d: Date | null) => setFrom(asText(d))}
               className="w-full"

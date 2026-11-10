@@ -259,7 +259,9 @@ const GuestProfileDrawer = ({ guest, branchId, onClose }: Props) => {
   const totals = profile?.totals;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    // ⚠️ ABOVE THE SIDEBAR (z-9999), as RoomPanel is. At z-50 the drawer slid
+    // in underneath it and its left edge was hidden on a narrow screen.
+    <div className="fixed inset-0 z-10000 flex justify-end bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div
         className="flex h-full w-full max-w-2xl flex-col border-l border-[rgb(var(--c-border))] bg-white shadow-2xl dark:bg-graydark"
         onClick={(event) => event.stopPropagation()}
