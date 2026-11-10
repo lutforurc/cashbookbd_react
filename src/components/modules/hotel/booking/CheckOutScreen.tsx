@@ -91,6 +91,9 @@ const CheckOutScreen = () => {
   const plan = useSelector((state: any) => state.hotelBooking.checkout);
   const loading = useSelector((state: any) => state.hotelBooking.checkoutLoading);
   const saving = useSelector((state: any) => state.hotelBooking.saving);
+  // The server's own sentence when it refuses a departure -- see the !plan
+  // branch below.
+  const refusal = useSelector((state: any) => state.hotelBooking.error);
 
   const [departure, setDeparture] = useState<string>(today());
   const [party, setParty] = useState<any>(null);
@@ -270,11 +273,22 @@ const CheckOutScreen = () => {
 
         {/* The server refuses a departure it cannot make sense of -- a day
             after the booking ends, or one nobody slept -- and says why. The
-            date box stays so the desk can answer it rather than go back. */}
+            date box stays so the desk can answer it rather than go back.
+
+            ⚠️ ITS SENTENCE IS SHOWN, not replaced. "Try another date" under a
+            refusal like "these guests do not arrive until the 27th" sends the
+            clerk round a date box that can never answer it. The fixed wording
+            stays below as the way forward. */}
+        {refusal ? (
+          <p className="mb-3 rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
+            {refusal}
+          </p>
+        ) : null}
+
         <p className="rounded border border-stroke p-6 text-center text-sm text-gray-500 dark:border-strokedark dark:text-gray-400">
           {picked
-            ? `The rooms you picked cannot be checked out on ${departure}. Try another date, or go back to every room.`
-            : `This stay cannot be checked out on ${departure}. Try another date, or open the booking to extend it.`}
+            ? `The rooms you picked cannot be checked out on ${formatDayMonthYear(departure)}. Try another date, or go back to every room.`
+            : `This stay cannot be checked out on ${formatDayMonthYear(departure)}. Try another date, or open the booking to extend it.`}
         </p>
 
         {/* ⚠️ THE WAY OUT OF A CORNER. A refused date wipes the plan, and the
