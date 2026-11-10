@@ -386,6 +386,18 @@
       "title": "Assets",
       "file": "assets.json",
       "topics": ["asset-category"]
+    },
+    {
+      "id": "production",
+      "title": "Production",
+      "file": "production.json",
+      "topics": [
+        "production-entry",
+        "production-recipe",
+        "production-register",
+        "production-costing",
+        "production-sales-return"
+      ]
     }
   ]
 }

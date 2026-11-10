@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiArrowLeft, FiPrinter } from 'react-icons/fi';
 import { useReactToPrint } from 'react-to-print';
+import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -279,6 +280,7 @@ const BatchCosting = () => {
             .batch-costing-print h3 { margin: 10px 0 4px; font-size: 12px; text-transform: uppercase; }
           `}</style>
 
+          <PadPrinting />
           <h2 style={{ textAlign: 'center', fontWeight: 700 }}>Batch Costing</h2>
           <p style={{ textAlign: 'center', fontSize: 12 }}>
             {m.batch_ref || `#${m.id}`} | {m.date} | {m.status}

@@ -17,6 +17,7 @@ import {
   newProductionRecipeVersion,
   saveProductionRecipe,
 } from './productionRecipeSlice';
+import { branchTodayIso } from './branchDate';
 
 type Option = { value: string; label: string; label_5?: string };
 type LineType = 'material' | 'packaging';
@@ -30,8 +31,6 @@ type Line = {
   lineType: LineType;
   note: string;
 };
-
-const today = () => new Date().toISOString().slice(0, 10);
 
 // The shared picker works in Date objects; the form and the API keep the ISO
 // string, parsed in local time so a timezone west of UTC never shifts the day.
@@ -61,7 +60,7 @@ const emptyForm = {
   lossTolerance: '',
   suggestedCost: '',
   version: '',
-  effectiveDate: today(),
+  effectiveDate: '',
   note: '',
 };
 
@@ -96,8 +95,10 @@ const Recipe = () => {
   // production.view, so a reader sees the list and the form but cannot save.
   const canCreate = hasPermission(productionRecipePermissions, 'production.create');
   const recipes: any[] = Array.isArray(productionRecipe?.recipes) ? productionRecipe.recipes : [];
+  const trxDt = useSelector((s: any) => s.settings?.data?.trx_dt);
+  const today = () => branchTodayIso(trxDt);
 
-  const [form, setForm] = useState({ ...emptyForm });
+  const [form, setForm] = useState({ ...emptyForm, effectiveDate: today() });
   const [lines, setLines] = useState<Line[]>([]);
   const [line, setLine] = useState({ ...emptyLine });
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
@@ -112,7 +113,7 @@ const Recipe = () => {
     setForm((previous) => ({ ...previous, [key]: value }));
 
   const clearForm = () => {
-    setForm({ ...emptyForm });
+    setForm({ ...emptyForm, effectiveDate: today() });
     setLines([]);
     setLine({ ...emptyLine });
     setEditingLineId(null);
@@ -374,7 +375,7 @@ const Recipe = () => {
             type="number"
             step="0.01"
             label={`Yield${form.unit ? ` (${form.unit})` : ''}`}
-            placeholder="95"
+            placeholder="e.g. 95"
             value={form.yieldQty}
             onChange={(event: any) => setField('yieldQty', event.target.value)}
             className="w-full"
@@ -394,7 +395,7 @@ const Recipe = () => {
             type="number"
             step="0.01"
             label="Normal loss %"
-            placeholder="5"
+            placeholder="e.g. 5"
             value={form.lossTolerance}
             onChange={(event: any) => setField('lossTolerance', event.target.value)}
             className="w-full"

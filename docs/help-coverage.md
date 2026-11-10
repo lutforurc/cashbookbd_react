@@ -8,8 +8,8 @@
 > এই ফাইলটি ধরেই কাজ আবার শুরু করা যাবে; নতুন কোনো route এলে এটিতে সারি যোগ করতে হবে,
 > নাহলে `npm run help:check` ব্যর্থ হবে।
 
-- মোট route: **310**
-- done: **293**
+- মোট route: **315**
+- done: **298**
 - skipped: **17**
 - বাকি: **0**
 
@@ -146,6 +146,11 @@
 | product_out | Inventory → Product Out | `/inventory/product-out` | `product-out` | done |
 | product_out_reason | Inventory → Product Out → Reasons | `/inventory/product-out/reasons` | `product-out-reasons` | done |
 | product_out_report | Inventory → Product Out Register | `/inventory/product-out/register` | `product-out-register` | done |
+| production_entry | Production → Production Entry | `/production/entry` | `production-entry` | done |
+| production_recipe | Production → Recipe | `/production/recipe` | `production-recipe` | done |
+| production_register | Production → Production Register | `/production/register` | `production-register` | done |
+| production_costing | Production → Production Register → Detail | `/production/costing/:id` | `production-costing` | done |
+| production_sales_return | Production → Production Sales Return | `/production/sales-return` | `production-sales-return` | done |
 | inv_delivery | Invoices → Delivery | `/invoice/delivery` | `delivery` | done |
 | inv_labour | Invoices → Labour Invoice | `/invoice/labour-invoice` | `labour-invoice` | done |
 | inv_purchase_trading | Invoice → Purchase → Trading | `/invoice/purchase` | `purchase-trading` | done |

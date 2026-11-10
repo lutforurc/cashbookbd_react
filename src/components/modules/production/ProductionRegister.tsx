@@ -1,21 +1,30 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FiPrinter, FiSearch } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
-import InputElement from '../../utils/fields/InputElement';
+import InputDatePicker from '../../utils/fields/DatePicker';
+import PadPrinting from '../../utils/utils-functions/PadPrinting';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getProductionRegister } from './productionSlice';
+import { branchTodayIso, monthStartIso } from './branchDate';
 import routes from '../../services/appRoutes';
 
-const monthStart = () => {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
+// The shared picker works in Date objects; the API keeps ISO, parsed locally.
+const dateFromIso = (value: string): Date | null => {
+  const [year, month, day] = String(value || '').split('-').map(Number);
+  return year && month && day ? new Date(year, month - 1, day) : null;
 };
-const today = () => new Date().toISOString().slice(0, 10);
+
+const isoFromDate = (date: Date | null): string =>
+  date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : '';
+
+// The voucher number in brackets only when the batch ref says something else;
+// a blank ref is saved as the voucher number, which then read twice.
+const vrNoSuffix = (row: any) => (row.vr_no && row.vr_no !== row.batch_ref ? row.vr_no : '');
 
 // A batch may make several products: then each output is one line in the
 // cell, and the master's qty and unit cost (the first product's) are not used.
@@ -65,8 +74,9 @@ const ProductionRegister = () => {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
 
-  const [from, setFrom] = useState(monthStart());
-  const [to, setTo] = useState(today());
+  const trxDt = useSelector((s: any) => s.settings?.data?.trx_dt);
+  const [to, setTo] = useState(() => branchTodayIso(trxDt));
+  const [from, setFrom] = useState(() => monthStartIso(to));
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<any>(null);
   const printRef = useRef<HTMLDivElement>(null);
@@ -100,24 +110,28 @@ const ProductionRegister = () => {
       <HelmetTitle title="Production Register" />
 
       <div className="mb-3 flex flex-wrap items-end gap-2">
-        <InputElement
-          id="prodRegFrom"
-          name="from"
-          type="date"
-          label="From"
-          value={from}
-          onChange={(e: any) => setFrom(e.target.value)}
-          className="w-full md:w-44"
-        />
-        <InputElement
-          id="prodRegTo"
-          name="to"
-          type="date"
-          label="To"
-          value={to}
-          onChange={(e: any) => setTo(e.target.value)}
-          className="w-full md:w-44"
-        />
+        <div className="w-full md:w-44">
+          <InputDatePicker
+            id="prodRegFrom"
+            name="from"
+            label="From"
+            selectedDate={dateFromIso(from)}
+            setSelectedDate={(date) => setFrom(isoFromDate(date))}
+            setCurrentDate={() => undefined}
+            className="w-full"
+          />
+        </div>
+        <div className="w-full md:w-44">
+          <InputDatePicker
+            id="prodRegTo"
+            name="to"
+            label="To"
+            selectedDate={dateFromIso(to)}
+            setSelectedDate={(date) => setTo(isoFromDate(date))}
+            setCurrentDate={() => undefined}
+            className="w-full"
+          />
+        </div>
         <ButtonLoading
           onClick={run}
           buttonLoading={loading}
@@ -174,7 +188,7 @@ const ProductionRegister = () => {
               >
                 <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {row.batch_ref || `#${row.id}`}
-                  {row.vr_no ? <span className="ml-1 text-xs text-gray-400">({row.vr_no})</span> : null}
+                  {vrNoSuffix(row) ? <span className="ml-1 text-xs text-gray-400">({vrNoSuffix(row)})</span> : null}
                 </td>
                 <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">{row.date}</td>
                 <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">
@@ -287,6 +301,7 @@ const ProductionRegister = () => {
             .production-register-print th, .production-register-print td { border: 1px solid #000; padding: 4px 6px; font-size: 11px; text-align: left; }
             .production-register-print .num { text-align: right; }
           `}</style>
+          <PadPrinting />
           <h2 style={{ textAlign: 'center', fontWeight: 700 }}>Production Register</h2>
           <p style={{ textAlign: 'center', fontSize: 12 }}>
             {from} to {to}

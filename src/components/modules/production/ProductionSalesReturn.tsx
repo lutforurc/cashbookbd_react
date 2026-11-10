@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiXCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
+import InputDatePicker from '../../utils/fields/DatePicker';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
@@ -13,6 +14,7 @@ import {
   storeProductionSalesReturn,
   updateProductionSalesReturn,
 } from './productionSlice';
+import { branchTodayIso } from './branchDate';
 
 type Option = { value: string; label: string; label_3?: string; label_5?: string };
 
@@ -27,7 +29,15 @@ type ReturnLine = {
 
 const emptyLine = { code: '', name: '', unit: '', qty: '', price: '' };
 
-const today = () => new Date().toISOString().slice(0, 10);
+// The shared picker works in Date objects; the form and the API keep ISO,
+// parsed in local time so the day never shifts.
+const dateFromIso = (value: string | null | undefined): Date | null => {
+  const [year, month, day] = String(value || '').split('-').map(Number);
+  return year && month && day ? new Date(year, month - 1, day) : null;
+};
+
+const isoFromDate = (date: Date | null): string =>
+  date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : '';
 
 /**
  * A sales return raised against a Production branch's sale.
@@ -40,6 +50,8 @@ const today = () => new Date().toISOString().slice(0, 10);
  */
 const ProductionSalesReturn = () => {
   const dispatch = useDispatch<any>();
+  const trxDt = useSelector((s: any) => s.settings?.data?.trx_dt);
+  const today = () => branchTodayIso(trxDt);
 
   const [form, setForm] = useState({
     account: '',
@@ -300,13 +312,13 @@ const ProductionSalesReturn = () => {
           onChange={(e: any) => setField('invoiceNo', e.target.value)}
           className="w-full"
         />
-        <InputElement
+        <InputDatePicker
           id="productionReturnInvoiceDate"
           name="invoiceDate"
-          type="date"
           label="Original Sale Date"
-          value={form.invoiceDate}
-          onChange={(e: any) => setField('invoiceDate', e.target.value)}
+          selectedDate={dateFromIso(form.invoiceDate)}
+          setSelectedDate={(date) => setField('invoiceDate', isoFromDate(date))}
+          setCurrentDate={() => undefined}
           className="w-full"
         />
       </div>

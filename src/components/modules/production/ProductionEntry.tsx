@@ -23,6 +23,7 @@ import {
   updateProduction,
 } from './productionSlice';
 import { getProductionRecipe, getProductionRecipes } from './productionRecipeSlice';
+import { branchTodayIso } from './branchDate';
 
 type Option = { value: string; label: string; label_2?: string; label_3?: string; label_5?: string };
 
@@ -73,11 +74,6 @@ type RecipeCheck = {
 
 type Tab = 'output' | 'inputs' | 'costs' | 'batches';
 
-const today = () => {
-  const d = new Date();
-  return d.toISOString().slice(0, 10);
-};
-
 // The shared picker works in Date objects; the form and the API keep the
 // ISO yyyy-mm-dd string. Parse/build in local time so a timezone west of UTC
 // never turns 2026-11-06 into the 5th.
@@ -123,6 +119,8 @@ const ProductionEntry = () => {
   const warehouseState = useSelector((s: any) => s.activeWarehouse);
   const warehouseOptions = Array.isArray(warehouseState?.data) ? warehouseState.data : [];
   const batches: any[] = Array.isArray(production?.data) ? production.data : [];
+  const trxDt = useSelector((s: any) => s.settings?.data?.trx_dt);
+  const today = () => branchTodayIso(trxDt);
 
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<Tab>('inputs');
@@ -1397,7 +1395,7 @@ const ProductionEntry = () => {
                     <tr key={row.id} className={rowCls}>
                       <td className={td}>
                         <span className="font-medium">{row.batch_ref || `#${row.id}`}</span>
-                        {row.vr_no && <span className="block text-xs text-[rgb(var(--c-text-muted))]">{row.vr_no}</span>}
+                        {row.vr_no && row.vr_no !== row.batch_ref && <span className="block text-xs text-[rgb(var(--c-text-muted))]">{row.vr_no}</span>}
                       </td>
                       <td className={`${td} whitespace-nowrap`}>{row.production_date}</td>
                       <td className={td}>
