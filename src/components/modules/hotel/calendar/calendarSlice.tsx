@@ -50,7 +50,12 @@ export const timelineRead = createAsyncThunk<any, Record<string, any>, { rejectV
 interface CalendarState {
   month: any | null;
   timeline: any | null;
-  loading: boolean;
+  /**
+   * One flag per view. A shared one let the timeline's answer end the month's
+   * spinner while the month was still being read, and the other way round.
+   */
+  monthLoading: boolean;
+  timelineLoading: boolean;
   error: string | null;
   /**
    * ⚠️ THE LATEST READ OF EACH KIND, by its request id. Pressing the month
@@ -65,7 +70,8 @@ interface CalendarState {
 const initialState: CalendarState = {
   month: null,
   timeline: null,
-  loading: false,
+  monthLoading: false,
+  timelineLoading: false,
   error: null,
   monthRequest: null,
   timelineRequest: null,
@@ -82,10 +88,11 @@ const calendarSlice = createSlice({
   extraReducers: (builder) => {
     [monthRead, timelineRead].forEach((thunk: any) => {
       const key = thunk === monthRead ? 'monthRequest' : 'timelineRequest';
+      const flag = thunk === monthRead ? 'monthLoading' : 'timelineLoading';
 
       builder
         .addCase(thunk.pending, (state: any, action: any) => {
-          state.loading = true;
+          state[flag] = true;
           state.error = null;
           state[key] = action.meta.requestId;
         })
@@ -93,7 +100,7 @@ const calendarSlice = createSlice({
           // An older read failing says nothing about the one on screen.
           if (action.meta.requestId !== state[key]) return;
 
-          state.loading = false;
+          state[flag] = false;
           state.error = action.payload || 'Failed';
           // ⚠️ Blanked, not left standing. A month painted under a heading the
           // server refused would be one property's occupancy shown under
@@ -107,13 +114,13 @@ const calendarSlice = createSlice({
       .addCase(monthRead.fulfilled, (state, action) => {
         if (action.meta.requestId !== state.monthRequest) return;
 
-        state.loading = false;
+        state.monthLoading = false;
         state.month = action.payload;
       })
       .addCase(timelineRead.fulfilled, (state, action) => {
         if (action.meta.requestId !== state.timelineRequest) return;
 
-        state.loading = false;
+        state.timelineLoading = false;
         state.timeline = action.payload;
       });
   },

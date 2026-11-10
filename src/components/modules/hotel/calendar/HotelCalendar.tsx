@@ -160,7 +160,8 @@ const HotelCalendar = () => {
 
   const month = useSelector((state: any) => state.hotelCalendar.month);
   const timeline = useSelector((state: any) => state.hotelCalendar.timeline);
-  const loading = useSelector((state: any) => state.hotelCalendar.loading);
+  const monthLoading = useSelector((state: any) => state.hotelCalendar.monthLoading);
+  const timelineLoading = useSelector((state: any) => state.hotelCalendar.timelineLoading);
   const error = useSelector((state: any) => state.hotelCalendar.error);
   const branchDdl = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings?.data);
@@ -336,7 +337,8 @@ const HotelCalendar = () => {
         )}
       </div>
 
-      {loading && !month && !timeline ? <Loader /> : null}
+      {/* The spinner of the view on screen, not of whichever read is running. */}
+      {(view === 'month' ? monthLoading && !month : timelineLoading && !timeline) ? <Loader /> : null}
 
       {error ? (
         <p className="mb-3 rounded border border-danger bg-rose-50 p-2.5 text-xs text-rose-900 dark:border-danger dark:bg-rose-500/15 dark:text-rose-50">

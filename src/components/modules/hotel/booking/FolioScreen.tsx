@@ -898,8 +898,11 @@ const FolioScreen = () => {
         ),
       },
     ],
-    // printPaper closes over `id`, which is the only thing about it that moves.
-    [id],
+    // ⚠️ `folio` too, not only `id`. printPaper reads the folio (walk-in or
+    // shift bill), and a memo built before the folio arrived kept a printPaper
+    // that saw none -- harmless for a receipt today, wrong the day this row
+    // prints a paper that asks.
+    [id, folio],
   );
 
   const billNights = async () => {

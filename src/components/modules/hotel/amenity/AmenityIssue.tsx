@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiPlus, FiRefreshCcw, FiX } from 'react-icons/fi';
@@ -118,22 +118,33 @@ const Entries = () => {
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [open, setOpen] = useState<Record<number, any[]>>({});
 
+  // ⚠️ THE NEWEST READ WINS. A filter change on page 3 sends page 3 and then
+  // page 1; whichever came back last used to be painted, so the old page
+  // could appear under the new filter. Each read takes a ticket, and only the
+  // latest ticket may write.
+  const latest = useRef(0);
+
   const load = useCallback(async () => {
+    const ticket = ++latest.current;
     setLoading(true);
 
     try {
       const res = await httpService.get(`${API_HOTEL_ITEM_STOCK_URL}/moves`, {
         params: { page, per_page: 10, kind: kind || undefined, from, to, search: search.trim() || undefined },
       });
+      if (ticket !== latest.current) return;
+
       const paginator = res?.data?.data?.data ?? {};
 
       setRows(Array.isArray(paginator.data) ? paginator.data : []);
       setTotalPages(Number(paginator.last_page) || 1);
     } catch (error: any) {
+      if (ticket !== latest.current) return;
+
       setRows([]);
       toast.error(error?.response?.data?.message || 'Could not read the entries');
     } finally {
-      setLoading(false);
+      if (ticket === latest.current) setLoading(false);
     }
   }, [page, kind, from, to, search]);
 

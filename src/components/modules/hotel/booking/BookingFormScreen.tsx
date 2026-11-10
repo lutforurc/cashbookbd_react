@@ -264,10 +264,12 @@ const BookingFormScreen = ({ user }: any) => {
    * new booking and wrong here: the clerk could not untick them, so nothing
    * could ever be dropped.
    */
-  const [ownRooms, setOwnRooms] = useState<number[]>([]);
+  const [heldRooms, setOwnRooms] = useState<number[]>([]);
   // ⚠️ And its own BEDS, for the same reason: a dormitory booking's beds come
   // back "booked" by itself, and without this none of them could be let go.
-  const [ownSeats, setOwnSeats] = useState<number[]>([]);
+  const [heldSeats, setOwnSeats] = useState<number[]>([]);
+  /** The nights the booking held when it was opened -- see ownRooms below. */
+  const [heldStay, setHeldStay] = useState<{ from: string; to: string } | null>(null);
   const [ownSittings, setOwnSittings] = useState<string[]>([]);
 
   // What the tiles are painted by. Availability first, because that is the
@@ -388,6 +390,23 @@ const BookingFormScreen = ({ user }: any) => {
 
   const buildings: LayoutBuilding[] = availability?.buildings ?? [];
   const nights = availability?.nights ?? 0;
+
+  /**
+   * The rooms and beds this booking holds ON THE NIGHTS BEING LOOKED AT.
+   *
+   * ⚠️ ONLY INSIDE THE NIGHTS IT ALREADY HELD. Availability marks a room
+   * "booked" without saying by whom, so "ours" is only provably true where the
+   * nights read are nights this booking held. Moved to later dates, the same
+   * bed can be another guest's -- and offering it as ours sent the clerk to a
+   * Save the server refused with a clash. Shortening the stay keeps them ours.
+   */
+  const ownApplies =
+    !heldStay ||
+    !availability?.check_in_date ||
+    (String(availability.check_in_date).slice(0, 10) >= heldStay.from &&
+      String(availability.check_out_date).slice(0, 10) <= heldStay.to);
+  const ownRooms = ownApplies ? heldRooms : [];
+  const ownSeats = ownApplies ? heldSeats : [];
 
   const rooms: LayoutRoom[] = useMemo(
     () =>
@@ -520,6 +539,10 @@ const BookingFormScreen = ({ user }: any) => {
 
       setOwnRooms((booking.room_ids ?? []).map((id: any) => Number(id)));
       setOwnSeats((booking.seat_ids ?? []).map((id: any) => Number(id)));
+      setHeldStay({
+        from: String(booking.check_in_date ?? '').slice(0, 10),
+        to: String(booking.check_out_date ?? '').slice(0, 10),
+      });
       setOwnSittings(
         (booking.sittings ?? []).map(
           (one: any) => `${one.resource_id}|${one.slot_id}|${one.date}`,

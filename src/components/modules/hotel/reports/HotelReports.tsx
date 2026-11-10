@@ -169,7 +169,8 @@ const HotelReports = () => {
   const performance = useSelector((state: any) => state.hotelReport.performance);
   const amenity = useSelector((state: any) => state.hotelReport.amenity);
   const vatSummary = useSelector((state: any) => state.hotelReport.vatSummary);
-  const reportError = useSelector((state: any) => state.hotelReport.error);
+  // Each report's own refusal -- see `errors` in reportSlice.
+  const reportErrors = useSelector((state: any) => state.hotelReport.errors ?? {});
   const loading = useSelector((state: any) => state.hotelReport.loading);
   const branchDdl = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings?.data);
@@ -829,9 +830,9 @@ const HotelReports = () => {
 
       {tab === 'amenity' ? (
         <>
-          {!amenity && reportError ? (
+          {!amenity && reportErrors.amenity ? (
             <p className="rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
-              {reportError}
+              {reportErrors.amenity}
             </p>
           ) : null}
 
@@ -921,9 +922,9 @@ const HotelReports = () => {
         <>
           {/* The server's refusal, shown rather than swallowed. It says WHY —
               usually that this property does not let rooms by the night. */}
-          {!performance && reportError ? (
+          {!performance && reportErrors.performance ? (
             <p className="rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
-              {reportError}
+              {reportErrors.performance}
             </p>
           ) : null}
 
@@ -1040,9 +1041,9 @@ const HotelReports = () => {
         </>
       ) : tab === 'vat' ? (
         <>
-          {!vatSummary && reportError ? (
+          {!vatSummary && reportErrors.vatSummary ? (
             <p className="rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
-              {reportError}
+              {reportErrors.vatSummary}
             </p>
           ) : null}
 
@@ -1109,16 +1110,16 @@ const HotelReports = () => {
 
           {/* ⚠️ A read that FAILED is not an empty list. Without this the
               table below says nobody is here, which is an answer. */}
-          {reportError ? (
+          {reportErrors.register ? (
             <p className="mb-2 rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
-              {reportError}
+              {reportErrors.register}
             </p>
           ) : null}
 
           <Table
             columns={registerColumns}
             data={register?.rows ?? []}
-            noDataMessage={reportError ? 'Could not read the register.' : 'Nobody on this list for that night.'}
+            noDataMessage={reportErrors.register ? 'Could not read the register.' : 'Nobody on this list for that night.'}
           />
 
           <div className="hidden">
@@ -1194,16 +1195,16 @@ const HotelReports = () => {
 
           {/* ⚠️ A read that FAILED is not an empty list. Without this the
               table below says nobody is here, which is an answer. */}
-          {reportError ? (
+          {reportErrors.collection ? (
             <p className="mb-2 rounded border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-50">
-              {reportError}
+              {reportErrors.collection}
             </p>
           ) : null}
 
           <Table
             columns={collectionColumns}
             data={collection?.rows ?? []}
-            noDataMessage={reportError ? 'Could not read the collection.' : 'No money taken in that range.'}
+            noDataMessage={reportErrors.collection ? 'Could not read the collection.' : 'No money taken in that range.'}
           />
         </>
       )}

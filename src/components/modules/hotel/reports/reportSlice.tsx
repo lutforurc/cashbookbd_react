@@ -131,6 +131,8 @@ interface ReportState {
   vatSummary: any | null;
   loading: boolean;
   error: string | null;
+  /** Each report's own refusal, keyed by its slot -- see the rejected case. */
+  errors: Record<string, string | null>;
 }
 
 const initialState: ReportState = {
@@ -141,6 +143,7 @@ const initialState: ReportState = {
   vatSummary: null,
   loading: false,
   error: null,
+  errors: {},
 };
 
 const reportSlice = createSlice({
@@ -173,10 +176,18 @@ const reportSlice = createSlice({
         .addCase(thunk.pending, (state: any) => {
           state.loading = true;
           state.error = null;
+          state.errors = { ...(state.errors ?? {}), [slotOf[thunk.typePrefix]]: null };
         })
         .addCase(thunk.rejected, (state: any, action: any) => {
           state.loading = false;
           state.error = action.payload || 'Failed';
+          // ⚠️ AND UNDER ITS OWN REPORT. One shared `error` showed a failed
+          // register's sentence on whichever tab was open; `errors` keeps each
+          // report's refusal with that report.
+          state.errors = {
+            ...(state.errors ?? {}),
+            [slotOf[thunk.typePrefix]]: action.payload || 'Failed',
+          };
           // ⚠️ Blanked rather than left standing. A stale register on screen
           // under a date the server refused is a list of names attached to the
           // wrong night, and somebody would read it as an answer. The same goes

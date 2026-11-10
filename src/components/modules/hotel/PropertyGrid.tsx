@@ -115,7 +115,12 @@ const BuildingCard = ({
 }) => {
   // Top floor first. The API sends them ground-first because that is their
   // natural order; standing them up is the drawing's business.
-  const stacked = useMemo(() => [...building.floors].reverse(), [building.floors]);
+  //
+  // ⚠️ Missing lists read as empty HERE too, not only in wholeBuildings(). The
+  // slices normalise what they store, but a caller handing this the API's
+  // own payload must not get a white screen for a building with no floors.
+  const stacked = useMemo(() => [...(building.floors ?? [])].reverse(), [building.floors]);
+  const unfloored = building.unfloored ?? [];
 
   const rent =
     building.rent_min === null
@@ -175,7 +180,7 @@ const BuildingCard = ({
           <FloorRow
             key={floor.id}
             label={shortFloor(floor)}
-            rooms={floor.rooms}
+            rooms={floor.rooms ?? []}
             mode={mode}
             typeIndex={typeIndex}
             selectedIds={selectedIds}
@@ -187,11 +192,11 @@ const BuildingCard = ({
           />
         ))}
 
-        {building.unfloored.length ? (
+        {unfloored.length ? (
           <FloorRow
             label="—"
             title="Rooms with no floor. A resort's cottages have none, and none is invented for them."
-            rooms={building.unfloored}
+            rooms={unfloored}
             mode={mode}
             typeIndex={typeIndex}
             selectedIds={selectedIds}
@@ -202,7 +207,7 @@ const BuildingCard = ({
           />
         ) : null}
 
-        {!stacked.length && !building.unfloored.length ? (
+        {!stacked.length && !unfloored.length ? (
           <p className="px-2 py-4 text-xs text-gray-400">No rooms in this building yet.</p>
         ) : null}
       </div>

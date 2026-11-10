@@ -15,6 +15,7 @@ import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import routes from '../../../services/appRoutes';
 import { formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import { money, localDate } from '../setupHelpers';
+import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { bookingSave, hallsRead } from './bookingSlice';
 import HallCards from './HallCards';
 
@@ -83,6 +84,19 @@ const HallBookingScreen = ({ user }: { user?: any }) => {
   const [mobile, setMobile] = useState('');
   const [notes, setNotes] = useState('');
   const [asking, setAsking] = useState(false);
+
+  // ⚠️ The property list, asked for here as every other hotel screen asks for
+  // it. Read but never fetched, the dropdown stayed empty on a cold load, and
+  // a user with no branch of their own (an owner) had no way to pick one.
+  useEffect(() => {
+    dispatch(getDdlProtectedBranch());
+  }, [dispatch]);
+
+  // An owner with no branch of their own starts on the first property listed.
+  useEffect(() => {
+    const first = branchDdl?.protectedData?.data?.[0]?.id;
+    if (!branchId && first) setBranchId(Number(first));
+  }, [branchDdl?.protectedData?.data, branchId]);
 
   const load = useCallback(() => {
     if (branchId) dispatch(hallsRead({ branch_id: branchId, date }));
