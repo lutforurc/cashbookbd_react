@@ -29,6 +29,7 @@ import {
 } from '../../../services/apiRoutes';
 import { FIELD_HEIGHT, FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import HotelVoucherList from '../payments/HotelVoucherList';
 
 /**
  * Buying the things a hotel is furnished WITH -- beds, chairs, a generator.
@@ -148,6 +149,7 @@ const HotelAssetPurchase = () => {
   // Kept after the banner is dismissed: Print still means "the one just saved".
   const [lastVoucher, setLastVoucher] = useState('');
   const [lastVoucherId, setLastVoucherId] = useState<number | null>(null);
+  const [listOpen, setListOpen] = useState(false);
   const printRegistryRef = useRef<any>(null);
   /** How that voucher was settled -- it decides which book the banner names. */
   const [savedMode, setSavedMode] = useState<Mode>(CASH_MODE);
@@ -420,10 +422,9 @@ const HotelAssetPurchase = () => {
         </div>
 
         <div className="flex gap-2">
-          {/* Both are for later, and say so rather than doing nothing. */}
           <ButtonLoading
-            onClick={() => toast.info('List — not built yet.')}
-            label="List"
+            onClick={() => setListOpen((open) => !open)}
+            label={listOpen ? 'Hide list' : 'List'}
             variant="ghost"
             className="border border-stroke px-3 dark:border-strokedark"
             icon={<FiList size={16} />}
@@ -435,7 +436,7 @@ const HotelAssetPurchase = () => {
                     vr_no: lastVoucher,
                     main_trx_id: lastVoucherId,
                   })
-                : toast.info('Save a voucher first — an older one prints from the ledger.')
+                : setListOpen(true)
             }
             label={lastVoucher ? `Print ${lastVoucher}` : 'Print'}
             variant="ghost"
@@ -445,8 +446,17 @@ const HotelAssetPurchase = () => {
         </div>
       </div>
 
-      {/* The number the server gave the voucher just written. There is no list
-          screen yet, so this is the only place it can be read. */}
+      {/* An older voucher is reprinted from here; Print above is the one just
+          written. */}
+      {listOpen ? (
+        <HotelVoucherList
+          kind="asset"
+          onClose={() => setListOpen(false)}
+          onPrint={(row) => printRegistryRef.current?.printVoucher(row)}
+        />
+      ) : null}
+
+      {/* The number the server gave the voucher just written. */}
       {savedVoucher ? (
         <div className="mb-3 flex items-center justify-between gap-3 rounded border border-success bg-success/10 px-3 py-2">
           <span className="text-sm font-medium text-black dark:text-white">

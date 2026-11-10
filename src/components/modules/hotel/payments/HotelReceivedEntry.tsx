@@ -18,6 +18,8 @@ import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import { ButtonLoading, IconButton } from '../../../../pages/UiElements/CustomButtons';
 import { FIELD_HEIGHT, FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
 import httpService from '../../../services/httpService';
+import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
+import HotelVoucherList from './HotelVoucherList';
 import {
   API_COAL3_ID_BY_L4_URL,
   API_HOTEL_RECEIVED_ENTRY_URL,
@@ -67,6 +69,12 @@ const HotelReceivedEntry = () => {
   const [saving, setSaving] = useState(false);
 
   const nextId = useRef(2);
+
+  // The voucher just written, for Print; and whether the month's list is open.
+  // An older voucher prints from the list -- see HotelVoucherList.
+  const [lastVoucher, setLastVoucher] = useState<{ vr_no: string; main_trx_id: number | null } | null>(null);
+  const [listOpen, setListOpen] = useState(false);
+  const printRegistryRef = useRef<any>(null);
 
   const isCash = mode === CASH;
   const total = rows.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
@@ -152,6 +160,7 @@ const HotelReceivedEntry = () => {
 
       const voucher = body?.data?.data ?? {};
       const savedVrNo = String(voucher?.vr_no ?? '');
+      setLastVoucher(savedVrNo ? { vr_no: savedVrNo, main_trx_id: Number(voucher?.main_trx_id) || null } : null);
 
       reset();
       toast.success(`Voucher ${savedVrNo} saved`);
@@ -174,21 +183,33 @@ const HotelReceivedEntry = () => {
 
         <div className="flex gap-2">
           <ButtonLoading
-            onClick={() => toast.info('List — not built yet.')}
-            label="List"
+            onClick={() => setListOpen((open) => !open)}
+            label={listOpen ? 'Hide list' : 'List'}
             variant="ghost"
             className="border border-stroke px-3 dark:border-strokedark"
             icon={<FiList size={16} />}
           />
           <ButtonLoading
-            onClick={() => toast.info('Print — not built yet.')}
-            label="Print"
+            onClick={() =>
+              lastVoucher
+                ? printRegistryRef.current?.printVoucher(lastVoucher)
+                : setListOpen(true)
+            }
+            label={lastVoucher ? `Print ${lastVoucher.vr_no}` : 'Print'}
             variant="ghost"
             className="border border-stroke px-3 dark:border-strokedark"
             icon={<FiPrinter size={16} />}
           />
         </div>
       </div>
+
+      {listOpen ? (
+        <HotelVoucherList
+          kind="received"
+          onClose={() => setListOpen(false)}
+          onPrint={(row) => printRegistryRef.current?.printVoucher(row)}
+        />
+      ) : null}
 
       {/* What came in, and how much -- one row per head, all on one voucher. */}
       <div className="mb-3 rounded border border-stroke p-3 dark:border-strokedark">
@@ -415,6 +436,7 @@ const HotelReceivedEntry = () => {
           icon={<FiSave size={16} />}
         />
       </div>
+      <VoucherPrintRegistry ref={printRegistryRef} rowsPerPage={20} fontSize={11} />
     </div>
   );
 };

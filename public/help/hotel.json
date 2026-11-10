@@ -131,7 +131,7 @@
     "video": "",
     "intro": "হোটেলের ফার্নিচার বা খরচের মাল এক ভাউচারে কেনা হয়, সাথে টাকা পরিশোধ।",
     "sections": [
-      { "heading": "ক্রয় লেখা", "menu": "Hotel → Asset Purchase", "steps": ["Accounts Head, Select Item, Quantity ও Rate দিয়ে Add Item চাপুন।", "Payment Details-এ Cash, Bank বা Credit বাছুন; Bank হলে Bank Account ও Cheque No দিন।", "Supplier ও Payment Amount দিন; Notes লিখুন।", "Save Transaction চাপুন।"] },
+      { "heading": "ক্রয় লেখা", "menu": "Hotel → Asset Purchase", "steps": ["Accounts Head, Select Item, Quantity ও Rate দিয়ে Add Item চাপুন।", "Payment Details-এ Cash, Bank বা Credit বাছুন; Bank হলে Bank Account ও Cheque No দিন।", "Supplier ও Payment Amount দিন; Notes লিখুন।", "Save Transaction চাপুন।", "Print চাপলে এইমাত্র সেভ করা ভাউচার প্রিন্ট হয়। List চাপলে মাস অনুযায়ী এই ধরনের ভাউচারের তালিকা আসে; সারির Print আইকনে পুরনো ভাউচার আবার প্রিন্ট করা যায়।"] },
       { "heading": "হিসাব", "steps": ["Cash/Bank হলে পরিশোধের ভাউচার ক্যাশ বা ব্যাংক বইয়ে যায়।", "Credit হলে পুরো বিল সরবরাহকারীর কাছে বাকি থাকে।", "Print দিয়ে ভাউচার ছাপা হয়।"] },
       { "heading": "সতর্কতা", "warning": "Payment Amount-এ আংশিক পরিশোধ এখনো চলে না — Cash/Bank হলে পুরো টাকা, Credit হলে শূন্য।" }
     ]
@@ -144,7 +144,7 @@
     "video": "",
     "intro": "এক ভাউচারে একাধিক হিসাবের টাকা পরিশোধ করা হয়।",
     "sections": [
-      { "heading": "পরিশোধ লেখা", "menu": "Hotel → Payment Entry", "steps": ["Account Heads-এ Account Head, Amount (Tk.) ও Notes দিয়ে Add Row করুন।", "Cash বা Bank বাছুন; Bank হলে Bank Account দিন।", "Voucher No ও Notes লিখুন।", "Total Debit, Total Credit ও Total Payment মিলিয়ে Save Payment চাপুন।"] },
+      { "heading": "পরিশোধ লেখা", "menu": "Hotel → Payment Entry", "steps": ["Account Heads-এ Account Head, Amount (Tk.) ও Notes দিয়ে Add Row করুন।", "Cash বা Bank বাছুন; Bank হলে Bank Account দিন।", "Voucher No ও Notes লিখুন।", "Total Debit, Total Credit ও Total Payment মিলিয়ে Save Payment চাপুন।", "Print চাপলে এইমাত্র সেভ করা ভাউচার প্রিন্ট হয়। List চাপলে মাস অনুযায়ী এই ধরনের ভাউচারের তালিকা আসে; সারির Print আইকনে পুরনো ভাউচার আবার প্রিন্ট করা যায়।"] },
       { "heading": "সতর্কতা", "warning": "মোট debit ও credit সমান না হলে ভাউচার লেখা যাবে না।" }
     ]
   },
@@ -156,7 +156,7 @@
     "video": "",
     "intro": "এক ভাউচারে একাধিক হিসাবের টাকা গ্রহণ করা হয়।",
     "sections": [
-      { "heading": "আদায় লেখা", "menu": "Hotel → Received Entry", "steps": ["Account Heads-এ Account Head, Received Amount (Tk.) ও Received From দিয়ে Add Row করুন।", "Cash বা Bank বাছুন; Bank হলে Bank Account দিন।", "Notes লিখুন।", "Received Summary মিলিয়ে Save Received চাপুন।"] },
+      { "heading": "আদায় লেখা", "menu": "Hotel → Received Entry", "steps": ["Account Heads-এ Account Head, Received Amount (Tk.) ও Received From দিয়ে Add Row করুন।", "Cash বা Bank বাছুন; Bank হলে Bank Account দিন।", "Notes লিখুন।", "Received Summary মিলিয়ে Save Received চাপুন।", "Print চাপলে এইমাত্র সেভ করা ভাউচার প্রিন্ট হয়। List চাপলে মাস অনুযায়ী এই ধরনের ভাউচারের তালিকা আসে; সারির Print আইকনে পুরনো ভাউচার আবার প্রিন্ট করা যায়।"] },
       { "heading": "সতর্কতা", "warning": "Total Debit, Total Credit ও Total Received না মিললে ভাউচার লেখা যাবে না।" }
     ]
   }

@@ -1135,6 +1135,10 @@ export const API_HOTEL_PAYMENT_ENTRY_URL = `${API_BASE_URL}/hotel-setup/payment-
 // one head. It writes the accounts' `1-` receipt voucher.
 export const API_HOTEL_RECEIVED_ENTRY_URL = `${API_BASE_URL}/hotel-setup/received-entries/store`;
 
+// The List button on those screens and on Asset Purchase: one month's vouchers
+// of one kind -- append /payment, /received or /asset. See VoucherListController.
+export const API_HOTEL_VOUCHER_LIST_URL = `${API_BASE_URL}/hotel-setup/vouchers`;
+
 // Bookings. The stem suffixes /store, /edit/{id}, /cancel/{id}, and — for the
 // second stage of the form, on the day the guests arrive — /allotment/{id} and
 // /allot/{id}.
