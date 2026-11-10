@@ -3051,7 +3051,10 @@ const hotelBill = (): PrintTemplate => ({
           hideIfEqualTo: 'bill_gross',
           ruleAbove: true,
         },
-        // What the net is made of, VAT shown once.
+        // What the net is made of, VAT shown once: ONE line naming every rate
+        // on the bill ("VAT 5% / 7.5% / 15%") over the whole VAT (owner,
+        // 2026-11-10). bill_vat_on_net_2 is always nought now and hides; it
+        // stays for saved layouts that still hold it.
         { field: 'bill_net_ex_vat', label: 'Rent (excl. VAT)', hideIfEmpty: true },
         { field: 'bill_vat_on_net', label: 'VAT {bill_vat_on_net_rate}', hideIfEmpty: true },
         { field: 'bill_vat_on_net_2', label: 'VAT {bill_vat_on_net_2_rate}', hideIfEmpty: true },
