@@ -52,6 +52,14 @@ interface CalendarState {
   timeline: any | null;
   loading: boolean;
   error: string | null;
+  /**
+   * ⚠️ THE LATEST READ OF EACH KIND, by its request id. Pressing the month
+   * arrow twice sends two reads, and the server answers in whatever order it
+   * likes: the earlier month arriving last painted November's grid under an
+   * "October" heading. Only the answer to the newest read is kept.
+   */
+  monthRequest: string | null;
+  timelineRequest: string | null;
 }
 
 const initialState: CalendarState = {
@@ -59,6 +67,8 @@ const initialState: CalendarState = {
   timeline: null,
   loading: false,
   error: null,
+  monthRequest: null,
+  timelineRequest: null,
 };
 
 const calendarSlice = createSlice({
@@ -71,12 +81,18 @@ const calendarSlice = createSlice({
   },
   extraReducers: (builder) => {
     [monthRead, timelineRead].forEach((thunk: any) => {
+      const key = thunk === monthRead ? 'monthRequest' : 'timelineRequest';
+
       builder
-        .addCase(thunk.pending, (state: any) => {
+        .addCase(thunk.pending, (state: any, action: any) => {
           state.loading = true;
           state.error = null;
+          state[key] = action.meta.requestId;
         })
         .addCase(thunk.rejected, (state: any, action: any) => {
+          // An older read failing says nothing about the one on screen.
+          if (action.meta.requestId !== state[key]) return;
+
           state.loading = false;
           state.error = action.payload || 'Failed';
           // ⚠️ Blanked, not left standing. A month painted under a heading the
@@ -89,10 +105,14 @@ const calendarSlice = createSlice({
 
     builder
       .addCase(monthRead.fulfilled, (state, action) => {
+        if (action.meta.requestId !== state.monthRequest) return;
+
         state.loading = false;
         state.month = action.payload;
       })
       .addCase(timelineRead.fulfilled, (state, action) => {
+        if (action.meta.requestId !== state.timelineRequest) return;
+
         state.loading = false;
         state.timeline = action.payload;
       });

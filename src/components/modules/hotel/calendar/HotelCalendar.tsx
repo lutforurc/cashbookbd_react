@@ -207,9 +207,13 @@ const HotelCalendar = () => {
   }, [view, loadTape]);
 
   const shiftMonth = (by: number) => {
-    const date = localDate(anchor) ?? new Date();
-    date.setMonth(date.getMonth() + by);
-    setAnchor(asText(new Date(date.getFullYear(), date.getMonth(), 1)));
+    // From the month as it stands NOW, not as this render saw it: two presses
+    // landing before a re-render would otherwise both step from the same month.
+    setAnchor((current) => {
+      const date = localDate(current) ?? new Date();
+
+      return asText(new Date(date.getFullYear(), date.getMonth() + by, 1));
+    });
   };
 
   /**

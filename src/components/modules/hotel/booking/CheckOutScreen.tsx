@@ -341,7 +341,9 @@ const CheckOutScreen = () => {
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {booking?.booker_name} · booked {formatDayMonthYear(booking?.check_in_date)} →{' '}
-              {plan.booked_out_on}
+              {/* The same DD/MM/YYYY as the arrival beside it -- the plan
+                  sends the server's YYYY-MM-DD. */}
+              {formatDayMonthYear(plan.booked_out_on)}
             </div>
           </div>
 
