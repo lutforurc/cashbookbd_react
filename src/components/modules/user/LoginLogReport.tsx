@@ -28,10 +28,13 @@ const dateTime = (value?: string | null) =>
  */
 const duration = (minutes?: number | null) => {
   if (minutes === null || minutes === undefined) return null;
-  if (minutes < 60) return `${minutes}m`;
+  // The API sends fractional minutes; two decimals at most, no trailing zeros.
+  const round = (value: number) => Number(value.toFixed(2));
+
+  if (minutes < 60) return `${round(minutes)}m`;
 
   const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
+  const rest = round(minutes % 60);
 
   return rest ? `${hours}h ${rest}m` : `${hours}h`;
 };
