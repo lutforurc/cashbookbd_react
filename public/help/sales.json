@@ -49,11 +49,12 @@
   "sales-return": {
     "title": "বিক্রির ফেরত",
     "module": "Sales",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "ক্রেতা মাল ফেরত দিলে এই স্ক্রিনে ফেরতের ভাউচার লেখা হয়। ফেরতের মাল আবার স্টকে ঢোকে এবং ক্রেতার খাতায় ফেরতের টাকা বসে।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ sales.return permission থাকলে।"] },
       {
         "heading": "ফেরত লেখার ধাপ",
         "menu": "Invoice → Sales Return",

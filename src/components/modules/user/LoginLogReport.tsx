@@ -188,7 +188,18 @@ const LoginLogReport: React.FC = () => {
             // still running.
             '-'
           ) : row.out_time ? (
-            dateTime(row.out_time)
+            // Ended without a logout: the time is when the session was last
+            // used, not a moment anybody pressed Logout, and it says so.
+            row.out_reason && row.out_reason !== 'logout' ? (
+              <div>
+                <div>{dateTime(row.out_time)}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {row.out_reason === 'new login' ? 'Last active · logged in again' : 'Last active · device removed'}
+                </div>
+              </div>
+            ) : (
+              dateTime(row.out_time)
+            )
           ) : (
             <span className="text-xs text-amber-600 dark:text-amber-400">Not signed out</span>
           ),

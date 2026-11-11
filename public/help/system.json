@@ -52,11 +52,12 @@
   "legacy-accounts": {
     "title": "পুরনো ERP-র নিজস্ব অ্যাকাউন্ট",
     "module": "Legacy",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "পুরনো সিস্টেমের নিজের ক্যাশ ও ব্যাংক অ্যাকাউন্টের ব্যালেন্স — শুধু ব্যাকআপ দেখার জন্য।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ legacy.accounts.view permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Legacy → Old Accounts", "steps": ["(-) ব্যালেন্স — মোট, (+) ব্যালেন্স — মোট ও নিট দেখা যায়।", "ক্রমিক, নাম, নম্বর, ধরন, মোবাইল, বিবরণ, লেনদেন ও ব্যালেন্স দেখা যায়।", "সারিতে ক্লিক করলে পুরনো সিস্টেমের ব্যালেন্স ও লেনদেনের তালিকা খোলে।"] },
       { "heading": "সতর্কতা", "warning": "এগুলো নতুন খাতার opening নয়; এখানে কোনো হিসাব হয় না বা পোস্ট হয় না।" }
     ]
@@ -64,11 +65,12 @@
   "somity-collection-sheet": {
     "title": "সমিতির কালেকশন শিট",
     "module": "Reports",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "সদস্যদের বিক্রি, ডাউন পেমেন্ট, আগের কালেকশন, কিস্তি ও বাকি — এক মাসের শিট।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ collection.sheet permission থাকলে।"] },
       { "heading": "শিট", "menu": "Reports → Collection Sheet", "steps": ["Select Branch, Select Somity, Month ও Status (Opening/Closing) বাছুন।", "Apply চাপুন; Rows ও Font ঠিক করে Print দিন।", "SL. NO, MEMBER DETAILS, TOTAL SALES, DOWN PAYMENT, PRV. COLL., INSTALLMENT, THIS MONTH ও BALANCE দেখা যায়।"] },
       { "heading": "সতর্কতা", "warning": "সারি না এলে Print বন্ধ থাকে; সমিতি ও মাস ঠিক আছে কি না দেখুন। পি:/স্বা: লাইনে সদস্যের পরিচয় থাকে।" }
     ]
@@ -101,11 +103,12 @@
   "customer-dashboard": {
     "title": "গ্রাহকের ড্যাশবোর্ড",
     "module": "Dashboard",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "গ্রাহক নিজের পাওনা, জমা, কিস্তি ও ডিউ এক জায়গায় দেখেন।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ customer.dashboard permission থাকলে।"] },
       { "heading": "সারসংক্ষেপ", "menu": "Customer → Dashboard", "steps": ["Total Received, Total Payment ও Balance কার্ড দেখুন।", "Overview, Statement, Due, Installments ও Payments ট্যাব বাছুন।", "Installment Summary-তে Total, Paid, Due ও Overdue দেখা যায়।"] },
       { "heading": "বিস্তারিত", "steps": ["Installment Information-এ Sl. No., Invoice. No, Install. No, Due Date, Amount ও Status থাকে।", "Payment History-এ Vr. No, Vr. date, Inst. No ও Amount থাকে।", "Logout দিয়ে বেরোন; উপরে থিম বদলানোর সুইচ আছে।"] },
       { "heading": "সতর্কতা", "warning": "Balance মানে Received বিয়োগ Payment; কোন কিস্তি কখন দিতে হবে তা Due ট্যাবে দেখুন।" }
@@ -126,11 +129,12 @@
   "approval-center": {
     "title": "অনুমোদন কেন্দ্র",
     "module": "Approval",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "উপস্থিতি ও ভাউচার এক জায়গায় দেখে দল বেঁধে অনুমোদন বা বাতিল করা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ approval.center permission থাকলে।"] },
       { "heading": "অনুমোদন", "menu": "Approval Center", "steps": ["From, To, Branch/Project ও Search দিন; Load চাপুন।", "Attendance বা Vouchers ট্যাব বাছুন; Pending / Approved দেখুন।", "সারি বেছে Approve, Remove Approval, Reject বা Clear করুন; Confirm Approval Action-এ Remarks লিখুন।"] },
       { "heading": "সতর্কতা", "warning": "Reject ও Clear শুধু Attendance-এ কাজ করে, ভাউচারে নয়। অনুমোদনের আগে তারিখ ও শাখা মিলিয়ে নিন।" }
     ]
@@ -138,11 +142,12 @@
   "approval-audit": {
     "title": "অনুমোদনের অডিট",
     "module": "Approval",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "কে, কখন, কোন উপস্থিতি বা ভাউচারে কী সিদ্ধান্ত দিয়েছে তার ইতিহাস।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ approval.center permission থাকলে।"] },
       { "heading": "অডিট", "menu": "Approval Center → Audit History", "steps": ["From, To, Branch/Project ও Action বাছুন; Search করুন।", "Action At, Attendance Date, Employee, Branch/Project, Action, Action By ও Remarks দেখা যায়।", "Print বা Excel দিয়ে তালিকা নিন।"] },
       { "heading": "সতর্কতা", "warning": "এটি অডিট তালিকা — এখান থেকে অনুমোদন বদলানো যায় না; বদলাতে Approval Center-এ যান।" }
     ]
@@ -163,11 +168,12 @@
   "scheme-receipts": {
     "title": "কোম্পানি স্কিমের রিসিভ",
     "module": "Company Scheme",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "ব্র্যান্ড থেকে স্কিমে যে টাকা এসেছে তার রিসিভ তালিকা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ company.scheme.receipts.view permission থাকলে।"] },
       { "heading": "রিসিভ", "menu": "Reports → Company Scheme Receipts", "steps": ["Company, Select Branch, Start Date ও End Date দিন; Apply চাপুন।", "Date, Voucher, Company, IMEI, Product, Invoice ও Amount দেখা যায়; নিচে Total।", "ভাউচারে ক্লিক করলে সেই রিসিভ ছাপা যায়।"] },
       { "heading": "সতর্কতা", "warning": "তারিখ-সীমা না দিলে তালিকা আসে না; কোনো রিসিভ না থাকলে No receipt in this range দেখায়।" }
     ]
@@ -175,11 +181,12 @@
   "user-list": {
     "title": "ব্যবহারকারীর তালিকা",
     "module": "Users",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "কোম্পানির সব ব্যবহারকারী, তাদের শাখা, পদ ও চালু/বন্ধ অবস্থা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ all.user.view permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Users → User List", "steps": ["Search দিয়ে নাম, ইমেইল বা মোবাইল খুঁজুন; All companies দিয়ে সব কোম্পানি দেখুন।", "Sl. No., User Name, Company, Working Branch, Email, Mobile ও Role দেখা যায়।", "সুইচ দিয়ে চালু/বন্ধ, Edit user দিয়ে বদল, Generate temporary password দিয়ে সাময়িক পাসওয়ার্ড দিন।"] },
       { "heading": "সতর্কতা", "warning": "নিজের অ্যাকাউন্ট বন্ধ করা যায় না। বন্ধ করলে ব্যবহারকারী ঢুকতে পারবে না, কিন্তু তার তথ্য মোছে না।" }
     ]
@@ -200,11 +207,12 @@
   "company-users": {
     "title": "কোম্পানির ব্যবহারকারী",
     "module": "Users",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "কোম্পানির মালিক ও সাধারণ ব্যবহারকারীদের আলাদা করে দেখা যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ company.user permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Users → Company Users", "steps": ["Show all users দিয়ে সব দেখুন; Search দিয়ে খুঁজুন।", "Sl. No., User Name, Company, Working Branch, Email/Phone, Role ও Action দেখা যায়।", "Add User দিয়ে নতুন ব্যবহারকারী; সীমা পূর্ণ হলে User Limit Full দেখায়।"] },
       { "heading": "সতর্কতা", "warning": "কোম্পানির ব্যবহারকারীর সীমা প্ল্যান অনুযায়ী; সীমা পূর্ণ হলে আগে প্ল্যান বদলাতে হবে।" }
     ]
@@ -212,11 +220,12 @@
   "online-users": {
     "title": "অনলাইন ব্যবহারকারী",
     "module": "Users",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এখন কে সাইন ইন করে আছে এবং শেষ কখন দেখা গেছে।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ online.users permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Users → Online Users", "steps": ["Refresh চাপুন।", "Sl. No., Status (Online), User Name, Working Branch, Email, Role ও Last Seen দেখা যায়।"] },
       { "heading": "সতর্কতা", "warning": "Last Seen পুরনো হলে ব্যবহারকারী ব্রাউজার বন্ধ করে থাকতে পারেন; এটি লগআউটের প্রমাণ নয়।" }
     ]
@@ -224,23 +233,25 @@
   "login-log": {
     "title": "লগইন ইতিহাস",
     "module": "Users",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "কে কখন ঢুকেছে, কোথা থেকে এবং বেরিয়েছে কি না।",
     "sections": [
       { "heading": "ইতিহাস", "menu": "Users → Login History", "steps": ["From ও Result (All/Signed in/Refused) দিন; Search করুন।", "Sl. No., User, Result, Company / Branch, Logged In, Logged Out, Duration, IP Address ও Device দেখা যায়।", "Reset দিয়ে ফিল্টার মুছুন।"] },
+      { "heading": "Logged Out কলাম", "steps": ["শুধু সময় থাকলে ব্যবহারকারী নিজে Logout করেছেন।", "Last active · logged in again: Logout না করে একই ডিভাইসে আবার Login করেছেন; সময়টি আগের সেশনের শেষ ব্যবহারের।", "Last active · device removed: ডিভাইসটি তালিকা থেকে সরানো হয়েছে; সময়টি শেষ ব্যবহারের।", "নতুন রেজিস্ট্রেশন করে সরাসরি ঢুকলেও একটি Signed in সারি থাকে।"] },
       { "heading": "সতর্কতা", "warning": "Refused মানে ঢুকতে পারেনি; Not signed out মানে সেশন বন্ধ হয়নি — নিরাপত্তার জন্য দেখে নিন।" }
     ]
   },
   "roles": {
     "title": "পদের অনুমতি",
     "module": "Users",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "প্রতিটি পদের জন্য কোন কাজের অনুমতি থাকবে তা টিক দিয়ে ঠিক করা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ roles.view permission থাকলে।"] },
       { "heading": "অনুমতি", "menu": "Users → Roles", "steps": ["Roles ড্রপডাউনে পদ বাছুন।", "প্রতিটি গ্রুপে All দিয়ে সব, বা আলাদা আলাদা অনুমতি টিক দিন।", "Update চাপুন; Add Role দিয়ে নতুন পদ।"] },
       { "heading": "সতর্কতা", "warning": "প্ল্যানের নিজের পদ বদলানো যায় না — শুধু কোম্পানির নিজের পদ সম্পাদনযোগ্য। অনুমতি কমালে ব্যবহারকারী সাথে সাথে সেই স্ক্রিন হারাবেন।" }
     ]
@@ -248,11 +259,12 @@
   "add-role": {
     "title": "নতুন পদ",
     "module": "Users",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একটি নতুন পদের নাম তৈরি করা হয়; অনুমতি পরে Roles পাতায় দেওয়া হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ roles.create permission থাকলে।"] },
       { "heading": "পদ", "menu": "Users → Roles → Add Role", "steps": ["Role Name লিখুন।", "Save চাপুন; তারপর Roles-এ গিয়ে অনুমতি টিক দিন।"] },
       { "heading": "সতর্কতা", "warning": "একই নামে দুটি পদ বানাবেন না — পরে কোনটি কাকে দেওয়া হয়েছে বোঝা কঠিন হবে।" }
     ]
@@ -260,11 +272,12 @@
   "add-permission": {
     "title": "নতুন অনুমতি",
     "module": "Users",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একটি নতুন অনুমতির চাবি ও তার গ্রুপ তৈরি করা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ permission.create permission থাকলে।"] },
       { "heading": "অনুমতি", "menu": "Users → Roles → Add Permission", "steps": ["Permission Name লিখুন, যেমন voucher.approval।", "Group Name-এ Search বা Choose from list দিয়ে গ্রুপ বাছুন, অথবা Add new group করুন।", "Save চাপুন।"] },
       { "heading": "সতর্কতা", "warning": "একই চাবি দুবার বানালে অনুমতি মিশে যাবে — আগে Search করে দেখুন। নতুন অনুমতি নিজে থেকে কোনো ভূমিকায় যায় না।" }
     ]
@@ -272,11 +285,12 @@
   "company-list": {
     "title": "কোম্পানির তালিকা",
     "module": "Company",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এই ইনস্টলে থাকা কোম্পানিগুলোর তালিকা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ company.view permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Setup → Company List", "steps": ["Search দিয়ে নাম বা মোবাইল খুঁজুন।", "Sl. No., Name of Company, Logo, Logo Dark, Contact Person, Phone/Mobile ও Action দেখা যায়।", "Edit company দিয়ে তথ্য বদলান।"] },
       { "heading": "সতর্কতা", "warning": "কোম্পানি মোছার কাজ এখানে নেই; মোছার অনুরোধ Admin → Account Deletions দিয়ে যায়।" }
     ]

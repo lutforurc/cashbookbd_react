@@ -29,11 +29,12 @@
   "bank-book": {
     "title": "ব্যাংক বই",
     "module": "Cash Book",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "নির্বাচিত শাখার ব্যাংক লেনদেন তারিখ ধরে এই রিপোর্টে দেখা যায়, সাথে ব্যালেন্স।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ bank.book permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখার ধাপ",
         "menu": "Reports → Bank Book",

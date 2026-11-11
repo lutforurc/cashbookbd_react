@@ -471,6 +471,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
       'purchase.return.view',
       'sales.return',
       'labour.invoice.create',
+      'trading.combined.create',
+      'tiles.combined.create',
     ].some((key) => hasPermission(permissions, key)) ||
     (deductStockOnDelivery && hasPermission(permissions, 'delivery.view'));
   const companyName =
@@ -890,7 +892,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             Dashboard
                           </NavLink>
                         </li>
-                        {deductStockOnDelivery && hasPermission(permissions, 'delivery.view') && (
+                        {deductStockOnDelivery && hasPermission(permissions, 'delivery.dashboard.view') && (
                           <li style={subSlot('dashboard', 'delivery_dashboard')}>
                             <NavLink
                               to={routes.delivery_dashboard}
@@ -1111,8 +1113,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {(hasPermission(permissions, 'interbranch.transfer.view')
-                            || hasPermission(permissions, 'interbranch.transfer.receive')) && (
+                          {hasPermission(permissions, 'interbranch.transfer.view') && (
                             <li style={subSlot('transaction', 'accounts/inter-branch')}>
                               <NavLink
                                 to={routes.inter_branch}
@@ -1263,9 +1264,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {showTradingCombined &&
-                            hasPermission(permissions, 'purchase.create') &&
-                            hasPermission(permissions, 'sales.create') && (
+                          {showTradingCombined && hasPermission(permissions, 'trading.combined.create') && (
                               <li style={subSlot('invoice', 'inv_trading_combined')}>
                                 <NavLink
                                   to={routes.inv_trading_combined}
@@ -1279,9 +1278,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               two money boxes replace Trading's single amount. By
                               the branch flag, not the system id: a tiles branch
                               runs Trading's inventory system row. */}
-                          {showTilesCombined &&
-                            hasPermission(permissions, 'purchase.create') &&
-                            hasPermission(permissions, 'sales.create') && (
+                          {showTilesCombined && hasPermission(permissions, 'tiles.combined.create') && (
                               <li style={subSlot('invoice', 'inv_tiles_combined')}>
                                 <NavLink
                                   to={routes.inv_tiles_combined}
@@ -1307,8 +1304,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                   from issue to arrival meant crossing the sidebar. */}
               {(hasPermission(permissions, 'branch.issue.create') ||
                 hasPermission(permissions, 'branch.received.create') ||
-                hasPermission(permissions, 'inventory.received.create') ||
-                hasPermission(permissions, 'product.received.create') ||
+                // Every screen in the group has a key of its own (2026-11-11),
+                // and any one of them opens the group.
+                hasPermission(permissions, 'branch.issue.list.view') ||
+                hasPermission(permissions, 'branch.received.list.view') ||
+                hasPermission(permissions, 'branch.transfer.create') ||
+                hasPermission(permissions, 'branch.received.report.view') ||
+                hasPermission(permissions, 'branch.stock.view') ||
+                hasPermission(permissions, 'material.issue.create') ||
                 // Product Out hangs off this group, so whoever is granted any
                 // one of its screens and nothing else still has to be able to
                 // open the group they live in.
@@ -1381,9 +1384,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'branch.received.create') ||
-                            hasPermission(permissions, 'inventory.received.create') ||
-                            hasPermission(permissions, 'product.received.create')) && (
+                          {hasPermission(permissions, 'branch.received.create') && (
                               <li style={subSlot('branch-transfer', 'branch_received')}>
                                 <NavLink
                                   to={routes.branch_received}
@@ -1397,7 +1398,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {/* The voucher lists, ahead of the product-wise
                               reports: "which challans" is asked far oftener
                               than "how much of each product". */}
-                          {hasPermission(permissions, 'branch.issue.create') && (
+                          {hasPermission(permissions, 'branch.issue.list.view') && (
                             <li style={subSlot('branch-transfer', 'report_branch_transfer_list')}>
                               <NavLink
                                 to={routes.report_branch_transfer_list}
@@ -1407,9 +1408,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'branch.received.create') ||
-                            hasPermission(permissions, 'inventory.received.create') ||
-                            hasPermission(permissions, 'product.received.create')) && (
+                          {hasPermission(permissions, 'branch.received.list.view') && (
                               <li style={subSlot('branch-transfer', 'report_branch_receive_list')}>
                                 <NavLink
                                   to={routes.report_branch_receive_list}
@@ -1429,7 +1428,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'branch.received.create') && (
+                          {hasPermission(permissions, 'branch.received.report.view') && (
                             <li style={subSlot('branch-transfer', 'report_branch_receive')}>
                               <NavLink
                                 to={routes.report_branch_receive}
@@ -1439,7 +1438,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'product.stock.view') && (
+                          {hasPermission(permissions, 'branch.stock.view') && (
                             <li style={subSlot('branch-transfer', 'report_branch_stock')}>
                               <NavLink
                                 to={routes.report_branch_stock}
@@ -1701,7 +1700,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {hasPermission(permissions, 'installment.create') && currentBranch?.business_type_id == 4 && (
+                          {hasPermission(permissions, 'installment.due.view') && currentBranch?.business_type_id == 4 && (
                             <li style={subSlot('reports', 'reports/due-installments')}>
                               <NavLink
                                 to="/reports/due-installments"
@@ -1711,7 +1710,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'installment.create') && currentBranch?.business_type_id == 4 && (
+                          {hasPermission(permissions, 'installment.employee.view') && currentBranch?.business_type_id == 4 && (
                             <li style={subSlot('reports', 'reports/employee-installment')}>
                               <NavLink
                                 to="/reports/employee-installment"
@@ -1721,8 +1720,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'ledger.view') ||
-                            hasPermission(permissions, 'ledger.customer')) && (
+                          {hasPermission(permissions, 'ledger.customer') && (
                               <li style={subSlot('reports', 'reports/ledger')}>
                                 <NavLink
                                   to="/reports/ledger"
@@ -1755,7 +1753,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'product.in.out') && (
+                          {hasPermission(permissions, 'product.in.out.datewise') && (
                             <li style={subSlot('reports', 'report_date_wise_in_out')}>
                               <NavLink
                                 to={routes.report_date_wise_in_out}
@@ -1860,7 +1858,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
                           {/* product.in.out */}
-                          {hasPermission(permissions, 'product.in.out') && (
+                          {hasPermission(permissions, 'product.in.out.catwise') && (
                             <li style={subSlot('reports', 'reports/cat-wise/in-out')}>
                               <NavLink
                                 to="/reports/cat-wise/in-out"
@@ -1880,7 +1878,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'purchase.ledger') && (
+                          {hasPermission(permissions, 'tiles.purchase.report') && (
                             <li style={subSlot('reports', 'reports/tiles-purchase')}>
                               <NavLink
                                 to={routes.report_tiles_purchase}
@@ -1904,7 +1902,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               read against and gated by its permission — the
                               same book the other way round, so a role that may
                               open a ledger may open its returns. */}
-                          {hasPermission(permissions, 'purchase.ledger') && (
+                          {hasPermission(permissions, 'purchase.return.ledger') && (
                             <li style={subSlot('reports', 'reports/purchase-return-ledger')}>
                               <NavLink
                                 to="/reports/purchase-return-ledger"
@@ -1914,7 +1912,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'sales.ledger') && (
+                          {hasPermission(permissions, 'sales.return.ledger') && (
                             <li style={subSlot('reports', 'reports/sales-return-ledger')}>
                               <NavLink
                                 to="/reports/sales-return-ledger"
@@ -1924,7 +1922,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'delivery.view') && (
+                          {hasPermission(permissions, 'delivery.report.view') && (
                             <li style={subSlot('reports', 'reports/delivery')}>
                               <NavLink
                                 to={routes.report_delivery}
@@ -1934,7 +1932,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'sales.ledger') && (
+                          {hasPermission(permissions, 'customer.sales.report') && (
                             <li style={subSlot('reports', 'report_customer_sales')}>
                               <NavLink
                                 to="/reports/customer-sales"
@@ -2038,7 +2036,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'productwise.profit') && (
+                          {hasPermission(permissions, 'productwise.profit.summary') && (
                             <li style={subSlot('financial_statement', 'product_profit_summary')}>
                               <NavLink
                                 to={routes.product_profit_summary}
@@ -2098,7 +2096,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'trial.balance.l4') && (
+                          {hasPermission(permissions, 'trial.balance') && (
                             <li style={subSlot('financial_statement', 'trial_balance')}>
                               <NavLink
                                 to={routes.trial_balance}
@@ -2261,7 +2259,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {/* The old shop's own cash and bank accounts. Same
                               key as the record above -- same archive, same old
                               system -- and read-only like it. */}
-                          {hasPermission(permissions, 'legacy.record.view') && (
+                          {hasPermission(permissions, 'legacy.accounts.view') && (
                             <li style={subSlot('legacy', 'legacy/accounts')}>
                               <NavLink to={routes.legacy_accounts} className={subMenuLinkClass}>
                                 Old ERP Account
@@ -2351,7 +2349,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'product.tracking.report.view') && (
+                          {hasPermission(permissions, 'product.tracking.summary.view') && (
                             <li style={subSlot('product_tracking', 'product_tracking_summary')}>
                               <NavLink
                                 to={routes.product_tracking_summary}
@@ -2429,7 +2427,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'company.scheme.view') && (
+                          {hasPermission(permissions, 'company.scheme.receipts.view') && (
                             <li style={subSlot('company_scheme', 'company_scheme_receipts')}>
                               <NavLink
                                 to={routes.company_scheme_receipts}
@@ -2498,7 +2496,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'production.create') && (
+                          {hasPermission(permissions, 'production.sales.return.create') && (
                             <li style={subSlot('production', 'production_sales_return')}>
                               <NavLink
                                 to={routes.production_sales_return}
@@ -2688,6 +2686,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </li>
                             )}
 
+                            {hasPermission(permissions, 'real.estate.area.view') && (
                             <li style={subSlot('real-estate', 'real-estate/area-list')}>
                               <NavLink
                                 to="/real-estate/area-list"
@@ -2696,6 +2695,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Location
                               </NavLink>
                             </li>
+                            )}
                             {hasPermission(permissions, 'real.estate.project.view') && (
                               <li style={subSlot('real-estate', 'real_estate_project_list')}>
                                 <NavLink
@@ -2789,6 +2789,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
+                            {hasPermission(permissions, 'real.estate.installment.create') && (
                             <li style={subSlot('real-estate', 'real_estate_installment_create')}>
                               <NavLink
                                 to={routes.real_estate_installment_create}
@@ -2797,6 +2798,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 Installment Create
                               </NavLink>
                             </li>
+                            )}
                             {hasPermission(permissions, 'real.estate.project.expense.view') && (
                               <li style={subSlot('real-estate', 'real_estate_project_expense')}>
                                 <NavLink
@@ -2938,11 +2940,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           ))}
 
+                          {(hasPermission(permissions, 'asset.category.view') || hasPermission(permissions, 'asset.register.view')) && (
                           <li style={subSlot('asset', 'asset_setup')}>
                             <NavLink to={routes.asset_setup} className={subMenuLinkClass}>
                               Categories &amp; Register
                             </NavLink>
                           </li>
+                          )}
                         </ul>
                       </div>
                     </React.Fragment>
@@ -3017,11 +3021,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
                           {/* Bookings first. Setup is a sitting done once;
                               this is the screen somebody opens every day. */}
+                          {hasPermission(permissions, 'hotel.booking.view') && (
                           <li style={subSlot('hotel', 'hotel_bookings')}>
                             <NavLink to={routes.hotel_bookings} className={subMenuLinkClass}>
                               Bookings
                             </NavLink>
                           </li>
+                          )}
 
                           {/* Halls and community centres, which are sold by the
                               part of the day rather than by the night -- a
@@ -3038,30 +3044,36 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               reads for gaps. Beside Bookings because it answers
                               the question that screen cannot: what does next
                               week look like? */}
+                          {hasPermission(permissions, 'hotel.calendar.view') && (
                           <li style={subSlot('hotel', 'hotel_calendar')}>
                             <NavLink to={routes.hotel_calendar} className={subMenuLinkClass}>
                               Calendar
                             </NavLink>
                           </li>
+                          )}
 
                           {/* Opened every morning by somebody who does nothing
                               else in the system. */}
+                          {hasPermission(permissions, 'hotel.housekeeping.view') && (
                           <li style={subSlot('hotel', 'hotel_housekeeping')}>
                             <NavLink to={routes.hotel_housekeeping} className={subMenuLinkClass}>
                               Housekeeping
                             </NavLink>
                           </li>
+                          )}
 
                           {/* What the housekeeper and the kitchen take out of the
                               store, and what is left -- the Stock Balance of the
                               expense items bought on Accounts Transaction. Its
                               issue quantities come from the amenity kits set up
                               on the setup screen below. */}
+                          {hasPermission(permissions, 'hotel.amenity.issue.view') && (
                           <li style={subSlot('hotel', 'hotel_amenity_issue')}>
                             <NavLink to={routes.hotel_amenity_issue} className={subMenuLinkClass}>
                               Amenity Issue &amp; Stock
                             </NavLink>
                           </li>
+                          )}
 
                           {/* What the hotel buys to be furnished with. Not a
                               purchase invoice -- nothing here lands in stock.
@@ -3077,24 +3089,30 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {/* Who was in the building, and what came in. Above
                               setup for the same reason Bookings is: setup is a
                               sitting done once, and these are read daily. */}
+                          {hasPermission(permissions, 'hotel.report.view') && (
                           <li style={subSlot('hotel', 'hotel_reports')}>
                             <NavLink to={routes.hotel_reports} className={subMenuLinkClass}>
                               Reports
                             </NavLink>
                           </li>
+                          )}
 
                           {/* Ended stays that still owe -- the list to work down. */}
+                          {hasPermission(permissions, 'hotel.booking.due.view') && (
                           <li style={subSlot('hotel', 'hotel_booking_due')}>
                             <NavLink to={routes.hotel_booking_due} className={subMenuLinkClass}>
                               Booking-wise Due
                             </NavLink>
                           </li>
+                          )}
 
+                          {(hasPermission(permissions, 'hotel.building.view') || hasPermission(permissions, 'hotel.floor.view') || hasPermission(permissions, 'hotel.room.type.view') || hasPermission(permissions, 'hotel.resource.view')) && (
                           <li style={subSlot('hotel', 'hotel_setup')}>
                             <NavLink to={routes.hotel_setup} className={subMenuLinkClass}>
                               Rooms &amp; Seats Setup
                             </NavLink>
                           </li>
+                          )}
                         </ul>
                       </div>
                     </React.Fragment>
@@ -3205,7 +3223,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'products.view') && (
+                          {hasPermission(permissions, 'product.statement.view') && (
                             <li style={subSlot('products', 'product_statement')}>
                               <NavLink
                                 to={routes.product_statement}
@@ -3215,8 +3233,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'product.opening.edit') ||
-                            hasPermission(permissions, 'products.edit')) && (
+                          {hasPermission(permissions, 'product.opening.edit') && (
                             <li style={subSlot('products', 'product_opening_import')}>
                               <NavLink
                                 to={routes.product_opening_import}
@@ -3452,7 +3469,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               navigates to it, so the address bar never names one
                               paper while the screen edits the other. It is
                               simply not reached from here. */}
-                          {hasPermission(permissions, 'branch.view') && (
+                          {hasPermission(permissions, 'print.template.view') && (
                             <li style={subSlot('admin', 'print_template_designer')}>
                               <NavLink
                                 to={routes.print_template_designer}
@@ -3474,9 +3491,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {/* No permission check. Arranging one's own sidebar
-                              changes nothing anyone else can see, so every user
-                              gets it -- the same reasoning as Profile. */}
+                          {/* Its own key, menu.arrangement (2026-11-11), seeded
+                              onto every role by the patch. */}
+                          {hasPermission(permissions, 'menu.arrangement') && (
                           <li style={subSlot('admin', 'menu_arrangement')}>
                             <NavLink
                               to={routes.menu_arrangement}
@@ -3485,8 +3502,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               Arrange Menu
                             </NavLink>
                           </li>
+                          )}
 
-                          {(hasPermission(permissions, 'all.user.view') || hasPermission(permissions, 'user.view')) && (
+                          {hasPermission(permissions, 'all.user.view') && (
                             <li style={subSlot('admin', 'user_list')}>
                               <NavLink
                                 to={routes.user_list}
@@ -3496,7 +3514,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'online.users') || hasPermission(permissions, 'user.view')) && (
+                          {hasPermission(permissions, 'online.users') && (
                             <li style={subSlot('admin', 'online_users')}>
                               <NavLink
                                 to={routes.online_users}
@@ -3516,7 +3534,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'company.user') || hasPermission(permissions, 'user.view')) && (
+                          {hasPermission(permissions, 'company.user') && (
                             <li style={subSlot('admin', 'company_user_list')}>
                               <NavLink
                                 to={routes.company_user_list}
@@ -3546,9 +3564,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                          {(hasPermission(permissions, 'reseller.view') ||
-                            hasPermission(permissions, 'subscription.view') ||
-                            hasPermission(permissions, 'all.user.view')) && (
+                          {hasPermission(permissions, 'admin.in.app.messages.view') && (
                               <li style={subSlot('admin', 'admin_in_app_messages')}>
                                 <NavLink
                                   to={routes.admin_in_app_messages}
@@ -3578,9 +3594,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                          {(hasPermission(permissions, 'reseller.view') ||
-                            hasPermission(permissions, 'subscription.view') ||
-                            hasPermission(permissions, 'all.user.view')) && (
+                          {hasPermission(permissions, 'tutorial.videos.manage') && (
                               <li style={subSlot('admin', 'tutorial_videos')}>
                                 <NavLink
                                   to={routes.tutorial_videos}
@@ -3600,7 +3614,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               reseller.view and then refuse every call. The
                               verdict comes from the same predicate the
                               middleware uses, so the two cannot disagree. */}
-                          {isPlatformAdmin && (
+                          {isPlatformAdmin && hasPermission(permissions, 'website.templates.manage') && (
                             <li style={subSlot('admin', 'website_templates')}>
                               <NavLink
                                 to={routes.website_templates}
@@ -3640,7 +3654,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'roles.create') && (
+                          {hasPermission(permissions, 'permission.create') && (
                             <li style={subSlot('admin', 'add_permission')}>
                               <NavLink
                                 to={routes.add_permission}
@@ -3660,7 +3674,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'group.report') && (
+                          {hasPermission(permissions, 'group.report.setup') && (
                             <li style={subSlot('admin', 'group_report_setup')}>
                               <NavLink
                                 to={routes.group_report_setup}
@@ -3680,7 +3694,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'order.view') && (
+                          {hasPermission(permissions, 'order.transaction.view') && (
                             <li style={subSlot('admin', 'order_with_transaction')}>
                               <NavLink
                                 to={routes.order_with_transaction}
@@ -3987,7 +4001,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'employee.view') && (
+                          {hasPermission(permissions, 'hrm.designation.level.view') && (
                             <li style={subSlot('hrm', 'hrms_designation_level_list')}>
                               <NavLink
                                 to={routes.hrms_designation_level_list}
@@ -3997,7 +4011,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'employee.view') && (
+                          {hasPermission(permissions, 'hrm.designation.view') && (
                             <li style={subSlot('hrm', 'hrms_designation_list')}>
                               <NavLink
                                 to={routes.hrms_designation_list}
@@ -4007,7 +4021,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                          {hasPermission(permissions, 'hrm.attendance.view') && (
                             <li style={subSlot('hrm', 'hrms_attendance_entries')}>
                               <NavLink
                                 to={routes.hrms_attendance_entries}
@@ -4017,7 +4031,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                          {hasPermission(permissions, 'hrm.attendance.report.view') && (
                             <li style={subSlot('hrm', 'hrms_attendance_report')}>
                               <NavLink
                                 to={routes.hrms_attendance_report}
@@ -4027,7 +4041,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                          {hasPermission(permissions, 'hrm.attendance.audit.view') && (
                             <li style={subSlot('hrm', 'hrms_attendance_audit_history')}>
                               <NavLink
                                 to={routes.hrms_attendance_audit_history}
@@ -4037,7 +4051,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                          {hasPermission(permissions, 'hrm.overtime.report.view') && (
                             <li style={subSlot('hrm', 'hrms_overtime_report')}>
                               <NavLink
                                 to={routes.hrms_overtime_report}
@@ -4047,7 +4061,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                          {hasPermission(permissions, 'hrm.attendance.monthly.view') && (
                             <li style={subSlot('hrm', 'hrms_attendance_monthly_report')}>
                               <NavLink
                                 to={routes.hrms_attendance_monthly_report}
@@ -4057,7 +4071,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                          {hasPermission(permissions, 'hrm.attendance.exception.view') && (
                             <li style={subSlot('hrm', 'hrms_attendance_exception_reports')}>
                               <NavLink
                                 to={routes.hrms_attendance_exception_reports}
@@ -4075,7 +4089,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                          {hasPermission(permissions, 'hrm.attendance.employee.view') && (
                             <li style={subSlot('hrm', 'hrms_employee_attendance_report')}>
                               <NavLink
                                 to={routes.hrms_employee_attendance_report}
@@ -4085,7 +4099,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                          {hasPermission(permissions, 'hrm.attendance.branch.summary.view') && (
                             <li style={subSlot('hrm', 'hrms_branch_attendance_summary')}>
                               <NavLink
                                 to={routes.hrms_branch_attendance_summary}
@@ -4095,7 +4109,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                          {hasPermission(permissions, 'hrm.holiday.calendar.view') && (
                             <li style={subSlot('hrm', 'hrms_holiday_calendar_report')}>
                               <NavLink
                                 to={routes.hrms_holiday_calendar_report}
@@ -4105,7 +4119,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'leave.view') || hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                          {hasPermission(permissions, 'hrm.leave.view') && (
                             <li style={subSlot('hrm', 'hrms_leave_applications')}>
                               <NavLink
                                 to={routes.hrms_leave_applications}
@@ -4115,7 +4129,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'attendance.view') || hasPermission(permissions, 'employee.view')) && (
+                          {hasPermission(permissions, 'hrm.attendance.setup.view') && (
                             <li style={subSlot('hrm', 'hrms_attendance_setup')}>
                               <NavLink
                                 to={routes.hrms_attendance_setup}
@@ -4135,7 +4149,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'salary.generate') && (
+                          {hasPermission(permissions, 'festival.bonus.generate') && (
                             <li style={subSlot('hrm', 'hrms_festival_bonus_generate')}>
                               <NavLink
                                 to={routes.hrms_festival_bonus_generate}
@@ -4145,7 +4159,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'hrm.loan.create') && (
+                          {hasPermission(permissions, 'employee.loan.balance.view') && (
                             <li style={subSlot('hrm', 'employee_loan_balance')}>
                               <NavLink
                                 to={routes.employee_loan_balance}
@@ -4175,7 +4189,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'salary.sheet.view') && (
+                          {hasPermission(permissions, 'hrm.mismatch.payment.view') && (
                             <li style={subSlot('hrm', 'hrm_mismatch_payment')}>
                               <NavLink
                                 to={routes.hrm_mismatch_payment}
@@ -4185,7 +4199,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'salary.sheet.view') && (
+                          {hasPermission(permissions, 'festival.bonus.view') && (
                             <li style={subSlot('hrm', 'hrms_festival_bonus_list')}>
                               <NavLink
                                 to={routes.hrms_festival_bonus_list}
@@ -4273,8 +4287,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                            {(hasPermission(permissions, 'party.opening.edit') ||
-                              hasPermission(permissions, 'cs.edit')) && (
+                            {hasPermission(permissions, 'party.opening.edit') && (
                               <li style={subSlot('customer-supplier', 'customer_opening_import')}>
                                 <NavLink
                                   to={routes.customer_opening_import}
@@ -4423,10 +4436,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 </li>
               )}
 
-              {/* Help. Deliberately NOT behind hasMenuPermission(): that helper
-                  answers false for a key it does not know, and this entry must
-                  reach every signed-in user -- a platform admin passes every
-                  gate, so testing with one would hide exactly this failure. */}
+              {/* Help. Its own key, help.view (2026-11-11), seeded onto every
+                  role by the patch so nobody lost it the day it shipped. */}
+              {hasPermission(permissions, 'help.view') && (
               <li style={menuSlot('help')}>
                 <NavLink
                   to={routes.help}
@@ -4438,6 +4450,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                   Help
                 </NavLink>
               </li>
+              )}
             </ul>
             {isTopbar ? (
               <div className="mb-1 flex shrink-0 items-center">

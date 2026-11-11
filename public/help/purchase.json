@@ -40,11 +40,12 @@
   "purchase-return": {
     "title": "ক্রয়ের ফেরত",
     "module": "Purchase",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "সরবরাহকারীকে মাল ফেরত দিলে এই স্ক্রিনে ফেরতের ভাউচার লেখা হয়। ফেরতের মাল স্টক থেকে কমে এবং সরবরাহকারীর খাতায় সমন্বয় হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ purchase.return.view permission থাকলে।"] },
       {
         "heading": "ফেরত লেখার ধাপ",
         "menu": "Invoice → Purchase Return",

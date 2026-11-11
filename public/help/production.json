@@ -115,11 +115,12 @@
   "production-sales-return": {
     "title": "উৎপাদিত পণ্যের বিক্রয় ফেরত",
     "module": "Production",
-    "updated": "10/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "Manufacturing ব্রাঞ্চে বিক্রি করা পণ্য ফেরত। গ্রাহককে টাকা ফেরত বিক্রির দামে, কিন্তু মাল স্টকে ঢোকে মূল বিক্রির খরচে — তাই ফেরতের কারণে লাভ বাড়িয়ে দেখায় না।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ production.sales.return.create permission থাকলে।"] },
       {
         "heading": "এন্ট্রি",
         "menu": "Production → Production Sales Return",

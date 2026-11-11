@@ -381,7 +381,7 @@ const DropdownUser = () => {
                 Request Account Deletion
               </Link>
             </li>
-            {hasPermission(permissions, 'subscription.history') && (
+            {hasPermission(permissions, 'account.deletion.manage') && (
               <li>
                 <Link
                   to={routes.account_deletion_admin}

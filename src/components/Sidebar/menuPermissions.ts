@@ -1,3 +1,16 @@
+/**
+ * Which permissions open each sidebar group.
+ *
+ * ⚠️ ONE RULE (2026-11-11): every entry inside a group is gated by a permission
+ * of its own, and no permission gates two entries. A group's list here is
+ * exactly the keys of the entries it holds -- nothing else -- so a group opens
+ * if and only if its holder can see at least one thing inside it. A key that
+ * gates no entry does not belong here: it would open an empty menu.
+ *
+ * Adding a screen to a group means adding its key here, on the entry in
+ * Sidebar/index.tsx, on its route in App.tsx and on its line in
+ * Header/globalSearchItems.ts -- the same key in all four.
+ */
 export const MENU_PERMISSIONS = {
   transaction: [
     'cash.received.create',
@@ -6,66 +19,80 @@ export const MENU_PERMISSIONS = {
     'bank.payment.create',
     'bank.reconciliation.view',
     'cheque.register.view',
-    'year.closing.run',
-    'budget.view',
-    'hrm.loan.create',
-    'journal.create',
-    'branch.transfer.create',
-    'branch.received.create',
-    'inventory.transfer.create',
-    'inventory.received.create',
-    'product.transfer.create',
-    'product.received.create',
-    // The unified Received / Payment Entry. Their own keys, so a user holding
-    // only one of them still reaches the menu the entry lives in -- without
-    // being handed the Hotel module or the cash/bank screens.
+    // The unified Received / Payment Entry, on keys of their own.
     'received.entry.create',
     'payment.entry.create',
-    // Inter-Branch money transfers. No "send" key: transfers are recorded from
-    // the payment forms, which carry their own create permissions.
+    'year.closing.run',
+    'budget.view',
+    'installment.create',
+    'hrm.loan.create',
+    'journal.create',
+    // Inter-Branch money transfers. The menu answers to "view"; "receive" and
+    // "reverse" are what a holder may do once inside.
     'interbranch.transfer.view',
-    'interbranch.transfer.receive',
   ],
-  invoice: ['purchase.create', 'sales.create', 'labour.invoice.create', 'delivery.view'],
+  invoice: [
+    'purchase.create',
+    'purchase.import',
+    'sales.create',
+    'sales.import',
+    'purchase.return.view',
+    'sales.return',
+    'delivery.view',
+    'labour.invoice.create',
+    'trading.combined.create',
+    'tiles.combined.create',
+  ],
   labour_items: ['labour.category.view', 'labour.item.view'],
   reports: [
     'cashbook.view',
     'bankbook.view',
     'daily.accounts.book',
+    'voucher.register',
+    'sales.referrer',
+    'bank.book',
     'ageing.report.view',
     'audit.trail.view',
-    'installment.create',
-    'ledger.view',
-    'ledger.labour',
-    'ledger.due.view',
-    // Ledger Details (Customer Supplier Statement) hangs off this menu on
-    // either of these, so both have to open the parent -- otherwise the only
-    // permission a user holds gates a screen they can never reach the menu for.
+    'cash.bank.summery',
+    'bank.information',
+    'connected.member.view',
+    'installment.due.view',
+    'installment.employee.view',
     'ledger.customer',
     'ledger.details',
+    'product.in.out',
+    'product.in.out.datewise',
+    'ledger.labour',
+    'due.list',
+    'collection.sheet',
+    'monthly.report',
     'date.wise.total',
     'product.stock.view',
-    'product.in.out',
+    'product.stock.details',
+    'imei.stock',
+    'godown.stock',
+    'product.in.out.catwise',
     'purchase.ledger',
+    'tiles.purchase.report',
     'sales.ledger',
+    'purchase.return.ledger',
+    'sales.return.ledger',
+    'delivery.report.view',
+    'customer.sales.report',
     'group.report',
     'mitch.match',
-    // The referrer report is only ever reached through this menu, so its own
-    // permission has to open the parent group too.
-    'sales.referrer',
-    // The delivery report, likewise reachable only through this menu.
-    'delivery.view',
   ],
   // The statements that used to sit at the foot of Reports. Any one of them
-  // opens the parent; each child is then gated on its own permission. The
-  // product reports share one key, as they always have.
+  // opens the parent; each child is then gated on its own permission.
   financial_statement: [
     'productwise.profit',
+    'productwise.profit.summary',
     'invoice.wise.profit',
     'profit.loss.date.wise',
     'monthly.statement',
     'trial.balance.l4',
     'trial.balance.l3',
+    'trial.balance',
     'expense.report',
     'profit.loss',
     'balancesheet.view',
@@ -74,47 +101,70 @@ export const MENU_PERMISSIONS = {
     'general.ledger',
   ],
   requisition: ['requisition.view', 'requisition.create', 'requisition.comparison'],
-  // Production (Manufacturing). Any one of the five keys opens the menu; each
-  // child is then gated on its own. The group also needs the branch's
-  // Manufacture switch on (com_branches.manufactur_control), so it stays out of
-  // the way on every ordinary branch -- see the sidebar.
+  // Production (Manufacturing). The group also needs the branch's Manufacture
+  // switch on (com_branches.manufactur_control) -- see the sidebar.
   production: [
-    'production.view',
     'production.create',
-    'production.post',
-    'production.reverse',
+    'production.sales.return.create',
+    'production.view',
     'production.report.view',
   ],
-  // Opens on any of the three: the settings screen and the two reports each
-  // stand on their own permission, and holding just one has to be enough to
-  // reach the menu, or that permission gates a screen its holder cannot see.
   product_tracking: [
     'product.tracking.settings.view',
     'product.tracking.report.view',
+    'product.tracking.summary.view',
   ],
   // Company scheme: the receivable lists. The sale itself is Invoice -> Sales.
-  company_scheme: ['company.scheme.view'],
-  products: ['products.view'],
+  company_scheme: ['company.scheme.view', 'company.scheme.receipts.view'],
+  products: [
+    'brand.list',
+    'category.view',
+    'product_group.view',
+    'package.size.view',
+    'products.view',
+    'product.statement.view',
+    'product.opening.edit',
+    'low.stock',
+    'negative.stock',
+    'slow.moving',
+    'warehouse.difference',
+    'product.unit',
+  ],
   admin: [
-    'check.register.view',
-    'admin.notifications.view',
-    'inventory.systems.view',
+    'company.view',
     'branch.view',
+    'print.template.view',
+    'software.information',
+    'menu.arrangement',
     'all.user.view',
+    'online.users',
+    'user.login.log',
+    'company.user',
+    'reseller.view',
+    'admin.notifications.view',
+    'admin.in.app.messages.view',
+    'business.create',
+    'inventory.systems.view',
+    'tutorial.videos.manage',
+    // Website Templates also needs the server's platform-admin verdict.
+    'website.templates.manage',
+    'highlight.rules',
+    'roles.view',
+    'roles.create',
+    'permission.create',
     'dayclose.create',
+    'group.report.setup',
     'order.view',
+    'order.transaction.view',
     'order.avg.price',
+    'approval.center',
     'voucher.approval',
     'remove.approval',
     'change.vourcher.type',
     'voucher.photo.upload',
-    'voucher.photo.delete',
     'bulk.photo.upload',
-    'roles.view',
-    'roles.create',
-    'roles.edit',
-    'roles.delete',
-    'reseller.view',
+    'sms.logs',
+    'sms.templates',
   ],
   voucher_settings: [
     'voucher.delete',
@@ -122,53 +172,44 @@ export const MENU_PERMISSIONS = {
     'voucher.date.change',
     'voucher.recycle',
     'voucher.history',
-    // The Log Changes screen. The permission the backend actually creates is
-    // 'log.changes' (Voucher Modification group); 'voucher.changes' was never
-    // one, so a user holding only this was kept out of the parent menu here
-    // and bounced to /no-access by the route guard.
+    // The Log Changes screen. The permission the backend creates is
+    // 'log.changes' (Voucher Modification group).
     'log.changes',
-    // Report Mismatch, which repairs a voucher that belongs to no company. It
-    // answers to the mismatch permission the backend already creates rather
-    // than to one of its own, so whoever holds that one reaches the menu it
-    // now sits in -- without it the sub-item's own gate would open a screen
-    // hanging off a parent that never opened.
+    // Report Mismatch, which repairs a voucher that belongs to no company.
     'mitmatch.report',
   ],
   hrm: [
     'employee.view',
-    'attendance.view',
-    'attendance.create',
-    'attendance.approve',
-    'leave.view',
-    'leave.approve',
-    'holiday.view',
-    'shift.view',
+    'hrm.designation.level.view',
+    'hrm.designation.view',
+    'hrm.attendance.view',
+    'hrm.attendance.report.view',
+    'hrm.attendance.audit.view',
+    'hrm.overtime.report.view',
+    'hrm.attendance.monthly.view',
+    'hrm.attendance.exception.view',
+    'hrm.attendance.employee.view',
+    'hrm.attendance.branch.summary.view',
+    'hrm.holiday.calendar.view',
+    'hrm.leave.view',
+    'hrm.attendance.setup.view',
     'salary.generate',
-    'salary.sheet.view',
+    'festival.bonus.generate',
+    'employee.loan.balance.view',
     'employee.loan.ledger.view',
+    'salary.sheet.view',
+    'hrm.mismatch.payment.view',
+    'festival.bonus.view',
   ],
-  roles: ['roles.view', 'roles.create', 'roles.edit', 'roles.delete'],
+  roles: ['roles.view', 'roles.create', 'permission.create'],
   customer: [
-    'cs.delete',
-    'cs.edit',
-    'cs.information',
-    'cs.ledger',
-    'cs.photo.delete',
-    'cs.photo.edit',
-    'cs.photo.update',
-    'cs.photo.view',
-    'cs.update',
     'cs.view',
+    'coa.l4.view',
+    'party.opening.edit',
     'coa.l1.view',
     'coa.l2.view',
     'coa.l3.view',
-    'coa.l4.view',
-    // Bank Opening lives in this menu but answers to a permission of its own, so
-    // whoever holds only that one still gets the menu it sits in.
     'bank.opening.view',
-    // Same for the customer opening import, one level down.
-    'party.opening.view',
-    'party.opening.edit',
   ],
   chart_of_accounts: [
     'coa.l1.view',
@@ -178,10 +219,12 @@ export const MENU_PERMISSIONS = {
   ],
   analytics: ['analytics.comparison'],
   // Every screen inside the menu, so a role given only one of them still sees
-  // the menu it lives in. real.estate.view stays: it is what opened the whole
-  // module before the screens had permissions of their own.
+  // the menu it lives in. real.estate.view is no longer here: it gated no
+  // entry, and the patch seeded the two entries that had no key of their own
+  // (Location, Installment Create) onto every role that held it.
   real_estate: [
-    'real.estate.view',
+    'check.register.view',
+    'real.estate.area.view',
     'real.estate.project.view',
     'real.estate.building.view',
     'real.estate.floor.view',
@@ -190,6 +233,8 @@ export const MENU_PERMISSIONS = {
     'real.estate.layout.view',
     'real.estate.unit.sale.view',
     'real.estate.sold.unit.view',
+    'real.estate.sales.summary',
+    'real.estate.installment.create',
     'real.estate.project.expense.view',
     'real.estate.project.income.view',
     'real.estate.project.purchase.view',
@@ -198,35 +243,33 @@ export const MENU_PERMISSIONS = {
     'real.estate.project.cost.view',
     'real.estate.project.income.report.view',
   ],
-  // Hotel. Any one of the four opens the menu -- the setup screen's four tabs
-  // are one screen, and a role given only the room types still has to be able
-  // to reach it.
+  // Hotel. The setup screen's four tabs are one screen, so any of its four
+  // keys opens it; every other entry has one key of its own.
   //
   // The SQL that creates these grants them to nobody, so this menu does not
   // appear anywhere until a hotel is actually set up and somebody hands them
   // out. That is deliberate: fifteen sites run this software and none of them
   // is a hotel.
   hotel: [
+    'hotel.booking.view',
+    'hotel.calendar.view',
+    'hotel.housekeeping.view',
+    'hotel.amenity.issue.view',
+    'hotel.accounts.transaction.create',
+    'hotel.report.view',
+    'hotel.booking.due.view',
     'hotel.building.view',
     'hotel.floor.view',
     'hotel.room.type.view',
     'hotel.resource.view',
-    'hotel.booking.view',
-    // Accounts Transaction lives only in this menu, so its key opens it too.
-    'hotel.accounts.transaction.create',
   ],
-  // Fixed assets. Either key opens the menu: whoever keeps the register needs
-  // to see the rates, and whoever sets the rates needs to see what is filed
-  // under them. Granted to nobody when the patch creates them, so the menu does
-  // not appear until somebody hands them out.
+  // Fixed assets. One screen with two tabs, each on its own key; either opens
+  // the menu. Granted to nobody when the patch creates them.
   asset: ['asset.category.view', 'asset.register.view'],
   // Old Software. Its own group rather than a corner of Reports: looking an old
-  // bill up at the counter is not bookkeeping, and whoever does it should not
-  // need accounts rights to answer a customer. Granted to nobody when the patch
-  // creates it, so the menu stays out of the way until somebody hands it out.
-  // Either key opens the group; each sub-item is then gated on its own, so a
-  // shop that only ever ran one of the two old systems sees only that one.
-  legacy: ['legacy.record.view', 'legacy.old.record.view'],
+  // bill up at the counter is not bookkeeping. Each sub-item is gated on its
+  // own key.
+  legacy: ['legacy.record.view', 'legacy.old.record.view', 'legacy.accounts.view'],
   reseller: ['reseller.dashboard.view'],
   subscription_history: ['subscription.view', 'subscription.history'],
   customer_dashboard: ['customer.dashboard'],

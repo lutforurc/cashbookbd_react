@@ -2,11 +2,12 @@
   "print-layout": {
     "title": "ছাপার কাগজের নকশা",
     "module": "Settings",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "চালান, অর্ডার, হোটেল রিসিভ ও বিলের কাগজে কোন অংশ কোথায় বসবে তা সাজানো হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ print.template.view permission থাকলে।"] },
       { "heading": "নকশা সাজানো", "menu": "Settings → Delivery Challan Layout / Order Layout", "steps": ["Branch, Paper, Start from, Text size ও Rows per page বাছুন।", "Parts of the paper থেকে অংশ যোগ করুন; বাঁ প্যানেলে সেটিংস, মাঝে ব্যান্ড, ডানে What it will look like দেখুন।", "Left margin, Right margin, Print sideways, Half page ও Print the page foot ঠিক করুন।", "Name of this layout লিখে Save; Test Print দিয়ে পরীক্ষা করুন।"] },
       { "heading": "সতর্কতা", "warning": "শুধু 'prints' চিহ্নিত নকশাই প্রিন্টারে যায়। কিছু না থাকলে built-in নকশা ছাপে। উপরে-নিচের মার্জিন সব রিপোর্টের জন্য এক — আলাদা করতে Blank Space অংশ বসান।" }
     ]
@@ -14,11 +15,12 @@
   "menu-arrangement": {
     "title": "মেনু সাজানো",
     "module": "Settings",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "নিজের সাইডবারে মেনু ও তার ভেতরের লিংকের ক্রম, দেখানো-লুকানো ঠিক করা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ menu.arrangement permission থাকলে।"] },
       { "heading": "সাজানো", "menu": "Settings → Arrange Menu", "steps": ["Main menu-তে Drag বা Move up / Move down দিয়ে মেনু সাজান।", "Show/Hide দিয়ে যা ব্যবহার করেন না তা লুকান।", "Divider name / Divider / Line দিয়ে ভাগ; Right প্যানেলে Inside {menu} সাজান।"] },
       { "heading": "সতর্কতা", "warning": "এটি শুধু আপনার নিজের মেনু — অন্য ব্যবহারকারীর মেনু বদলায় না। Reset দিয়ে আগের অবস্থায় ফেরানো যায়।" }
     ]
@@ -26,11 +28,12 @@
   "software-info": {
     "title": "সফটওয়্যারের তথ্য",
     "module": "Settings",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "সব রিপোর্টের নিচে যে সফটওয়্যার কোম্পানির নাম ও মোবাইল ছাপে তা ঠিক করা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ software.information permission থাকলে।"] },
       { "heading": "তথ্য", "menu": "Settings → Software Information", "steps": ["Software Company Name ও Mobile Number লিখুন।", "Email, Website ও Address (ঐচ্ছিক) দিন।", "Update চাপুন।"] },
       { "heading": "সতর্কতা", "warning": "এখানে দেওয়া নাম-মোবাইল সব রিপোর্টে যাবে; ছাপার আগে বানান মিলিয়ে নিন।" }
     ]

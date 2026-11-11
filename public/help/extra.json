@@ -52,11 +52,12 @@
   "loan-balance": {
     "title": "ঋণের ব্যালেন্স",
     "module": "Accounts",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "প্রতিটি কর্মচারীর মোট ঋণ, পরিশোধ ও বাকি — শাখা ধরে দেখা যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ employee.loan.balance.view permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Accounts → Employee Loan Balance", "steps": ["Select All Branch বাছুন, Search করুন।", "#, Employee Name, Designation, Total Senction, Total Payment ও Balance দেখা যায়।", "নিচে Total Balance মোট বাকি দেখায়।"] },
       { "heading": "সতর্কতা", "warning": "এখানে ঋণ বদলানো যায় না; নতুন ঋণ বা পরিশোধ Employee Loan পাতায় লিখুন।" }
     ]
@@ -76,11 +77,12 @@
   "inter-branch": {
     "title": "আন্তঃশাখা লেনদেন",
     "module": "Accounts",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক শাখা থেকে অন্য শাখায় পাঠানো টাকা গ্রহণ বা উল্টে দেওয়ার জায়গা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ interbranch.transfer.view permission থাকলে।"] },
       { "heading": "গ্রহণ", "menu": "Accounts → Inter-Branch Transfer", "steps": ["Incoming ট্যাবে Status ও Reference দিন; Apply চাপুন।", "Sending Branch, Transfer Ref., Payment Date, Amount ও Note দেখে Receive করুন।"] },
       { "heading": "পাঠানো ও উল্টানো", "steps": ["Outgoing ট্যাবে Destination Branch, Amount, Received By ও Vouchers দেখা যায়।", "Reverse Receipt বা Reverse Transfer দিয়ে ফেরানো যায়।"] },
       { "heading": "সতর্কতা", "warning": "Approved ভাউচার উল্টানো যায় না। অনুমোদিত লেনদেন ফেরাতে আগে অনুমোদন তুলুন।" }
@@ -138,11 +140,12 @@
   "purchase-import": {
     "title": "ক্রয় চালান আপলোড",
     "module": "Invoices",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "Excel বা পেস্ট করা সারি থেকে অনেক ক্রয় চালান একসাথে যাচাই করে সেভ করা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ purchase.import permission থাকলে।"] },
       { "heading": "আপলোড", "menu": "Invoices → Purchase Import", "steps": ["Download Format দিয়ে নমুনা নামান, Upload করুন বা Paste Rows দিয়ে সারি দিন।", "Preview-তে Supplier, Product, Qty, Rate, Weight Variance, Payment ও Truck Number দেখুন।", "Check with Software চাপুন; Invoices, Invoice Total ও Payment Total মিলিয়ে Save Invoices দিন।"] },
       { "heading": "সতর্কতা", "warning": "একবার সেভ হলে ফেরানোর সহজ উপায় নেই — Check-এর ফল ও মোট অঙ্ক ভালো করে দেখুন। ভুল সারি থাকলে Reset করে নতুন করে দিন।" }
     ]
@@ -150,11 +153,12 @@
   "sales-import": {
     "title": "বিক্রয় চালান আপলোড",
     "module": "Invoices",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "Excel বা পেস্ট করা সারি থেকে অনেক বিক্রয় চালান একসাথে যাচাই করে সেভ করা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ sales.import permission থাকলে।"] },
       { "heading": "আপলোড", "menu": "Invoices → Sales Import", "steps": ["Download Format দিয়ে নমুনা নামান, Upload করুন বা Paste Rows দিন।", "Preview-তে Customer, Product, Qty, Rate, Weight Variance, Received ও Truck Number দেখুন।", "Check with Software চাপুন; Invoices, Invoice Total ও Received Total মিলিয়ে Save Invoices দিন।"] },
       { "heading": "সতর্কতা", "warning": "গ্রাহকের নাম ভুল হলে বিক্রি অন্য খাতায় যাবে; Check-এর Status দেখে তবেই সেভ করুন।" }
     ]
@@ -162,11 +166,12 @@
   "tiles-combined": {
     "title": "টাইলস/স্যানিটারি সম্মিলিত চালান",
     "module": "Invoices",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একই স্ক্রিনে টাইলস/স্যানিটারির ক্রয় ও বিক্রি — আলাদা পেমেন্ট ও রিসিভের ঘরসহ।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ tiles.combined.create permission থাকলে।"] },
       { "heading": "চালান", "menu": "Invoices → Tiles Combined", "steps": ["Select Supplier ও Select Customer বাছুন; Payment Tk. ও Received Tk. দিন।", "Date, Purchase Discount, Sales Discount ও Notes দিন।", "Purchase ও Sales অংশে Memo/Challan নম্বর-তারিখ দিন।", "Select Product, Select Warehouse, Quantity, Purchase Rate ও Sales Rate দিয়ে Update Item করুন।", "SL. NO. · PRODUCT NAME · QUANTITY · PURCHASE RATE · PURCHASE · SALES RATE · TOTAL মিলিয়ে Save করুন।"] },
       { "heading": "সতর্কতা", "warning": "Purchase Rate বা Sales Rate বাদ দিলে মোট ভুল হবে; স্টক কম থাকলে সেভের আগে সতর্কতা আসবে।" }
     ]
@@ -174,11 +179,12 @@
   "trading-combined": {
     "title": "ট্রেডিং সম্মিলিত চালান",
     "module": "Invoices",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একই ফর্মে ট্রেডিং ব্যবসার ক্রয় ও বিক্রি; প্রতি পণ্যে ক্রয়-বিক্রয়ের দর।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ trading.combined.create permission থাকলে।"] },
       { "heading": "চালান", "menu": "Invoices → Trading Combined", "steps": ["Select Supplier, Select Customer ও Vehicle Number দিন।", "Select Purchase Order / Sales Order, Amount Tk. (Both বা Sales) ও Discount Amount দিন।", "Select Product, Bag Number, Weight Variance, Quantity, Purchase Rate ও Sales Rate দিয়ে Add New / Update Item করুন।", "Purchase Tk., Sales Tk., Profit / Loss মিলিয়ে Save করুন।"] },
       { "heading": "সতর্কতা", "warning": "দুই দিকের দর না দিলে লাভ-ক্ষতি ভুল দেখাবে। একই পণ্য দুইবার যোগ করলে পরিমাণ দ্বিগুণ হবে।" }
     ]
@@ -222,11 +228,12 @@
   "order-transactions": {
     "title": "অর্ডারের লেনদেন",
     "module": "Orders",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একটি অর্ডারের চালান, পণ্য, গাড়ি, টাকা ও বাকি একসাথে দেখা ও ছাপা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ order.transaction.view permission থাকলে।"] },
       { "heading": "রিপোর্ট", "menu": "Orders → Order With Transaction", "steps": ["Select Branch ও Select Order বাছুন; Apply চাপুন।", "Rows ও Font ঠিক করুন।", "SL. NO., CHAL. NO. & DATE, PRODUCT & DETAILS, VEHICLE, QUANTITY, RATE, TOTAL, DISCOUNT, RECEIVED/PAYMENT ও BALANCE দেখা যায়।", "প্রিন্ট আইকনে ছাপা হয়।"] },
       { "heading": "সতর্কতা", "warning": "লেনদেন না থাকলে No order transaction data found দেখায়; ভুল অর্ডার বাছলে Reset করে আবার বাছুন।" }
     ]
@@ -283,11 +290,12 @@
   "delivery-dashboard": {
     "title": "ডেলিভারি ড্যাশবোর্ড",
     "module": "Dashboard",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "নির্বাচিত সময়ে কী বের হয়েছে ও কী এখনো বাকি — ডেলিভারির সারসংক্ষেপ।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ delivery.dashboard.view permission থাকলে।"] },
       { "heading": "সারসংক্ষেপ", "menu": "Dashboard → Delivery System", "steps": ["Invoices, Complete, Partial, Not delivered, Ordered, Delivered ও Pending টাইল দেখুন।", "Partial Deliveries ও Due for Delivery কার্ডে বাকি চালান দেখুন।", "Sl., Invoice No., Date, Customer, Ordered, Delivered, Pending ও Status তালিকা দেখুন।"] },
       { "heading": "সতর্কতা", "warning": "Ordered, Delivered ও Pending পরিমাণের মোট মিলিয়ে দেখুন; Open Delivery দিয়ে বিস্তারিত পাতায় যান।" }
     ]
