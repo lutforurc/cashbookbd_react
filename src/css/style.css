@@ -1333,10 +1333,38 @@ html.dark .rich-text-editor .ql-editor td {
    amount -- is what a row is read for. The smaller second line under it (an
    email, a branch) is a div with a grey of its own and is not touched.
 
+   A title does not have to sit in a heading tag. A card's head, a section's
+   caption and the name at the top of a list row are routinely a div or a span
+   carrying a heading weight (bold, extrabold, black, semibold) or the title
+   type scale, and those were still grey. They are in the list too, provided
+   they are a text container rather than a control and carry no hover colour of
+   their own -- a button's ghost label and a link that turns blue under the
+   pointer, and an element that changes colour on focus or while pressed keep
+   what they asked for. Tabular figures and pill badges keep their grey too:
+   those are readings and tags, not headings.
+
    Only the light screen: a `dark:` class does not begin with `text-`, so it
    is not matched, and html.dark is excluded outright. Deliberately outside
    every @layer, which is what lets it win over the utility it replaces. */
-html:not(.dark) :is(h1, h2, h3, h4, h5, h6, label, th, table, tbody, tr, td, [class~="uppercase"]):is(
+html:not(.dark) :is(
+  h1, h2, h3, h4, h5, h6, label, th, table, tbody, tr, td, [class~="uppercase"],
+  [role="heading"],
+  :is(div, p, span, section, article, header, aside, figure, figcaption, legend, caption, summary):is(
+    [class^="text-title-"],
+    [class*=" text-title-"],
+    [class~="font-bold"],
+    [class~="font-extrabold"],
+    [class~="font-black"],
+    [class~="font-semibold"]
+  ):not(
+    [class*="hover:text-"],
+    [class*="group-hover:text-"],
+    [class*="focus:text-"],
+    [class*="active:text-"],
+    [class*="tabular-nums"],
+    [class*="rounded-full"]
+  )
+):is(
   [class^="text-gray-400"],
   [class*=" text-gray-400"],
   [class^="text-gray-500"],
@@ -1371,8 +1399,7 @@ html:not(.dark) :is(h1, h2, h3, h4, h5, h6, label, th, table, tbody, tr, td, [cl
   [class*=" text-neutral-700"],
   [class^="text-[rgb(var(--c-text-muted))]"],
   [class*=" text-[rgb(var(--c-text-muted))]"],
-  [class^="text-body "],
-  [class*=" text-body "],
+  [class~="text-body"],
   [class^="text-bodydark2"],
   [class*=" text-bodydark2"]
 ) {
