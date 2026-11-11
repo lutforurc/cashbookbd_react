@@ -1316,3 +1316,65 @@ html.dark .rich-text-editor .ql-editor {
 html.dark .rich-text-editor .ql-editor td {
   border-color: rgb(var(--c-strokedark));
 }
+
+/* Titles are black on a light screen.
+
+   A heading, a field label, a table heading and the small capital caption over
+   a section were each written in a grey of their own -- text-gray-500 here,
+   text-slate-700 there, across some three hundred files -- and on a white page
+   the lighter of them were hard to read. One rule rather than three hundred
+   edits: wherever one of those four asks for a grey, a light screen gives it
+   the text colour instead (--c-text, so a user who chose their own still gets
+   it). Help text, captions under a field and the values themselves keep their
+   grey; so does anything asking for a colour that is not grey.
+
+   A table is in the list for its cells: the shared Table writes its rows in
+   text-gray-700, and the first line of a cell -- the name, the date, the
+   amount -- is what a row is read for. The smaller second line under it (an
+   email, a branch) is a div with a grey of its own and is not touched.
+
+   Only the light screen: a `dark:` class does not begin with `text-`, so it
+   is not matched, and html.dark is excluded outright. Deliberately outside
+   every @layer, which is what lets it win over the utility it replaces. */
+html:not(.dark) :is(h1, h2, h3, h4, h5, h6, label, th, table, tbody, tr, td, [class~="uppercase"]):is(
+  [class^="text-gray-400"],
+  [class*=" text-gray-400"],
+  [class^="text-gray-500"],
+  [class*=" text-gray-500"],
+  [class^="text-gray-600"],
+  [class*=" text-gray-600"],
+  [class^="text-gray-700"],
+  [class*=" text-gray-700"],
+  [class^="text-slate-400"],
+  [class*=" text-slate-400"],
+  [class^="text-slate-500"],
+  [class*=" text-slate-500"],
+  [class^="text-slate-600"],
+  [class*=" text-slate-600"],
+  [class^="text-slate-700"],
+  [class*=" text-slate-700"],
+  [class^="text-zinc-400"],
+  [class*=" text-zinc-400"],
+  [class^="text-zinc-500"],
+  [class*=" text-zinc-500"],
+  [class^="text-zinc-600"],
+  [class*=" text-zinc-600"],
+  [class^="text-zinc-700"],
+  [class*=" text-zinc-700"],
+  [class^="text-neutral-400"],
+  [class*=" text-neutral-400"],
+  [class^="text-neutral-500"],
+  [class*=" text-neutral-500"],
+  [class^="text-neutral-600"],
+  [class*=" text-neutral-600"],
+  [class^="text-neutral-700"],
+  [class*=" text-neutral-700"],
+  [class^="text-[rgb(var(--c-text-muted))]"],
+  [class*=" text-[rgb(var(--c-text-muted))]"],
+  [class^="text-body "],
+  [class*=" text-body "],
+  [class^="text-bodydark2"],
+  [class*=" text-bodydark2"]
+) {
+  color: rgb(var(--c-text));
+}

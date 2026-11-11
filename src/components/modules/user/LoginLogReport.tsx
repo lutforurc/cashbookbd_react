@@ -151,7 +151,7 @@ const LoginLogReport: React.FC = () => {
         cellClass: 'text-left',
         render: (row: any) =>
           (row.result ?? 'success') === 'success' ? (
-            <span className="text-xs text-emerald-600 dark:text-emerald-400">Signed in</span>
+            <span className="text-xs text-[rgb(var(--c-text))] dark:text-emerald-400">Signed in</span>
           ) : (
             <div>
               <div className="text-xs font-semibold text-red-600 dark:text-red-400">Refused</div>
@@ -204,7 +204,7 @@ const LoginLogReport: React.FC = () => {
               dateTime(row.out_time)
             )
           ) : (
-            <span className="text-xs text-amber-600 dark:text-amber-400">Not signed out</span>
+            <span className="text-xs text-[rgb(var(--c-text))] dark:text-amber-400">Not signed out</span>
           ),
       },
       {
