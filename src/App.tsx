@@ -424,13 +424,16 @@ function App() {
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['admin.notifications.view']} loading={permissionsLoading} />}>
                 <Route path={routes.admin_notifications} element={<AdminNotifications />} />
               </Route>
+              {/* Its own key, inventory.systems.view (2026-11-11). */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['inventory.systems.view']} loading={permissionsLoading} />}>
+                <Route path={routes.inventory_systems} element={<InventorySystem />} />
+              </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['reseller.view', 'subscription.view', 'all.user.view']} loading={permissionsLoading} />}>
                 <Route path={routes.reseller_admin} element={<ResellerAdmin />} />
                 <Route path={routes.admin_in_app_messages} element={<AdminInAppMessages />} />
                 <Route path={routes.admin_in_app_message_create} element={<AdminInAppMessageForm />} />
                 <Route path={routes.admin_in_app_message_edit} element={<AdminInAppMessageForm />} />
                 <Route path={routes.business_types} element={<BusinessType />} />
-                <Route path={routes.inventory_systems} element={<InventorySystem />} />
                 <Route path={routes.tutorial_videos} element={<TutorialVideos />} />
                 {/* Master website templates (platform admin). The route guard is
                     the same as its neighbours; the API's platform.admin

@@ -3558,9 +3558,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                          {(hasPermission(permissions, 'reseller.view') ||
-                            hasPermission(permissions, 'subscription.view') ||
-                            hasPermission(permissions, 'all.user.view')) && (
+                          {(hasPermission(permissions, 'business.create')) && (
                               <li style={subSlot('admin', 'business_types')}>
                                 <NavLink
                                   to={routes.business_types}
@@ -3570,9 +3568,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                          {(hasPermission(permissions, 'reseller.view') ||
-                            hasPermission(permissions, 'subscription.view') ||
-                            hasPermission(permissions, 'all.user.view')) && (
+                          {(hasPermission(permissions, 'inventory.systems.view')) && (
                               <li style={subSlot('admin', 'inventory_systems')}>
                                 <NavLink
                                   to={routes.inventory_systems}

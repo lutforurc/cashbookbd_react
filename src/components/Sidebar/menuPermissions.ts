@@ -98,6 +98,7 @@ export const MENU_PERMISSIONS = {
   admin: [
     'check.register.view',
     'admin.notifications.view',
+    'inventory.systems.view',
     'branch.view',
     'all.user.view',
     'dayclose.create',

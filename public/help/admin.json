@@ -51,11 +51,12 @@
   "admin-inventory-systems": {
     "title": "ইনভেন্টরি সিস্টেম",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "শাখা যে ইনভেন্টরি মডেলে চলে (যেমন সাধারণ, ট্রেডিং) তার তালিকা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ inventory.systems.view permission থাকলে।"] },
       { "heading": "সিস্টেম", "menu": "Admin → Inventory Systems", "steps": ["Name, Slug, Status ও Description দিয়ে Add করুন।", "তালিকায় #, Name, Slug, Status ও Description দেখা যায়; Edit দিয়ে বদলান।"] },
       { "heading": "সতর্কতা", "warning": "Core system-এর Slug লক করা — रাউটিং এর ওপর নির্ভর করে, তাই বদলানো বা মোছা যায় না।" }
     ]
