@@ -134,6 +134,23 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[
 
 const TAB_KEYS = TABS.map((one) => one.key);
 
+/**
+ * One help topic per tab. The tabs share a route, so the route map can only
+ * name one of them -- each tab has to name its own, or eight of the nine
+ * screens open somebody else's help.
+ */
+const TAB_HELP: Record<TabKey, string> = {
+  setup: 'asset-setup',
+  categories: 'asset-category',
+  items: 'asset-items',
+  register: 'asset-register',
+  cwip: 'asset-cwip',
+  depreciation: 'asset-depreciation',
+  schedule: 'asset-schedule',
+  handovers: 'asset-handover',
+  verification: 'asset-verification',
+};
+
 const AssetSetup = ({ user }: any) => {
   const dispatch = useDispatch<any>();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -188,15 +205,7 @@ const AssetSetup = ({ user }: any) => {
     <div>
       <HelmetTitle
         title="Assets"
-        helpTopic={
-          tab === 'setup'
-            ? 'asset-setup'
-            : tab === 'categories'
-              ? 'asset-category'
-              : tab === 'register'
-                ? 'asset-register'
-                : undefined
-        }
+        helpTopic={TAB_HELP[tab]}
       />
 
       <h2 className="mb-3 text-center text-xl font-semibold text-black dark:text-white">

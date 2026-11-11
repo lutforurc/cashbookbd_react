@@ -386,7 +386,17 @@
       "id": "assets",
       "title": "Assets",
       "file": "assets.json",
-      "topics": ["asset-setup", "asset-category", "asset-register"]
+      "topics": [
+        "asset-setup",
+        "asset-category",
+        "asset-items",
+        "asset-register",
+        "asset-cwip",
+        "asset-depreciation",
+        "asset-schedule",
+        "asset-handover",
+        "asset-verification"
+      ]
     },
     {
       "id": "production",

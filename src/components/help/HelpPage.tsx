@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useSearchParams } from 'react-router-dom';
-import { FiChevronRight, FiHelpCircle, FiPrinter, FiShoppingCart, FiTruck } from 'react-icons/fi';
+import {
+  FiArchive,
+  FiChevronRight,
+  FiHelpCircle,
+  FiPrinter,
+  FiShoppingCart,
+  FiTruck,
+} from 'react-icons/fi';
 import { useReactToPrint } from 'react-to-print';
 import HelmetTitle from '../utils/others/HelmetTitle';
 import InputElement from '../utils/fields/InputElement';
@@ -112,6 +119,26 @@ const VARIANT_MENUS = [
       { id: 'combined-trading', title: 'Trading Combined' },
       { id: 'combined-tiles', title: 'Tiles Combined' },
       { id: 'labour-invoice', title: 'Labour Invoice' },
+    ],
+  },
+  /**
+   * The Assets screen has nine tabs behind one route -- the same problem the
+   * Sales forms have, so it is answered the same way: one row per tab, each
+   * with the topic its title row opens.
+   */
+  {
+    id: '__assets__',
+    title: 'Assets',
+    topics: [
+      { id: 'asset-setup', title: 'Setup — the ledger heads' },
+      { id: 'asset-category', title: 'Categories' },
+      { id: 'asset-items', title: 'Items' },
+      { id: 'asset-register', title: 'Register' },
+      { id: 'asset-cwip', title: 'Under construction' },
+      { id: 'asset-depreciation', title: 'Depreciation' },
+      { id: 'asset-schedule', title: 'Schedule' },
+      { id: 'asset-handover', title: 'Handovers' },
+      { id: 'asset-verification', title: 'Verification' },
     ],
   },
 ];
@@ -517,7 +544,13 @@ const HelpPage = () => {
                                 : ''
                             }`}
                           >
-                            {menu.id === '__sales__' ? <FiShoppingCart /> : <FiTruck />}
+                            {menu.id === '__sales__' ? (
+                              <FiShoppingCart />
+                            ) : menu.id === '__assets__' ? (
+                              <FiArchive />
+                            ) : (
+                              <FiTruck />
+                            )}
                             <span className="min-w-0 flex-1 truncate">{menu.title}</span>
                             <FiChevronRight
                               className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
