@@ -7,6 +7,7 @@ import {
   FiList,
   FiPackage,
   FiRepeat,
+  FiSettings,
   FiTag,
   FiTool,
   FiTrendingDown,
@@ -17,6 +18,7 @@ import BranchDropdown from '../../utils/utils-functions/BranchDropdown';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 
 import AssetCategoriesTab from './AssetCategoriesTab';
+import AssetChartSetupTab from './AssetChartSetupTab';
 import AssetItemsTab from './AssetItemsTab';
 import AssetCwipTab from './AssetCwipTab';
 import AssetDepreciationTab from './AssetDepreciationTab';
@@ -28,15 +30,17 @@ import AssetVerificationTab from './AssetVerificationTab';
 /**
  * Fixed assets — the categories, and the register of the things themselves.
  *
- * ⚠️ SIX TABS, TWO SCOPES, and the difference is not cosmetic. A CATEGORY is the
- * company's: "vehicles at 20%" is one bookkeeping decision, and two branches
- * with two rates for one class of thing is a schedule nobody can foot. An ASSET
- * stands somewhere — it belongs to a branch, and is depreciated into that
- * branch's accounts. So the property chooser above applies to the register and
- * the yearly run but not to the categories, which is why it is drawn inside this
- * screen rather than inside any one tab.
+ * ⚠️ SEVEN TABS, TWO SCOPES, and the difference is not cosmetic. A CATEGORY —
+ * and the chart of accounts behind it — is the company's: "vehicles at 20%" is
+ * one bookkeeping decision, and two branches with two rates for one class of
+ * thing is a schedule nobody can foot. An ASSET stands somewhere — it belongs
+ * to a branch, and is depreciated into that branch's accounts. So the property
+ * chooser above applies to the register and the yearly run but not to Setup or
+ * Categories, which is why it is drawn inside this screen rather than inside
+ * any one tab.
  *
- * ⚠️ CATEGORIES COME FIRST because an asset cannot be entered without one — the
+ * ⚠️ SETUP COMES FIRST, THEN CATEGORIES: the heads exist before a category can
+ * be depreciated, and a category exists before an asset can be entered — the
  * rate it wears out at comes from there. The tab order is the order of the job.
  *
  * ⚠️ DEPRECIATION IS A THIRD TAB RATHER THAN A BUTTON ON THE REGISTER, because
@@ -46,6 +50,7 @@ import AssetVerificationTab from './AssetVerificationTab';
  */
 
 type TabKey =
+  | 'setup'
   | 'categories'
   | 'items'
   | 'register'
@@ -56,6 +61,11 @@ type TabKey =
   | 'verification';
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[] = [
+  // ⚠️ FIRST, because it is the step before all the others: a category cannot
+  // be depreciated until its heads exist, and a new set of books often has
+  // none of them. The tab lists what the module needs and makes only what is
+  // missing -- see AssetChartSetupTab.
+  { key: 'setup', label: 'Setup', icon: <FiSettings size={15} />, hint: '' },
   // { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: 'Rates and heads' },
   { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: '' },
   // ⚠️ Between the two, because an item belongs to a category and is what a
@@ -178,7 +188,15 @@ const AssetSetup = ({ user }: any) => {
     <div>
       <HelmetTitle
         title="Assets"
-        helpTopic={tab === 'categories' ? 'asset-category' : undefined}
+        helpTopic={
+          tab === 'setup'
+            ? 'asset-setup'
+            : tab === 'categories'
+              ? 'asset-category'
+              : tab === 'register'
+                ? 'asset-register'
+                : undefined
+        }
       />
 
       <h2 className="mb-3 text-center text-xl font-semibold text-black dark:text-white">
@@ -186,9 +204,10 @@ const AssetSetup = ({ user }: any) => {
       </h2>
 
       {/* Drawn only where there is a choice, and only on the register: a
-          category belongs to the company, so a property chooser above it would
-          be asking a question that has no effect. */}
-      {tab !== 'categories' && branches.length > 1 ? (
+          category — and the chart behind it — belongs to the company, so a
+          property chooser above them would be asking a question that has no
+          effect. */}
+      {tab !== 'categories' && tab !== 'setup' && branches.length > 1 ? (
         <div className="mb-3 w-64">
           <label className="text-sm text-black dark:text-white">Property</label>
           <BranchDropdown
@@ -226,6 +245,7 @@ const AssetSetup = ({ user }: any) => {
         })}
       </div>
 
+      {tab === 'setup' ? <AssetChartSetupTab /> : null}
       {tab === 'categories' ? <AssetCategoriesTab /> : null}
       {tab === 'items' ? <AssetItemsTab /> : null}
       {tab === 'register' ? <AssetRegisterTab branchId={branchId} /> : null}

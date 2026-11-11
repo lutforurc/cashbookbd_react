@@ -3,7 +3,10 @@ import { FiSave } from 'react-icons/fi';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
+import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
+import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { money } from '../hotel/setupHelpers';
 
 /**
  * An asset being typed: what it is, what it cost, and what the old books had
@@ -70,6 +73,16 @@ const AssetRegisterForm = ({
   const setDate = (field: string) => (date: Date | null) =>
     onChange({ ...form, [field]: asText(date) });
 
+  // What the voucher would say if this were saved. The same three legs the
+  // server writes, in the same order, so the figures can be read before they
+  // are posted rather than after.
+  const cost = Number(form.cost || 0);
+  const opening = Number(form.opening_accum_dep || 0);
+  const net = Math.max(Math.round((cost - opening) * 100) / 100, 0);
+  const categoryName =
+    categoryOptions.find((one) => Number(one.id) === Number(form.category_id))?.name ??
+    'the category';
+
   return (
     <div className="mb-4 rounded border border-stroke p-3 dark:border-strokedark">
       <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
@@ -124,8 +137,10 @@ const AssetRegisterForm = ({
           disabled={form.locked}
           description={
             form.locked
-              ? 'Frozen — a year has been charged against it.'
-              : 'What it cost. This never changes afterwards.'
+              ? 'Frozen — depreciation has been charged against this asset.'
+              : form.in_books
+                ? 'Changing this replaces the journal behind it.'
+                : 'What it cost.'
           }
         />
         <InputElement
@@ -186,13 +201,93 @@ const AssetRegisterForm = ({
               <strong>originally cost</strong> above and what has been charged against it here —
               not what it is worth now.
               <br />
-              <strong>Nothing is posted from this box.</strong> Those figures are already in the
-              ledger from the old books&rsquo; opening entries; posting them again would double
-              both the asset and the depreciation.
+              <strong>Nothing is posted from here unless you ask.</strong> Where the old books&rsquo;
+              opening entries already put these figures in the ledger, leave them be; the tick
+              below is for the case where they were never posted.
             </p>
           </div>
         </div>
       </div>
+
+      {/* ⚠️ POSTED IS NOT FROZEN — ONLY CHARGED IS. A row with depreciation
+          against it cannot be re-figured, so it offers nothing here. An
+          unposted row can be posted on the spot; a posted one says what saving
+          will do to the journal it already has. */}
+      {!form.locked ? (
+        <div className="mt-3 rounded border border-stroke p-3 dark:border-strokedark">
+          {form.in_books ? (
+            <p className="text-xs leading-snug text-gray-500 dark:text-gray-400">
+              <strong className="text-black dark:text-white">This asset is in the books.</strong>{' '}
+              Change any figure above and saving replaces its journal: the old voucher is withdrawn
+              and a new number is issued, keeping the same other side. Type a wrong number and the
+              books follow the corrected one.
+            </p>
+          ) : (
+            <>
+              <ToggleSwitch
+                label="Post this to the books"
+                checked={!!form.post_to_books}
+                onChange={(checked) => onChange({ ...form, post_to_books: checked })}
+              />
+              <p className="mt-1 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                Leave it unticked where the figures are already in the ledger from the old
+                books&rsquo; opening entries — posting them again would double both.
+              </p>
+            </>
+          )}
+
+          {!form.in_books && form.post_to_books ? (
+            <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-4">
+              <div className="md:col-span-2">
+                <label htmlFor="asset_counter" className="mb-1 block text-sm text-black dark:text-white">
+                  Counter account *
+                </label>
+                <DdlMultiline
+                  id="asset_counter"
+                  name="counter_coa4_id"
+                  placeholder="Capital, a loan, a supplier…"
+                  // ⚠️ Income, expense and manufacturing are never the other
+                  // side of an asset arriving. Assets and liabilities are --
+                  // capital, a director's loan, the bank that paid, or the
+                  // supplier owed it. `acType` is an EXCLUDE list of level-1 ids.
+                  acType={['3', '4', '5']}
+                  minChars={2}
+                  value={
+                    form.counter_coa4_id
+                      ? { value: form.counter_coa4_id, label: form.counter_label || String(form.counter_coa4_id) }
+                      : null
+                  }
+                  onSelect={(option: any) =>
+                    onChange({
+                      ...form,
+                      counter_coa4_id: option ? String(option.value) : '',
+                      counter_label: option ? String(option.label) : '',
+                    })
+                  }
+                />
+              </div>
+              <div className="md:col-span-2">
+                <p className="text-xs leading-snug text-gray-500 dark:text-gray-400">
+                  The voucher will be:{' '}
+                  <strong>Dr {categoryName}</strong> {money(cost)}
+                  {opening > 0 ? (
+                    <>
+                      {' '}· <strong>Cr Accumulated Depreciation</strong> {money(opening)}
+                    </>
+                  ) : null}
+                  {net > 0 ? (
+                    <>
+                      {' '}· <strong>Cr {form.counter_label || 'the counter account'}</strong>{' '}
+                      {money(net)}
+                    </>
+                  ) : null}
+                  .
+                </p>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-2">
         <InputElement

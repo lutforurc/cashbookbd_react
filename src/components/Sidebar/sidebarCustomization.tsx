@@ -469,7 +469,6 @@ export const SIDEBAR_SUB_DEFAULTS: Record<string, string[]> = {
     'divider:hops:Operations',
     'hotel_housekeeping',
     'hotel_amenity_issue',
-    'hotel_asset_purchase',
     'divider:hset:Reports & Setup',
     'hotel_reports',
     'hotel_booking_due',

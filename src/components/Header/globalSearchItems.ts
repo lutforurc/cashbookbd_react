@@ -239,12 +239,14 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Project Income Report', path: routes.real_estate_project_income_report, group: 'Real Estate', permissions: ['real.estate.project.income.report.view'] },
 
   { title: 'Assets', path: routes.asset_setup, group: 'Assets', keywords: ['fixed asset', 'depreciation', 'asset register'], permissions: ['asset.category.view', 'asset.register.view'] },
+  // Filed under Assets with the sidebar entry it opens (2026-11-11). The old
+  // words stay in `keywords`: people who knew it as a hotel screen will type them.
+  { title: 'Accounts Transaction', path: routes.hotel_asset_purchase, group: 'Assets', keywords: ['hotel asset purchase', 'buy furniture', 'asset purchase'], permissions: ['hotel.accounts.transaction.create'] },
 
   { title: 'Hotel Bookings', path: routes.hotel_bookings, group: 'Hotel', keywords: ['room booking', 'guest', 'check in', 'check out'], permissions: ['hotel.booking.view'] },
   { title: 'Hotel Calendar', path: routes.hotel_calendar, group: 'Hotel', keywords: ['tape chart', 'room availability'], permissions: ['hotel.calendar.view'] },
   { title: 'Housekeeping', path: routes.hotel_housekeeping, group: 'Hotel', permissions: ['hotel.housekeeping.view'] },
   { title: 'Amenity Issue & Stock', path: routes.hotel_amenity_issue, group: 'Hotel', permissions: ['hotel.amenity.issue.view'] },
-  { title: 'Hotel Asset Purchase', path: routes.hotel_asset_purchase, group: 'Hotel', permissions: ['hotel.accounts.transaction.create'] },
   { title: 'Hotel Payment Entry', path: routes.hotel_payment_entry, group: 'Transaction', permissions: ['payment.entry.create'], when: 'unifiedPayment' },
   { title: 'Hotel Received Entry', path: routes.hotel_received_entry, group: 'Transaction', permissions: ['received.entry.create'], when: 'unifiedReceived' },
   { title: 'Hotel Reports', path: routes.hotel_reports, group: 'Hotel', permissions: ['hotel.report.view'] },

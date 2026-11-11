@@ -179,7 +179,10 @@ export const MENU_ROUTES: Record<string, string[]> = {
     '/real-estate/project-activities',
     '/real-estate/unit-types/create',
   ],
-  'asset': [routes.asset_setup],
+  // The purchase form sits here too, so opening it keeps Assets open and marked
+  // (moved from Hotel on 2026-11-11). Without this line the Assets group closes
+  // the moment the link is followed.
+  'asset': [routes.asset_setup, routes.hotel_asset_purchase],
   // The manual has no submenu of its own; listed so the entry is marked while
   // its page is open.
   'help': [routes.help],
@@ -191,7 +194,6 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.hotel_calendar,
     routes.hotel_housekeeping,
     routes.hotel_amenity_issue,
-    routes.hotel_asset_purchase,
     // No menu entry of its own -- reached from the Issue button on the list.
     routes.hotel_amenity_issue_new,
     // No menu entry of its own -- it is reached from a booking. Listed so the

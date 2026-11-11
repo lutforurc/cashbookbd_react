@@ -1311,6 +1311,9 @@ export const API_HOTEL_ITEM_STOCK_URL = `${API_BASE_URL}/hotel-setup/item-stock`
 // bookkeeping decision for the whole company; an asset stands somewhere and is
 // depreciated into that branch's accounts.
 export const API_ASSET_CATEGORY_URL = `${API_BASE_URL}/asset/categories`;
+// The chart of accounts the module needs, listed and made where it is missing.
+// The stem suffixes /create.
+export const API_ASSET_SETUP_URL = `${API_BASE_URL}/asset/setup`;
 // The catalogue a purchase line is picked from. Each item's category decides
 // which ledger head the purchase debits -- it is not stock, and not a register
 // row; those are the two neighbours it is easiest to confuse it with.

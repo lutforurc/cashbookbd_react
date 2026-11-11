@@ -45,13 +45,13 @@ interface HeadOption {
 /**
  * A chart head as a dropdown line.
  *
- * ⚠️ The first line is NAMED, not blank. "Not chosen yet" is a real state here
- * — a category saves perfectly well without its heads and simply cannot be
- * depreciated — so the box says which state it is in rather than looking
- * unfilled. It came across with the form because it is a label, not data.
+ * ⚠️ THE FIRST LINE IS NAMED, NOT BLANK, because it is no longer "nothing". The
+ * server makes the head on save — under the right group and on the right side
+ * of the accounts — so the box says what leaving it empty will do. It came
+ * across with the form because it is a label, not data.
  */
 const headOptions = (heads: any[]): HeadOption[] => [
-  { value: '', label: 'Not chosen yet' },
+  { value: '', label: 'Made on save' },
   ...heads.map((head: any) => ({
     value: String(head.id),
     label: `${head.name} — ${head.group_name}`,
@@ -107,7 +107,7 @@ const HeadPicker = ({ id, label, heads, value, onPick, description }: HeadPicker
         defaultOptions
         value={chosen}
         onSelect={(option: any) => onPick(option?.value ?? '')}
-        placeholder="Not chosen yet"
+        placeholder="Made on save"
       />
       <p className={FIELD_HELP}>{description}</p>
     </div>
@@ -175,8 +175,14 @@ const AssetCategoryForm = ({
 
       {/* The four heads on one line: one per column where there is room,
           two by two on a tablet, stacked on a phone. Balance sheet on the
-          left, profit and loss on the right — the order the money moves. */}
-      <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          left, profit and loss on the right — the order the money moves.
+
+          ⚠️ HIDDEN ON A NEW CATEGORY. Four boxes reading "Made on save" are
+          four questions nobody entering "Vehicle, 20%" is being asked — the
+          server makes them. They appear on an edit, where there are real heads
+          to look at, and are shown rather than asked for. */}
+      {form.id ? (
+        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <HeadPicker
           id="asset_coa4_id"
           label="Asset head"
@@ -215,7 +221,14 @@ const AssetCategoryForm = ({
           onPick={pick('disposal_coa4_id')}
           description="Only needed to sell or write one off. Profit and loss."
         />
-      </div>
+        </div>
+      ) : (
+        <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+          The four ledger heads are made for you when you save — the category’s own two
+          under Fixed Assets, and the two the whole company shares. Open a saved category
+          to see them or choose your own.
+        </p>
+      )}
 
       <div className="mt-2">
         <InputElement
@@ -237,12 +250,15 @@ const AssetCategoryForm = ({
         every year already charged keeps the rate it was charged at.
       </p>
 
+      {/* ⚠️ "Update" on an edit, because the two are different acts and the
+          row already exists: Save reads as "this is new" to the person
+          pressing it. The id in the draft is what tells them apart. */}
       <div className="mt-3">
         <ButtonLoading
           onClick={onSave}
           buttonLoading={saving}
           icon={<FiSave className="h-5 w-5" />}
-          label="Save"
+          label={form.id ? 'Update' : 'Save'}
           variant="primary"
         />
       </div>

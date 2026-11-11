@@ -386,7 +386,7 @@
       "id": "assets",
       "title": "Assets",
       "file": "assets.json",
-      "topics": ["asset-category"]
+      "topics": ["asset-setup", "asset-category", "asset-register"]
     },
     {
       "id": "production",

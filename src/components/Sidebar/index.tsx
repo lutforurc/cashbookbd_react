@@ -208,6 +208,12 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'asset': [
     { id: 'asset_setup', title: "Assets" },
+    // ⚠️ MOVED HERE from Hotel (2026-11-11). It buys what the asset module
+    // keeps -- the register's own purchases land from this form. The id and the
+    // permission keep their `hotel_` spelling: a saved menu arrangement and a
+    // granted permission both refer to them by name, and neither should be
+    // rewritten to move a link.
+    { id: 'hotel_asset_purchase', title: "Accounts Transaction" },
   ],
   'hotel': [
     { id: 'hotel_bookings', title: "Bookings" },
@@ -215,7 +221,6 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'hotel_calendar', title: "Calendar" },
     { id: 'hotel_housekeeping', title: "Housekeeping" },
     { id: 'hotel_amenity_issue', title: "Amenity Issue & Stock" },
-    { id: 'hotel_asset_purchase', title: "Assets Purchase" },
     { id: 'hotel_reports', title: "Reports" },
     { id: 'hotel_booking_due', title: "Booking-wise Due" },
     { id: 'hotel_setup', title: "Rooms & Seats Setup" },
@@ -2887,9 +2892,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                 permissions are granted to nobody when the patch creates them,
                 which draws the same line and cannot drift between installs.
 
-                One entry today -- the categories and the register share a
-                screen. Depreciation and the schedule join it here, which is why
-                it is a group rather than a bare link.
+                Two entries: the categories and the register, which share a
+                screen, and the purchase form that fills the register. It is a
+                group rather than a bare link because depreciation and the
+                schedule join it here too.
               */}
               {hasMenuPermission(permissions, 'asset') && (
                 <SidebarLinkGroup
@@ -2946,6 +2952,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               Categories &amp; Register
                             </NavLink>
                           </li>
+                          )}
+
+                          {/* Buying what the register keeps. Not a purchase
+                              invoice -- nothing here lands in stock -- and the
+                              register gets a row for each thing bought. Moved
+                              up from Hotel on 2026-11-11: it is an asset entry
+                              form. Its own key, hotel.accounts.transaction.create. */}
+                          {hasPermission(permissions, 'hotel.accounts.transaction.create') && (
+                            <li style={subSlot('asset', 'hotel_asset_purchase')}>
+                              <NavLink to={routes.hotel_asset_purchase} className={subMenuLinkClass}>
+                                Accounts Transaction
+                              </NavLink>
+                            </li>
                           )}
                         </ul>
                       </div>
@@ -3073,17 +3092,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               Amenity Issue &amp; Stock
                             </NavLink>
                           </li>
-                          )}
-
-                          {/* What the hotel buys to be furnished with. Not a
-                              purchase invoice -- nothing here lands in stock.
-                              Its own key, hotel.accounts.transaction.create. */}
-                          {hasPermission(permissions, 'hotel.accounts.transaction.create') && (
-                            <li style={subSlot('hotel', 'hotel_asset_purchase')}>
-                              <NavLink to={routes.hotel_asset_purchase} className={subMenuLinkClass}>
-                                Accounts Transaction
-                              </NavLink>
-                            </li>
                           )}
 
                           {/* Who was in the building, and what came in. Above

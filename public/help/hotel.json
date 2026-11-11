@@ -137,7 +137,7 @@
     "video": "",
     "intro": "হোটেলের ফার্নিচার বা খরচের মাল এক ভাউচারে কেনা হয়, সাথে টাকা পরিশোধ।",
     "sections": [
-      { "heading": "ক্রয় লেখা", "menu": "Hotel → Accounts Transaction", "steps": ["Accounts Head, Select Item, Quantity ও Rate দিয়ে Add Item চাপুন।", "Payment Details-এ Cash, Bank বা Credit বাছুন; Bank হলে Bank Account ও Cheque No দিন।", "Supplier ও Payment Amount দিন; Notes লিখুন।", "Save Transaction চাপুন।", "Print চাপলে এইমাত্র সেভ করা ভাউচার প্রিন্ট হয়। List চাপলে মাস অনুযায়ী এই ধরনের ভাউচারের তালিকা আসে; সারির Print আইকনে পুরনো ভাউচার আবার প্রিন্ট করা যায়।"] },
+      { "heading": "ক্রয় লেখা", "menu": "Assets → Accounts Transaction", "steps": ["Accounts Head, Select Item, Quantity ও Rate দিয়ে Add Item চাপুন।", "Payment Details-এ Cash, Bank বা Credit বাছুন; Bank হলে Bank Account ও Cheque No দিন।", "Supplier ও Payment Amount দিন; Notes লিখুন।", "Save Transaction চাপুন।", "Print চাপলে এইমাত্র সেভ করা ভাউচার প্রিন্ট হয়। List চাপলে মাস অনুযায়ী এই ধরনের ভাউচারের তালিকা আসে; সারির Print আইকনে পুরনো ভাউচার আবার প্রিন্ট করা যায়।"] },
       { "heading": "হিসাব", "steps": ["Cash/Bank হলে পরিশোধের ভাউচার ক্যাশ বা ব্যাংক বইয়ে যায়।", "Credit হলে পুরো বিল সরবরাহকারীর কাছে বাকি থাকে।", "Print দিয়ে ভাউচার ছাপা হয়।"] },
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hotel.accounts.transaction.create permission থাকলে।"] },
       { "heading": "সতর্কতা", "warning": "Payment Amount-এ আংশিক পরিশোধ এখনো চলে না — Cash/Bank হলে পুরো টাকা, Credit হলে শূন্য।" }

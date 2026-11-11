@@ -96,6 +96,12 @@ const blank = () => ({
   opening_accum_dep: '',
   opening_as_on: '',
   notes: '',
+  // ⚠️ Off unless asked for. A company migrating its books has already posted
+  // the opening figures by hand, and a tick given out of habit would post them
+  // a second time.
+  post_to_books: false,
+  counter_coa4_id: '',
+  counter_label: '',
 });
 
 /** A saved asset as a draft. One place, so opening an edit cannot drift. */
@@ -112,6 +118,14 @@ const draftOf = (one: any, locked: boolean) => ({
   opening_accum_dep: one.opening_accum_dep,
   opening_as_on: String(one.opening_as_on ?? '').slice(0, 10),
   notes: one.notes ?? '',
+  // A row that never went into the books may be posted from the edit form too;
+  // the server decides, this only carries the tick.
+  post_to_books: false,
+  counter_coa4_id: '',
+  counter_label: '',
+  // Whether a journal stands behind it — the form says so, and says that
+  // changing the figures replaces that journal.
+  in_books: !!one.in_books,
   // What the server will refuse to move, said before the refusal.
   locked,
 });
@@ -196,7 +210,11 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
    * The draft follows the address.
    *
    * ⚠️ SEEDED FROM THE LISTED ROW WHERE THERE IS ONE, because `locked` is
-   * only on the list: it is `charged_here > 0`, worked out by the index query.
+   * only on the list: it is `charged_here > 0` (worked out by the index query)
+   * or `in_books` — the server's own answer to "does the voucher behind this
+   * row still stand?", which freezes its figures the same way the server does.
+   * ⚠️ NOT `main_trx_id`: removing a voucher leaves that number pointing at
+   * nothing, and the server has already unlocked the row when it does.
    * Where the row is not on this page — a link opened cold, or a filter that
    * excludes it — the asset is fetched and `locked` derived from the same sum
    * over its own depreciation rows, which is the identical rule rather than a
@@ -221,7 +239,9 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
     const listed = rows.find((row: any) => String(row.id) === asked);
 
     if (listed) {
-      setForm(draftOf(listed, Number(listed.charged_here) > 0));
+      setForm(
+        draftOf(listed, Number(listed.charged_here) > 0),
+      );
       return;
     }
 
@@ -242,7 +262,7 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
           0,
         );
 
-        setForm(draftOf(asset, charged > 0));
+        setForm(draftOf({ ...asset, in_books: !!payload.in_books }, charged > 0));
       })
       .catch(() => {
         // Left null, and the page below says the asset could not be found
@@ -327,6 +347,10 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
         opening_accum_dep: form.opening_accum_dep === '' ? 0 : form.opening_accum_dep,
         opening_as_on: form.opening_as_on || null,
         notes: form.notes || null,
+        // A row that never went into the books may be posted now; a posted row
+        // sends nothing here and the server keeps the counter its voucher has.
+        post_to_books: !!form.post_to_books,
+        counter_coa4_id: form.post_to_books ? form.counter_coa4_id || null : null,
       });
 
       toast.success(res?.data?.message || 'Saved');

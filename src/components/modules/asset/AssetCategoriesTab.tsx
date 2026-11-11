@@ -21,16 +21,17 @@ import AssetCategoryForm from './AssetCategoryForm';
  * wrongly on one of them, and nobody would find out until the year-end schedule
  * failed to foot.
  *
- * ⚠️ THE THREE HEADS ARE NOMINATED FROM THIS COMPANY'S OWN CHART, and each list
- * is filtered to the half of the accounts it belongs in — the cost and the
+ * ⚠️ THE FOUR HEADS ARE PICKED FROM THIS COMPANY'S OWN CHART, and each list is
+ * filtered to the half of the accounts it belongs in — the cost and the
  * accumulated depreciation to the balance sheet, the yearly charge to the profit
  * and loss. "Depreciation" is a word that appears in both halves, and the two
  * pointed the wrong way round would run the books backwards with nothing on
  * screen looking odd.
  *
- * ⚠️ A category with no heads is kept and edited like any other. It simply
- * cannot be depreciated — and the row says so, so that it is discovered here
- * rather than in June when the run refuses.
+ * ⚠️ A HEAD LEFT UNPICKED IS MADE BY THE SERVER ON SAVE, so a new category can be
+ * nothing but a name and a rate. The row still reports a missing head, because
+ * making one can fail (a same-named head on the other side) — and that is better
+ * discovered here than in June when the run refuses.
  *
  * The boxes themselves are in AssetCategoryForm — this reads the list, saves a
  * category and removes one, and holds the draft while it is being typed. The

@@ -255,7 +255,6 @@ export const MENU_PERMISSIONS = {
     'hotel.calendar.view',
     'hotel.housekeeping.view',
     'hotel.amenity.issue.view',
-    'hotel.accounts.transaction.create',
     'hotel.report.view',
     'hotel.booking.due.view',
     'hotel.building.view',
@@ -263,9 +262,16 @@ export const MENU_PERMISSIONS = {
     'hotel.room.type.view',
     'hotel.resource.view',
   ],
-  // Fixed assets. One screen with two tabs, each on its own key; either opens
-  // the menu. Granted to nobody when the patch creates them.
-  asset: ['asset.category.view', 'asset.register.view'],
+  // Fixed assets. The categories and the register share a screen, each tab on
+  // its own key; either opens the menu. The third entry is the purchase form,
+  // moved here from Hotel on 2026-11-11 -- its key keeps the `hotel.` prefix for
+  // the reason given on the entry in index.tsx. Granted to nobody when the patch
+  // creates them.
+  asset: [
+    'asset.category.view',
+    'asset.register.view',
+    'hotel.accounts.transaction.create',
+  ],
   // Old Software. Its own group rather than a corner of Reports: looking an old
   // bill up at the counter is not bookkeeping. Each sub-item is gated on its
   // own key.
