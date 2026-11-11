@@ -135,11 +135,12 @@
   "admin-notifications": {
     "title": "অ্যাডমিন নোটিশ",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "সবাইকে, একটি শাখাকে বা একটি পদকে অ্যাপের ভেতরে নোটিশ পাঠানো হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ admin.notifications.view permission থাকলে।"] },
       { "heading": "নোটিশ পাঠানো", "menu": "Admin → Admin Notifications", "steps": ["Title ও Message লিখুন।", "Tone (Info/Warning/Danger/Success) ও Audience (Global/Branch/Role) বাছুন।", "Branch বা Role, Expires at দিন; Send চাপুন।"] },
       { "heading": "পাঠানো তালিকা", "steps": ["Sent Notifications-এ Title, Tone, Audience, Read, Created, Expires ও Action দেখা যায়।", "কেউ পড়েছে কি না Read ঘরে বোঝা যায়।"] },
       { "heading": "সতর্কতা", "warning": "Expires at খালি রাখলে নোটিশের মেয়াদ শেষ হয় না; বন্ধ করতে চাইলে তারিখ দিন।" }

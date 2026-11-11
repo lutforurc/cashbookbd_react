@@ -3526,9 +3526,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {(hasPermission(permissions, 'reseller.view') ||
-                            hasPermission(permissions, 'subscription.view') ||
-                            hasPermission(permissions, 'all.user.view')) && (
+                          {(hasPermission(permissions, 'reseller.view')) && (
                               <li style={subSlot('admin', 'reseller_admin')}>
                                 <NavLink
                                   to={routes.reseller_admin}
@@ -3538,9 +3536,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 </NavLink>
                               </li>
                             )}
-                          {(hasPermission(permissions, 'reseller.view') ||
-                            hasPermission(permissions, 'subscription.view') ||
-                            hasPermission(permissions, 'all.user.view')) && (
+                          {hasPermission(permissions, 'admin.notifications.view') && (
                               <li style={subSlot('admin', 'admin_notifications')}>
                                 <NavLink
                                   to={routes.admin_notifications}

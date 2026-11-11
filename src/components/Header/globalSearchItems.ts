@@ -261,7 +261,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Login History', path: routes.user_login_log, group: 'Admin', permissions: ['all.user.view', 'user.view', 'user.login.log'] },
   { title: 'Company User', path: routes.company_user_list, group: 'Admin', permissions: ['all.user.view', 'user.view', 'company.user'] },
   { title: 'Resellers', path: routes.reseller_admin, group: 'Admin', permissions: ['reseller.view', 'subscription.view', 'all.user.view'] },
-  { title: 'Admin Notifications', path: routes.admin_notifications, group: 'Admin', permissions: ['reseller.view', 'subscription.view', 'all.user.view'] },
+  { title: 'Admin Notifications', path: routes.admin_notifications, group: 'Admin', permissions: ['admin.notifications.view'] },
   { title: 'In-App Messages', path: routes.admin_in_app_messages, group: 'Admin', permissions: ['reseller.view', 'subscription.view', 'all.user.view'] },
   { title: 'Business Types', path: routes.business_types, group: 'Admin', permissions: ['reseller.view', 'subscription.view', 'all.user.view'] },
   { title: 'Inventory Systems', path: routes.inventory_systems, group: 'Admin', permissions: ['reseller.view', 'subscription.view', 'all.user.view'] },

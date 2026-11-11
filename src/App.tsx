@@ -419,9 +419,13 @@ function App() {
                 <Route path={routes.subscription_plan_entry} element={<SubscriptionPlanForm />} />
                 <Route path={routes.subscription_plan_edit} element={<SubscriptionPlanForm />} />
               </Route>
+              {/* Its own key, admin.notifications.view (2026-11-11). The API's
+                  platform.admin is what actually protects the data. */}
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['admin.notifications.view']} loading={permissionsLoading} />}>
+                <Route path={routes.admin_notifications} element={<AdminNotifications />} />
+              </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['reseller.view', 'subscription.view', 'all.user.view']} loading={permissionsLoading} />}>
                 <Route path={routes.reseller_admin} element={<ResellerAdmin />} />
-                <Route path={routes.admin_notifications} element={<AdminNotifications />} />
                 <Route path={routes.admin_in_app_messages} element={<AdminInAppMessages />} />
                 <Route path={routes.admin_in_app_message_create} element={<AdminInAppMessageForm />} />
                 <Route path={routes.admin_in_app_message_edit} element={<AdminInAppMessageForm />} />
