@@ -1002,16 +1002,14 @@ function App() {
               AssetPurchaseController); CASH only so far, with bank and credit
               still to come.
 
-              ⚠️ Gated on the Hotel menu's own permission list rather than on a
-              new one, so what the menu offers and what the route allows cannot
-              drift apart. It wants a permission of its own once the bank and
-              credit halves are built.
+              Its own key, hotel.accounts.transaction.create -- the same one
+              the menu entry and AssetPurchaseController ask for.
             */}
             <Route
               element={
                 <RequirePermission
                   permissions={userPermissions}
-                  anyOf={MENU_PERMISSIONS.hotel}
+                  anyOf={['hotel.accounts.transaction.create']}
                   loading={permissionsLoading}
                 />
               }
@@ -1026,7 +1024,7 @@ function App() {
               element={
                 <RequirePermission
                   permissions={userPermissions}
-                  anyOf={['transaction.payment.create']}
+                  anyOf={['payment.entry.create']}
                   loading={permissionsLoading}
                 />
               }
@@ -1037,7 +1035,7 @@ function App() {
               element={
                 <RequirePermission
                   permissions={userPermissions}
-                  anyOf={['transaction.received.create']}
+                  anyOf={['received.entry.create']}
                   loading={permissionsLoading}
                 />
               }
@@ -1138,17 +1136,19 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['date.wise.total']} loading={permissionsLoading} />}>
               <Route path={routes.report_date_wise_total} element={<DateWiseData user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view']} loading={permissionsLoading} />}>
-              <Route path={routes.report_cashbook} element={<CashBook user={me} />} />
-              {/* The same money, laid out as the paper double-column book.
-                  Behind the same permission: it is the cash book. */}
+            {/* The same money, laid out as the paper double-column book.
+                Its own key, bankbook.view -- the one the menu asks for. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['bankbook.view']} loading={permissionsLoading} />}>
               <Route
                 path={routes.report_cashbook_two_column}
                 element={<CashBookTwoColumn user={me} />}
               />
-              {/* The day's paper day book: the same till read down two sides,
-                  with the bank and wallet balances beside it. Behind the same
-                  permission, because it is the cash book's own figures. */}
+            </Route>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cashbook.view']} loading={permissionsLoading} />}>
+              <Route path={routes.report_cashbook} element={<CashBook user={me} />} />
+            </Route>
+            {/* The day's paper day book. Its own key, daily.accounts.book. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['daily.accounts.book']} loading={permissionsLoading} />}>
               <Route
                 path={routes.report_daily_account_book}
                 element={<DailyAccountBook user={me} />}

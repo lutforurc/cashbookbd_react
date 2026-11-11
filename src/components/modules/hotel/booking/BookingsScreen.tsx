@@ -897,23 +897,33 @@ const BookingsScreen = ({ user }: any) => {
                 </span>
               ) : null}
 
+              {/* Guests belong to the rooms, so they sit under the rooms. */}
+              {rooms && Number(guests) > 0 ? (
+                <span
+                  className="text-xs text-gray-500 dark:text-gray-200"
+                  title="Adults and children as stated at booking. What actually arrives is recorded at check-in."
+                >
+                  {guests} Guest
+                </span>
+              ) : null}
+
               {/* A hall is the thing somebody scans this list for -- "have we
                   got the centre on the 27th" -- so it is coloured rather than
                   left as another number in a column of numbers. */}
               {sittings ? (
                 <span className="text-xs font-medium text-primary dark:text-secondary">
-                  {sittings} {sittings === 1 ? 'Sitting' : 'Sittings'}
+                  {sittings} {sittings === 1 ? 'Hall Room' : 'Hall Rooms'}
+                </span>
+              ) : null}
+
+              {/* A hall's own figure is its chairs, never the guest count. */}
+              {sittings && Number(row.hall_seats) > 0 ? (
+                <span className="text-xs text-gray-500 dark:text-gray-200" title="Seats in the hall">
+                  {row.hall_seats} Seats
                 </span>
               ) : null}
 
               {!rooms && !sittings ? <span className="text-black dark:text-white">-</span> : null}
-
-              <span
-                className="text-xs text-gray-500 dark:text-gray-200"
-                title="Adults and children as stated at booking. What actually arrives is recorded at check-in."
-              >
-                { Number (guests) > 0 ? `${guests} Guest` : null}
-              </span>
             </span>
           );
         },

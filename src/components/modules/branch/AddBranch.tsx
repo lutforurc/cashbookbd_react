@@ -1232,8 +1232,8 @@ const AddBranch = () => {
   // never touches a saved value -- the metas are written from formData, which
   // is left exactly as it is.
   const userPermissions = settings?.data?.permissions || [];
-  const canReceivedEntry = hasPermission(userPermissions, 'transaction.received.create');
-  const canPaymentEntry = hasPermission(userPermissions, 'transaction.payment.create');
+  const canReceivedEntry = hasPermission(userPermissions, 'received.entry.create');
+  const canPaymentEntry = hasPermission(userPermissions, 'payment.entry.create');
   const canCashReceived = hasPermission(userPermissions, 'cash.received.create');
   const canBankReceived = hasPermission(userPermissions, 'bank.received.create');
   const canCashPayment = hasPermission(userPermissions, 'cash.payment.create');

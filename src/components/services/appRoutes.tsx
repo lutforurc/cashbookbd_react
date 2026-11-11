@@ -526,7 +526,7 @@ const ROUTES = {
   hotel_asset_purchase: '/hotel/assets/purchase',
   // Paying a supplier or a person from cash or bank, and its mirror. They keep
   // their hotel URLs but are general Transaction features now, each behind its
-  // own key -- transaction.payment.create / transaction.received.create. No
+  // own key -- payment.entry.create / received.entry.create. No
   // Hotel permission is asked for, so a shop that never ran a hotel can still be
   // given the receipt and payment books.
   hotel_payment_entry: '/hotel/payment-entry',

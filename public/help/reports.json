@@ -287,11 +287,12 @@
   "daily-account-book": {
     "title": "দৈনিক ক্যাশ বই",
     "module": "Reports",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "দিনের ক্যাশ আয় এক দিকে, ব্যয় অন্য দিকে সাজিয়ে দিনের হিসাব মেলানো হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ daily.accounts.book permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
         "menu": "Reports → Daily Account Book",
@@ -505,13 +506,14 @@
   "cash-book-two-column": {
     "title": "দুই কলামের ক্যাশ বই",
     "module": "Reports",
-    "updated": "09/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "ক্যাশের পাশে ব্যাংক কলাম রেখে ভাউচারের প্রতিটি হেড আলাদা সারিতে, নিজের টাকাসহ — শুরুতে Balance B/D, শেষে দুই কলামের ব্যালেন্স।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Cash Book (Two Column)", "steps": ["Select Branch, Start Date ও End Date দিন।", "Bank Account বাছুন, নাহলে Every bank account রাখুন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Cash & Bank Book", "steps": ["Select Branch, Start Date ও End Date দিন।", "Bank Account বাছুন, নাহলে Every bank account রাখুন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Date, Voucher#, Description, Receive (Cash/Bank) ও Payment (Cash/Bank) দেখা যায়।", "এক ভাউচারে কয়েকটি হেড থাকলে প্রতিটি হেড আলাদা সারিতে নিজের টাকাসহ আসে, ভাউচার নম্বর প্রতি সারিতে থাকে (যেমন Room Rent 1,000 ও VAT Payable 150)। ক্যাশ থেকে ব্যাংকে টাকা নেওয়া (Contra) এক সারিতেই থাকে।","নিচে Balance C/D ও Total সারি।", "Print কাগজ বের করে।"] },
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ bankbook.view permission থাকলে।"] },
       { "heading": "সতর্কতা", "warning": "ডেবিট ও ক্রেডিট মিলছে না বলে লাল বার্তা এলে হিসাব থেকে কাজ করবেন না — আগে পার্থক্যটি ঠিক করুন।" }
     ]
   },

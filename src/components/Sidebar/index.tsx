@@ -1084,7 +1084,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               No Hotel permission: these are general Transaction
                               features, and a shop that never ran a hotel can be
                               given them. */}
-                          {showUnifiedReceived && hasPermission(permissions, 'transaction.received.create') && (
+                          {showUnifiedReceived && hasPermission(permissions, 'received.entry.create') && (
                             <li style={subSlot('transaction', 'hotel_received_entry')}>
                               <NavLink to={routes.hotel_received_entry} className={subMenuLinkClass}>
                                 Received Entry
@@ -1092,7 +1092,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {showUnifiedPayment && hasPermission(permissions, 'transaction.payment.create') && (
+                          {showUnifiedPayment && hasPermission(permissions, 'payment.entry.create') && (
                             <li style={subSlot('transaction', 'hotel_payment_entry')}>
                               <NavLink to={routes.hotel_payment_entry} className={subMenuLinkClass}>
                                 Payment Entry
@@ -1588,9 +1588,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           )}
 
                           {/* Directly under the cash book it is a second view
-                              of: same money, same permission, a bank column
-                              beside the cash one. */}
-                          {hasPermission(permissions, 'cashbook.view') && (
+                              of: same money, a bank column beside the cash
+                              one. Its own key, bankbook.view. */}
+                          {hasPermission(permissions, 'bankbook.view') && (
                             <li style={subSlot('reports', 'reports/cash-book-two-column')}>
                               <NavLink
                                 to={routes.report_cashbook_two_column}
@@ -1601,13 +1601,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           )}
 
-                          {hasPermission(permissions, 'cashbook.view') && (
+                          {hasPermission(permissions, 'daily.accounts.book') && (
                             <li style={subSlot('reports', 'reports/daily-account-book')}>
                               <NavLink
                                 to={routes.report_daily_account_book}
                                 className={subMenuLinkClass}
                               >
-                                Daily Account Book
+                                Daily Accounts Book
                               </NavLink>
                             </li>
                           )}
@@ -3065,12 +3065,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
                           {/* What the hotel buys to be furnished with. Not a
                               purchase invoice -- nothing here lands in stock.
-                              ⚠️ The screen is drawn, not wired. */}
-                          <li style={subSlot('hotel', 'hotel_asset_purchase')}>
-                            <NavLink to={routes.hotel_asset_purchase} className={subMenuLinkClass}>
-                              Accounts Transaction
-                            </NavLink>
-                          </li>
+                              Its own key, hotel.accounts.transaction.create. */}
+                          {hasPermission(permissions, 'hotel.accounts.transaction.create') && (
+                            <li style={subSlot('hotel', 'hotel_asset_purchase')}>
+                              <NavLink to={routes.hotel_asset_purchase} className={subMenuLinkClass}>
+                                Accounts Transaction
+                              </NavLink>
+                            </li>
+                          )}
 
                           {/* Who was in the building, and what came in. Above
                               setup for the same reason Bookings is: setup is a

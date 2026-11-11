@@ -19,8 +19,8 @@ export const MENU_PERMISSIONS = {
     // The unified Received / Payment Entry. Their own keys, so a user holding
     // only one of them still reaches the menu the entry lives in -- without
     // being handed the Hotel module or the cash/bank screens.
-    'transaction.received.create',
-    'transaction.payment.create',
+    'received.entry.create',
+    'payment.entry.create',
     // Inter-Branch money transfers. No "send" key: transfers are recorded from
     // the payment forms, which carry their own create permissions.
     'interbranch.transfer.view',
@@ -30,6 +30,8 @@ export const MENU_PERMISSIONS = {
   labour_items: ['labour.category.view', 'labour.item.view'],
   reports: [
     'cashbook.view',
+    'bankbook.view',
+    'daily.accounts.book',
     'ageing.report.view',
     'audit.trail.view',
     'installment.create',
@@ -208,6 +210,8 @@ export const MENU_PERMISSIONS = {
     'hotel.room.type.view',
     'hotel.resource.view',
     'hotel.booking.view',
+    // Accounts Transaction lives only in this menu, so its key opens it too.
+    'hotel.accounts.transaction.create',
   ],
   // Fixed assets. Either key opens the menu: whoever keeps the register needs
   // to see the rates, and whoever sets the rates needs to see what is filed
