@@ -14,6 +14,9 @@ import {
   API_PRODUCTION_SALES_STORE_URL,
   API_PRODUCTION_SALES_UPDATE_URL,
   API_PRODUCTION_SALES_EDIT_URL,
+  API_PRODUCTION_PURCHASE_STORE_URL,
+  API_PRODUCTION_PURCHASE_UPDATE_URL,
+  API_PRODUCTION_PURCHASE_EDIT_URL,
   API_PRODUCTION_SCHEME_LIST_URL,
   API_PRODUCTION_SCHEME_MATCH_URL,
   API_PRODUCTION_SCHEME_STORE_URL,
@@ -250,6 +253,10 @@ const productionGet =
 export const storeProductionSale = productionPost(API_PRODUCTION_SALES_STORE_URL);
 export const updateProductionSale = productionPost(API_PRODUCTION_SALES_UPDATE_URL);
 export const getProductionSaleForEdit = productionPost(API_PRODUCTION_SALES_EDIT_URL);
+
+export const storeProductionPurchase = productionPost(API_PRODUCTION_PURCHASE_STORE_URL);
+export const updateProductionPurchase = productionPost(API_PRODUCTION_PURCHASE_UPDATE_URL);
+export const getProductionPurchaseForEdit = productionPost(API_PRODUCTION_PURCHASE_EDIT_URL);
 
 export const storeProductionScheme = productionPost(API_PRODUCTION_SCHEME_STORE_URL);
 export const updateProductionScheme = productionPost(API_PRODUCTION_SCHEME_UPDATE_URL);

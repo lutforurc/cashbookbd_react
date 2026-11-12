@@ -108,6 +108,7 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
   '/inventory/product-out/register': 'product-out-register',
   '/production/entry': 'production-entry',
   '/production/sales': 'production-sales',
+  '/production/purchase': 'production-purchase',
   '/production/recipe': 'production-recipe',
   '/production/register': 'production-register',
   '/production/free-goods': 'production-free-goods',

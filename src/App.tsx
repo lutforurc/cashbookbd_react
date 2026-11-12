@@ -267,6 +267,7 @@ import ProductInReport from './components/modules/product-in/ProductInReport';
 import ProductionEntry from './components/modules/production/ProductionEntry';
 import Recipe from './components/modules/production/Recipe';
 import ProductionSales from './components/modules/production/ProductionSales';
+import ProductionPurchase from './components/modules/production/ProductionPurchase';
 import ProductionSalesReturn from './components/modules/production/ProductionSalesReturn';
 import ProductionScheme from './components/modules/production/ProductionScheme';
 import FreeGoodsReport from './components/modules/production/FreeGoodsReport';
@@ -1119,6 +1120,7 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['production.create']} loading={permissionsLoading} />}>
               <Route path={routes.production_entry} element={<ProductionEntry />} />
               <Route path={routes.production_sales} element={<ProductionSales />} />
+              <Route path={routes.production_purchase} element={<ProductionPurchase />} />
               <Route path={routes.production_scheme} element={<ProductionScheme />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['production.sales.return.create']} loading={permissionsLoading} />}>

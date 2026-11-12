@@ -105,6 +105,7 @@ const ROUTES = {
   production_entry: '/production/entry',
   production_sales: '/production/sales',
   production_sales_return: '/production/sales-return',
+  production_purchase: '/production/purchase',
   production_scheme: '/production/scheme',
   production_recipe: '/production/recipe',
   production_register: '/production/register',

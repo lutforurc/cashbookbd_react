@@ -84,6 +84,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   'production': [
     { id: 'production_entry', title: "Production Entry" },
     { id: 'production_sales', title: "Production Sales" },
+    { id: 'production_purchase', title: "Production Purchase" },
     { id: 'production_sales_return', title: "Production Sales Return" },
     { id: 'production_scheme', title: "Scheme" },
     { id: 'production_recipe', title: "Recipe" },
@@ -2511,6 +2512,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Production Sales
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'production.create') && (
+                            <li style={subSlot('production', 'production_purchase')}>
+                              <NavLink
+                                to={routes.production_purchase}
+                                className={subMenuLinkClass}
+                              >
+                                Production Purchase
                               </NavLink>
                             </li>
                           )}

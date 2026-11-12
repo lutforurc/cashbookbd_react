@@ -412,6 +412,11 @@ export const VoucherPrintRegistry = forwardRef(
                   printAs(salesRef);
                 } else if (kind === 'production_sales_return') {
                   printAs(salesReturnRef);
+                } else if (kind === 'production_purchase') {
+                  // The purchase's own paper: Production Purchase writes the
+                  // ordinary purchase tables, so the server's purchase print
+                  // call fills it.
+                  printAs(purchaseRef);
                 } else if (kind === 'production') {
                   toast(`${row.vr_no} is a production batch. Open it from Production Register to see its costing.`);
                 } else {

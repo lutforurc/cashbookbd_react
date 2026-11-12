@@ -405,6 +405,7 @@
       "topics": [
         "production-entry",
         "production-sales",
+        "production-purchase",
         "production-sales-return",
         "production-scheme",
         "production-recipe",

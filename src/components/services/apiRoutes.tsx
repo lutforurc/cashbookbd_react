@@ -373,6 +373,11 @@ export const API_PRODUCTION_SALES_RETURN_UPDATE_URL = `${API_BASE_URL}/productio
 export const API_PRODUCTION_SALES_STORE_URL = `${API_BASE_URL}/production/sales/store`;
 export const API_PRODUCTION_SALES_EDIT_URL = `${API_BASE_URL}/production/sales/edit`;
 export const API_PRODUCTION_SALES_UPDATE_URL = `${API_BASE_URL}/production/sales/update`;
+// Production Purchase -- the old purchase's tables and ledger, plus the
+// supplier's free line (price 0), which the old form refuses (v4 খ-৯).
+export const API_PRODUCTION_PURCHASE_STORE_URL = `${API_BASE_URL}/production/purchase/store`;
+export const API_PRODUCTION_PURCHASE_EDIT_URL = `${API_BASE_URL}/production/purchase/edit`;
+export const API_PRODUCTION_PURCHASE_UPDATE_URL = `${API_BASE_URL}/production/purchase/update`;
 // Schemes: the rule that grants the free goods. `match` is what the sales form
 // previews for one line; destroy RETIRES rather than deletes.
 export const API_PRODUCTION_SCHEME_LIST_URL = `${API_BASE_URL}/production/schemes`;

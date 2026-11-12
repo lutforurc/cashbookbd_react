@@ -148,6 +148,7 @@
 | product_out_report | Inventory → Product Out Register | `/inventory/product-out/register` | `product-out-register` | done |
 | production_entry | Production → Production Entry | `/production/entry` | `production-entry` | done |
 | production_sales | Production → Production Sales | `/production/sales` | `production-sales` | done |
+| production_purchase | Production → Production Purchase | `/production/purchase` | `production-purchase` | done |
 | production_scheme | Production → Scheme | `/production/scheme` | `production-scheme` | done |
 | production_free_goods | Production → Free Goods | `/production/free-goods` | `production-free-goods` | done |
 | production_recipe | Production → Recipe | `/production/recipe` | `production-recipe` | done |

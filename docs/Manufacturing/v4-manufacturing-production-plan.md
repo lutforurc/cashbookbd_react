@@ -34,7 +34,7 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 | খ-১৩-এর হিসাব কোন কোডে কীভাবে আসবে | **শেষ** (গ-৮)। v3-এর সংখ্যা হুবহু আসে না, সংশোধিত সংখ্যা খ-১৩-এ |
 | `stagingdatabase` স্কিমা যাচাই (১২ নভেম্বর ২০২৬) | **শেষ (read-only)।** ৯ টেবিল, vr_type 27/28, Production Cost group/head (55, 409–411), ৬ `production.*` permission আছে; column/index মেলে, FK নেই (SQL-অনুযায়ী), table comment খালি। বাকি: permission শুধু Super Admin (Owner role নেই), migration SQL-এ `production.sales.return.create` নেই, orphan ledger detail, সার্ভার staging DB আলাদা |
 
-**কাজ শুরুর আগে বাকি:** ক্লায়েন্ট/টার্গেট DB-র গ-৯ query ফল রেকর্ড, role grant ও migration SQL সমন্বয় (approval সাপেক্ষে), unit conversion (`product_unit_conversions`) ও টেস্ট ডেটা/গুদাম/Factory branch প্রস্তুতি, এবং Acceptance Check ১–১০, ১২–১৪। #১২ (gross profit) = **"গ"**, #১৩ (sales return-এর দাম) = original বিক্রির FIFO খরচ — সিদ্ধান্ত চূড়ান্ত। Check ১–১১ (৮-গ কোড-পাঠে; ১১ Phase ৩-এর সঙ্গে) ও ১২–১৪ পাস। Phase ৩ শেষ (খ-১৪-ঘ); বাকি Phase ৪।
+**কাজ শুরুর আগে বাকি:** ক্লায়েন্ট/টার্গেট DB-র গ-৯ query ফল রেকর্ড, role grant ও migration SQL সমন্বয় (approval সাপেক্ষে), unit conversion (`product_unit_conversions`) ও টেস্ট ডেটা/গুদাম/Factory branch প্রস্তুতি, এবং Acceptance Check ১–১০, ১২–১৪। #১২ (gross profit) = **"গ"**, #১৩ (sales return-এর দাম) = original বিক্রির FIFO খরচ — সিদ্ধান্ত চূড়ান্ত। Check ১–১১ (৮-গ কোড-পাঠে; ১১ Phase ৩-এর সঙ্গে) ও ১২–১৪ পাস। Phase ৩ (খ-১৪-ঘ) ও Phase ৪ (খ-১৪-ঙ) শেষ; চারটে phase-ই শেষ।
 
 ### অবস্থা আপডেট (১২ নভেম্বর ২০২৬, `stagingdatabase` read-only)
 
@@ -174,7 +174,7 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 
 | ধাপ | ক্লায়েন্ট কী পাবেন |
 | --- | --- |
-| ০. যাচাই | **কোডের অংশ শেষ (অংশ গ)।** `stagingdatabase`-এ স্কিমা/vr_type/head/permission উপস্থিতি যাচাইকৃত (১২ নভেম্বর ২০২৬)। Check ১, ২, ৪, ৫ পাস (খ-১৪-ক), ৩-ক/৩-গ, ৬, ৮, ৯, ১৪ পাস (খ-১৪-খ), ৭ ও ১০ পাস (খ-১৪-গ), **১১ পাস (খ-১৪-ঘ, Phase ৩-এর সঙ্গে)**। বাকি: ক্লায়েন্ট/টার্গেট DB-র গ-৯ ফল, role grant ও migration SQL সমন্বয়, unit conversion। #১২, #১৩-এর সিদ্ধান্ত চূড়ান্ত |
+| ০. যাচাই | **কোডের অংশ শেষ (অংশ গ)।** `stagingdatabase`-এ স্কিমা/vr_type/head/permission উপস্থিতি যাচাইকৃত (১২ নভেম্বর ২০২৬)। Check ১, ২, ৪, ৫ পাস (খ-১৪-ক), ৩-ক/৩-গ, ৬, ৮, ৯, ১৪ পাস (খ-১৪-খ), ৭ ও ১০ পাস (খ-১৪-গ), **১১ পাস (খ-১৪-ঘ, Phase ৩-এর সঙ্গে)**; **Check ২-এর ফ্রি-মাল অংশ Phase ৪-এ আবার যাচাই (খ-১৪-ঙ)**। বাকি: ক্লায়েন্ট/টার্গেট DB-র গ-৯ ফল, role grant ও migration SQL সমন্বয়, unit conversion। #১২, #১৩-এর সিদ্ধান্ত চূড়ান্ত |
 | ১. উৎপাদন | নতুন ব্রাঞ্চ; নতুন ফর্ম: Production Entry (রেসিপি ছাড়া), Production Sales Return; ক্রয়-খরচ-বিক্রি আগের ফর্মে; Item opening stock দশমিকে আপডেট; প্রতিটা output-এ ঐচ্ছিক মেয়াদ (expiry) তারিখ; Production Register ও Costing রিপোর্ট; আগের তিন রিপোর্ট মেলে |
 | ২. রেসিপি | রেসিপি বাছলে লাইন নিজে ভরে যাবে; কাঁচামাল কম থাকলে আগেই জানাবে |
 | ৩. বিক্রিতে ফ্রি | নতুন Production Sales (ফ্রি রো, দাম ০), স্কিম সেটআপ, ফ্রিসহ ফেরত |
@@ -584,6 +584,36 @@ Phase 1-এর সব check এখন চালানো — **Check ১–১�
 | স্কিমে "same product" হলে ফ্রি সারিতে নামের বদলে `Product #831` | `addSchemeFreeRow`-এ `freeProduct === productCode` — dropdown দেয় সংখ্যা, match দেয় সংখ্যা, `===`-এ মেলে না; `String()` করে তুলনা |
 | Free Goods রিপোর্ট খালি দেখাচ্ছিল | ডিফল্ট To = branch Trx. তারিখ (১৫/০৯); ফ্রি বিক্রি ২০/০৯-এ — To ৩০/০৯ দিলেই সারি আসে, বাগ নয় |
 
+### খ-১৪-ঙ: Phase ৪ (Production Purchase, ফ্রি মালসহ) — ১২ নভেম্বর ২০২৬
+
+**স্কিমা:** নতুন কোনো টেবিল নেই। `acc_vr_type`-এ `Production Purchase` নামে একটি type (dev DB-তে id 30); `database/sql/2026_11_04_manufacturing_production.sql`-এ guarded insert এবং patch command `AddUnitTypeToBuildingUnits`-এর নামের তালিকায় যোগ। টেবিল, stock layer ও ledger পুরোনো কেনারই।
+
+**API:** `ProductionPurchasePosting` (`TYPE_NAME = 'Production Purchase'`; store/rebuild/normalizeLines/writeAll/clearVoucher)। লাইনগুলো `inventory_purchase_masters` / `inventory_purchase_details` / `inventory_masters` / `inventory_details`-এ যায়, ledger যায় `TransactionService::handlePurchaseTransaction()` দিয়ে — অর্থাৎ Purchase head 35, সরবরাহকারী, discount head 40 আর Cash Book একইভাবে পড়ে। transaction_type: সরবরাহকারী 17 বা `paymentAmt > 0` হলে 2 (payment), নাহলে 5 (journal)। `ProductionPurchaseController` (store/`production.create`, edit/`production.view`, update/`production.create` + `assertVoucherOpen`, সবই `manufactur_control` gate-সহ)। Routes: `/production/purchase/{store,edit,update}` (`route:clear` চালানো)। `ProductionController::voucherTypes()`-এ `production_purchase` যোগ (print registry-র জন্য)।
+
+**দুটি ইচ্ছাকৃত সিদ্ধান্ত:**
+- কেনার ফ্রি সারির জন্য `production_free_lines`-এ সারি লেখা হয় না — সেটি বিক্রির ফ্রি মালকে তার paid সারির সঙ্গে জোড়ে, কারণ ফেরতের হিসাব ওই link পড়ে। কেনার উপহার কারও কাছে পাওনা নয়, ফেরতও হয় না; দাম ০ নিজেই বলে দেয় কোন সারি ফ্রি — তথ্য দুবার রাখার দরকার নেই।
+- কেনার ফর্মে scheme মেলানো হয় না — স্কিম বিক্রিতে ফ্রি দেয়, কেনায় সরবরাহকারী দেন; সারিটি হাতে টিক দিয়ে লেখা হয়।
+
+**স্ক্রিন:** Production → Production Purchase (Supplier, Date, Bill No., Note; Product/Qty/Price, "ফ্রি (free)" টিক, Discount ও Paid; Vr. No. দিয়ে Find → Update)। ক্যাশ সরবরাহকারীতে Paid তালাবদ্ধ ও নিজে থেকেই net বসে। Route `production.create` gate-এ, Sidebar-এ Production Sales-এর পাশে। Help topic `production-purchase` (মোট ২৭২ বিষয়, `help:check` পাস; `helpTopicForPath` ও `docs/help-coverage.md`-এ যোগ)। Print: `VoucherPrintRegistry`-তে `production_purchase` → Purchase Invoice কাগজ (সার্ভার কাগজটা voucher নম্বর দিয়েই খোঁজে, type জিজ্ঞেস করে না)।
+
+**Check ২-এর ফল** (branch 2, পণ্য 826 TEST-RM-CHILI paid + 830 TEST-RM-PACKET ফ্রি; সরাসরি controller ডেকে চালানো, HTTP ছাড়া):
+
+| ধাপ | ফল |
+| --- | --- |
+| store, ক্যাশ সরবরাহকারী 17: ১০০ × ২৫ paid + ২ × ০ ফ্রি, discount ১০০ | `30-261100001`, transaction_type 2; total ২,৫০০ / discount ১০০ / netpayment ২,৪০০ |
+| detail ও layer | ২ detail (২৫ ও ০); ২ layer: ১০০ @ ২৫ আর ২ @ ০; stock value ২,৫০০ = বিলের টাকা |
+| ledger | Dr 35 ২,৫০০ / Cr 17 ২,৪০০ / Cr 40 ১০০ — ৩ সারি |
+| `purchase/edit` | ২ সারি, `is_free` 0/1, paid ২,৪০০, account 17 |
+| `purchase/update` → credit সরবরাহকারী 301, ১২০ × ২৫, paid ৫০০ | transaction_type 2; total ৩,০০০, netpayment ৫০০; detail ২ ও stock ২ (দ্বিগুণ হয়নি); ২ master, ৫ ledger সারি (Cr 17 ৫০০ / Dr 301 ৫০০ + Dr 35 ৩,০০০ / Cr 301 ২,৯০০ / Cr 40 ১০০), Dr = Cr |
+| `purchase/update` → paid ০ | transaction_type 5 (journal), এক master, ৩ সারি, Dr ৩,০০০ = Cr ৩,০০০; **Vr. No. একই** |
+| শুধু ফ্রি সারি | refused: "A free line needs a priced line on the same invoice." |
+| ফ্রি টিক দেওয়া কিন্তু দাম ৫০ | refused: "A free line must carry price 0." |
+| পরিষ্কার করা | high-water mark (`id > $high`) দিয়ে; পরে ৩০- দিয়ে কোনো ভাউচার, purchase master, layer বা orphan সারি নেই |
+
+**ব্রাউজারেও দেখা হয়েছে** (`demo@gmail.com`, branch 2): ফর্ম আসে, ক্যাশ সরবরাহকারী বাছলে Paid ২,৫০০.০০-এ তালাবদ্ধ হয়, "ফ্রি" টিক দিলে দামের বাক্স ০ ও নিষ্ক্রিয় হয়, সারিতে "ফ্রি" চিহ্ন আসে; console-এ কোনো error নেই। কিছুই সেভ করা হয়নি। ফ্রি সারির Price/Amount কলামে "-" দেখায় — Phase ৩-এর একই খোলা খুঁটিনাটি (নিচে), এখানেও।
+
+**খোলা খুঁটিনাটি (Phase ৩-এর সঙ্গে একই):** ফ্রি সারির Price/Amount কলামে "০.০০"-এর বদলে "-"; বিক্রয়ের কাগজ/প্রিন্ট ডিজাইনার এখনো ফ্রি কলাম আলাদা করে দেখায় না।
+
 ## অংশ খ-১৫: Phase ও change boundary
 
 | Phase | কাজ | শেষের প্রমাণ |
@@ -592,7 +622,7 @@ Phase 1-এর সব check এখন চালানো — **Check ১–১�
 | 1 | নতুন ফর্ম: Production Entry, Production Sales Return; Item opening stock-এ দশমিক qty; manual single-output production, source-linked cost, abnormal loss, stock integration, Product Ledger শাখা, Register ও Costing | Check ১–১০ (৮-গ কোড-পাঠে) ও ১২–১৪ পাস (isolated test branch/DB, ১২ নভেম্বর ২০২৬) |
 | 2 | Recipe, version, ঘাটতি দেখা — **শেষ (৬ নভেম্বর ২০২৬)** | Recipe থেকে ভরা batch-এ check ১, ৭ পাস; snapshot, variance, effective date ও multi-output যাচাই (handoff §৪-ঙ) |
 | 3 | নতুন Production Sales (ফ্রি রো), scheme, ফ্রিসহ return — **শেষ (১২ নভেম্বর ২০২৬)** | Check ১১ পাস (খ-১৪-ঘ); স্ক্রিন তিনটে (Production Sales, Scheme, Free Goods) + help + print |
-| 4 | নতুন Production Purchase (ফ্রি রো) | Purchase free দিয়ে check ২ পাস |
+| 4 | নতুন Production Purchase (ফ্রি রো) — **শেষ (১২ নভেম্বর ২০২৬)** | Check ২ পাস (খ-১৪-ঙ); স্ক্রিন Production Purchase + help + print |
 
 - পুরনো Manufacturing module মোছা হবে না; নতুন flow তার hardcoded account/year id ব্যবহার করবে না।
 - **আগের কোনো এন্ট্রি ফর্ম (স্ক্রিন, API, validation, posting) বদলাবে না।** বদল না লাগলে আগেরটাই ব্যবহার; বদল লাগলে নতুন ফর্ম (ক-১)। একমাত্র ব্যতিক্রম: Item opening stock-এ দশমিক qty (মালিকের অনুমোদিত)।
