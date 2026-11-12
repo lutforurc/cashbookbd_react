@@ -331,6 +331,7 @@ const Recipe = () => {
   return (
     <div className="pb-6">
       <HelmetTitle title="Recipe" />
+      <div className='md:mt-2'></div>
 
       <section className="mb-4 rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -505,12 +506,12 @@ const Recipe = () => {
               onClick={editingLineId === null ? addLine : updateLine}
               buttonLoading={false}
               label={editingLineId === null ? 'Add' : 'Update'}
-              className="w-full whitespace-nowrap text-center mr-0 py-2"
+              className="w-full whitespace-nowrap text-center"
               icon={
                 editingLineId === null ? (
-                  <FiPlus className="text-lg ml-2 mr-2" />
+                  <FiPlus className="text-lg" />
                 ) : (
-                  <FiEdit2 className="text-lg ml-2 mr-2" />
+                  <FiEdit2 className="text-lg" />
                 )
               }
             />
