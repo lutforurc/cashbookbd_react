@@ -1409,8 +1409,8 @@ const AddBranch = () => {
   };
   return (
     <>
-      <HelmetTitle title={formData?.id ? 'Edit Branch' : 'Add New Branch'} />
-
+      <HelmetTitle title={formData?.id ? 'Update Branch Settings' : 'Add New Branch'} />
+      <div className='md:mt-2'></div>
       {/* Pinned to the top of the window rather than to the form, so it stays in
           view wherever the page happens to be scrolled. Above the modal layer,
           because the dialog is still fading out as the bar starts moving. */}

@@ -137,7 +137,7 @@ const BranchList = () => {
   return (
     <div className=''>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title={'Branch List'} screen="branch-list" />
+        <HelmetTitle title={'Branch Settings'} screen="branch-list" />
       </div>
       
       <div className="flex justify-between mb-1">

@@ -17,7 +17,8 @@ const CompanyList = () => {
   const company = useSelector((state: any) => state.company);
   const mobileFormat = useMobileFormat();
   const environment = useSelector((state: any) => state.settings?.data?.env);
-  const settings = useSelector((state: any) => state.settings);  const dispatch = useDispatch<any>();
+  const settings = useSelector((state: any) => state.settings);
+  const dispatch = useDispatch<any>();
   const navigate = useNavigate();
 
   const [search, setSearchValue] = useState('');
@@ -164,7 +165,7 @@ const CompanyList = () => {
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Company List" screen="company-list" />
+        <HelmetTitle title="Company Settings" screen="company-list" />
       </div>
 
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">

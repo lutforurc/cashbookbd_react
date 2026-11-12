@@ -121,8 +121,8 @@ const globalSearchItems: GlobalSearchItem[] = [
 
   { title: 'Day Close', path: routes.day_close, group: 'Admin', permissions: ['dayclose.create'] },
   { title: 'Jump Date', path: routes.day_jump, group: 'Admin', permissions: ['dayclose.jumpdate'] },
-  { title: 'Branch List', path: routes.branch_list, group: 'Admin', permissions: ['branch.view'] },
-  { title: 'Company List', path: routes.company_list, group: 'Admin', permissions: ['company.view'] },
+  { title: 'Branch Settings', path: routes.branch_list, group: 'Admin', permissions: ['branch.view'] },
+  { title: 'Company Settings', path: routes.company_list, group: 'Admin', permissions: ['company.view'] },
   { title: 'Users', path: routes.user_list, group: 'Admin', permissions: ['all.user.view'] },
   { title: 'Online Users', path: routes.online_users, group: 'Admin', permissions: ['online.users'] },
   { title: 'Check Register', path: routes.unit_payment_list, group: 'Admin', permissions: ['check.register.view'] },

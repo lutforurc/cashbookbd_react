@@ -136,7 +136,7 @@ const ProductionRegister = () => {
           onClick={run}
           buttonLoading={loading}
           label="Show"
-          className="whitespace-nowrap text-center mr-0 py-2"
+          className="whitespace-nowrap text-center mr-0 py-2 w-30"
           icon={<FiSearch className="text-lg ml-2 mr-2" />}
         />
         <ButtonLoading

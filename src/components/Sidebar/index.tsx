@@ -240,8 +240,8 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'product_unit_list', title: "Product Unit" },
   ],
   'admin': [
-    { id: 'company_list', title: "Company List" },
-    { id: 'branch/branch-list', title: "Branch List" },
+    { id: 'company_list', title: "Company Settings" },
+    { id: 'branch/branch-list', title: "Branch Settings" },
     { id: 'print_template_designer', title: "Challan Layout" },
     { id: 'software_info', title: "Software Information" },
     { id: 'menu_arrangement', title: "Arrange Menu" },
@@ -3444,7 +3444,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.company_list}
                                 className={subMenuLinkClass}
                               >
-                                Company List
+                                Company Settings
                               </NavLink>
                             </li>
                           )}
@@ -3455,7 +3455,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to="/branch/branch-list"
                                 className={subMenuLinkClass}
                               >
-                                Branch List
+                                Branch Settings
                               </NavLink>
                             </li>
                           )}

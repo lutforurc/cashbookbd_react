@@ -60,7 +60,7 @@ const SwitchBranch: React.FC = () => {
         setBranches(Array.isArray(list) ? list : []);
       })
       .catch(() => {
-        if (!cancelled) setFormError('Could not load the branch list.');
+        if (!cancelled) setFormError('Could not load the branch settings.');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
