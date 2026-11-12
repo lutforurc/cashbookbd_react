@@ -103,9 +103,13 @@ const ROUTES = {
   // Production (Manufacturing). The batch, the return, and the two reports the
   // feature owns. Only reachable on a branch whose Manufacture switch is on.
   production_entry: '/production/entry',
+  production_sales: '/production/sales',
   production_sales_return: '/production/sales-return',
+  production_purchase: '/production/purchase',
+  production_scheme: '/production/scheme',
   production_recipe: '/production/recipe',
   production_register: '/production/register',
+  production_free_goods: '/production/free-goods',
   production_costing: '/production/costing/:id',
 
   journal: '/accounts/journal',

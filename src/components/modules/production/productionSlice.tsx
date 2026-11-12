@@ -11,6 +11,18 @@ import {
   API_PRODUCTION_SALES_RETURN_EDIT_URL,
   API_PRODUCTION_SALES_RETURN_STORE_URL,
   API_PRODUCTION_SALES_RETURN_UPDATE_URL,
+  API_PRODUCTION_SALES_STORE_URL,
+  API_PRODUCTION_SALES_UPDATE_URL,
+  API_PRODUCTION_SALES_EDIT_URL,
+  API_PRODUCTION_PURCHASE_STORE_URL,
+  API_PRODUCTION_PURCHASE_UPDATE_URL,
+  API_PRODUCTION_PURCHASE_EDIT_URL,
+  API_PRODUCTION_SCHEME_LIST_URL,
+  API_PRODUCTION_SCHEME_MATCH_URL,
+  API_PRODUCTION_SCHEME_STORE_URL,
+  API_PRODUCTION_SCHEME_UPDATE_URL,
+  API_PRODUCTION_SCHEME_DESTROY_URL,
+  API_PRODUCTION_FREE_GOODS_URL,
   API_PRODUCTION_STOCK_URL,
   API_PRODUCTION_STORE_URL,
   API_PRODUCTION_UPDATE_URL,
@@ -212,6 +224,47 @@ export const updateProductionSalesReturn = (data: any, callback?: (response: any
     if (typeof callback === 'function') callback({ success: false, message });
   }
 };
+
+// Every POST the Production Sales screen and the scheme master make answers
+// {success, message, data:{data}}; the screens read the raw body through the
+// callback (a refusal must be shown word for word), so they share one wrapper.
+const productionPost =
+  (url: string) => (data: any, callback?: (response: any) => void) => async () => {
+    try {
+      const res = await httpService.post(url, data || {});
+      if (typeof callback === 'function') callback(res.data);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || err?.message || 'Something went wrong';
+      if (typeof callback === 'function') callback({ success: false, message });
+    }
+  };
+
+const productionGet =
+  (url: string) => (params: any, callback?: (response: any) => void) => async () => {
+    try {
+      const res = await httpService.get(url, { params });
+      if (typeof callback === 'function') callback(res.data);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || err?.message || 'Something went wrong';
+      if (typeof callback === 'function') callback({ success: false, message });
+    }
+  };
+
+export const storeProductionSale = productionPost(API_PRODUCTION_SALES_STORE_URL);
+export const updateProductionSale = productionPost(API_PRODUCTION_SALES_UPDATE_URL);
+export const getProductionSaleForEdit = productionPost(API_PRODUCTION_SALES_EDIT_URL);
+
+export const storeProductionPurchase = productionPost(API_PRODUCTION_PURCHASE_STORE_URL);
+export const updateProductionPurchase = productionPost(API_PRODUCTION_PURCHASE_UPDATE_URL);
+export const getProductionPurchaseForEdit = productionPost(API_PRODUCTION_PURCHASE_EDIT_URL);
+
+export const storeProductionScheme = productionPost(API_PRODUCTION_SCHEME_STORE_URL);
+export const updateProductionScheme = productionPost(API_PRODUCTION_SCHEME_UPDATE_URL);
+export const destroyProductionScheme = productionPost(API_PRODUCTION_SCHEME_DESTROY_URL);
+
+export const getProductionSchemes = productionGet(API_PRODUCTION_SCHEME_LIST_URL);
+export const matchProductionScheme = productionGet(API_PRODUCTION_SCHEME_MATCH_URL);
+export const getProductionFreeGoods = productionGet(API_PRODUCTION_FREE_GOODS_URL);
 
 const getProductionRegisterThunk = createAsyncThunk<
   any,

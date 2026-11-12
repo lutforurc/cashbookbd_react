@@ -266,7 +266,11 @@ import ProductInReason from './components/modules/product-in/ProductInReason';
 import ProductInReport from './components/modules/product-in/ProductInReport';
 import ProductionEntry from './components/modules/production/ProductionEntry';
 import Recipe from './components/modules/production/Recipe';
+import ProductionSales from './components/modules/production/ProductionSales';
+import ProductionPurchase from './components/modules/production/ProductionPurchase';
 import ProductionSalesReturn from './components/modules/production/ProductionSalesReturn';
+import ProductionScheme from './components/modules/production/ProductionScheme';
+import FreeGoodsReport from './components/modules/production/FreeGoodsReport';
 import ProductionRegister from './components/modules/production/ProductionRegister';
 import BatchCosting from './components/modules/production/BatchCosting';
 import SendSms from './components/modules/sms/SendSms';
@@ -1115,6 +1119,9 @@ function App() {
                 (ProductionController::ensureProductionBranch). */}
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['production.create']} loading={permissionsLoading} />}>
               <Route path={routes.production_entry} element={<ProductionEntry />} />
+              <Route path={routes.production_sales} element={<ProductionSales />} />
+              <Route path={routes.production_purchase} element={<ProductionPurchase />} />
+              <Route path={routes.production_scheme} element={<ProductionScheme />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['production.sales.return.create']} loading={permissionsLoading} />}>
               <Route path={routes.production_sales_return} element={<ProductionSalesReturn />} />
@@ -1124,6 +1131,7 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['production.report.view']} loading={permissionsLoading} />}>
               <Route path={routes.production_register} element={<ProductionRegister />} />
+              <Route path={routes.production_free_goods} element={<FreeGoodsReport />} />
               <Route path={routes.production_costing} element={<BatchCosting />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.reason.manage']} loading={permissionsLoading} />}>

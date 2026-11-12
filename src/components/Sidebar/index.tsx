@@ -83,9 +83,13 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'production': [
     { id: 'production_entry', title: "Production Entry" },
+    { id: 'production_sales', title: "Production Sales" },
+    { id: 'production_purchase', title: "Production Purchase" },
     { id: 'production_sales_return', title: "Production Sales Return" },
+    { id: 'production_scheme', title: "Scheme" },
     { id: 'production_recipe', title: "Recipe" },
     { id: 'production_register', title: "Production Register" },
+    { id: 'production_free_goods', title: "Free Goods" },
   ],
   'branch-transfer': [
     { id: 'branch_transfer', title: "Branch Issue" },
@@ -2501,6 +2505,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
+                          {hasPermission(permissions, 'production.create') && (
+                            <li style={subSlot('production', 'production_sales')}>
+                              <NavLink
+                                to={routes.production_sales}
+                                className={subMenuLinkClass}
+                              >
+                                Production Sales
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'production.create') && (
+                            <li style={subSlot('production', 'production_purchase')}>
+                              <NavLink
+                                to={routes.production_purchase}
+                                className={subMenuLinkClass}
+                              >
+                                Production Purchase
+                              </NavLink>
+                            </li>
+                          )}
                           {hasPermission(permissions, 'production.sales.return.create') && (
                             <li style={subSlot('production', 'production_sales_return')}>
                               <NavLink
@@ -2508,6 +2532,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Production Sales Return
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'production.create') && (
+                            <li style={subSlot('production', 'production_scheme')}>
+                              <NavLink
+                                to={routes.production_scheme}
+                                className={subMenuLinkClass}
+                              >
+                                Scheme
                               </NavLink>
                             </li>
                           )}
@@ -2528,6 +2562,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Production Register
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'production.report.view') && (
+                            <li style={subSlot('production', 'production_free_goods')}>
+                              <NavLink
+                                to={routes.production_free_goods}
+                                className={subMenuLinkClass}
+                              >
+                                Free Goods
                               </NavLink>
                             </li>
                           )}
