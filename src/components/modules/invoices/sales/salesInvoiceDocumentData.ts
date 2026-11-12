@@ -120,7 +120,10 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
     },
     products: details.map((row: any, index: number) => ({
       sl: index + 1,
-      product_name: row?.product?.name || '',
+      // A price-0 line on a Production Sales voucher is a gift, and the API
+      // marks it (v4 খ-৯). The designer has no free column, so the word rides
+      // on the name -- the only field every saved layout already prints.
+      product_name: `${row?.product?.name || ''}${row?.is_free ? ' (ফ্রি)' : ''}`,
       category: row?.product?.category?.name || '',
       brand: row?.product?.brand?.name || '',
       group: row?.product?.group?.name || '',

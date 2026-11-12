@@ -368,6 +368,20 @@ export const API_PRODUCTION_COSTING_URL = `${API_BASE_URL}/production/report/cos
 export const API_PRODUCTION_SALES_RETURN_STORE_URL = `${API_BASE_URL}/production/sales-return/store`;
 export const API_PRODUCTION_SALES_RETURN_EDIT_URL = `${API_BASE_URL}/production/sales-return/edit`;
 export const API_PRODUCTION_SALES_RETURN_UPDATE_URL = `${API_BASE_URL}/production/sales-return/update`;
+// Production Sales -- a sale of its own, because the old sales form refuses a
+// price-0 line and a free gift is exactly that (v4 খ-৯).
+export const API_PRODUCTION_SALES_STORE_URL = `${API_BASE_URL}/production/sales/store`;
+export const API_PRODUCTION_SALES_EDIT_URL = `${API_BASE_URL}/production/sales/edit`;
+export const API_PRODUCTION_SALES_UPDATE_URL = `${API_BASE_URL}/production/sales/update`;
+// Schemes: the rule that grants the free goods. `match` is what the sales form
+// previews for one line; destroy RETIRES rather than deletes.
+export const API_PRODUCTION_SCHEME_LIST_URL = `${API_BASE_URL}/production/schemes`;
+export const API_PRODUCTION_SCHEME_MATCH_URL = `${API_BASE_URL}/production/schemes/match`;
+export const API_PRODUCTION_SCHEME_STORE_URL = `${API_BASE_URL}/production/schemes/store`;
+export const API_PRODUCTION_SCHEME_UPDATE_URL = `${API_BASE_URL}/production/schemes/update`;
+export const API_PRODUCTION_SCHEME_DESTROY_URL = `${API_BASE_URL}/production/schemes/destroy`;
+// The free goods given away in a period, at what they cost.
+export const API_PRODUCTION_FREE_GOODS_URL = `${API_BASE_URL}/production/report/free-goods`;
 // Recipe -- the standard materials for ONE product, versioned and dated. With
 // ?date= the list is only the version in force on that date (the entry form's
 // picker); without it, every version (the Recipe screen).

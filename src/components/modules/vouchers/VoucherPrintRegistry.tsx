@@ -399,14 +399,18 @@ export const VoucherPrintRegistry = forwardRef(
 
           /* ================= BY NAME: THE PRODUCTION VOUCHERS ================= */
           /**
-           * A Production Sales Return writes the ordinary return tables, so it
+           * A Production Sale writes the ordinary sales tables and travels the
+           * ordinary sales print, so it prints on the Sales Invoice paper. A
+           * Production Sales Return writes the ordinary return tables, so it
            * prints on the Sales Return paper through the same fetch as 13. A
            * Production batch has no paper; its sheet is Batch Costing.
            */
           default:
             productionVoucherKind(voucherType)
               .then((kind) => {
-                if (kind === 'production_sales_return') {
+                if (kind === 'production_sales') {
+                  printAs(salesRef);
+                } else if (kind === 'production_sales_return') {
                   printAs(salesReturnRef);
                 } else if (kind === 'production') {
                   toast(`${row.vr_no} is a production batch. Open it from Production Register to see its costing.`);

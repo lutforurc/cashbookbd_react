@@ -1,0 +1,541 @@
+import { useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiXCircle } from 'react-icons/fi';
+import { toast } from 'react-toastify';
+import HelmetTitle from '../../utils/others/HelmetTitle';
+import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import InputElement from '../../utils/fields/InputElement';
+import InputDatePicker from '../../utils/fields/DatePicker';
+import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
+import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
+import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import {
+  getProductionSaleForEdit,
+  matchProductionScheme,
+  storeProductionSale,
+  updateProductionSale,
+} from './productionSlice';
+import { branchTodayIso } from './branchDate';
+
+type Option = { value: string; label: string; label_5?: string };
+
+type SaleLine = {
+  id: number;
+  code: string;
+  name: string;
+  unit: string;
+  qty: string;
+  price: string;
+  free: boolean;
+  schemeId: number | null;
+};
+
+const emptyLine = { code: '', name: '', unit: '', qty: '', price: '', free: false };
+
+// The shared picker works in Date objects; the form and the API keep ISO,
+// parsed in local time so the day never shifts.
+const dateFromIso = (value: string | null | undefined): Date | null => {
+  const [year, month, day] = String(value || '').split('-').map(Number);
+  return year && month && day ? new Date(year, month - 1, day) : null;
+};
+
+const isoFromDate = (date: Date | null): string =>
+  date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : '';
+
+/**
+ * A sale on a Production branch, with free goods (v4 খ-৯, Phase 3).
+ *
+ * ⚠️ A FREE LINE IS ITS OWN ROW, PRICE 0 (owner, 4 Nov 2026) -- never a
+ * discount on the paid row. The old Sales Invoice refuses such a line, which is
+ * why this form exists at all. The server writes both rows as ordinary invoice
+ * lines; the "ফ্রি" mark is kept beside them and the paper reads it.
+ *
+ * A matched scheme adds its free row on its own, so the clerk never has to work
+ * out 100-for-2 by hand; the free row can also be ticked in by hand for a gift
+ * no scheme covers.
+ */
+const ProductionSales = () => {
+  const dispatch = useDispatch<any>();
+  const trxDt = useSelector((s: any) => s.settings?.data?.trx_dt);
+  const today = () => branchTodayIso(trxDt);
+
+  const [form, setForm] = useState({
+    account: '',
+    accountName: '',
+    invoiceDate: today(),
+    discountAmt: '',
+    receivedAmt: '',
+    notes: '',
+    lines: [] as SaleLine[],
+  });
+  const [line, setLine] = useState({ ...emptyLine });
+  const [editingLineId, setEditingLineId] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [searchNo, setSearchNo] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [editing, setEditing] = useState<{ mtmId: string; vrNo: string } | null>(null);
+
+  // A line added here has no server id yet; negative numbers keep them apart
+  // from the ids an existing invoice brings back (always positive), so a
+  // scheme's free row can never share a key with its own paid row.
+  const lineSeq = useRef(0);
+  const newLineId = () => -(++lineSeq.current);
+
+  const setField = (name: string, value: any) => setForm((p) => ({ ...p, [name]: value }));
+
+  const total = form.lines.reduce((sum, r) => sum + Number(r.qty) * Number(r.price), 0);
+  const net = Math.max(0, total - (Number(form.discountAmt) || 0));
+
+  // A cash customer pays the whole bill and the box is locked; anyone else
+  // starts at 0 and may pay part -- the ordinary sale's rule.
+  const isCashCustomer = Number(form.account) === 17;
+  const received = isCashCustomer ? net.toFixed(2) : form.receivedAmt;
+
+  const handleCustomer = (option: any) =>
+    setForm((p) => ({ ...p, account: option?.value || '', accountName: option?.label || '', receivedAmt: '0' }));
+
+  const handleLineProduct = (option: Option | null) =>
+    setLine((p) => ({
+      ...p,
+      code: option?.value || '',
+      name: option?.label || '',
+      unit: option?.label_5 || '',
+      price: p.free ? '0' : p.price,
+    }));
+
+  // Ask the scheme master what this product and quantity earn, and add that
+  // row straight away. A refusal from the server is not worth a toast here --
+  // the paid line is saved either way, just without a gift.
+  const addSchemeFreeRow = (productCode: string, productName: string, unit: string, qty: string) => {
+    dispatch(
+      matchProductionScheme({ product_id: productCode, qty, date: form.invoiceDate }, (response: any) => {
+        const match = response?.success ? response?.data?.data : null;
+        if (!match?.scheme_id || !(Number(match.free_qty) > 0)) return;
+
+        // ⚠️ Compare as strings: the dropdown hands back the id as a number
+        // while the match returns it as a number too -- but `===` across the
+        // two typed forms is how a "same product" rule came out as "Product #831".
+        const freeProduct = String(match.free_product_id || productCode);
+        const sameProduct = freeProduct === String(productCode);
+        const freeName = sameProduct ? productName : `Product #${freeProduct}`;
+        const freeUnit = sameProduct ? unit : '';
+
+        setForm((p) => ({
+          ...p,
+          lines: [
+            ...p.lines,
+            {
+              id: newLineId(),
+              code: freeProduct,
+              name: freeName,
+              unit: freeUnit,
+              qty: String(Number(match.free_qty)),
+              price: '0',
+              free: true,
+              schemeId: Number(match.scheme_id),
+            },
+          ],
+        }));
+        toast.success(`${match.name}: ${match.free_qty} free added`);
+      }) as any,
+    );
+  };
+
+  const addLine = () => {
+    if (!line.code) return toast.error('Pick a product');
+    if (!line.qty || Number(line.qty) <= 0) return toast.error('Enter a quantity');
+    if (!line.free && (line.price === '' || Number(line.price) <= 0)) {
+      return toast.error('Enter a price, or tick Free');
+    }
+
+    const added: SaleLine = {
+      id: newLineId(),
+      code: line.code,
+      name: line.name,
+      unit: line.unit,
+      qty: line.qty,
+      price: line.free ? '0' : line.price,
+      free: line.free,
+      schemeId: null,
+    };
+
+    setForm((p) => ({ ...p, lines: [...p.lines, added] }));
+    setLine({ ...emptyLine });
+    setEditingLineId(null);
+
+    if (!added.free) addSchemeFreeRow(added.code, added.name, added.unit, added.qty);
+  };
+
+  const editLine = (id: number) => {
+    const found = form.lines.find((r) => r.id === id);
+    if (!found) return;
+    setLine({
+      code: found.code,
+      name: found.name,
+      unit: found.unit,
+      qty: found.qty,
+      price: found.price,
+      free: found.free,
+    });
+    setEditingLineId(id);
+  };
+
+  const updateLine = () => {
+    if (editingLineId === null) return;
+    setForm((p) => ({
+      ...p,
+      lines: p.lines.map((r) =>
+        r.id === editingLineId
+          ? { ...r, qty: line.qty, price: line.free ? '0' : line.price, free: line.free }
+          : r,
+      ),
+    }));
+    setLine({ ...emptyLine });
+    setEditingLineId(null);
+  };
+
+  const deleteLine = (id: number) => {
+    setForm((p) => ({ ...p, lines: p.lines.filter((r) => r.id !== id) }));
+    if (editingLineId === id) {
+      setLine({ ...emptyLine });
+      setEditingLineId(null);
+    }
+  };
+
+  const resetForm = () => {
+    setForm({
+      account: '',
+      accountName: '',
+      invoiceDate: today(),
+      discountAmt: '',
+      receivedAmt: '',
+      notes: '',
+      lines: [],
+    });
+    setLine({ ...emptyLine });
+    setEditingLineId(null);
+    setEditing(null);
+    setSearchNo('');
+  };
+
+  // Find a posted production sale by its Vr. No. The server looks it up by
+  // voucher_type (by name), so a number from another kind is simply not found.
+  const loadForEdit = () => {
+    const invoiceNo = searchNo.trim();
+    if (!invoiceNo) return toast.error('Enter the Vr. No. of the sale');
+
+    setSearching(true);
+    dispatch(
+      getProductionSaleForEdit({ invoiceNo }, (response: any) => {
+        setSearching(false);
+        if (!response?.success) return toast.error(response?.message || 'Could not load the sale');
+
+        const found = response?.data?.data;
+        if (!found?.mtmId) return toast.error(response?.message || 'Production sale not found');
+
+        const lines: SaleLine[] = (found.products || []).map((r: any) => ({
+          id: Number(r.id),
+          code: String(r.product),
+          name: r.product_name || '',
+          unit: r.unit || '',
+          qty: String(Number(r.qty)),
+          price: String(Number(r.price)),
+          free: Number(r.is_free) === 1,
+          schemeId: r.scheme_id ? Number(r.scheme_id) : null,
+        }));
+
+        setForm({
+          account: String(found.account ?? ''),
+          accountName: found.accountName || '',
+          invoiceDate: found.invoice_date ? String(found.invoice_date).slice(0, 10) : today(),
+          discountAmt: Number(found.discount) > 0 ? String(Number(found.discount)) : '',
+          receivedAmt: String(Number(found.netpayment ?? 0)),
+          notes: found.notes || '',
+          lines,
+        });
+        setLine({ ...emptyLine });
+        setEditingLineId(null);
+        setEditing({ mtmId: String(found.mtmId), vrNo: found.vr_no || invoiceNo });
+        toast.success(`Editing ${found.vr_no || invoiceNo}`);
+      }) as any,
+    );
+  };
+
+  const save = () => {
+    if (!form.account) return toast.error('Select the customer');
+    if (!form.lines.length) return toast.error('Add at least one sale item');
+    if (!form.lines.some((r) => !r.free)) return toast.error('A free line needs a paid line on the same invoice');
+    if (received === '' || Number(received) < 0) return toast.error('Enter the received amount (0 if none)');
+    if (Number(received) > net) return toast.error('The received amount cannot be more than the net');
+
+    setSaving(true);
+    const payload: any = {
+      account: form.account,
+      accountName: form.accountName,
+      invoice_date: form.invoiceDate,
+      discountAmt: Number(form.discountAmt) || 0,
+      receivedAmt: Number(received) || 0,
+      notes: form.notes || null,
+      table_data: form.lines.map((r) => ({
+        product: Number(r.code),
+        qty: Number(r.qty),
+        price: Number(r.price),
+        godown: null,
+        free: r.free,
+        scheme_id: r.schemeId,
+      })),
+    };
+
+    if (editing) payload.mtmId = editing.mtmId;
+
+    dispatch(
+      (editing ? updateProductionSale : storeProductionSale)(payload, (response: any) => {
+        setSaving(false);
+        if (response?.success) {
+          toast.success(
+            editing
+              ? `Sale updated — ${editing.vrNo}`
+              : `Sale saved — ${response?.data?.data?.vr_no || ''}`.trim(),
+          );
+          resetForm();
+        } else {
+          toast.error(response?.message || 'Could not save the sale');
+        }
+      }) as any,
+    );
+  };
+
+  return (
+    <div>
+      <HelmetTitle title="Production Sales" />
+
+      <div className="mb-3 flex flex-wrap items-end gap-2 rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-2">
+        <InputElement
+          id="productionSaleSearch"
+          name="searchNo"
+          label="Vr. No. (find a sale to edit)"
+          placeholder="e.g. 29-0001"
+          value={searchNo}
+          onChange={(e: any) => setSearchNo(e.target.value)}
+          onKeyDown={(e: any) => {
+            if (e.key === 'Enter') loadForEdit();
+          }}
+          className="w-full md:w-64"
+        />
+        <ButtonLoading
+          onClick={loadForEdit}
+          buttonLoading={searching}
+          label={searching ? 'Finding...' : 'Find'}
+          className="whitespace-nowrap text-center mr-0 py-2"
+          icon={<FiSearch className="text-lg " />}
+        />
+        {editing && (
+          <>
+            <span className="rounded bg-[rgb(var(--c-table-head))] px-2 py-1 text-xs font-semibold text-[rgb(var(--c-text))]">
+              Editing {editing.vrNo}
+            </span>
+            <ButtonLoading
+              onClick={() => {
+                resetForm();
+                toast.info('Back to a new sale');
+              }}
+              buttonLoading={false}
+              label="Cancel edit"
+              className="whitespace-nowrap text-center mr-0 py-2"
+              icon={<FiXCircle className="text-lg " />}
+            />
+          </>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+        <div>
+          <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Customer</label>
+          <DdlMultiline
+            onSelect={handleCustomer}
+            value={form.account ? { value: form.account, label: form.accountName } : null}
+            acType={'3'}
+          />
+        </div>
+        <InputDatePicker
+          id="productionSaleDate"
+          name="invoiceDate"
+          label="Date"
+          selectedDate={dateFromIso(form.invoiceDate)}
+          setSelectedDate={(date) => setField('invoiceDate', isoFromDate(date))}
+          setCurrentDate={() => undefined}
+          className="w-full"
+        />
+        <InputElement
+          id="productionSaleNotes"
+          name="notes"
+          label="Note"
+          placeholder="Optional"
+          value={form.notes}
+          onChange={(e: any) => setField('notes', e.target.value)}
+          className="w-full"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end mb-3">
+        <div className="md:col-span-4">
+          <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Product</label>
+          <ProductDropdown
+            id="productionSaleProduct"
+            name="productionSaleProduct"
+            onSelect={handleLineProduct}
+            defaultValue={line.code ? { value: line.code, label: line.name } : null}
+            value={line.code ? { value: line.code, label: line.name } : null}
+          />
+        </div>
+        {/* ⚠️ The span classes go on a WRAPPER, never on InputElement's own
+            className: that one lands on the <input>, where a grid span does
+            nothing and the box comes out a finger wide. */}
+        <div className="md:col-span-2">
+          <InputElement
+            id="productionSaleQty"
+            name="qty"
+            type="number"
+            step="0.01"
+            label={`Quantity ${line.unit ? `(${line.unit})` : ''}`}
+            value={line.qty}
+            onChange={(e: any) => setLine((p) => ({ ...p, qty: e.target.value }))}
+            className="w-full"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <InputElement
+            id="productionSalePrice"
+            name="price"
+            type="number"
+            step="0.01"
+            label="Price"
+            value={line.free ? '0' : line.price}
+            onChange={(e: any) => setLine((p) => ({ ...p, price: e.target.value }))}
+            disabled={line.free}
+            className="w-full"
+          />
+        </div>
+        <label className="md:col-span-2 mb-2 flex items-center gap-2 whitespace-nowrap text-sm text-[rgb(var(--c-text))]">
+          <input
+            type="checkbox"
+            checked={line.free}
+            onChange={(e) => setLine((p) => ({ ...p, free: e.target.checked, price: e.target.checked ? '0' : p.price }))}
+          />
+          ফ্রি (free)
+        </label>
+        <div className="md:col-span-2">
+          <ButtonLoading
+            onClick={editingLineId === null ? addLine : updateLine}
+            buttonLoading={false}
+            label={editingLineId === null ? 'Add Item' : 'Update Item'}
+            className="whitespace-nowrap text-center mr-0 py-2"
+            icon={editingLineId === null ? <FiPlus className="text-lg" /> : <FiEdit2 className="text-lg" />}
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto mb-3">
+        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-[rgb(var(--c-table-head))] dark:text-gray-200">
+            <tr>
+              <th className="px-2 py-2 text-center">Sl</th>
+              <th className="px-2 py-2">Product</th>
+              <th className="px-2 py-2 text-right">Qty</th>
+              <th className="px-2 py-2 text-right">Price</th>
+              <th className="px-2 py-2 text-right">Amount</th>
+              <th className="px-2 py-2 text-center w-20">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {form.lines.map((row, index) => (
+              <tr key={row.id} className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
+                <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">{index + 1}</td>
+                <td className="px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]">
+                  {row.name}
+                  {row.free && (
+                    <span className="ml-2 rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">
+                      ফ্রি
+                    </span>
+                  )}
+                </td>
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
+                  {thousandSeparator(Number(row.qty))} {row.unit}
+                </td>
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
+                  {thousandSeparator(Number(row.price))}
+                </td>
+                <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
+                  {thousandSeparator(Number(row.qty) * Number(row.price))}
+                </td>
+                <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">
+                  <Button onClick={() => deleteLine(row.id)} className="text-red-500 ml-2 text-center">
+                    <FiTrash2 className="cursor-pointer text-center" />
+                  </Button>
+                  <Button onClick={() => editLine(row.id)} className="text-green-500 ml-2 text-center">
+                    <FiEdit2 className="cursor-pointer text-center" />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+            {form.lines.length === 0 && (
+              <tr className="bg-[rgb(var(--c-table-body))] border-b dark:border-gray-700">
+                <td colSpan={6} className="px-2 py-3 text-center text-gray-500 dark:text-gray-300">
+                  No item added
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+        <InputElement
+          id="productionSaleDiscount"
+          name="discountAmt"
+          type="number"
+          step="0.01"
+          label="Discount"
+          value={form.discountAmt}
+          onChange={(e: any) => setField('discountAmt', e.target.value)}
+          className="w-full"
+        />
+        <InputElement
+          id="productionSaleReceived"
+          name="receivedAmt"
+          type="number"
+          step="0.01"
+          label={`Received (net ${net.toFixed(2)})`}
+          value={received}
+          onChange={(e: any) => setField('receivedAmt', e.target.value)}
+          disabled={isCashCustomer}
+          className="w-full"
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-3">
+        <ButtonLoading
+          onClick={save}
+          buttonLoading={saving}
+          label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
+          className="whitespace-nowrap text-center mr-0 py-2"
+          icon={<FiSave className="text-lg" />}
+        />
+        <ButtonLoading
+          onClick={resetForm}
+          buttonLoading={false}
+          label="Reset"
+          className="whitespace-nowrap text-center mr-0 py-2"
+          icon={<FiRefreshCcw className="text-lg" />}
+        />
+      </div>
+
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        ফ্রি মাল নিজের সারিতে, দাম ০ — স্কিম মিললে ফ্রি সারি নিজে থেকেই যোগ হয়। ফ্রি সারির মালও স্টক থেকে বের হয়,
+        তাই তার খরচ বিক্রিত মালের খরচেই ধরা থাকে।
+      </p>
+    </div>
+  );
+};
+
+export default ProductionSales;

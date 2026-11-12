@@ -34,7 +34,7 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 | খ-১৩-এর হিসাব কোন কোডে কীভাবে আসবে | **শেষ** (গ-৮)। v3-এর সংখ্যা হুবহু আসে না, সংশোধিত সংখ্যা খ-১৩-এ |
 | `stagingdatabase` স্কিমা যাচাই (১২ নভেম্বর ২০২৬) | **শেষ (read-only)।** ৯ টেবিল, vr_type 27/28, Production Cost group/head (55, 409–411), ৬ `production.*` permission আছে; column/index মেলে, FK নেই (SQL-অনুযায়ী), table comment খালি। বাকি: permission শুধু Super Admin (Owner role নেই), migration SQL-এ `production.sales.return.create` নেই, orphan ledger detail, সার্ভার staging DB আলাদা |
 
-**কাজ শুরুর আগে বাকি:** ক্লায়েন্ট/টার্গেট DB-র গ-৯ query ফল রেকর্ড, role grant ও migration SQL সমন্বয় (approval সাপেক্ষে), unit conversion (`product_unit_conversions`) ও টেস্ট ডেটা/গুদাম/Factory branch প্রস্তুতি, এবং Acceptance Check ১–১০, ১২–১৪। #১২ (gross profit) = **"গ"**, #১৩ (sales return-এর দাম) = original বিক্রির FIFO খরচ — সিদ্ধান্ত চূড়ান্ত।
+**কাজ শুরুর আগে বাকি:** ক্লায়েন্ট/টার্গেট DB-র গ-৯ query ফল রেকর্ড, role grant ও migration SQL সমন্বয় (approval সাপেক্ষে), unit conversion (`product_unit_conversions`) ও টেস্ট ডেটা/গুদাম/Factory branch প্রস্তুতি, এবং Acceptance Check ১–১০, ১২–১৪। #১২ (gross profit) = **"গ"**, #১৩ (sales return-এর দাম) = original বিক্রির FIFO খরচ — সিদ্ধান্ত চূড়ান্ত। Check ১–১১ (৮-গ কোড-পাঠে; ১১ Phase ৩-এর সঙ্গে) ও ১২–১৪ পাস। Phase ৩ শেষ (খ-১৪-ঘ); বাকি Phase ৪।
 
 ### অবস্থা আপডেট (১২ নভেম্বর ২০২৬, `stagingdatabase` read-only)
 
@@ -53,9 +53,9 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 
 **এখনো বাকি (Phase 0/1/2):**
 - গ-৯-এর বাকি query ফল ক্লায়েন্ট/টার্গেট DB-তে রেকর্ড; সার্ভার staging DB অবস্থা।
-- migration SQL-এ `production.sales.return.create` যোগ ও role grant reconciliation (approval সাপেক্ষে)।
+- ✅ **সম্পন্ন (১২ নভেম্বর ২০২৬):** migration SQL-এ `production.sales.return.create` যোগ হয়েছে, আর role grant ঠিক হয়েছে। মালিকের সিদ্ধান্ত: `production.*` পাবে **Owner, Super Administrator, Administrator, Manager**; **Accountant** শুধু `production.view` ও `production.report.view` (register আর দুটো রিপোর্ট, ব্যাচ তোলা/পোস্ট নয়)। Patch command-এর ডিফল্টও এখন এই চার role, আর আলাদা চিহ্নে accountant-এর read-only grant। `stagingdatabase`-এ চালিয়ে যাচাই করা হয়েছে।
 - Unit conversion: ৮১৪টি active product-এর কোনোটিতে `measurement`/`package_size` নেই; `production_inputs.entered_unit_id/entered_qty/base_qty` আছে কিন্তু server-side conversion নেই — `product_unit_conversions` (প্রস্তাবিত) দরকার।
-- টেস্ট ডেটা নেই: `product_type` 4 raw material, Factory-type (4) branch, branch 5 godown। Acceptance Check ১–১০, ১২–১৪ চালানো হয়নি (production টেবিল খালি)।
+- টেস্ট ডেটা তৈরি হয়েছে (১২ নভেম্বর ২০২৬): branch 2-এ category 39 আর পণ্য 826–828। **Check ১, ২, ৪, ৫ পাস** (খ-১৪-ক, পরিষ্কার চালু: tolerance ৫%, production_master id 2, closing stock ৮,৫৫৮.০০, net profit ১,২৯৮.০০, TB ৩০,০০০ = ৩০,০০০, BS ২১,২৯৮ = ২১,২৯৮)। **Check ৩-ক/৩-গ, ৬, ৮-ক/খ, ৯, ১৪ পাস** (খ-১৪-খ)। **Check ৭ (repack) ও ১০ (পুরোনো branch অপরিবর্তিত) পাস** (খ-১৪-গ)। **Phase ৩ (ফ্রি মাল ও স্কিম) ও Check ১১ পাস** (খ-১৪-ঘ)।
 - ক্লায়েন্ট সিদ্ধান্ত বাকি: VAT/মূসক (ক-২ #১০), কাঁচামাল sourcing/আলাদা গুদাম (ক-২ #১১), Factory vs Branch Office টাইপ, কোন role-কে `production.*` দেওয়া হবে, per-product unit conversion ও precision।
 
 ### v3 থেকে কী বদলাল
@@ -174,7 +174,7 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 
 | ধাপ | ক্লায়েন্ট কী পাবেন |
 | --- | --- |
-| ০. যাচাই | **কোডের অংশ শেষ (অংশ গ)।** `stagingdatabase`-এ স্কিমা/vr_type/head/permission উপস্থিতি যাচাইকৃত (১২ নভেম্বর ২০২৬)। বাকি: ক্লায়েন্ট/টার্গেট DB-র গ-৯ ফল, role grant ও migration SQL সমন্বয়, unit conversion, টেস্ট ডেটা ও Check ১–১০, ১২–১৪। #১২, #১৩-এর সিদ্ধান্ত চূড়ান্ত |
+| ০. যাচাই | **কোডের অংশ শেষ (অংশ গ)।** `stagingdatabase`-এ স্কিমা/vr_type/head/permission উপস্থিতি যাচাইকৃত (১২ নভেম্বর ২০২৬)। Check ১, ২, ৪, ৫ পাস (খ-১৪-ক), ৩-ক/৩-গ, ৬, ৮, ৯, ১৪ পাস (খ-১৪-খ), ৭ ও ১০ পাস (খ-১৪-গ), **১১ পাস (খ-১৪-ঘ, Phase ৩-এর সঙ্গে)**। বাকি: ক্লায়েন্ট/টার্গেট DB-র গ-৯ ফল, role grant ও migration SQL সমন্বয়, unit conversion। #১২, #১৩-এর সিদ্ধান্ত চূড়ান্ত |
 | ১. উৎপাদন | নতুন ব্রাঞ্চ; নতুন ফর্ম: Production Entry (রেসিপি ছাড়া), Production Sales Return; ক্রয়-খরচ-বিক্রি আগের ফর্মে; Item opening stock দশমিকে আপডেট; প্রতিটা output-এ ঐচ্ছিক মেয়াদ (expiry) তারিখ; Production Register ও Costing রিপোর্ট; আগের তিন রিপোর্ট মেলে |
 | ২. রেসিপি | রেসিপি বাছলে লাইন নিজে ভরে যাবে; কাঁচামাল কম থাকলে আগেই জানাবে |
 | ৩. বিক্রিতে ফ্রি | নতুন Production Sales (ফ্রি রো, দাম ০), স্কিম সেটআপ, ফ্রিসহ ফেরত |
@@ -408,14 +408,190 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 
 **Check ১২ ও ১৩-এর ফল (৬ নভেম্বর ২০২৬, rolled-back probe, company 18 / branch 18):** Check ১২ পাস — Product Ledger-এ production in/out সারি দেখা যায়, আর running balance পরের মাসের opening-এর সঙ্গে মেলে। Check ১৩ পাস — নতুন Production Sales Return-এর voucher পুরনো return-এর মতোই Ledger, Trial Balance, P&L ও Stock-এ পড়ে (শুধু ফেরত মালের stock দাম original sale-এর FIFO খরচ, ইচ্ছাকৃত); edit-এ cash payment বদলালে Cash Book এখন সেই পরিবর্তন ধরে (voucher নম্বর অপরিবর্তিত)।
 
+### খ-১৪-ক: Check ১-এর চালু (১২ নভেম্বর ২০২৬, `stagingdatabase`, branch 2)
+
+**টেস্ট মাস্টার (এগুলোই পরে মুছতে হবে):**
+
+| কী | id | বিস্তারিত |
+| --- | --- | --- |
+| category | 39 | `TEST Production`, branch 2 |
+| কাঁচামাল | 826, 827 | `TEST-RM-CHILI` (Morich), `TEST-RM-TURMERIC` (Holud); `product_type` 4, Kg. |
+| উৎপাদিত পণ্য | 828 | `TEST-OUT-SPICE` Spice Mix 1kg; `product_type` 3, Kg. |
+
+**কেন branch 2:** `business_type_id` 3 (Manufacturing Business), `manufactur_control` 1, `inventory_system_id` 1 (General), গোডাউন id 2, আর চালুর আগে ০ voucher / ০ stock সারি। ব্যবসার তারিখ (`admin_day_closes`) ১৫ সেপ্টেম্বর ২০২৬, তাই খ-১৩-এর সব voucher সেই মাসে পড়ে।
+
+**কীভাবে চালানো হলো:** API নিজের `.env`-এর `stagingdatabase`-এ, `nibir_backend`/Herd ছাড়াই, Laravel-এর HTTP kernel দিয়ে in-process — অর্থাৎ আসল route, middleware (`auth:sanctum`, `ensure.user`, `SubscriptionActive`, `RoutePermission`) আর controller; ব্যবহারকারী ১ (Super Administrator, branch 2), Sanctum token দিয়ে।
+
+**ফল — পরিষ্কার চালু (ধাপে ধাপে):**
+
+| # | লেনদেন | ফল |
+| --- | --- | --- |
+| ১ | Capital ২০,০০০ (Journal Dr 17 / Cr 14) | পাস, `5-260900001` |
+| ২ | Purchase ৬০ × ১২০ + ৪০ × ১৫০ নগদ | পাস, `4-260900001`; layer `60@120`, `40@150`; ledger Dr 35 / Cr 17 ১৩,২০০ |
+| ৩ | Factory Labour বাকি ৩,০৬০ (Journal Dr 409 / Cr 13) | পাস, `5-260900002` |
+| ৪ | Production ৯৫ kg, নষ্ট ৫ kg (tolerance ৫%), #৩ থেকে ৩,০৬০ allocate | পাস, `27-260900001`, `production_master` id 2 |
+| ৫ | বিক্রি ৫০ × ২০০ নগদ | পাস, `3-260900001` |
+| ৬ | Production Sales Return ৫ প্যাকেট | পাস, `28-260900002` |
+| ৭ | মজুরি পরিশোধ ৩,০৬০ (Journal Dr 13 / Cr 17) | পাস, `5-260900003` |
+
+**ব্যাচ ও stock (খ-১৩-এর সঙ্গে হুবহু):**
+
+| কী | প্রত্যাশা | পাওয়া |
+| --- | --- | --- |
+| material cost | ১৩,২০০ | ১৩,২০০.০০ |
+| allocated cost | ৩,০৬০ | ৩,০৬০.০০ |
+| normal / abnormal loss | ৫ kg / ০ kg | ৫.০০০ / ০.০০০ (tolerance ৫%) |
+| total cost | ১৬,২৬০ | ১৬,২৬০.০০ |
+| output দুই সারি | ১ @১৭০.৯৬ + ৯৪ @১৭১.১৬ | ১ @১৭০.৯৬ + ৯৪ @১৭১.১৬ |
+| ফেরত stock | ৫ @১৭১.১৬ (original issue cost) | ৫ @১৭১.১৬ — বিক্রির দাম ২০০ নয় |
+| closing stock (৫০ প্যাকেট) | ৮,৫৫৮.০০ | ৮,৫৫৮.০০ |
+
+**রিপোর্ট (১–৩০ সেপ্টেম্বর ২০২৬, branch 2):**
+
+| রিপোর্ট | লাইন | প্রত্যাশা | পাওয়া |
+| --- | --- | --- | --- |
+| P&L | Sales / Sales Return / Purchase | ১০,০০০ / ১,০০০ / ১৩,২০০ | ১০,০০০ / ১,০০০ / ১৩,২০০ |
+| P&L | Closing Stock (coa4 21) | ৮,৫৫৮.০০ | ৮,৫৫৮.০০ |
+| P&L | Production Cost → Factory Labour (allocation) | ৩,০৬০ | ৩,০৬০ (`production_cost.total`) |
+| P&L (ফ্রন্টএন্ড হিসাব) | Net profit | ১,২৯৮.০০ | ১,২৯৮.০০ |
+| Trial Balance | Dr = Cr | ৩০,০০০ = ৩০,০০০ | ৩০,০০০ = ৩০,০০০; Cash ১২,৭৪০; production-এর কোনো ledger লাইন নেই |
+| Balance Sheet | Assets = Equity | ২১,২৯৮ = ২১,২৯৮ | ২১,২৯৮ = ২১,২৯৮; difference ০ |
+
+**অর্থাৎ Check ১ পাস (“গ” রূপে), আর সঙ্গে Check ২ (মাল্টি-রেট FIFO + দুই সারির নিয়ম), Check ৪ (বাকি মজুরির journal থেকে allocation; Production নিজে Cash/Payable লেখে না) ও Check ৫ (Trial Balance ও Balance Sheet মেলে) — এগুলোও একই চালুতে পাস।**
+
+**দুইটা শিক্ষা:**
+
+1. **নষ্টের tolerance হিসাবের অংশ, খুঁটিনাটি নয়।** প্রথম চালুতে `tolerance_pct` ০ ছিল, তাই কোড ৫ kg-ই অস্বাভাবিক ধরেছিল (`abnormal_loss_cost` ৮১৩.০০ বাদ, unit cost ১৬২.৬০)। সেটা কোডের ভুল নয় — খ-১৩-এর রূপ “খ”-এর ঠিক আচরণ। মূল উদাহরণ চালাতে **tolerance ≥ ৫%** লাগবে। UI-তে এই ঘরটা তাই clerk-এর কাছে স্পষ্ট রাখা দরকার।
+2. **API payload-এ কী কী বাধ্যতামূলক** (কোড নয়, ডকুমেন্টেশনের জন্য): purchase-এ `paymentAmt`/`discountAmt` বাধ্যতামূলক; sales-এ `vehicleNumber` কী থাকতেই হবে; Production Sales Return `products` নয়, **`table_data[{code, qty, price, godown}]`** নেয় (নম্বর/নাম আলাদা)।
+
+**পরিষ্কার করতে চাইলে** (branch 2 আগে ছিল ০ voucher / ০ stock):
+
+```sql
+-- main_trx_master WHERE branch_id = 2 (1888–1894) ও তাদের সন্তান:
+-- acc_transaction_master/details, inventory_masters/details,
+-- inventory_purchase_*, inventory_sales_*, inventory_sales_return_*,
+-- production_master/inputs/outputs/cost_allocations
+-- টেস্ট মাস্টার: product_items (826–828), product_categories (39)
+```
+
+টেস্ট ডেটা **এখনো রাখা আছে** — মালিক UI-তে নিজে একবার চালিয়ে দেখতে চাইলে branch 2-এ প্রস্তুত।
+
+### খ-১৪-খ: Check ৩, ৬, ৮, ৯, ১৪ (১২ নভেম্বর ২০২৬, একই branch 2)
+
+| # | যাচাই | ফল |
+| --- | --- | --- |
+| ৩-ক | ১,০০০ টাকার expense line থেকে ১,৫০০ allocate | **পাস** — post আটকায়: “This batch asks to allocate 1,500.00 from voucher 5-260900004, but only 1,000.00 of it is still free.” batch draft-ই থাকে |
+| ৩-খ | একই line-এ দুই batch একসাথে | কোডে `FOR UPDATE` lock + lock-এর ভেতরে পুনরায় sum (`ProductionCostAllocator`); এক thread-এ সত্যিকারের concurrency চালানো যায় না, তাই **কোড-পাঠে যাচাই, চালুতে নয়** |
+| ৩-গ | allocated source voucher edit আটকানো | প্রথমে **পাস হয়নি — কোডে ছিল না** (Journal-এর update route নেই; Cash Payment/Received-এর update `production_cost_allocations` পড়ত না)। **এখন ঠিক করা হয়েছে** — নিচে |
+| ৬-ক | ১০ সেপ্টেম্বরের batch, অথচ ১৫ সেপ্টেম্বরের voucher পণ্যগুলো নাড়িয়েছে | **পাস** — “This batch is dated 2026-09-10, but voucher 4-260900003 dated 2026-09-15 already moved these products afterwards…” |
+| ৬-খ | ১৬ সেপ্টেম্বরের batch (পরে কিছু নড়েনি) | **পাস** — post হয়, batch `TEST-BACK-OK`, `27-260900002` |
+| ৮-ক | production.* নেই এমন ব্যবহারকারী (user 9, branch 1) সরাসরি API | **পাস** — register / list / post তিনটাই 403 |
+| ৮-খ | এমন ব্যবহারকারী যার branch-এ manufacturing বন্ধ (user 17, branch 4, `manufactur_control` 0) | **পাস** — register, store, post তিনটাই 403 “Manufacturing is switched off for this branch.” |
+| ৮-গ | অন্য company-র batch | এই DB-তে একটাই company, তাই চালানো যায়নি। `findBatch()`-এ `company_id` filter আছে — কোড-পাঠে যাচাই |
+| ৯ | একই `idempotency_key` আবার পাঠানো; posted batch আবার post | **পাস** — “Batch already saved.”, নতুন batch তৈরি হয় না; stock/voucher/batch সংখ্যা অপরিবর্তিত |
+| ১৪ | source expense voucher-এর debit ৩,০৬০ → ১,০০০ (সরাসরি SQL দিয়ে, edit simulate) | **পাস** — register-এ batch লাল, `{"code":"source_changed", ...}`; costing screen-এও একই (`master.flag`); ৩,০৬০ ফিরিয়ে দিলে পতাকা চলে যায় |
+
+**৩-গ-র সমাধান (১২ নভেম্বর ২০২৬, কোড):** guard বসানো হয়েছে `denyUnlessVoucherEditable()`-এর ভেতরে — `productionAllocationRefusal()` (`app/Helpers/helpers.php`)। ওই এক関数 দিয়েই Payment, Received, Bank, Purchase, Sales, Return সব edit যায়, তাই এক জায়গায় বসালেই সব পথ ঢাকা পড়ে। শর্ত: `production_cost_allocations.source_main_trx_id` = এই voucher **এবং** `status = 'active'` (reverse করলে `released` হয়, তাই নিজে থেকেই খুলে যায়)।
+
+**চালু (একই branch 2):**
+
+| ধাপ | ফল |
+| --- | --- |
+| Cash Payment ৫০০ → Factory Labour (`2-260900004`) | পাস |
+| ওই ৫০০ থেকে allocate করে batch `TEST-3C` post | পাস |
+| Payment-টি Update | **403** “Production batch TEST-3C was costed from this voucher. Reverse that batch first, then correct the voucher.” |
+| Batch `TEST-3C` reverse | পাস |
+| আবার Payment Update | **200** “Voucher No. 2-260900004 Updated Successfully” — allocation ছাড়া পাওয়ায় edit খুলে গেছে |
+
+Help topic-ও আপডেট: `public/help/payment.json` (cash-payment), `collection.json` (cash-received), `production.json` (production-register); `npm run help:check` পাস (২৬৮ বিষয়)।
+
+Check ১২ ও ১৩ আগেই পাস (৬ নভেম্বর ২০২৬)। এই খণ্ডে বাকি ছিল Check ৭ আর ১০ — দুটোই এখন চালানো হয়েছে (খ-১৪-গ)।
+
+### খ-১৪-গ: Check ৭ (repack) ও Check ১০ (পুরোনো branch অপরিবর্তিত) — ১২ নভেম্বর ২০২৬
+
+**Check ৭ — repack, একই branch 2।** নতুন তিনটে পণ্য: ৮২৯ `TEST-RM-SUGAR` (Kg.), ৮৩০ `TEST-RM-PACKET` (Pcs), ৮৩১ `TEST-OUT-SACHET` (Pcs)।
+কেনা `4-260900005`: ৫০ কেজি চিনি @১২০ = ৬,০০০ + ১৯৮ খালি প্যাকেট @২ = ৩৯৬ → ৬,৩৯৬। labour journal `5-260900005` ৫৯৮, পুরোটাই batch-এ allocate।
+batch `TEST-REPACK` (`27-260900003`, ১৭ সেপ্টেম্বর): ইনপুট ৫০ কেজি + ১৯৮ প্যাকেট, আউটপুট ১৯৮ স্যাশে, `loss.basis = kg`, `actual = 0.5`, `tolerance 5%`।
+
+| যাচাই | প্রত্যাশা | ফল |
+| --- | --- | --- |
+| material cost | ৬,৩৯৬.০০ | **৬,৩৯৬.০০** |
+| allocated cost | ৫৯৮.০০ | **৫৯৮.০০** |
+| total cost | ৬,৯৯৪.০০ | **৬,৯৯৪.০০** |
+| unit cost | ৬,৯৯৪ ÷ ১৯৮ = ৩৫.৩২৩২ → ৩৫.৩২ | **৩৫.৩২** |
+| output সারি (decimal(12,2) নিয়ম) | ১ × ৩৫.৯৬ + ১৯৭ × ৩৫.৩২ = ৬,৯৯৪.০০ | **হুবহু** — inventory_details-এ দুটো সারি, যোগফল ৬,৯৯৪.০০ |
+| loss | ০.৫ কেজি / ৫০ কেজি = ১% ≤ ৫% → normal | **normal ০.৫০০, abnormal ০**, `abnormal_loss_cost` ০ |
+| stock | চিনি ০, প্যাকেট ০, স্যাশে ১৯৮ | **অবিকল** |
+| costing report flag | `null` | **`null`** |
+
+মিশ্র একক-এর নিয়ম (খ-৩) আলাদা করে যাচাই — `ProductionLoss::baseQty([829 => 50, 830 => 198], ...)`:
+
+| basis | ফল | অর্থ |
+| --- | --- | --- |
+| `kg` / `Kg.` | ৫০ | শুধু চিনির কেজি গোনা হয় (চার্টে "Kg." লেখা থাকলেও মেলে) |
+| `pcs` | ১৯৮ | ওই একক-এর লাইনগুলো |
+| খালি | ২৪৮ | কোনো একক না মিললে সব ইনপুট — এক-একক batch-এর জন্য ঠিক |
+
+এটাই আসল ফাঁদ: basis না দিলে ০.৫ কেজি ক্ষতি ২৪৮ "ইউনিট"-এর উপর মাপা হতো। repack-এ basis অবশ্যই ইনপুটের যে এককে ক্ষতি মাপছেন সেটি হতে হবে।
+
+**Check ১০ — manufacturing-এর ছোঁয়া branch 2-এর বাইরে নেই।**
+
+| যাচাই | ফল |
+| --- | --- |
+| `main_trx_master`-এ `transaction_type` ২৭/২৮, branch ≠ ২ | **শূন্য সারি** |
+| `production_master`-এ branch ≠ ২ | **শূন্য সারি** |
+| branch 1 (September) P&L `production_cost` | `{"total":0,"groups":[]}` — নতুন খরচের গ্রুপ খালি, পুরোনো সংখ্যা বদলায়নি |
+| branch 1 Balance Sheet | assets ৪,০১,৯৫০ = liabilities & equity ৪,০১,৯৫০, **difference ০** |
+| branch 1 Trial Balance | debit ৭,৩২,৯৫০ = credit ৭,৩২,৯৫০, ৮ সারি |
+| branch 6 (September) | কোনো লেনদেন নেই — BS সব শূন্য, TB ০ সারি |
+| git সীমা | manufacturing commit (API `3f95b57f`, `ae55724e`, `7c859839`, `9dd07648`, `d30afd25`; React `9f3c02bd`, `56d63a9f`, `ae19ca1e`) পুরোনো entry form-এ হাত দিয়েছে কেবল অনুমোদিত দুই জায়গায়: `AddProduct.tsx`/`Product.tsx`-এ `step="0.01"`, আর `ReturnTransaction::cashSalesReceivedMaster($arras, $coal4, $mtmid, ?int $debitCoa4 = null)`-এ optional প্যারামিটার (ডিফল্ট পুরোনো আচরণ) |
+
+Phase 1-এর সব check এখন চালানো — **Check ১–১০ (৮-গ কোড-পাঠে), ১২–১৪ পাস**। Check ১১ Phase ৩-এর সঙ্গে চালানো হয়েছে (খ-১৪-ঘ)।
+
+**branch 2-এ এখন কী আছে:** batch 2 (`TEST-BATCH-1`, মূল উদাহরণ, posted), batch 5 (`TEST-BACK-OK`, backdating-এর প্রমাণ, posted), batch 7 (`TEST-3C`, reversed — ৩-গ-র প্রমাণ), batch 8 (`TEST-REPACK`, repack-এর প্রমাণ, posted); voucher 1888–1900 (1899 = reversed batch-এর contra, `status` 0; 1900 = `4-260900005` repack কেনা); journal `5-260900005`; পণ্য ৮২৯–৮৩১ (repack); production sales `29-260900002`–`29-260900004` ও return `28-260900006`/`28-260900007`, scheme 1। পরীক্ষার জন্য খোলা তিনটে draft (over-allocation, backdated-blocked, branch-1 stray) মুছে ফেলা হয়েছে।
+
+### খ-১৪-ঘ: Phase ৩ (ফ্রি মাল ও স্কিম) ও Check ১১ — ১২ নভেম্বর ২০২৬
+
+**স্কিমা** (`database/sql/2026_11_04_manufacturing_production.sql`, Phase 3 অংশ; patch command `AddUnitTypeToBuildingUnits`-এ যোগ): `production_schemes` (নিয়ম) আর `production_free_lines` ("ফ্রি" চিহ্নের link টেবিল — `direction` out/in, `sale_detail_id`, `paid_sale_detail_id`, `scheme_id`)।
+
+**API:** `ProductionSalesPosting` (ফ্রি-সহ বিক্রি; `Production Sales` voucher_type নামে, stock ও ledger পুরোনো বিক্রির মতোই), `ProductionScheme::match()` (repeatable হলে `floor(qty/threshold) × free_qty`), `ProductionSalesController` (store/edit/update + scheme list/match/store/update/destroy), `ProductionSalesReturnPosting`-এ ফ্রি-সচেতন return (`floor(returned paid × free ÷ paid)`, শেষ return-এ residual), `ProductionReportController::freeGoods()`, `ProductionController::voucherTypes()`-এ `production_sales`। Routes: `/production/sales/*`, `/production/schemes*`, `/production/report/free-goods` (`route:clear` চালানো)।
+
+**স্ক্রিন:** Production → Production Sales (ফ্রি সারি, স্কিম মিললে ফ্রি সারি নিজে থেকে যোগ), Production → Scheme (তৈরি/সংশোধন/Retire), Production → Free Goods (রিপোর্ট)। Production Sales Return-এ দাম ০-এর সারি "ফ্রি" চিহ্নসহ দেখায়। তিনটে নতুন help topic যোগ, `npm run help:check` পাস (২৭১ বিষয়)। Print: `VoucherPrintRegistry`-তে `production_sales` → Sales Invoice কাগজ; কাগজে ফ্রি সারির নামের পাশে " (ফ্রি)" (`salesPrintData()` এখন `is_free` পাঠায়)।
+
+**Check ১১-এর ফল** (branch 2, পণ্য 831 TEST-OUT-SACHET; stock ১৯৮ থেকে শুরু):
+
+| ধাপ | ফল |
+| --- | --- |
+| scheme "TEST buy100get2" (১০০-তে ২, repeatable) | match ১০০ → free ২; match ২৫০ → free ৪ |
+| বিক্রি `29-260900002`: ১০০ × ৪০ paid + ২ × ০ ফ্রি | stock ১৯৮ → ৯৬; `production_free_lines` এক সারি (sale_detail 102 → paid 101, scheme 1, qty ২); ledger Dr 17 ৪,০০০ / Cr 15 ৪,০০০ |
+| প্রথম return `28-260900006` (৫০ paid + ১ ফ্রি) | stock ৯৬ → ১৪৭; ফেরতের খরচ ৩৫.৩৩/ইউনিট |
+| বেশি ফ্রি ফেরত (৫০ paid + ২ ফ্রি) | **refused**: "…This return may bring back 1.00, and asks for 2.00."; stock অপরিবর্তিত |
+| শেষ return `28-260900007` (৫০ paid + ১ ফ্রি) | stock ১৪৭ → ১৯৮; residual মিটে গেছে |
+| Free Goods রিপোর্ট (সেপ্টেম্বর) | `total_qty 2`, `total_cost ৭০.৬৬`, unit cost ৩৫.৩৩ |
+| Print payload (`electronics/sales/invoice-print`, mt 1903) | paid সারি `is_free=false`, ফ্রি সারি `is_free=true` |
+| `sales/edit` | দুই সারি `is_free` 0/1 ও `scheme_id` 1 ফেরত দেয় |
+| `sales/update` (সংশোধন) | প্রথম চেষ্টায় **ব্যর্থ** — `clearVoucher()`-এ `whereIn('main_trx_id', $mtmId)` (int) TypeError দিত, ফলে কোনো বিক্রি সংশোধনই হতো না। `where()` করে ঠিক করার পর: `29-260900004` ১০ → ১৫ paid + ১ ফ্রি, এক master, ২ detail, total ৬০০, ledger Dr 17 ৬০০ = Cr 15 ৬০০, stock ১৬ কম |
+| scheme roundtrip | store → update → destroy (status `retired`; সারি থাকে, মেলে না) |
+
+- ফেরতের ইউনিট খরচ ৩৫.৩২ নয়, ৩৫.৩৩: ওই বিক্রির মাল দুই layer-এ ছিল (১ × ৩৫.৯৬ + ১৯৭ × ৩৫.৩২), আর ফেরতের হিসাব পুরো বিক্রির ভারযুক্ত দামে — দুই দশমিকের একটাই অঙ্কে যা ধরে। মোট টাকা মেলে; প্রতি-ইউনিটে পয়সা-ভগ্নাংশের পার্থক্য।
+- ফ্রি মালের খরচ আগেই COGS-এ আছে; Free Goods রিপোর্ট শুধু দেখার জন্য, আবার খরচে যোগ করার জিনিস নয় (হেল্প টপিকেও লেখা)।
+
+**ব্রাউজারে চালানো (১২ নভেম্বর ২০২৬, `demo@gmail.com`, branch 2):** Scheme, Production Sales, Production Sales Return ও Free Goods — চারটি স্ক্রিন আসল ডেটায় দেখা গেছে। ভিডিও: `videos/phase3-free-goods.mp4` (প্রায় ৪৯ সেকেন্ড, স্কিম → সেলসে ফ্রি সারি → ফ্রি মাল রিপোর্ট; কিছুই সেভ করা হয়নি)।
+
+| ব্রাউজারে যা ধরা পড়ল | সারানো |
+| --- | --- |
+| Quantity/Price/তারিখের বাক্স আঙুল-চওড়া, লেবেল ভাঙা | `InputElement`/`InputDatePicker`-এ `className` যায় `<input>`-এ, grid span কাজ করে না — span এখন wrapper `div`-এ (Production Sales, Scheme, Sales Return) |
+| স্কিমে "same product" হলে ফ্রি সারিতে নামের বদলে `Product #831` | `addSchemeFreeRow`-এ `freeProduct === productCode` — dropdown দেয় সংখ্যা, match দেয় সংখ্যা, `===`-এ মেলে না; `String()` করে তুলনা |
+| Free Goods রিপোর্ট খালি দেখাচ্ছিল | ডিফল্ট To = branch Trx. তারিখ (১৫/০৯); ফ্রি বিক্রি ২০/০৯-এ — To ৩০/০৯ দিলেই সারি আসে, বাগ নয় |
+
 ## অংশ খ-১৫: Phase ও change boundary
 
 | Phase | কাজ | শেষের প্রমাণ |
 | --- | --- | --- |
 | 0 | কোড/schema audit **শেষ (অংশ গ)**; `stagingdatabase` read-only যাচাইয়ে ৯ টেবিল/vr_type/head/permission উপস্থিত (১২ নভেম্বর ২০২৬)। ক-২ #১২ ("গ") ও #১৩ চূড়ান্ত। বাকি: ক্লায়েন্ট/টার্গেট DB-র গ-৯ ফল, role grant ও migration SQL সমন্বয়, unit conversion, টেস্ট ডেটা প্রস্তুতি | গ-৯-এর ফল লেখা; grant/SQL/unit/test-data মীমাংসা |
-| 1 | নতুন ফর্ম: Production Entry, Production Sales Return; Item opening stock-এ দশমিক qty; manual single-output production, source-linked cost, abnormal loss, stock integration, Product Ledger শাখা, Register ও Costing | Check ১–১০, ১২–১৪ পাস (isolated test branch/DB) |
+| 1 | নতুন ফর্ম: Production Entry, Production Sales Return; Item opening stock-এ দশমিক qty; manual single-output production, source-linked cost, abnormal loss, stock integration, Product Ledger শাখা, Register ও Costing | Check ১–১০ (৮-গ কোড-পাঠে) ও ১২–১৪ পাস (isolated test branch/DB, ১২ নভেম্বর ২০২৬) |
 | 2 | Recipe, version, ঘাটতি দেখা — **শেষ (৬ নভেম্বর ২০২৬)** | Recipe থেকে ভরা batch-এ check ১, ৭ পাস; snapshot, variance, effective date ও multi-output যাচাই (handoff §৪-ঙ) |
-| 3 | নতুন Production Sales (ফ্রি রো), scheme, ফ্রিসহ return | Check ১১ পাস |
+| 3 | নতুন Production Sales (ফ্রি রো), scheme, ফ্রিসহ return — **শেষ (১২ নভেম্বর ২০২৬)** | Check ১১ পাস (খ-১৪-ঘ); স্ক্রিন তিনটে (Production Sales, Scheme, Free Goods) + help + print |
 | 4 | নতুন Production Purchase (ফ্রি রো) | Purchase free দিয়ে check ২ পাস |
 
 - পুরনো Manufacturing module মোছা হবে না; নতুন flow তার hardcoded account/year id ব্যবহার করবে না।

@@ -404,10 +404,13 @@
       "file": "production.json",
       "topics": [
         "production-entry",
+        "production-sales",
+        "production-sales-return",
+        "production-scheme",
         "production-recipe",
         "production-register",
-        "production-costing",
-        "production-sales-return"
+        "production-free-goods",
+        "production-costing"
       ]
     }
   ]
