@@ -244,17 +244,21 @@ export const ButtonLoading: React.FC<ButtonProps> = ({
       className={`${BUTTON_BASE} ${BUTTON_VARIANT[variant]} ${textClass} ${paddingClass} ${className}`}
     >
       <span className="flex items-center">
-        {buttonLoading ? (
-          <>
-            <Spinner small={isSmall} />
-            {hasLabel ? <span className={labelClass}>{safeLabel}</span> : null}
-          </>
-        ) : (
-          <>
-            <span className={`${iconSpacing} inline-flex items-center`}>{resolvedIcon}</span>
-            {hasLabel ? <span className={labelClass}>{safeLabel}</span> : null}
-          </>
-        )}
+        {/* The icon keeps its box while loading: the spinner is laid over it and
+            the icon is only hidden, not removed. Swapping one for the other made
+            the icon and the label jump sideways on every click, because a
+            spinner is not the width of the icon it replaced. */}
+        <span className={`${iconSpacing} relative inline-flex items-center`}>
+          <span className={buttonLoading ? 'invisible inline-flex items-center' : 'inline-flex items-center'}>
+            {resolvedIcon}
+          </span>
+          {buttonLoading ? (
+            <span className="absolute inset-0 flex items-center justify-center">
+              <Spinner small={isSmall} className="mr-0" />
+            </span>
+          ) : null}
+        </span>
+        {hasLabel ? <span className={labelClass}>{safeLabel}</span> : null}
       </span>
     </button>
   );
@@ -381,9 +385,9 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
 };
 
 
-const Spinner = ({ small = false }: { small?: boolean }) => (
+const Spinner = ({ small = false, className = 'mr-2' }: { small?: boolean; className?: string }) => (
   <svg
-    className={`${small ? 'h-3.5 w-3.5' : 'h-5 w-5'} animate-spin text-white mr-2`}
+    className={`${small ? 'h-3.5 w-3.5' : 'h-5 w-5'} animate-spin text-white ${className}`}
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"

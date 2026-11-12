@@ -135,16 +135,16 @@ const ProductionRegister = () => {
         <ButtonLoading
           onClick={run}
           buttonLoading={loading}
-          label="Show"
-          className="whitespace-nowrap text-center mr-0 py-2 w-30"
-          icon={<FiSearch className="text-lg ml-2 mr-2" />}
+          label="Search"
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiSearch className="text-lg" />}
         />
         <ButtonLoading
           onClick={() => handlePrint()}
           buttonLoading={false}
           label="Print"
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiPrinter className="text-lg ml-2 mr-2" />}
+          className="whitespace-nowrap text-center mr-0"
+          icon={<FiPrinter className="text-lg" />}
         />
       </div>
 
