@@ -66,6 +66,7 @@
 - The command shell actually executes in Windows cmd.exe (not bash or PowerShell): commands are chained with `&&` (a `;` is not a separator there), there are no heredocs, and files are removed with `del`. Confidence: 0.7
 - The two repos live side by side under `F:\All_Database\`: the React frontend at `F:\All_Database\cashbookbd_react` and the backend API at `F:\All_Database\www\cashbook_api` — paths such as `D:\www\cashbook_api` carried in older audit/doc files are stale, and the user states the correct location to correct the agent's assumption. Confidence: 0.6
 - Verifies tooling/CLI syntax against actual `--help` output rather than assuming flags exist. Confidence: 0.6
+- The authoritative reference database for verifying a feature against real data is `stagingdatabase` (reached through phpMyAdmin), not a dev database named in older audit/doc files — states the intended database explicitly when a plan/audit is to consider one. Confidence: 0.55
 - Wants to see/interact with the exact browser window being automated (foregrounded window or a streamed/dashboard view) rather than acting on a window they cannot observe. Confidence: 0.6
 - When fixing/resetting tooling, scope destructive actions tightly to the isolated task process — restart only the audit/agent session and never close, kill, or disturb the user's own personal browser or other unrelated processes. Confidence: 0.6
 - Expects prior work artifacts (audit findings, screenshots) to survive environment restarts/resets rather than being lost. Confidence: 0.5
