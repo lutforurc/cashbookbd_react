@@ -276,7 +276,7 @@ const ProductionSalesReturn = () => {
           buttonLoading={searching}
           label={searching ? 'Finding...' : 'Find'}
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiSearch className="text-lg ml-2 mr-2" />}
+          icon={<FiSearch className="text-lg " />}
         />
         {editing && (
           <>
@@ -288,7 +288,7 @@ const ProductionSalesReturn = () => {
               buttonLoading={false}
               label="Cancel edit"
               className="whitespace-nowrap text-center mr-0 py-2"
-              icon={<FiXCircle className="text-lg ml-2 mr-2" />}
+              icon={<FiXCircle className="text-lg " />}
             />
           </>
         )}
@@ -362,9 +362,9 @@ const ProductionSalesReturn = () => {
             className="whitespace-nowrap text-center mr-0 py-2"
             icon={
               editingLineId === null ? (
-                <FiPlus className="text-lg ml-2 mr-2" />
+                <FiPlus className="text-lg" />
               ) : (
-                <FiEdit2 className="text-lg ml-2 mr-2" />
+                <FiEdit2 className="text-lg" />
               )
             }
           />
@@ -457,16 +457,16 @@ const ProductionSalesReturn = () => {
         <ButtonLoading
           onClick={save}
           buttonLoading={saving}
-          label={saving ? 'Saving...' : editing ? 'Update Return' : 'Save Return'}
+          label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiSave className="text-lg ml-2 mr-2" />}
+          icon={<FiSave className="text-lg" />}
         />
         <ButtonLoading
           onClick={resetForm}
           buttonLoading={false}
           label="Reset"
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+          icon={<FiRefreshCcw className="text-lg" />}
         />
       </div>
 

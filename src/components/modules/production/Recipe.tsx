@@ -7,6 +7,7 @@ import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
+import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import { hasPermission } from '../../utils/permissionChecker';
@@ -474,17 +475,19 @@ const Recipe = () => {
             />
           </div>
           <div className="md:col-span-2">
-            <label className="text-sm text-[rgb(var(--c-text))]">Kind</label>
-            <select
+            <DropdownCommon
               id="lineType"
               name="lineType"
+              label="Kind"
               value={line.lineType}
-              onChange={(event) => setLine((p) => ({ ...p, lineType: event.target.value as LineType }))}
-              className="h-9.5 w-full rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-2 text-sm text-[rgb(var(--c-text))]"
-            >
-              <option value="material">Material</option>
-              <option value="packaging">Packaging</option>
-            </select>
+              onChange={(event) =>
+                setLine((p) => ({ ...p, lineType: event.target.value as LineType }))
+              }
+              data={[
+                { id: 'material', name: 'Material' },
+                { id: 'packaging', name: 'Packaging' },
+              ]}
+            />
           </div>
           <div className="md:col-span-2">
             <InputElement
@@ -579,9 +582,9 @@ const Recipe = () => {
           buttonLoading={saving}
           disabled={!canCreate}
           title={!canCreate ? 'You do not have production.create' : undefined}
-          label={form.id ? 'Update recipe' : 'Save recipe'}
+          label={form.id ? 'Update' : 'Save'}
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiSave className="text-lg ml-2 mr-2" />}
+          icon={<FiSave className="text-lg" />}
         />
         <ButtonLoading
           onClick={saveAsNewVersion}
@@ -590,14 +593,14 @@ const Recipe = () => {
           title={!canCreate ? 'You do not have production.create' : undefined}
           label="New version"
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiCopy className="text-lg ml-2 mr-2" />}
+          icon={<FiCopy className="text-lg " />}
         />
         <ButtonLoading
           onClick={clearForm}
           buttonLoading={false}
           label="Clear"
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+          icon={<FiRefreshCcw className="text-lg " />}
         />
       </div>
 
