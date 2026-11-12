@@ -29,11 +29,34 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 | --- | --- |
 | Read-only code/schema audit | **শেষ** (dev DB `krishibitandatabase` ও কোড, ৪ নভেম্বর)। অংশ গ |
 | Model A/B সিদ্ধান্ত | **Model A নিশ্চিত, B বাদ** (গ-২)। Gross profit কীভাবে দেখাবে, তার মালিকের সিদ্ধান্ত: **"গ"** (ক-২ #১২, ৪ নভেম্বর ২০২৬) |
-| ক্লায়েন্ট DB-তে পুরনো module ব্যবহার | **বাকি।** চালানোর query গ-৯-এ দেওয়া আছে |
+| ক্লায়েন্ট DB-তে পুরনো module ব্যবহার | **আংশিক।** dev DB-তে পুরনো module খালি (গ-৯)। ক্লায়েন্ট/টার্গেট DB-তে query চালিয়ে ফল রেকর্ড বাকি |
 | Exact file/dependency list | **শেষ** (গ-১০) |
 | খ-১৩-এর হিসাব কোন কোডে কীভাবে আসবে | **শেষ** (গ-৮)। v3-এর সংখ্যা হুবহু আসে না, সংশোধিত সংখ্যা খ-১৩-এ |
+| `stagingdatabase` স্কিমা যাচাই (১২ নভেম্বর ২০২৬) | **শেষ (read-only)।** ৯ টেবিল, vr_type 27/28, Production Cost group/head (55, 409–411), ৬ `production.*` permission আছে; column/index মেলে, FK নেই (SQL-অনুযায়ী), table comment খালি। বাকি: permission শুধু Super Admin (Owner role নেই), migration SQL-এ `production.sales.return.create` নেই, orphan ledger detail, সার্ভার staging DB আলাদা |
 
-**কাজ শুরুর আগে বাকি:** শুধু ক্লায়েন্ট DB-র query-র ফল। মালিকের দুটো সিদ্ধান্ত হয়ে গেছে (৪ নভেম্বর ২০২৬): #১২ (gross profit) = **"গ"**, আর #১৩ (sales return-এর দাম) = ফেরত মাল original বিক্রির FIFO খরচে।
+**কাজ শুরুর আগে বাকি:** ক্লায়েন্ট/টার্গেট DB-র গ-৯ query ফল রেকর্ড, role grant ও migration SQL সমন্বয় (approval সাপেক্ষে), unit conversion (`product_unit_conversions`) ও টেস্ট ডেটা/গুদাম/Factory branch প্রস্তুতি, এবং Acceptance Check ১–১০, ১২–১৪। #১২ (gross profit) = **"গ"**, #১৩ (sales return-এর দাম) = original বিক্রির FIFO খরচ — সিদ্ধান্ত চূড়ান্ত।
+
+### অবস্থা আপডেট (১২ নভেম্বর ২০২৬, `stagingdatabase` read-only)
+
+**স্কিমা/ডেটা (যাচাইকৃত, কোনো পরিবর্তন করা হয়নি):**
+- ৯টি production/recipe টেবিল আছে (InnoDB, `utf8mb4_unicode_ci`, সব খালি)। কলাম, index ও unique key (`pm_idempotency_uq`, `pr_version_uq`, `prs_production_uq`) migration SQL-এর সঙ্গে মেলে। অতিরিক্ত/Phase 1–2 কলাম আছে: `production_master.recipe_id`, `recipe_qty`; `production_outputs.cost_share_pct`, `expiry_date`; `production_cost_allocations.status`, `released_at`। migration SQL-এ FK নেই, live DB-তেও নেই।
+- টেবিল `COMMENT` live DB-তে খালি (SQL-এ আছে) — তৈরি-পথ ভিন্ন হওয়ার ইঙ্গিত (cosmetic)।
+- `acc_vr_type`: id 27 **Production**, id 28 **Production Sales Return** আছে।
+- `acc_coa_level3s`: id 55 **Production Cost** (Direct Expense, Purchase-এর একই level-2)। `acc_coa_level4s`: 409 Factory Labour, 410 Packing Labour, 411 Factory Transport (level-1 Expense id 4, group 55, `PROD_EXPENSE_*` marker)।
+- ৬টি `production.*` permission আছে, কিন্তু `role_has_permissions` অনুযায়ী শুধু **Super Administrator** (role id 1) ধরে। DB-তে `Owner`/`owner` নামে কোনো role নেই (roles: Super Administrator, Administrator, Managing Director, Director, Branch Director, Project Manager, Manager, Accountant, Visitor, Starter, Business, Enterprise, Hotel & Motel, Hotel Manager, receiption)। `permission_grant_marks`-এ `group-grant:production:Owner` নেই; আছে শুধু `menu-own:production.sales.return.create`। `production.sales.return.create` live DB ও frontend-এ আছে, কিন্তু migration SQL-এ নেই (fresh install থেকে বাদ পড়বে)।
+- orphan ledger detail: `coa4_id=5`-এর ৩টি সারি (trx 1741–1743) সহ বহু `acc_transaction_details` সারির কোনো matching `main_trx_master` নেই — ডেটা অখণ্ডতা পর্যালোচনা দরকার (পরিবর্তন করা হয়নি)।
+
+**ডিপ্লয়মেন্ট/কোড (যাচাইকৃত):**
+- `staging-deploy.yml` → `apistaging` ব্রাঞ্চ; `production-deploy.yml` → `main` (staging site-সহ ১৬টি)। `apistaging` ও `main` সমান (0/0); পুরনো `staging` ব্রাঞ্চ কোনো workflow/script-এ নেই — merge প্রয়োজন নেই (গ-৯-এ "staging ব্রাঞ্চে production কোড নেই" ধরা gap আর প্রযোজ্য নয়)। `stagingdatabase` লোকাল; সার্ভার `staging.cashbookbd.com` DB আলাদা যাচাই দরকার।
+- `WarehouseTransferController`-এর `InventoryTransferMaster::invMaster` কল শুধু dead code (`if (0 == 1)`) পথে; live API transfer `postTransferStock` (float qty, FIFO layer) ব্যবহার করে — integer-truncation ঝুঁকি live পথে নেই।
+- `TradingPurchaseController` qty `decimalValue` (2 decimal) রাখে; তবে price 0 (non-cylinder) হলে `inventory_details` সারি লেখে না — Phase 4-এর আলাদা Production Purchase ফর্মের প্রয়োজনীয়তা সমর্থন করে।
+
+**এখনো বাকি (Phase 0/1/2):**
+- গ-৯-এর বাকি query ফল ক্লায়েন্ট/টার্গেট DB-তে রেকর্ড; সার্ভার staging DB অবস্থা।
+- migration SQL-এ `production.sales.return.create` যোগ ও role grant reconciliation (approval সাপেক্ষে)।
+- Unit conversion: ৮১৪টি active product-এর কোনোটিতে `measurement`/`package_size` নেই; `production_inputs.entered_unit_id/entered_qty/base_qty` আছে কিন্তু server-side conversion নেই — `product_unit_conversions` (প্রস্তাবিত) দরকার।
+- টেস্ট ডেটা নেই: `product_type` 4 raw material, Factory-type (4) branch, branch 5 godown। Acceptance Check ১–১০, ১২–১৪ চালানো হয়নি (production টেবিল খালি)।
+- ক্লায়েন্ট সিদ্ধান্ত বাকি: VAT/মূসক (ক-২ #১০), কাঁচামাল sourcing/আলাদা গুদাম (ক-২ #১১), Factory vs Branch Office টাইপ, কোন role-কে `production.*` দেওয়া হবে, per-product unit conversion ও precision।
 
 ### v3 থেকে কী বদলাল
 
@@ -151,7 +174,7 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 
 | ধাপ | ক্লায়েন্ট কী পাবেন |
 | --- | --- |
-| ০. যাচাই | **কোডের অংশ শেষ (অংশ গ)।** বাকি: ক্লায়েন্ট DB-তে query চালানো (গ-৯)। #১২, #১৩-এর সিদ্ধান্ত হয়ে গেছে |
+| ০. যাচাই | **কোডের অংশ শেষ (অংশ গ)।** `stagingdatabase`-এ স্কিমা/vr_type/head/permission উপস্থিতি যাচাইকৃত (১২ নভেম্বর ২০২৬)। বাকি: ক্লায়েন্ট/টার্গেট DB-র গ-৯ ফল, role grant ও migration SQL সমন্বয়, unit conversion, টেস্ট ডেটা ও Check ১–১০, ১২–১৪। #১২, #১৩-এর সিদ্ধান্ত চূড়ান্ত |
 | ১. উৎপাদন | নতুন ব্রাঞ্চ; নতুন ফর্ম: Production Entry (রেসিপি ছাড়া), Production Sales Return; ক্রয়-খরচ-বিক্রি আগের ফর্মে; Item opening stock দশমিকে আপডেট; প্রতিটা output-এ ঐচ্ছিক মেয়াদ (expiry) তারিখ; Production Register ও Costing রিপোর্ট; আগের তিন রিপোর্ট মেলে |
 | ২. রেসিপি | রেসিপি বাছলে লাইন নিজে ভরে যাবে; কাঁচামাল কম থাকলে আগেই জানাবে |
 | ৩. বিক্রিতে ফ্রি | নতুন Production Sales (ফ্রি রো, দাম ০), স্কিম সেটআপ, ফ্রিসহ ফেরত |
@@ -389,8 +412,8 @@ Phase 1-এর পাস/ফেল মাপকাঠি এটাই: test DB-�
 
 | Phase | কাজ | শেষের প্রমাণ |
 | --- | --- | --- |
-| 0 | কোড/schema audit **শেষ (অংশ গ)**; ক-২ #১২ ("গ") ও #১৩-এর সিদ্ধান্ত লেখা হয়েছে; বাকি: ক্লায়েন্ট DB query (গ-৯) | গ-৯-এর ফল লেখা |
-| 1 | নতুন ফর্ম: Production Entry, Production Sales Return; Item opening stock-এ দশমিক qty; manual single-output production, source-linked cost, abnormal loss, stock integration, Product Ledger শাখা, Register ও Costing | Check ১–১০, ১২–১৪ পাস |
+| 0 | কোড/schema audit **শেষ (অংশ গ)**; `stagingdatabase` read-only যাচাইয়ে ৯ টেবিল/vr_type/head/permission উপস্থিত (১২ নভেম্বর ২০২৬)। ক-২ #১২ ("গ") ও #১৩ চূড়ান্ত। বাকি: ক্লায়েন্ট/টার্গেট DB-র গ-৯ ফল, role grant ও migration SQL সমন্বয়, unit conversion, টেস্ট ডেটা প্রস্তুতি | গ-৯-এর ফল লেখা; grant/SQL/unit/test-data মীমাংসা |
+| 1 | নতুন ফর্ম: Production Entry, Production Sales Return; Item opening stock-এ দশমিক qty; manual single-output production, source-linked cost, abnormal loss, stock integration, Product Ledger শাখা, Register ও Costing | Check ১–১০, ১২–১৪ পাস (isolated test branch/DB) |
 | 2 | Recipe, version, ঘাটতি দেখা — **শেষ (৬ নভেম্বর ২০২৬)** | Recipe থেকে ভরা batch-এ check ১, ৭ পাস; snapshot, variance, effective date ও multi-output যাচাই (handoff §৪-ঙ) |
 | 3 | নতুন Production Sales (ফ্রি রো), scheme, ফ্রিসহ return | Check ১১ পাস |
 | 4 | নতুন Production Purchase (ফ্রি রো) | Purchase free দিয়ে check ২ পাস |
