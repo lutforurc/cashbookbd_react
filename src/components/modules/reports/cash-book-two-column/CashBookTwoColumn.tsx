@@ -28,9 +28,12 @@ import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
 import { hasPermission } from '../../../utils/permissionChecker';
 import {
   buildVoucherAutoEditState,
+  buildVoucherAutoEditStateForRow,
   getCombinedVoucherOpenState,
   getEditableVoucherNo,
+  getVoucherEditRouteForRow,
   getVoucherEditTarget,
+  getVoucherEditTargetForRow,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { useCombinedEntryRoute } from '../../../utils/hooks/useCombinedEntryRoute';
 import {
@@ -390,15 +393,15 @@ const CashBookTwoColumn = ({ user }: any) => {
      */
     const voucherNo = getEditableVoucherNo(row);
     const openOnBankScreen = row?.is_bank_voucher === true;
-    const editTarget = getVoucherEditTarget(voucherNo, { bank: openOnBankScreen });
-    const editState = buildVoucherAutoEditState(voucherNo, { bank: openOnBankScreen });
+    const editTarget = getVoucherEditTargetForRow(row, { bank: openOnBankScreen });
+    const editState = buildVoucherAutoEditStateForRow(row, { bank: openOnBankScreen });
 
     if (!voucherNo || !editTarget || !editState) {
       toast.error('Edit route not found for this voucher.');
       return;
     }
 
-    navigate(editTarget.route, { state: editState });
+    navigate(getVoucherEditRouteForRow(row, editTarget), { state: editState });
   };
 
   const rows: any[] = report?.rows ?? [];

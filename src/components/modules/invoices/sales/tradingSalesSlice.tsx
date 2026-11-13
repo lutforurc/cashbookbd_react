@@ -29,6 +29,8 @@ interface formData {
   notes: string;
   currentProduct: { index?: number } | null; // Initialize `currentProduct` with optional index
   searchInvoice: string;
+  // Which invoice form wrote this voucher; stored beside it by the API.
+  invoice_workflow?: string;
   products: Product[];
 }
 

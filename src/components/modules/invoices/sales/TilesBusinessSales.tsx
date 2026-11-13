@@ -48,6 +48,7 @@ import { getSalesTypeForVoucher } from '../../../utils/utils-functions/voucherEd
 import StockShortageModal, {
   StockShortage,
 } from '../../../utils/components/StockShortageModal';
+import { INVOICE_WORKFLOW_TILES } from '../shared/invoiceWorkflow';
 
 /**
  * The two dates this screen holds are 'YYYY-MM-DD' strings -- the shape the API
@@ -831,6 +832,10 @@ const TilesBusinessSales = () => {
     const payload = {
       ...formData,
       receivedAmt: formData.receivedAmt === '' ? '0' : formData.receivedAmt,
+      // Stored on the voucher so a report's Edit button can reopen this form
+      // even when the branch also has the order-driven one. The number cannot
+      // say it: both workflows print "3-".
+      invoice_workflow: INVOICE_WORKFLOW_TILES,
     };
 
     sendInvoice(payload);
@@ -896,6 +901,7 @@ const TilesBusinessSales = () => {
     const payload = {
       ...formData,
       receivedAmt: formData.receivedAmt === '' ? '0' : formData.receivedAmt,
+      invoice_workflow: INVOICE_WORKFLOW_TILES,
     };
     // try{
     dispatch(

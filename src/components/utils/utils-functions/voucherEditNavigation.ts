@@ -1,4 +1,9 @@
 import routes from '../../services/appRoutes';
+import {
+  invoiceWorkflowFromRow,
+  withInvoiceWorkflowQuery,
+  type InvoiceWorkflow,
+} from '../../modules/invoices/shared/invoiceWorkflow';
 
 export interface VoucherEditTarget {
   route: string;
@@ -10,6 +15,12 @@ export interface VoucherAutoEditState {
   voucherAutoEdit: true;
   voucherAutoEditNo: string;
   voucherAutoEditPrefix: string;
+  /**
+   * Which invoice form wrote this voucher, when the row says. Sales Invoice and
+   * Purchase Invoice each have two forms behind one route, and both print the
+   * same prefix, so the number alone cannot reopen the right one from a report.
+   */
+  invoiceWorkflow?: InvoiceWorkflow;
 }
 
 export interface CombinedVoucherOpenState {
@@ -147,6 +158,7 @@ export const buildVoucherAutoEditStateForRow = (
 ): VoucherAutoEditState | null => {
   const voucherNo = getEditableVoucherNo(row);
   const target = getVoucherEditTargetForRow(row, options);
+  const invoiceWorkflow = invoiceWorkflowFromRow(row);
 
   if (!voucherNo || !target) {
     return null;
@@ -156,8 +168,23 @@ export const buildVoucherAutoEditStateForRow = (
     voucherAutoEdit: true,
     voucherAutoEditNo: voucherNo,
     voucherAutoEditPrefix: target.prefix,
+    ...(invoiceWorkflow ? { invoiceWorkflow } : {}),
   };
 };
+
+/**
+ * The route an Edit button should open for a row.
+ *
+ * For an invoice, the workflow the row carries rides in the query string, so
+ * the one Sales/Purchase entry can mount the form that actually wrote it. A row
+ * with no workflow -- every invoice older than the column -- keeps the plain
+ * route and the screens' existing fallback.
+ */
+export const getVoucherEditRouteForRow = (
+  row: any,
+  target: VoucherEditTarget,
+): string =>
+  withInvoiceWorkflowQuery(target.route, invoiceWorkflowFromRow(row));
 
 export const buildVoucherAutoEditState = (
   vrNo: string | number | null | undefined,

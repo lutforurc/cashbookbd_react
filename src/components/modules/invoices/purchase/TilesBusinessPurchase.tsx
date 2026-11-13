@@ -29,6 +29,7 @@ import {
   purchaseUpdate,
   tradingPurchaseEdit,
 } from './tradingPurchaseSlice';
+import { INVOICE_WORKFLOW_TILES } from '../shared/invoiceWorkflow';
 import { validateForm } from '../../../utils/utils-functions/validationUtils';
 import { invoiceMessage } from '../../../utils/utils-functions/invoiceMessage';
 import { validateProductData } from '../../../utils/utils-functions/productValidationHandler';
@@ -825,6 +826,10 @@ const TilesBusinessPurchase = () => {
       ...formData,
       paymentAmt: formData.paymentAmt === '' ? '0' : formData.paymentAmt,
       discountAmt: formData.discountAmt === '' ? 0 : Number(formData.discountAmt) || 0,
+      // Stored on the voucher so a report's Edit button can reopen this form
+      // even when the branch also has the order-driven one. The number cannot
+      // say it: both workflows print "4-".
+      invoice_workflow: INVOICE_WORKFLOW_TILES,
     };
 
     dispatch(
@@ -902,6 +907,7 @@ const TilesBusinessPurchase = () => {
       ...formData,
       paymentAmt: formData.paymentAmt === '' ? '0' : formData.paymentAmt,
       discountAmt: formData.discountAmt === '' ? 0 : Number(formData.discountAmt) || 0,
+      invoice_workflow: INVOICE_WORKFLOW_TILES,
     };
 
     // Save Invoice

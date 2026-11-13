@@ -45,6 +45,8 @@ interface formData {
   manual_voucher_date?: string;
   manual_challan_no?: string;
   manual_challan_date?: string;
+  // Which invoice form wrote this voucher; stored beside it by the API.
+  invoice_workflow?: string;
   products: Product[];
 }
 

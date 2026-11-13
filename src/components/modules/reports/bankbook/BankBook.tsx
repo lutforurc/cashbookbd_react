@@ -34,9 +34,12 @@ import { hasPermission } from '../../../utils/permissionChecker';
 import FilterMenuShell from '../../../utils/components/FilterMenuShell';
 import {
   buildVoucherAutoEditState,
+  buildVoucherAutoEditStateForRow,
   getCombinedVoucherOpenState,
   getEditableVoucherNo,
+  getVoucherEditRouteForRow,
   getVoucherEditTarget,
+  getVoucherEditTargetForRow,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { useCombinedEntryRoute } from '../../../utils/hooks/useCombinedEntryRoute';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
@@ -305,15 +308,15 @@ const BankBook = (user: any) => {
      * rather than guessing.
      */
     const openOnBankScreen = row?.is_bank_voucher === true;
-    const editTarget = getVoucherEditTarget(voucherNo, { bank: openOnBankScreen });
-    const editState = buildVoucherAutoEditState(voucherNo, { bank: openOnBankScreen });
+    const editTarget = getVoucherEditTargetForRow(row, { bank: openOnBankScreen });
+    const editState = buildVoucherAutoEditStateForRow(row, { bank: openOnBankScreen });
 
     if (!voucherNo || !editTarget || !editState) {
       toast.error('Edit route not found for this voucher.');
       return;
     }
 
-    navigate(editTarget.route, { state: editState });
+    navigate(getVoucherEditRouteForRow(row, editTarget), { state: editState });
   };
 
   const handlePrint = useReactToPrint({

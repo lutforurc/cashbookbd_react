@@ -323,11 +323,17 @@ const buildBranchFormData = (data: branchItem, file: File | null) => {
  * choice opens the matching existing form; '' is Automatic, which keeps
  * choosing the form as before. The labels are the trade-neutral names the
  * branch sees, never the business-type names behind them. Only forms a
- * category actually has are listed, and no two entries open the same form.
+ * category actually has are listed, and no two entries open the same form --
+ * except "Both", which is a mode over the two invoice categories rather than a
+ * form of its own: it leaves both forms reachable from the one menu entry.
  */
 const FORM_VARIANT_OPTIONS: Record<string, { id: string; name: string }[]> = {
   invoice_variant_purchase: [
     { id: '', name: 'Automatic' },
+    // Not a third form: a mode. It keeps both existing forms attached to the
+    // one Invoice -> Purchase entry and lets the screen ask which one this
+    // bill is. The other invoice categories are unchanged.
+    { id: 'both', name: 'Both — choose per invoice' },
     { id: 'tiles', name: 'Elegant' },
     { id: 'electronics', name: 'Smart' },
     { id: 'construction', name: 'Classic' },
@@ -335,6 +341,7 @@ const FORM_VARIANT_OPTIONS: Record<string, { id: string; name: string }[]> = {
   ],
   invoice_variant_sales: [
     { id: '', name: 'Automatic' },
+    { id: 'both', name: 'Both — choose per invoice' },
     { id: 'tiles', name: 'Elegant' },
     { id: 'electronics', name: 'Smart' },
     { id: 'company_scheme', name: 'Partner' },

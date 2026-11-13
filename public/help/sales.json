@@ -2,7 +2,7 @@
   "sales-invoice": {
     "title": "বিক্রির ইনভয়েস তৈরি",
     "module": "Sales",
-    "updated": "06/11/2026",
+    "updated": "13/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এই স্ক্রিনে পণ্য বিক্রির ইনভয়েস তৈরি হয়। ক্রেতা, পণ্য, পরিমাণ ও দাম দিয়ে লাইন যোগ করে Save চাপলে বিক্রি ও স্টক একসাথে লেখা হয়।",
@@ -24,6 +24,16 @@
           "Discount Amount ও Notes পূরণ করুন।",
           "Select Product ও Select Warehouse বেছে Enter Quantity ও Enter Price লিখে Add New চাপুন। প্রতিটি পণ্যের জন্য এটি আলাদা করে করুন।",
           "সব লাইন ঠিক থাকলে Save চাপুন।"
+        ]
+      },
+      {
+        "heading": "দুই ধরনের ইনভয়েস (Order Management / Tiles & Sanitary)",
+        "steps": [
+          "Branch Setup → Forms Setup-এ Sales Invoice-এর জন্য “Both — choose per invoice” বাছা থাকলে ইনভয়েস স্ক্রিনের উপরে Invoice Form নামে দুটি বাটন দেখা যায়।",
+          "Order Management (Essential) — অর্ডারভিত্তিক ফর্ম; এতে Select Sales Order ও Select Purchase Order থাকে এবং অর্ডার বাছলে ক্রেতা, পণ্য, পরিমাণ ও দাম নিজে থেকে বসে।",
+          "Tiles & Sanitary (Elegant) — মাপ, ওয়্যারহাউস এবং branch-এ চালু থাকলে Deduct stock on delivery সহ ফর্ম।",
+          "বাটন বদলালে নতুন ইনভয়েস শুরু হয়। পুরোনো ইনভয়েস বদলাতে রিপোর্টের Edit ব্যবহার করুন — যে ফর্মে ইনভয়েসটি লেখা হয়েছিল, Edit সেই ফর্মই খোলে।",
+          "এক ফর্মের সার্চ বক্সে অন্য ফর্মে লেখা ইনভয়েসের নম্বর দিয়ে Update করলে সেভ হয় না; বার্তায় বলা থাকে কোন ফর্মে খুলতে হবে।"
         ]
       },
       {

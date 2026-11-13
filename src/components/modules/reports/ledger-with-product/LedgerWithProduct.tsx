@@ -46,9 +46,10 @@ import {
 import { hasAnyPermission, hasPermission } from '../../../Sidebar/permissionUtils';
 import { canEditVoucherRow } from '../../../utils/utils-functions/voucherEditPermission';
 import {
-  buildVoucherAutoEditState,
+  buildVoucherAutoEditStateForRow,
   getEditableVoucherNo,
-  getVoucherEditTarget,
+  getVoucherEditRouteForRow,
+  getVoucherEditTargetForRow,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { FiCheckSquare, FiDownload, FiFilter, FiRotateCcw } from 'react-icons/fi';
 import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
@@ -629,15 +630,15 @@ const LedgerWithProduct = (user: any) => {
      * fallback the plain Ledger takes against a server that does not send it.
      */
     const openOnBankScreen = row?.is_bank_voucher === true;
-    const editTarget = getVoucherEditTarget(voucherNo, { bank: openOnBankScreen });
-    const editState = buildVoucherAutoEditState(voucherNo, { bank: openOnBankScreen });
+    const editTarget = getVoucherEditTargetForRow(row, { bank: openOnBankScreen });
+    const editState = buildVoucherAutoEditStateForRow(row, { bank: openOnBankScreen });
 
     if (!voucherNo || !editTarget || !editState) {
       toast.error('Edit route not found for this voucher.');
       return;
     }
 
-    navigate(editTarget.route, { state: editState });
+    navigate(getVoucherEditRouteForRow(row, editTarget), { state: editState });
   };
 
   const selectedProduct = (option: any) => {
