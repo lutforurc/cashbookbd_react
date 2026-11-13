@@ -53,12 +53,13 @@
   "voucher-delete": {
     "title": "ভাউচার মোছা",
     "module": "Settings",
-    "updated": "06/11/2026",
+    "updated": "13/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একটি ভাউচার ও তার লেনদেন Recycle Bin-এ পাঠানো হয়।",
     "sections": [
       { "heading": "মোছা", "menu": "Voucher Settings → Voucher Delete", "steps": ["Enter Voucher Number ঘরে নম্বর লিখুন।", "Delete Voucher চাপুন; Confirm Deletion-এ সায় দিন।", "Home দিয়ে ফিরুন।"] },
+      { "heading": "যে ভাউচার এখান থেকে মোছা যায় না", "steps": ["Production batch-এর নিজের ভাউচার: Production স্ক্রিন থেকে batch-টি Reverse করুন।", "যে খরচের ভাউচার থেকে কোনো posted batch-এ খরচ বণ্টন করা হয়েছে: আগে সেই batch Reverse করুন, তারপর ভাউচারটি মুছুন।"] },
       { "heading": "সতর্কতা", "warning": "ভাউচার Recycle Bin-এ যায়, সাথে সাথে চিরতরে মোছে না। ইতিমধ্যে মোছা ভাউচার হলে আলাদা জানালা আসে — Continue করলে আবার মোছা হবে।" }
     ]
   },

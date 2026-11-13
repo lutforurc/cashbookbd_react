@@ -143,9 +143,13 @@ export const MENU_ROUTES: Record<string, string[]> = {
   ],
   'production': [
     routes.production_entry,
+    routes.production_sales,
+    routes.production_purchase,
     routes.production_sales_return,
+    routes.production_scheme,
     routes.production_recipe,
     routes.production_register,
+    routes.production_free_goods,
     // Reached from a row on the register rather than from the menu itself, but
     // listed so the Production menu stays open and marked while it is on screen.
     routes.production_costing,
