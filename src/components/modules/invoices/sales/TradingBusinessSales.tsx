@@ -69,6 +69,7 @@ import StockShortageModal, {
   StockShortage,
 } from '../../../utils/components/StockShortageModal';
 import { useNavigate } from 'react-router-dom';
+import { INVOICE_WORKFLOW_ORDER } from '../shared/invoiceWorkflow';
 
 interface Product {
   id: number;
@@ -715,6 +716,9 @@ const TradingBusinessSales = () => {
       ...formData,
       receivedAmt: formData.receivedAmt === '' ? '0' : formData.receivedAmt,
       discountAmt: formData.discountAmt === '' ? 0 : Number(formData.discountAmt) || 0,
+      // Stored on the voucher so a report's Edit button can reopen this form
+      // even when the branch also has the tiles one. The number cannot say it.
+      invoice_workflow: INVOICE_WORKFLOW_ORDER,
     };
 
     sendInvoice(payload);
@@ -827,6 +831,7 @@ const TradingBusinessSales = () => {
       ...formData,
       receivedAmt: formData.receivedAmt === '' ? '0' : formData.receivedAmt,
       discountAmt: formData.discountAmt === '' ? 0 : Number(formData.discountAmt) || 0,
+      invoice_workflow: INVOICE_WORKFLOW_ORDER,
     };
 
     // Save Invoice Update

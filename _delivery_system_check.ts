@@ -189,12 +189,12 @@ check(
   /anyOf=\{\['delivery\.view'\]\}[\s\S]{0,400}routes\.inv_delivery[\s\S]{0,200}element=\{<Delivery \/>\}/.test(app),
 );
 check(
-  'the Delivery Report is routed under delivery.view',
-  /anyOf=\{\['delivery\.view'\]\}[\s\S]{0,400}routes\.report_delivery[\s\S]{0,200}element=\{<DeliveryReport \/>\}/.test(app),
+  'the Delivery Report is routed under delivery.report.view',
+  /anyOf=\{\['delivery\.report\.view'\]\}[\s\S]{0,400}routes\.report_delivery[\s\S]{0,200}element=\{<DeliveryReport \/>\}/.test(app),
 );
 check(
-  'the Delivery dashboard is routed under delivery.view',
-  /anyOf=\{\['delivery\.view'\]\}[\s\S]{0,600}routes\.delivery_dashboard[\s\S]{0,200}element=\{<DeliveryDashboard \/>\}/.test(app),
+  'the Delivery dashboard is routed under delivery.dashboard.view',
+  /anyOf=\{\['delivery\.dashboard\.view'\]\}[\s\S]{0,600}routes\.delivery_dashboard[\s\S]{0,200}element=\{<DeliveryDashboard \/>\}/.test(app),
 );
 
 /* ══════════════════════════════════════════════════════════════════════════ */
@@ -212,9 +212,26 @@ check(
   'the Delivery System item is slotted into the Dashboard group',
   /subSlot\('dashboard', 'delivery_dashboard'\)/.test(sidebar),
 );
+/**
+ * ⚠️ THREE PERMISSIONS, ONE PER ENTRY -- NOT ONE KEY FOR ALL THREE.
+ *
+ * Commit 21100e30 ("One permission per menu") split what used to be a single
+ * delivery.view gate:
+ *
+ *   delivery.view           the Delivery screen, and the Invoice menu entry
+ *   delivery.report.view    the Delivery Report, and the Reports menu group
+ *   delivery.dashboard.view the Delivery System dashboard entry
+ *
+ * The three checks below used to expect delivery.view on all three entries.
+ * That expectation is stale, not a regression: holding delivery.view alone
+ * still opens Invoice -> Delivery, and deliberately does NOT open the Report or
+ * the dashboard. The screens enforce the split on the server too
+ * (InventoryDeliveryController::report accepts report/dashboard; store and
+ * cancel use create/cancel).
+ */
 check(
-  'the Delivery System item is gated on delivery.view',
-  /hasPermission\(permissions, 'delivery\.view'\)[\s\S]{0,200}routes\.delivery_dashboard/.test(sidebar),
+  'the Delivery System item is gated on delivery.dashboard.view',
+  /hasPermission\(permissions, 'delivery\.dashboard\.view'\)[\s\S]{0,200}routes\.delivery_dashboard/.test(sidebar),
 );
 check(
   'the Invoice group carries the Delivery entry, on delivery.view',
@@ -222,9 +239,9 @@ check(
     /hasPermission\(permissions, 'delivery\.view'\)[\s\S]{0,200}routes\.inv_delivery/.test(sidebar),
 );
 check(
-  'the Reports group carries the Delivery Report, on delivery.view',
+  'the Reports group carries the Delivery Report, on delivery.report.view',
   /subSlot\('reports', 'reports\/delivery'\)/.test(sidebar) &&
-    /hasPermission\(permissions, 'delivery\.view'\)[\s\S]{0,200}routes\.report_delivery/.test(sidebar),
+    /hasPermission\(permissions, 'delivery\.report\.view'\)[\s\S]{0,200}routes\.report_delivery/.test(sidebar),
 );
 
 const menuRoutes = read('src/components/Sidebar/menuRoutes.ts');
@@ -257,7 +274,12 @@ const reportsPerms = menuPermissions.slice(
   menuPermissions.indexOf('requisition: ['),
 );
 check("delivery.view opens the Invoice menu", invoicePerms.includes("'delivery.view'"));
-check("delivery.view opens the Reports menu", reportsPerms.includes("'delivery.view'"));
+check("delivery.report.view opens the Reports menu", reportsPerms.includes("'delivery.report.view'"));
+check(
+  "delivery.view alone does not open the Reports menu",
+  !reportsPerms.includes("'delivery.view'"),
+  'the Delivery Report has its own key since 21100e30',
+);
 
 /* ══════════════════════════════════════════════════════════════════════════ */
 /* 6. The screens use the system they belong to                              */

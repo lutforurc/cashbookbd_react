@@ -39,6 +39,7 @@ import {
   buildVoucherAutoEditStateForRow,
   getCombinedVoucherOpenState,
   getEditableVoucherNo,
+  getVoucherEditRouteForRow,
   getVoucherEditTarget,
   getVoucherEditTargetForRow,
 } from '../../../utils/utils-functions/voucherEditNavigation';
@@ -354,7 +355,8 @@ const CashBook = (user: any) => {
     }
 
     // By the row, not the number alone: an Employee Loan is a "2-" voucher
-    // but is edited on its own screen (the report marks it `edit_screen`).
+    // but is edited on its own screen (the report marks it `edit_screen`), and
+    // an invoice row names the form that wrote it.
     const voucherNo = getEditableVoucherNo(row);
     const editTarget = getVoucherEditTargetForRow(row);
     const editState = buildVoucherAutoEditStateForRow(row);
@@ -364,7 +366,7 @@ const CashBook = (user: any) => {
       return;
     }
 
-    navigate(editTarget.route, { state: editState });
+    navigate(getVoucherEditRouteForRow(row, editTarget), { state: editState });
   };
 
   const handlePrint = useReactToPrint({

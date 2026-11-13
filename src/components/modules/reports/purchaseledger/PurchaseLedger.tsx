@@ -51,9 +51,12 @@ import { hasPermission } from '../../../utils/permissionChecker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import {
   buildVoucherAutoEditState,
+  buildVoucherAutoEditStateForRow,
   getCombinedVoucherOpenState,
   getEditableVoucherNo,
+  getVoucherEditRouteForRow,
   getVoucherEditTarget,
+  getVoucherEditTargetForRow,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { useCombinedEntryRoute } from '../../../utils/hooks/useCombinedEntryRoute';
 import formatDate, { formatBdShortDate } from '../../../utils/utils-functions/formatDate';
@@ -376,15 +379,18 @@ const PurchaseLedger = (user: any) => {
     }
 
     const voucherNo = getEditableVoucherNo(row);
-    const editTarget = getVoucherEditTarget(voucherNo);
-    const editState = buildVoucherAutoEditState(voucherNo);
+    const editTarget = getVoucherEditTargetForRow(row);
+    const editState = buildVoucherAutoEditStateForRow(row);
 
     if (!voucherNo || !editTarget || !editState) {
       toast.error('Edit route not found for this voucher.');
       return;
     }
 
-    navigate(editTarget.route, { state: editState });
+    // Purchase Invoice has two forms behind one route. The row's stored
+    // workflow rides in the query so the report reopens the form that wrote it;
+    // a legacy row with none keeps the screens' own fallback.
+    navigate(getVoucherEditRouteForRow(row, editTarget), { state: editState });
   };
 
   const handleApprovePrompt = (row: any) => {

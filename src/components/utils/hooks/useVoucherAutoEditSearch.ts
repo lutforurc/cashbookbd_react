@@ -46,13 +46,16 @@ const useVoucherAutoEditSearch = ({
 
     const timer = window.setTimeout(() => {
       triggerSearchRef.current(voucherNo);
-      navigate(location.pathname, { replace: true, state: null });
+      // Keep the query string: a Sales/Purchase Edit link names the workflow in
+      // it, and dropping it here would swap the form out from under the search
+      // the moment it began. Only the one-shot router state is cleared.
+      navigate(location.pathname + location.search, { replace: true, state: null });
     }, delayMs);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [delayMs, enabled, location.pathname, location.state, navigate]);
+  }, [delayMs, enabled, location.pathname, location.search, location.state, navigate]);
 };
 
 export default useVoucherAutoEditSearch;
