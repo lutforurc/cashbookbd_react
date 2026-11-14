@@ -173,7 +173,7 @@ const HotelReceivedEntry = () => {
 
   return (
     <div>
-      <HelmetTitle title="Accounts Transaction" />
+      <HelmetTitle title="Asset & Inventories" />
 
       <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>

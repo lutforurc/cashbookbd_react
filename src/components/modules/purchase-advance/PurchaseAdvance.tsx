@@ -197,7 +197,7 @@ const PurchaseAdvance = () => {
 
   return (
     <div>
-      <HelmetTitle title="Purchase Advance" />
+      <HelmetTitle title="Advance for Purchase" />
       <div className='mb-2'></div>
       
 
