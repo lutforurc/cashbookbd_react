@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAssetTabActive, useAssetTabLoaded } from './assetTabActive';
 import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import { FiPrinter } from 'react-icons/fi';
@@ -86,9 +87,14 @@ const AssetScheduleTab = ({
   branchId?: number | null;
   branchName?: string;
 }) => {
+  // False while this tab sits behind another one -- see assetTabActive.
+  const active = useAssetTabActive();
+
   const [asAt, setAsAt] = useState<string>(asText(new Date()));
   const [schedule, setSchedule] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  // Tells the screen this tab has something to show -- see assetTabActive.
+  useAssetTabLoaded(loading);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -109,8 +115,10 @@ const AssetScheduleTab = ({
   }, [asAt, branchId]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    // Not while hidden, and again on every return to the front: the tab
+    // stays mounted, and another tab may have changed what it shows.
+    if (active) load();
+  }, [load, active]);
 
   const print = useReactToPrint({
     contentRef: printRef,

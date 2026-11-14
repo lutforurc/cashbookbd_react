@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useAssetTabActive, useAssetTabLoaded } from './assetTabActive';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiArrowLeft, FiClipboard, FiLogOut, FiPlus, FiPrinter, FiTrash2 } from 'react-icons/fi';
@@ -131,6 +132,9 @@ const draftOf = (one: any, locked: boolean) => ({
 });
 
 const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
+  // False while this tab sits behind another one -- see assetTabActive.
+  const active = useAssetTabActive();
+
   const [rows, setRows] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [page, setPage] = useState(1);
@@ -147,6 +151,13 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
+  // Tells the screen this tab has something to show -- see assetTabActive.
+  useAssetTabLoaded(loading);
+  // ⚠️ THE FULL-PAGE SPINNER IS FOR THE FIRST READ ONLY. It used to come up
+  // whenever a read was running over an EMPTY list -- so a tab with nothing
+  // in it threw its whole page away for a spinner on every return, and the
+  // fade-in played over a page that then vanished and came back.
+  const [firstRead, setFirstRead] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>(null);
 
@@ -190,7 +201,7 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
    * reload comes back to the same place, the browser's Back button means what
    * it looks like it means, and a link can be sent to somebody.
    */
-  const asked = params.get('form');
+  const asked = active ? params.get('form') : null;
 
   const openForm = (id?: any) => {
     const at = new URLSearchParams(params);
@@ -299,12 +310,15 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
       toast.error(error?.response?.data?.message || 'Could not read the register');
     } finally {
       setLoading(false);
+      setFirstRead(false);
     }
   }, [page, search, categoryFilter, statusFilter, branchId]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    // Not while hidden, and again on every return to the front: the tab
+    // stays mounted, and another tab may have changed what it shows.
+    if (active) load();
+  }, [load, active]);
 
   const categoryOptions = useMemo(
     () => [
@@ -598,7 +612,7 @@ const AssetRegisterTab = ({ branchId }: { branchId?: number | null }) => {
     },
   ];
 
-  if (loading && !rows.length) return <Loader />;
+  if (loading && firstRead) return <Loader />;
 
   /*
    * THE FORM PAGE. One thing on it, and a way back.

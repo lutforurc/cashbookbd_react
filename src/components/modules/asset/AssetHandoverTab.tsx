@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAssetTabActive, useAssetTabLoaded } from './assetTabActive';
 import { toast } from 'react-toastify';
 
 import { FiChevronRight } from 'react-icons/fi';
@@ -60,9 +61,14 @@ const onTheDay = (value?: string | null): string => {
 const today = () => asText(new Date());
 
 const AssetHandoverTab = ({ branchId }: { branchId: number | string }) => {
+  // False while this tab sits behind another one -- see assetTabActive.
+  const active = useAssetTabActive();
+
   const [asOf, setAsOf] = useState<string>(today());
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  // Tells the screen this tab has something to show -- see assetTabActive.
+  useAssetTabLoaded(loading);
   const [search, setSearch] = useState('');
 
   /** The asset whose own panel is open, if any. */
@@ -85,8 +91,10 @@ const AssetHandoverTab = ({ branchId }: { branchId: number | string }) => {
   }, [branchId, asOf]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    // Not while hidden, and again on every return to the front: the tab
+    // stays mounted, and another tab may have changed what it shows.
+    if (active) load();
+  }, [load, active]);
 
   if (loading && !data) return <Loader />;
 

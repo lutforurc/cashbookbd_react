@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAssetTabActive, useAssetTabLoaded } from './assetTabActive';
 import { toast } from 'react-toastify';
 import { FiPrinter } from 'react-icons/fi';
 import { useReactToPrint } from 'react-to-print';
@@ -69,9 +70,14 @@ const AssetVerificationTab = ({
   branchId?: number | null;
   branchName?: string;
 }) => {
+  // False while this tab sits behind another one -- see assetTabActive.
+  const active = useAssetTabActive();
+
   const [countedOn, setCountedOn] = useState(asText(new Date()));
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  // Tells the screen this tab has something to show -- see assetTabActive.
+  useAssetTabLoaded(loading);
 
   /** Only what is still to be looked at — the way the round is actually walked. */
   const [onlyLeft, setOnlyLeft] = useState(false);
@@ -99,8 +105,10 @@ const AssetVerificationTab = ({
   }, [countedOn, branchId]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    // Not while hidden, and again on every return to the front: the tab
+    // stays mounted, and another tab may have changed what it shows.
+    if (active) load();
+  }, [load, active]);
 
   /**
    * Tick one asset.

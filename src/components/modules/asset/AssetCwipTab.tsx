@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAssetTabActive, useAssetTabLoaded } from './assetTabActive';
 import { toast } from 'react-toastify';
 import { FiCheckCircle, FiList, FiPlus, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 
@@ -72,8 +73,13 @@ const blank = () => ({
 });
 
 const AssetCwipTab = ({ branchId }: { branchId?: number | null }) => {
+  // False while this tab sits behind another one -- see assetTabActive.
+  const active = useAssetTabActive();
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  // Tells the screen this tab has something to show -- see assetTabActive.
+  useAssetTabLoaded(loading);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>(null);
 
@@ -102,8 +108,10 @@ const AssetCwipTab = ({ branchId }: { branchId?: number | null }) => {
   }, [branchId]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    // Not while hidden, and again on every return to the front: the tab
+    // stays mounted, and another tab may have changed what it shows.
+    if (active) load();
+  }, [load, active]);
 
   const save = async () => {
     if (!form?.code?.trim() || !form?.name?.trim()) {

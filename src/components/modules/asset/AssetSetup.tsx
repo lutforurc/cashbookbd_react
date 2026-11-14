@@ -26,6 +26,7 @@ import AssetRegisterTab from './AssetRegisterTab';
 import AssetScheduleTab from './AssetScheduleTab';
 import AssetHandoverTab from './AssetHandoverTab';
 import AssetVerificationTab from './AssetVerificationTab';
+import { AssetTabContext } from './assetTabActive';
 
 /**
  * Fixed assets — the categories, and the register of the things themselves.
@@ -39,11 +40,23 @@ import AssetVerificationTab from './AssetVerificationTab';
  * Categories, which is why it is drawn inside this screen rather than inside
  * any one tab.
  *
- * ⚠️ SETUP COMES FIRST, THEN CATEGORIES: the heads exist before a category can
- * be depreciated, and a category exists before an asset can be entered — the
- * rate it wears out at comes from there. The tab order is the order of the job.
+ * ⚠️ THE DEPENDENCY RUNS THE OTHER WAY FROM THE TAB ORDER: the heads (Setup)
+ * exist before a category can be depreciated, and a category exists before an
+ * asset can be entered. The tabs are in the order they are USED -- see TABS.
  *
- * ⚠️ DEPRECIATION IS A THIRD TAB RATHER THAN A BUTTON ON THE REGISTER, because
+ * ⚠️ A TAB STAYS MOUNTED ONCE IT HAS BEEN OPENED, hidden behind the one on
+ * screen. Unmounting it threw its rows away, so every return to a tab drew an
+ * empty page and a spinner before the same figures came back. Each tab reads
+ * again when it is chosen again (assetTabActive), with what it had still
+ * showing until the answer lands.
+ *
+ * ⚠️ AND THE TAB CHOSEN IS NOT THE TAB SHOWN UNTIL IT HAS ITS FIGURES (owner,
+ * 14 Nov 2026). `tab` is what was clicked; `shown` is what is on screen. A tab
+ * opened for the first time reads behind the old one, which stays where it is
+ * -- dimmed, so it is plainly not the answer -- and the new one is faded in the
+ * moment it reports back. Nothing is ever blank in between.
+ *
+ * ⚠️ DEPRECIATION IS ITS OWN TAB RATHER THAN A BUTTON ON THE REGISTER, because
  * it is a different act: the first two describe what the company owns, and this
  * one writes a voucher into the books. It answers to its own permission for the
  * same reason.
@@ -60,76 +73,23 @@ type TabKey =
   | 'handovers'
   | 'verification';
 
+/**
+ * ⚠️ THE ORDER IS THE OWNER'S (14 Nov 2026), and it is the order of the DAY, not
+ * of the setting-up: what is bought and what is owned first, then where each
+ * thing is and whether it is still there, then the rates, the yearly charge and
+ * its schedule, and last the two that are opened rarely -- a thing still being
+ * built, and the one-time chart setup.
+ */
 const TABS: { key: TabKey; label: string; icon: React.ReactNode; hint: string }[] = [
-  // ⚠️ FIRST, because it is the step before all the others: a category cannot
-  // be depreciated until its heads exist, and a new set of books often has
-  // none of them. The tab lists what the module needs and makes only what is
-  // missing -- see AssetChartSetupTab.
-  { key: 'setup', label: 'Setup', icon: <FiSettings size={15} />, hint: '' },
-  // { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: 'Rates and heads' },
-  { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: '' },
-  // ⚠️ Between the two, because an item belongs to a category and is what a
-  // purchase is picked from -- the register records the thing bought, not the
-  // short list it was chosen from.
-  // { key: 'items', label: 'Items', icon: <FiList size={15} />, hint: 'What a purchase is picked from' },
   { key: 'items', label: 'Items', icon: <FiList size={15} />, hint: '' },
-  // { key: 'register', label: 'Register', icon: <FiPackage size={15} />, hint: 'What the company owns' },
   { key: 'register', label: 'Register', icon: <FiPackage size={15} />, hint: '' },
-  // ⚠️ Between the register and the charge, because that is where it sits in
-  // life: a thing being built is not in the register yet and is not depreciated
-  // yet. The day it is finished it joins the first and starts answering to the
-  // second.
-  {
-    key: 'cwip',
-    label: 'Under construction',
-    icon: <FiTool size={15} />,
-    // hint: 'Not an asset yet',
-    hint: '',
-  },
-  // Last, because it cannot be done until the other two are: an asset needs a
-  // category to take its rate from, and a category needs its ledger heads.
-  {
-    key: 'depreciation',
-    label: 'Depreciation',
-    icon: <FiTrendingDown size={15} />,
-    // hint: 'The yearly charge',
-    hint: '',
-  },
-  // ⚠️ The paper an auditor asks for first, and the only place the register
-  // and the ledger can be seen agreeing. Last because it reads what the other
-  // three wrote.
-  {
-    key: 'schedule',
-    label: 'Schedule',
-    icon: <FiFileText size={15} />,
-    // hint: 'The year-end note',
-    hint: '',
-  },
-  // ⚠️ Beside the count rather than beside the register, because the two are
-  // the same kind of work: both are about where a thing physically is, both are
-  // done by whoever walks the building, and both answer to the register's
-  // permission rather than the one that writes vouchers. Putting it here also
-  // leaves Depreciation and Schedule next to each other, which is one job read
-  // in two parts.
-  {
-    key: 'handovers',
-    label: 'Handovers',
-    icon: <FiRepeat size={15} />,
-    // hint: 'Who has what',
-    hint: '',
-  },
-  // ⚠️ Counting is not accounting, which is why it sits at the end and answers
-  // to the register's permission rather than the one that writes vouchers.
-  // Whoever walks round the building with a phone is not the person who posts
-  // the depreciation, and requiring that permission would put the count in the
-  // hands of the one person too busy to do it.
-  {
-    key: 'verification',
-    label: 'Verification',
-    icon: <FiCheckSquare size={15} />,
-    // hint: 'Is it still there',
-    hint: '',
-  },
+  { key: 'handovers', label: 'Handovers', icon: <FiRepeat size={15} />, hint: '' },
+  { key: 'verification', label: 'Verification', icon: <FiCheckSquare size={15} />, hint: '' },
+  { key: 'categories', label: 'Categories', icon: <FiTag size={15} />, hint: '' },
+  { key: 'depreciation', label: 'Depreciation', icon: <FiTrendingDown size={15} />, hint: '' },
+  { key: 'schedule', label: 'Schedule', icon: <FiFileText size={15} />, hint: '' },
+  { key: 'cwip', label: 'Under construction', icon: <FiTool size={15} />, hint: '' },
+  { key: 'setup', label: 'Setup', icon: <FiSettings size={15} />, hint: '' },
 ];
 
 const TAB_KEYS = TABS.map((one) => one.key);
@@ -163,7 +123,74 @@ const AssetSetup = ({ user }: any) => {
   const [params, setParams] = useSearchParams();
 
   const asked = params.get('tab') as TabKey | null;
-  const tab: TabKey = asked && TAB_KEYS.includes(asked) ? asked : 'categories';
+  // With nothing asked for, the first tab -- so the default follows the order.
+  const tab: TabKey = asked && TAB_KEYS.includes(asked) ? asked : TAB_KEYS[0];
+
+  // The tabs opened so far on this visit; they stay mounted behind the one on
+  // screen. A tab never opened is never mounted, so it costs nothing.
+  const [opened, setOpened] = useState<TabKey[]>([tab]);
+
+  useEffect(() => {
+    setOpened((seen) => (seen.includes(tab) ? seen : [...seen, tab]));
+  }, [tab]);
+
+  // The tabs that have reported a read back, and the one on screen now.
+  const [ready, setReady] = useState<TabKey[]>([]);
+  const [shown, setShown] = useState<TabKey>(tab);
+  // The tab being faded in. Cleared when the animation ends: it leaves a
+  // transform on the pane, and a transform would pin every dialog a tab opens
+  // to the pane instead of to the window.
+  const [entering, setEntering] = useState<TabKey | null>(null);
+
+  const waiting = shown !== tab;
+
+  useEffect(() => {
+    if (shown === tab) return;
+
+    const swap = () => {
+      setShown(tab);
+      setEntering(tab);
+    };
+
+    if (ready.includes(tab)) {
+      swap();
+      return;
+    }
+
+    // A tab that never answers must not leave the person on the old one for
+    // ever; after this long it is shown as it is, spinner and all.
+    const giveUp = window.setTimeout(swap, 8000);
+
+    return () => window.clearTimeout(giveUp);
+  }, [tab, shown, ready]);
+
+  const pane = (key: TabKey, body: React.ReactNode) =>
+    tab === key || opened.includes(key) ? (
+      <AssetTabContext.Provider
+        value={{
+          active: tab === key,
+          loaded: () => setReady((seen) => (seen.includes(key) ? seen : [...seen, key])),
+        }}
+      >
+        <div
+          className={
+            shown !== key
+              ? 'hidden'
+              : waiting
+                ? 'pointer-events-none opacity-50 transition-opacity duration-200'
+                : entering === key
+                  ? 'animate-fade-in-up'
+                  : ''
+          }
+          onAnimationEnd={(event) => {
+            // Only the pane's own animation: a spinner inside a tab ends too.
+            if (event.target === event.currentTarget) setEntering(null);
+          }}
+        >
+          {body}
+        </div>
+      </AssetTabContext.Provider>
+    ) : null;
 
   const setTab = (next: TabKey) => {
     const at = new URLSearchParams(params);
@@ -212,11 +239,12 @@ const AssetSetup = ({ user }: any) => {
         Fixed Assets
       </h2>
 
-      {/* Drawn only where there is a choice, and only on the register: a
-          category — and the chart behind it — belongs to the company, so a
-          property chooser above them would be asking a question that has no
-          effect. */}
-      {tab !== 'categories' && tab !== 'setup' && branches.length > 1 ? (
+      {/* Drawn wherever there is a choice, on EVERY tab (owner, 14 Nov 2026).
+          Categories and Setup are the company's and do not read it, and it
+          used to be left off them for that reason -- but then the tab row
+          jumped up and down as the tabs were walked. It stays put now; what
+          is chosen here is simply carried to the tabs that do read it. */}
+      {branches.length > 1 ? (
         <div className="mb-3 w-64">
           <label className="text-sm text-black dark:text-white">Property</label>
           <BranchDropdown
@@ -248,25 +276,25 @@ const AssetSetup = ({ user }: any) => {
             >
               {one.icon}
               {one.label}
+              {/* Chosen, still reading: the old tab is on screen meanwhile. */}
+              {active && waiting ? (
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : null}
               <span className="hidden text-[0.65rem] text-gray-400 md:inline">{one.hint}</span>
             </button>
           );
         })}
       </div>
 
-      {tab === 'setup' ? <AssetChartSetupTab /> : null}
-      {tab === 'categories' ? <AssetCategoriesTab /> : null}
-      {tab === 'items' ? <AssetItemsTab /> : null}
-      {tab === 'register' ? <AssetRegisterTab branchId={branchId} /> : null}
-      {tab === 'cwip' ? <AssetCwipTab branchId={branchId} /> : null}
-      {tab === 'depreciation' ? <AssetDepreciationTab branchId={branchId} /> : null}
-      {tab === 'schedule' ? (
-        <AssetScheduleTab branchId={branchId} branchName={branchName} />
-      ) : null}
-      {tab === 'handovers' ? <AssetHandoverTab branchId={branchId} /> : null}
-      {tab === 'verification' ? (
-        <AssetVerificationTab branchId={branchId} branchName={branchName} />
-      ) : null}
+      {pane('items', <AssetItemsTab />)}
+      {pane('register', <AssetRegisterTab branchId={branchId} />)}
+      {pane('handovers', <AssetHandoverTab branchId={branchId} />)}
+      {pane('verification', <AssetVerificationTab branchId={branchId} branchName={branchName} />)}
+      {pane('categories', <AssetCategoriesTab />)}
+      {pane('depreciation', <AssetDepreciationTab branchId={branchId} />)}
+      {pane('schedule', <AssetScheduleTab branchId={branchId} branchName={branchName} />)}
+      {pane('cwip', <AssetCwipTab branchId={branchId} />)}
+      {pane('setup', <AssetChartSetupTab />)}
     </div>
   );
 };

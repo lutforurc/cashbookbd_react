@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAssetTabActive, useAssetTabLoaded } from './assetTabActive';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiArrowLeft, FiPlus, FiTrash2 } from 'react-icons/fi';
@@ -69,11 +70,21 @@ const draftOf = (one: any) => ({
 });
 
 const AssetCategoriesTab = () => {
+  // False while this tab sits behind another one -- see assetTabActive.
+  const active = useAssetTabActive();
+
   const [rows, setRows] = useState<any[]>([]);
   const [balanceSheetHeads, setBalanceSheetHeads] = useState<any[]>([]);
   const [expenseHeads, setExpenseHeads] = useState<any[]>([]);
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
+  // Tells the screen this tab has something to show -- see assetTabActive.
+  useAssetTabLoaded(loading);
+  // ⚠️ THE FULL-PAGE SPINNER IS FOR THE FIRST READ ONLY. It used to come up
+  // whenever a read was running over an EMPTY list -- so a tab with nothing
+  // in it threw its whole page away for a spinner on every return, and the
+  // fade-in played over a page that then vanished and came back.
+  const [firstRead, setFirstRead] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>(null);
 
@@ -90,7 +101,7 @@ const AssetCategoriesTab = () => {
    * sent to somebody.
    */
   const [params, setParams] = useSearchParams();
-  const asked = params.get('form');
+  const asked = active ? params.get('form') : null;
 
   const openForm = (id?: any) => {
     const at = new URLSearchParams(params);
@@ -149,12 +160,15 @@ const AssetCategoriesTab = () => {
       toast.error(error?.response?.data?.message || 'Could not read the categories');
     } finally {
       setLoading(false);
+      setFirstRead(false);
     }
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    // Not while hidden, and again on every return to the front: the tab
+    // stays mounted, and another tab may have changed what it shows.
+    if (active) load();
+  }, [load, active]);
 
   const save = async () => {
     if (!form?.name?.trim()) {
@@ -325,7 +339,7 @@ const AssetCategoriesTab = () => {
     },
   ];
 
-  if (loading && !rows.length) return <Loader />;
+  if (loading && firstRead) return <Loader />;
 
   /*
    * THE FORM PAGE. One thing on it, and a way back.

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAssetTabActive, useAssetTabLoaded } from './assetTabActive';
 import { toast } from 'react-toastify';
 import { FiPlus } from 'react-icons/fi';
 
@@ -64,8 +65,13 @@ const stateColumn = {
 };
 
 const AssetChartSetupTab = () => {
+  // False while this tab sits behind another one -- see assetTabActive.
+  const active = useAssetTabActive();
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  // Tells the screen this tab has something to show -- see assetTabActive.
+  useAssetTabLoaded(loading);
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -82,8 +88,10 @@ const AssetChartSetupTab = () => {
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    // Not while hidden, and again on every return to the front: the tab
+    // stays mounted, and another tab may have changed what it shows.
+    if (active) load();
+  }, [load, active]);
 
   const create = async () => {
     setSaving(true);

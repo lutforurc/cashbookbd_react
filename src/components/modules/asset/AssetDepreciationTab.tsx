@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAssetTabActive, useAssetTabLoaded } from './assetTabActive';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiPlay, FiRotateCcw } from 'react-icons/fi';
@@ -66,6 +67,9 @@ const dayMonth = (value?: string | null, fallback = ''): string => {
 };
 
 const AssetDepreciationTab = ({ branchId }: { branchId?: number | null }) => {
+  // False while this tab sits behind another one -- see assetTabActive.
+  const active = useAssetTabActive();
+
   // The date the year is asked about. The server turns it into the company's
   // year end it falls on or before -- the 30th of June for most, the 31st of
   // December for some -- and answers with that; so this box is "as at", not
@@ -74,6 +78,8 @@ const AssetDepreciationTab = ({ branchId }: { branchId?: number | null }) => {
 
   const [plan, setPlan] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  // Tells the screen this tab has something to show -- see assetTabActive.
+  useAssetTabLoaded(loading);
   const [saving, setSaving] = useState(false);
   const [undoing, setUndoing] = useState<any>(null);
 
@@ -98,8 +104,10 @@ const AssetDepreciationTab = ({ branchId }: { branchId?: number | null }) => {
   }, [asAt, branchId]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    // Not while hidden, and again on every return to the front: the tab
+    // stays mounted, and another tab may have changed what it shows.
+    if (active) load();
+  }, [load, active]);
 
   const charge = async () => {
     setSaving(true);
