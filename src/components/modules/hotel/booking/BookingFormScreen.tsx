@@ -383,12 +383,23 @@ const BookingFormScreen = ({ user }: any) => {
     };
   }, [dialled, branchId]);
 
-  const buildingChoices = useMemo(
-    () => (buildingOptions ?? []).map((o: DdlOption) => ({ id: o.value, name: o.label })),
-    [buildingOptions],
-  );
-
   const buildings: LayoutBuilding[] = availability?.buildings ?? [];
+
+  // The buildings a whole-property read found something to sell in. Remembered
+  // across a single-building read (which only answers for that one), so the
+  // picker drops a hall-only or empty block without losing the rest.
+  const [bookableIds, setBookableIds] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    if (availability && !building) setBookableIds(new Set(buildings.map((b) => String(b.id))));
+  }, [availability]);
+
+  const buildingChoices = useMemo(
+    () =>
+      (buildingOptions ?? [])
+        .filter((o: DdlOption) => !bookableIds || bookableIds.has(String(o.value)))
+        .map((o: DdlOption) => ({ id: o.value, name: o.label })),
+    [buildingOptions, bookableIds],
+  );
   const nights = availability?.nights ?? 0;
 
   /**

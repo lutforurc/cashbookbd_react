@@ -251,6 +251,26 @@ export const wholeBuildings = (buildings: any): any[] =>
   }));
 
 /**
+ * What a booking may be taken on: switched-off buildings, floors and rooms
+ * dropped, then any building left with no room at all. The layout grid keeps
+ * wholeBuildings() -- it draws the property as it stands, this sells it.
+ */
+const isOn = (row: any) => Number(row?.status ?? 1) === 1;
+
+export const bookableBuildings = (buildings: any): any[] =>
+  wholeBuildings(buildings)
+    .filter(isOn)
+    .map((building: any) => ({
+      ...building,
+      floors: building.floors
+        .filter(isOn)
+        .map((floor: any) => ({ ...floor, rooms: floor.rooms.filter(isOn) }))
+        .filter((floor: any) => floor.rooms.length),
+      unfloored: building.unfloored.filter(isOn),
+    }))
+    .filter((building: any) => building.floors.length || building.unfloored.length);
+
+/**
  * A 'YYYY-MM-DD' (optionally followed by a time) as LOCAL midnight of that day.
  *
  * ⚠️ Never `new Date('2026-11-10')`: a bare date is read as UTC midnight, which

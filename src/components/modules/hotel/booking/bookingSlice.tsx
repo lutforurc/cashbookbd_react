@@ -12,7 +12,7 @@ import {
   API_HOTEL_HALL_URL,
 } from '../../../services/apiRoutes';
 import { HotelTimes, Paged } from '../types';
-import { wholeBuildings } from '../setupHelpers';
+import { bookableBuildings } from '../setupHelpers';
 import { Allotment, Availability, Booking } from './types';
 
 /**
@@ -754,7 +754,7 @@ const bookingSlice = createSlice({
       .addCase(availabilityRead.fulfilled, (state, action) => {
         state.checking = false;
         state.availability = action.payload
-          ? { ...action.payload, buildings: wholeBuildings((action.payload as any).buildings) }
+          ? { ...action.payload, buildings: bookableBuildings((action.payload as any).buildings) }
           : action.payload;
       })
       .addCase(availabilityRead.rejected, (state, action) => {
