@@ -354,6 +354,7 @@ export const API_PRODUCTION_DETAILS_URL = `${API_BASE_URL}/production/details`;
 export const API_PRODUCTION_ALLOCATABLE_URL = `${API_BASE_URL}/production/allocatable-expenses`;
 // How much of a product is on hand at a date, for the input rows.
 export const API_PRODUCTION_STOCK_URL = `${API_BASE_URL}/production/available-stock`;
+export const API_PRODUCTION_INPUT_UNITS_URL = `${API_BASE_URL}/production/input-units`;
 export const API_PRODUCTION_STORE_URL = `${API_BASE_URL}/production/store`;
 export const API_PRODUCTION_UPDATE_URL = `${API_BASE_URL}/production/update`;
 // The act that moves stock: `${URL}/${id}`.
@@ -387,6 +388,7 @@ export const API_PRODUCTION_SCHEME_UPDATE_URL = `${API_BASE_URL}/production/sche
 export const API_PRODUCTION_SCHEME_DESTROY_URL = `${API_BASE_URL}/production/schemes/destroy`;
 // The free goods given away in a period, at what they cost.
 export const API_PRODUCTION_FREE_GOODS_URL = `${API_BASE_URL}/production/report/free-goods`;
+export const API_PRODUCTION_EXPIRY_URL = `${API_BASE_URL}/production/report/expiry`;
 // Recipe -- the standard materials for ONE product, versioned and dated. With
 // ?date= the list is only the version in force on that date (the entry form's
 // picker); without it, every version (the Recipe screen).

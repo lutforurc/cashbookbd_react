@@ -110,6 +110,7 @@ const ROUTES = {
   production_recipe: '/production/recipe',
   production_register: '/production/register',
   production_free_goods: '/production/free-goods',
+  production_expiry: '/production/expiry',
   production_costing: '/production/costing/:id',
 
   journal: '/accounts/journal',

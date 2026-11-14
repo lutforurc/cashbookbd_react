@@ -271,6 +271,7 @@ import ProductionPurchase from './components/modules/production/ProductionPurcha
 import ProductionSalesReturn from './components/modules/production/ProductionSalesReturn';
 import ProductionScheme from './components/modules/production/ProductionScheme';
 import FreeGoodsReport from './components/modules/production/FreeGoodsReport';
+import ExpiryReport from './components/modules/production/ExpiryReport';
 import ProductionRegister from './components/modules/production/ProductionRegister';
 import BatchCosting from './components/modules/production/BatchCosting';
 import SendSms from './components/modules/sms/SendSms';
@@ -1132,6 +1133,7 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['production.report.view']} loading={permissionsLoading} />}>
               <Route path={routes.production_register} element={<ProductionRegister />} />
               <Route path={routes.production_free_goods} element={<FreeGoodsReport />} />
+              <Route path={routes.production_expiry} element={<ExpiryReport />} />
               <Route path={routes.production_costing} element={<BatchCosting />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.reason.manage']} loading={permissionsLoading} />}>

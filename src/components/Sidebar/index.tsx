@@ -90,6 +90,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'production_recipe', title: "Recipe" },
     { id: 'production_register', title: "Production Register" },
     { id: 'production_free_goods', title: "Free Goods" },
+    { id: 'production_expiry', title: "Near Expiry" },
   ],
   'branch-transfer': [
     { id: 'branch_transfer', title: "Branch Issue" },
@@ -2572,6 +2573,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Free Goods
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'production.report.view') && (
+                            <li style={subSlot('production', 'production_expiry')}>
+                              <NavLink
+                                to={routes.production_expiry}
+                                className={subMenuLinkClass}
+                              >
+                                Near Expiry
                               </NavLink>
                             </li>
                           )}

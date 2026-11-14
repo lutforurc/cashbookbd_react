@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiXCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
+import useVoucherAutoEditSearch from '../../utils/hooks/useVoucherAutoEditSearch';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { FIELD_LABEL } from '../../../theme/fieldStyles';
 import InputElement from '../../utils/fields/InputElement';
@@ -70,6 +71,9 @@ const ProductionSalesReturn = () => {
   // The voucher being corrected, found by its Vr. No. Null means this screen is
   // writing a new return.
   const [searchNo, setSearchNo] = useState('');
+  // Opened from a report's Edit button: the return is found as if its number
+  // had been typed in the Find box.
+  useVoucherAutoEditSearch({ setSearch: setSearchNo, triggerSearch: (no) => loadForEdit(no) });
   const [searching, setSearching] = useState(false);
   const [editing, setEditing] = useState<{ mtmId: string; vrNo: string } | null>(null);
 
@@ -154,8 +158,9 @@ const ProductionSalesReturn = () => {
   // Find a posted return by its Vr. No. and fill the form from it. The server
   // answers by voucher_type, by name, so a number from another type is simply
   // not found rather than read as a sale return.
-  const loadForEdit = () => {
-    const invoiceNo = searchNo.trim();
+  // `given` is the number a report's Edit button sent; the Find box sends none.
+  const loadForEdit = (given?: string) => {
+    const invoiceNo = (given ?? searchNo).trim();
     if (!invoiceNo) return toast.error('Enter the Vr. No. of the return');
 
     setSearching(true);
@@ -258,7 +263,7 @@ const ProductionSalesReturn = () => {
       <HelmetTitle title="Production Sales Return" />
 
       {/* Correct an existing return under its own number. The server looks it up
-          by voucher_type (by name), so a number from another kind is refused. */}
+          by its production mark, so a number from another screen is refused. */}
       <div className="mb-3 flex flex-wrap items-end gap-2 rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-2">
         <InputElement
           id="productionReturnSearch"
@@ -273,7 +278,7 @@ const ProductionSalesReturn = () => {
           className="w-full md:w-64"
         />
         <ButtonLoading
-          onClick={loadForEdit}
+          onClick={() => loadForEdit()}
           buttonLoading={searching}
           label={searching ? 'Finding...' : 'Find'}
           className="whitespace-nowrap text-center mr-0 py-2"

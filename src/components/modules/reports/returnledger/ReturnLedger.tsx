@@ -29,7 +29,7 @@ import { hasAnyPermission } from '../../../Sidebar/permissionUtils';
 import {
   buildVoucherAutoEditState,
   getEditableVoucherNo,
-  getVoucherEditTarget,
+  getVoucherEditTargetForRow,
 } from '../../../utils/utils-functions/voucherEditNavigation';
 import { VoucherActionButtons } from '../../vouchers';
 
@@ -316,7 +316,9 @@ const ReturnLedger = ({ user, mode }: { user: any; mode: ReturnMode }) => {
    */
   const handleEditVoucher = (row: any) => {
     const voucherNo = getEditableVoucherNo(row);
-    const editTarget = getVoucherEditTarget(voucherNo);
+    // The row, not the number: a return written on the Production screen is
+    // numbered 13- like any other and says so only on invoice_workflow.
+    const editTarget = getVoucherEditTargetForRow(row);
     const editState = buildVoucherAutoEditState(voucherNo);
 
     if (!voucherNo || !editTarget || !editState) {

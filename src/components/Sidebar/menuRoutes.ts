@@ -150,6 +150,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.production_recipe,
     routes.production_register,
     routes.production_free_goods,
+    routes.production_expiry,
     // Reached from a row on the register rather than from the menu itself, but
     // listed so the Production menu stays open and marked while it is on screen.
     routes.production_costing,

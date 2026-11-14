@@ -411,6 +411,7 @@
         "production-recipe",
         "production-register",
         "production-free-goods",
+        "production-expiry",
         "production-costing"
       ]
     }

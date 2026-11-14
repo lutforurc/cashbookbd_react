@@ -58,6 +58,42 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 - টেস্ট ডেটা তৈরি হয়েছে (১২ নভেম্বর ২০২৬): branch 2-এ category 39 আর পণ্য 826–828। **Check ১, ২, ৪, ৫ পাস** (খ-১৪-ক, পরিষ্কার চালু: tolerance ৫%, production_master id 2, closing stock ৮,৫৫৮.০০, net profit ১,২৯৮.০০, TB ৩০,০০০ = ৩০,০০০, BS ২১,২৯৮ = ২১,২৯৮)। **Check ৩-ক/৩-গ, ৬, ৮-ক/খ, ৯, ১৪ পাস** (খ-১৪-খ)। **Check ৭ (repack) ও ১০ (পুরোনো branch অপরিবর্তিত) পাস** (খ-১৪-গ)। **Phase ৩ (ফ্রি মাল ও স্কিম) ও Check ১১ পাস** (খ-১৪-ঘ)।
 - ক্লায়েন্ট সিদ্ধান্ত বাকি: VAT/মূসক (ক-২ #১০), কাঁচামাল sourcing/আলাদা গুদাম (ক-২ #১১), Factory vs Branch Office টাইপ, কোন role-কে `production.*` দেওয়া হবে, per-product unit conversion ও precision।
 
+### সিদ্ধান্ত: বিক্রি, ক্রয় ও ফেরত পুরনো নম্বরেই (মালিক, ১৩ নভেম্বর ২০২৬)
+
+**নিয়ম:** Production-এর তিনটা নতুন ফর্ম আর নিজের ভাউচার কোড নেবে না। আগের ফর্ম যে কোডে লেখে, এরাও সেই কোডেই লিখবে।
+
+| ফর্ম | আগে (১২ নভেম্বর পর্যন্ত) | এখন থেকে |
+| --- | --- | --- |
+| Production Sales | `29-` (Production Sales) | টাকা পেলে `3-` (Sales), কিছু না পেলে `10-` (Credit Sales) |
+| Production Purchase | `30-` (Production Purchase) | টাকা দিলে `4-` (Purchase), কিছু না দিলে `9-` (Credit Purchase) |
+| Production Sales Return | `28-` (Production Sales Return) | `13-` (Sales Return) |
+| Production (batch) | `27-` | `27-`-ই; এর পুরনো কোনো জোড়া নেই |
+
+**কেন:** ১৩ নভেম্বরের পর্যালোচনায় দেখা গেছে, নতুন কোডের ভাউচার যেসব রিপোর্ট নম্বর বা type দিয়ে বিল চেনে সেখান থেকে বাদ পড়ছিল: Cash Book, Bank Book, Sales Ledger, Purchase Ledger, Customer Sales Report, Daily Account Book। প্রতিটা রিপোর্টে আলাদা করে নতুন কোড চেনানো যায় (সেদিন তা-ই করা হয়েছিল), কিন্তু পরে যে রিপোর্ট লেখা হবে সেখানে আবার একই ভুল হবে। পুরনো কোডে লিখলে মূল নিয়ম #৪ ("রিপোর্ট আগেরগুলোই") নিজে থেকেই খাটে।
+
+**কোন ফর্ম লিখেছে, সেটা কোথায় থাকে:** নম্বর আর বলে না, তাই `main_trx_master.invoice_workflow`-এ `production` লেখা হয়। এই কলাম ১৩ নভেম্বরের Invoice workflow কাজ থেকে আছে (`order`, `tiles`); নতুন কলাম বা টেবিল লাগে না। এটা তিন জায়গায় পড়া হয়:
+
+1. **Edit:** রিপোর্টের Edit বোতাম `production` দেখলে Production-এর ফর্ম খোলে। Production-এর ফর্ম নিজের ভাউচার খোঁজে এই চিহ্ন দিয়ে।
+2. **ভুল ফর্মে সংশোধন বন্ধ:** আগের Sales/Purchase/Sales Return ফর্ম `production` চিহ্নের ভাউচার update করতে গেলে আটকায় ("Production ফর্ম থেকে সংশোধন করুন")। আগের Sales ফর্ম দাম ০-এর সারি ফেলে দেয়, আর আগের Sales Return ফেরত মাল বিক্রির দামে stock-এ ঢোকায় (গ-৪); তাই এই বাধা না থাকলে ফ্রি সারি বা ফেরতের খরচ নষ্ট হতো। বাধাটা `denyUnlessVoucherEditable()`-এ, যেখান দিয়ে আগের সব edit যায়।
+3. **কাগজ:** Production Purchase-এর দাম ০-এর সারিতে "(ফ্রি)"।
+
+**নম্বর কখনো বদলায় না:** বাকির বিক্রি (`10-`) পরে সংশোধন করে টাকা নিলে নম্বর `10-`-ই থাকে, শুধু `transaction_type` বদলায় (৫ → ১)। আগের ফর্মও তা-ই করে।
+
+**আগে লেখা `28-`/`29-`/`30-` ভাউচার:** শুধু demo/test ডেটায় আছে। নম্বর বদলানো হয় না। রিপোর্টে আর Production-এর ফর্মে এগুলো আগের মতোই পাওয়া যায় (`ProductionAccountHead::prefixesWith()`, `DailyAccountBook::productionTypes()` আর ফর্মের খোঁজায় পুরনো type রাখা আছে)। `acc_vr_type`-এর তিনটা সারি মোছা হয় না; নতুন ভাউচার আর সেগুলো ব্যবহার করে না।
+
+**নিচের খ-১৪-ক থেকে খ-১৪-ঙ-এর চালুগুলো এই সিদ্ধান্তের আগের,** তাই সেখানে `28-`, `29-`, `30-` নম্বর দেখা যায়। হিসাব, stock আর ledger-এর ফল একই থাকে; শুধু নম্বর আলাদা। নতুন নম্বরে চালু: খ-১৪-চ।
+
+### ১৩ নভেম্বর ২০২৬-এর পর্যালোচনায় যা ঠিক হয়েছে
+
+- **রিপোর্ট:** Cash Book, Bank Book, Sales/Purchase Ledger, Customer Sales Report আর Daily Account Book পুরনো `28-`/`29-`/`30-` ভাউচারও দেখায়।
+- **Voucher Delete:** posted batch-এর নিজের `27-` ভাউচার আর batch-এ বণ্টন করা খরচের ভাউচার মোছা যায় না; আগে batch Reverse করতে হয় (`productionDeleteRefusal()`)।
+- **সংশোধন:** Production Sales/Purchase-এ তারিখ বদলালে `vr_date` বদলায়; তিন ফর্মের update অন্য branch-এর বা মোছা ভাউচার ধরে না।
+- **Stock সতর্কতা:** Production Sales ব্রাঞ্চের warn/block সুইচ মানে, আগের Sales-এর মতো।
+- **Batch-এর নম্বর:** Reverse করা batch-এর `27-` নম্বর আর পরের batch পায় না।
+- **Unit conversion (খ-৪, গ-৭):** নতুন টেবিল নয়। পণ্যের নিজের Package unit ও Package size ("১ Bag = ৫০ Kg") দিয়ে; Production Entry-তে কাঁচামাল প্যাকেজ unit-এ লেখা যায়, stock-এর পরিমাণ সার্ভার হিসাব করে।
+- **Near Expiry রিপোর্ট:** Production → Near Expiry। মজুদ পণ্যের, batch-এর নয়, কারণ বিক্রি কোন batch থেকে গেছে তা রাখা হয় না।
+- **ফ্রি সারি:** স্ক্রিনে দাম "0"; Production Purchase-এর কাগজে "(ফ্রি)"।
+
 ### v3 থেকে কী বদলাল
 
 1. **Worked example-এর সংখ্যা সংশোধন।** Stock-এর দাম দুই দশমিকে রাখা হয়, তাই ১৭১.১৫৭৮৯… রাখা যায় না। Closing ৮,৫৫৭.৮৯ নয়, ৮,৫৫৮.০০; লাভ ১,২৯৭.৮৯ নয়, ১,২৯৮.০০ (গ-৩, খ-১৩)।
@@ -198,7 +234,7 @@ P&L রিপোর্ট বদলানো যাবে না (নিয়�
 | Business Type | `business_type` 3 = "Manufacturing Business" | id নয়, permission/feature flag দিয়ে মেনু খোলা; অন্য DB-তে id আলাদা হতে পারে |
 | Branch Type | `com_branch_types` 4 = "Factory", 5 = "Branch Office" | একই |
 | Inventory | General | ক্রয়-বিক্রয় General-এর স্ক্রিনে |
-| ভাউচার type | `acc_vr_type` 1–26 আছে; শেষ দুটো 25 Product In, 26 Product Out | নতুন সারি "Production" যোগ (dev-এ হবে 27); কোড id নয়, নাম/marker দিয়ে খুঁজবে, Product In/Out-এর মতো |
+| ভাউচার type | `acc_vr_type` 1–26 আছে; শেষ দুটো 25 Product In, 26 Product Out | নতুন সারি "Production" যোগ (dev-এ হবে 27); কোড id নয়, নাম/marker দিয়ে খুঁজবে, Product In/Out-এর মতো। **বিক্রি, ক্রয় ও ফেরত নতুন সারি নেয় না** (১৩ নভেম্বর ২০২৬): Production Sales `3-`/`10-`, Production Purchase `4-`/`9-`, Production Sales Return `13-`; কোন ফর্ম লিখেছে তা `main_trx_master.invoice_workflow = production` বলে |
 
 ## অংশ খ-৩: Production Entry
 
@@ -613,6 +649,32 @@ Phase 1-এর সব check এখন চালানো — **Check ১–১�
 **ব্রাউজারেও দেখা হয়েছে** (`demo@gmail.com`, branch 2): ফর্ম আসে, ক্যাশ সরবরাহকারী বাছলে Paid ২,৫০০.০০-এ তালাবদ্ধ হয়, "ফ্রি" টিক দিলে দামের বাক্স ০ ও নিষ্ক্রিয় হয়, সারিতে "ফ্রি" চিহ্ন আসে; console-এ কোনো error নেই। কিছুই সেভ করা হয়নি। ফ্রি সারির Price/Amount কলামে "-" দেখায় — Phase ৩-এর একই খোলা খুঁটিনাটি (নিচে), এখানেও।
 
 **খোলা খুঁটিনাটি (Phase ৩-এর সঙ্গে একই):** ফ্রি সারির Price/Amount কলামে "০.০০"-এর বদলে "-"; বিক্রয়ের কাগজ/প্রিন্ট ডিজাইনার এখনো ফ্রি কলাম আলাদা করে দেখায় না।
+
+### খ-১৪-চ: পুরনো নম্বরে চালু — ১৪ নভেম্বর ২০২৬
+
+`stagingdatabase`, branch 2। আসল controller চালিয়ে, এক transaction-এর ভিতরে, শেষে rollback (কোনো সারি থাকেনি)। আগে `main_trx_master.invoice_workflow` কলাম এই DB-তে ছিল না; `2026_11_13_invoice_workflow.sql`-এর ALTER চালিয়ে যোগ করা হয়েছে। **কলাম না থাকলে তিনটা ফর্মই save আটকায়** ("Run the patch command"), যাতে চিহ্ন ছাড়া ভাউচার লেখা না হয়।
+
+| যাচাই | ফল |
+| --- | --- |
+| নগদ Production Sales | `3-260900005`, voucher_type 3, run 1 (receipt), `invoice_workflow = production` |
+| বাকির Production Sales | `10-260900006`, voucher_type 10, run 5 (journal), `production` |
+| নগদ Production Purchase | `4-260900008`, voucher_type 4, run 2 (payment), `production` |
+| বাকির Production Purchase | `9-260900007`, voucher_type 9, run 5, `production` |
+| Production Sales Return | `13-260900009`, voucher_type 13, `production` |
+| Production-এর ফর্ম নিজের নতুন ভাউচার খুঁজে পায় (ফ্রি সারি চিহ্নসহ) | পাস, তিন ফর্মেই |
+| আগের `29-260900004`, `28-260900006` এখনো খুঁজে পায় | পাস |
+| সাধারণ `3-260900001`, `4-260900001` Production-এর ফর্মে খোলে না | পাস |
+| আগের ফর্মের দরজা (`denyUnlessVoucherEditable`) Production-এর পাঁচটা ভাউচারই আটকায় | পাস: "This voucher was written on a Production screen. Correct it from the Production menu." |
+| সাধারণ `3-260900001` আগের ফর্মে আগের মতোই সংশোধন করা যায় | পাস |
+| বাকির বিক্রি সংশোধন করে ১০০ টাকা নেওয়া | নম্বর `10-260900006`-ই থাকে, run ৫ → ১ |
+| Cash Book, Sales Ledger, Purchase Ledger | নতুন ভাউচার নিজে থেকেই আসে; প্রতিটা সারি `invoice_workflow = production` বলে (Edit বোতামের জন্য) |
+| Daily Account Book | নগদ বিক্রি CASH SALES, নগদ ক্রয় CASH PURCHASE, বাকির ক্রয় Today Due Purchase, ফেরত Sales Return-এ |
+| বিক্রি ও ক্রয়ের কাগজ | ফ্রি সারি `is_free`; সাধারণ ক্রয়ের কাগজে কোনো সারি ফ্রি নয় |
+| Free Goods রিপোর্ট | নতুন বিক্রির ফ্রি সারি গোনে |
+
+মোট ২৮টা পরীক্ষা পাস। ১৩ নভেম্বরের আগের দুই দফার পরীক্ষাও (১৬ + ২২) এই বদলের পরে আবার পাস।
+
+**ব্রাউজারে দেখা হয়নি:** রিপোর্টের Edit বোতাম চেপে Production-এর ফর্ম খোলা, আর আগের ফর্মে নম্বর লিখে খুললে বাধার বার্তা। আগের ফর্মে নম্বর লিখে Production-এর ভাউচার **খোলা** যায় (load আটকানো হয়নি); **Update** চাপলে আটকায়।
 
 ## অংশ খ-১৫: Phase ও change boundary
 

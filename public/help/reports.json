@@ -300,7 +300,7 @@
   "daily-account-book": {
     "title": "দৈনিক ক্যাশ বই",
     "module": "Reports",
-    "updated": "11/11/2026",
+    "updated": "13/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "দিনের ক্যাশ আয় এক দিকে, ব্যয় অন্য দিকে সাজিয়ে দিনের হিসাব মেলানো হয়।",
@@ -320,6 +320,7 @@
         "steps": [
           "শুরুতে Opening Balance; তারপর RECEIPT ও PAYMENT দুই ভাগে Description ও Amount।",
           "নিচে Total Receipt Amount, Total Payment Amount ও Closing Balance দেখা যায়।",
+          "Production Sales, Production Purchase ও Production Sales Return সাধারণ বিক্রি, ক্রয় ও ফেরতের ভাগেই দেখায়: নগদ হলে CASH SALES / CASH PURCHASE-এ, বাকি হলে Today Due Sales / Today Due Purchase-এ।",
           "Closing Bank Balance, Mobile Bank Balance, Closing Receivable ও Closing Payable-ও থাকে।",
           "Rows ও Font ঠিক করে Print চাপুন।"
         ],

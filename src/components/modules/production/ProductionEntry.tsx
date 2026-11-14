@@ -10,7 +10,7 @@ import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import WarehouseDropdown from '../../utils/utils-functions/WarehouseDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import httpService from '../../services/httpService';
-import { API_PRODUCTION_STOCK_URL } from '../../services/apiRoutes';
+import { API_PRODUCTION_INPUT_UNITS_URL, API_PRODUCTION_STOCK_URL } from '../../services/apiRoutes';
 import { getDdlWarehouse } from '../warehouse/ddlWarehouseSlider';
 import {
   destroyProduction,
@@ -33,10 +33,28 @@ type InputLine = {
   productName: string;
   unit: string;
   godownId: string;
+  // Always in the product's own stock unit -- what leaves the shelf.
   qty: string;
+  // Set only when the line was typed in the product's package ("2 Bag"); the
+  // server multiplies it out again and its figure is the one that posts.
+  packUnitId?: string;
+  packUnit?: string;
+  packQty?: string;
 };
 
-const emptyInput = { productId: '', productName: '', unit: '', godownId: '', qty: '' };
+// A product's package, where it names one: 1 `unit` = `size` stock units.
+type Pack = { unitId: string; unit: string; size: number };
+
+const emptyInput: Omit<InputLine, 'id'> = {
+  productId: '',
+  productName: '',
+  unit: '',
+  godownId: '',
+  qty: '',
+  packUnitId: '',
+  packUnit: '',
+  packQty: '',
+};
 
 // One product the batch makes. `price` is the product's sales price, which the
 // batch cost is split by; `share` is a typed override ('' = work it out).
@@ -220,6 +238,7 @@ const ProductionEntry = () => {
       recipeVersion: '',
     });
     setLine({ ...emptyInput });
+    setLinePack(null);
     setEditingLineId(null);
     setOutLine({ ...emptyOutput });
     setEditingOutId(null);
@@ -231,13 +250,54 @@ const ProductionEntry = () => {
   const productOption = (id: string, label: string): Option | null =>
     id ? { value: id, label } : null;
 
+  // The package the material in hand may be typed in, if its product names one.
+  const [linePack, setLinePack] = useState<Pack | null>(null);
+
+  const loadLinePack = (productId: string) => {
+    setLinePack(null);
+    if (!productId) return;
+    httpService
+      .get(API_PRODUCTION_INPUT_UNITS_URL, { params: { product_ids: productId } })
+      .then((res: any) => {
+        const units = (res?.data?.data?.data ?? res?.data?.data ?? {})[productId];
+        if (units?.package_unit_id && Number(units.package_size) > 0) {
+          setLinePack({
+            unitId: String(units.package_unit_id),
+            unit: units.package_unit || 'Package',
+            size: Number(units.package_size),
+          });
+        }
+      })
+      .catch(() => setLinePack(null));
+  };
+
   const handleLineProduct = (option: Option | null) => {
     setLine((p) => ({
       ...p,
       productId: option?.value || '',
       productName: option?.label || '',
       unit: option?.label_5 || '',
+      packUnitId: '',
+      packUnit: '',
+      packQty: '',
     }));
+    loadLinePack(option?.value || '');
+  };
+
+  // The line in hand, ready to store: a quantity typed in packages is turned
+  // into the stock unit here for the screen, and again by the server for real.
+  const lineForSave = () => {
+    const inPack = !!line.packUnitId && !!linePack;
+    return {
+      productId: line.productId,
+      productName: line.productName,
+      unit: line.unit,
+      godownId: line.godownId,
+      qty: inPack ? String(round2(Number(line.packQty) * linePack!.size)) : line.qty,
+      packUnitId: inPack ? line.packUnitId : '',
+      packUnit: inPack ? line.packUnit : '',
+      packQty: inPack ? line.packQty : '',
+    };
   };
 
   const round2 = (value: number) => Math.round(value * 100) / 100;
@@ -379,22 +439,21 @@ const ProductionEntry = () => {
 
   const addLine = () => {
     if (!line.productId) return toast.error('Pick a product');
-    if (!line.qty || Number(line.qty) <= 0) return toast.error('Enter a quantity');
+    const ready = lineForSave();
+    if (!ready.qty || Number(ready.qty) <= 0) return toast.error('Enter a quantity');
     setForm((p) => ({
       ...p,
       inputs: [
         ...p.inputs,
         {
+          ...ready,
           id: Date.now(),
-          productId: line.productId,
-          productName: line.productName,
-          unit: line.unit,
-          godownId: line.godownId || p.outputs[0]?.godownId || '',
-          qty: line.qty,
+          godownId: ready.godownId || p.outputs[0]?.godownId || '',
         },
       ],
     }));
     setLine({ ...emptyInput });
+    setLinePack(null);
     setEditingLineId(null);
   };
 
@@ -407,21 +466,24 @@ const ProductionEntry = () => {
       unit: found.unit,
       godownId: found.godownId,
       qty: found.qty,
+      packUnitId: found.packUnitId || '',
+      packUnit: found.packUnit || '',
+      packQty: found.packQty || '',
     });
+    loadLinePack(found.productId);
     setEditingLineId(id);
   };
 
   const updateLine = () => {
     if (editingLineId === null) return;
+    const ready = lineForSave();
+    if (!ready.qty || Number(ready.qty) <= 0) return toast.error('Enter a quantity');
     setForm((p) => ({
       ...p,
-      inputs: p.inputs.map((i) =>
-        i.id === editingLineId
-          ? { ...i, productId: line.productId, productName: line.productName, unit: line.unit, godownId: line.godownId, qty: line.qty }
-          : i,
-      ),
+      inputs: p.inputs.map((i) => (i.id === editingLineId ? { ...i, ...ready } : i)),
     }));
     setLine({ ...emptyInput });
+    setLinePack(null);
     setEditingLineId(null);
   };
 
@@ -429,6 +491,7 @@ const ProductionEntry = () => {
     setForm((p) => ({ ...p, inputs: p.inputs.filter((i) => i.id !== id) }));
     if (editingLineId === id) {
       setLine({ ...emptyInput });
+      setLinePack(null);
       setEditingLineId(null);
     }
   };
@@ -524,6 +587,9 @@ const ProductionEntry = () => {
       product_id: Number(i.productId),
       godown_id: i.godownId ? Number(i.godownId) : null,
       base_qty: Number(i.qty),
+      // Only a line typed in packages names a unit; the server works the
+      // stock quantity out from these two and ignores base_qty for it.
+      ...(i.packUnitId ? { entered_unit_id: Number(i.packUnitId), entered_qty: Number(i.packQty) } : {}),
     })),
     loss: {
       basis: form.lossBasis,
@@ -617,6 +683,10 @@ const ProductionEntry = () => {
             unit: i.unit || '',
             godownId: i.godown_id ? String(i.godown_id) : '',
             qty: String(Number(i.base_qty)),
+            // A line saved in packages comes back with the unit it was typed in.
+            packUnitId: i.entered_unit ? String(i.entered_unit_id) : '',
+            packUnit: i.entered_unit || '',
+            packQty: i.entered_unit ? String(Number(i.entered_qty)) : '',
           })),
           lossActual: m.loss_actual ? String(Number(m.loss_actual)) : '',
           lossTolerance: m.normal_tolerance_pct ? String(Number(m.normal_tolerance_pct)) : '',
@@ -994,7 +1064,7 @@ const ProductionEntry = () => {
           'Raw materials, bulk packs and empty packets this batch uses. They leave stock at their purchase cost, oldest first.',
           <>
             <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-12">
-              <div className="md:col-span-5">
+              <div className={linePack ? 'md:col-span-3' : 'md:col-span-5'}>
                 <label className="text-sm text-[rgb(var(--c-text))]">Material</label>
                 <ProductDropdown
                   id="inputProduct"
@@ -1015,17 +1085,47 @@ const ProductionEntry = () => {
                   defaultValue={line.godownId}
                 />
               </div>
+              {linePack && (
+                <div className="md:col-span-2">
+                  <label className="text-sm text-[rgb(var(--c-text))]">Unit</label>
+                  <select
+                    id="lineUnit"
+                    name="lineUnit"
+                    value={line.packUnitId ? 'pack' : 'base'}
+                    onChange={(event) =>
+                      setLine((p) =>
+                        event.target.value === 'pack'
+                          ? { ...p, packUnitId: linePack.unitId, packUnit: linePack.unit, packQty: '', qty: '' }
+                          : { ...p, packUnitId: '', packUnit: '', packQty: '', qty: '' },
+                      )
+                    }
+                    className="h-9.5 w-full rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-2 text-sm text-[rgb(var(--c-text))]"
+                  >
+                    <option value="base">{line.unit || 'Stock unit'}</option>
+                    <option value="pack">
+                      {linePack.unit} (= {linePack.size} {line.unit})
+                    </option>
+                  </select>
+                </div>
+              )}
               <div className="md:col-span-2">
                 <InputElement
                   id="lineQty"
                   name="lineQty"
                   type="number"
                   step="0.01"
-                  label={`Quantity${line.unit ? ` (${line.unit})` : ''}`}
-                  value={line.qty}
-                  onChange={(e: any) => setLine((p) => ({ ...p, qty: e.target.value }))}
+                  label={`Quantity${line.packUnitId ? ` (${line.packUnit})` : line.unit ? ` (${line.unit})` : ''}`}
+                  value={line.packUnitId ? line.packQty || '' : line.qty}
+                  onChange={(e: any) =>
+                    setLine((p) => (p.packUnitId ? { ...p, packQty: e.target.value } : { ...p, qty: e.target.value }))
+                  }
                   className="w-full"
                 />
+                {line.packUnitId && linePack && Number(line.packQty) > 0 && (
+                  <p className="mt-0.5 text-xs text-[rgb(var(--c-text-muted))]">
+                    = {round2(Number(line.packQty) * linePack.size)} {line.unit}
+                  </p>
+                )}
               </div>
               <div className="md:col-span-2">{addButton(editingLineId === null ? addLine : updateLine, editingLineId !== null)}</div>
             </div>
@@ -1051,6 +1151,11 @@ const ProductionEntry = () => {
                         <td className={td}>{row.productName}</td>
                         <td className={`${td} text-right tabular-nums`}>
                           {thousandSeparator(Number(row.qty))} {row.unit}
+                          {row.packUnitId && (
+                            <span className="ml-1 text-xs text-[rgb(var(--c-text-muted))]">
+                              ({thousandSeparator(Number(row.packQty))} {row.packUnit})
+                            </span>
+                          )}
                         </td>
                         <td className={`${td} text-right tabular-nums ${short ? 'font-semibold !text-[rgb(var(--c-danger))]' : ''}`}>
                           {onHand === undefined ? '-' : thousandSeparator(Number(onHand))}

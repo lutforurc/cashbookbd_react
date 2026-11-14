@@ -94,7 +94,9 @@ export const toPurchaseInvoiceDocumentData = (data: any): DocumentData => {
     },
     products: details.map((row: any, index: number) => ({
       sl: index + 1,
-      product_name: row?.product?.name || '',
+      // The supplier's gift on a Production Purchase, marked by the API. The
+      // word rides on the name, as it does on the sales paper.
+      product_name: `${row?.product?.name || ''}${row?.is_free ? ' (ফ্রি)' : ''}`,
       category: row?.product?.category?.name || '',
       brand: row?.product?.brand?.name || '',
       group: row?.product?.group?.name || '',

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiXCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
+import useVoucherAutoEditSearch from '../../utils/hooks/useVoucherAutoEditSearch';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
@@ -69,6 +70,9 @@ const ProductionPurchase = () => {
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [searchNo, setSearchNo] = useState('');
+  // Opened from a report's Edit button: the purchase is found as if its number
+  // had been typed in the Find box.
+  useVoucherAutoEditSearch({ setSearch: setSearchNo, triggerSearch: (no) => loadForEdit(no) });
   const [searching, setSearching] = useState(false);
   const [editing, setEditing] = useState<{ mtmId: string; vrNo: string } | null>(null);
 
@@ -176,8 +180,9 @@ const ProductionPurchase = () => {
     setSearchNo('');
   };
 
-  const loadForEdit = () => {
-    const invoiceNo = searchNo.trim();
+  // `given` is the number a report's Edit button sent; the Find box sends none.
+  const loadForEdit = (given?: string) => {
+    const invoiceNo = (given ?? searchNo).trim();
     if (!invoiceNo) return toast.error('Enter the Vr. No. of the purchase');
 
     setSearching(true);
@@ -279,7 +284,7 @@ const ProductionPurchase = () => {
           className="w-full md:w-64"
         />
         <ButtonLoading
-          onClick={loadForEdit}
+          onClick={() => loadForEdit()}
           buttonLoading={searching}
           label={searching ? 'Finding...' : 'Find'}
           className="whitespace-nowrap text-center mr-0 py-2"
@@ -428,10 +433,10 @@ const ProductionPurchase = () => {
                   {thousandSeparator(Number(row.qty))} {row.unit}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.price))}
+                  {row.free ? '0' : thousandSeparator(Number(row.price))}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.qty) * Number(row.price))}
+                  {row.free ? '0' : thousandSeparator(Number(row.qty) * Number(row.price))}
                 </td>
                 <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">
                   <Button onClick={() => deleteLine(row.id)} className="text-red-500 ml-2 text-center">

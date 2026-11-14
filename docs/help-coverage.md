@@ -151,6 +151,7 @@
 | production_purchase | Production → Production Purchase | `/production/purchase` | `production-purchase` | done |
 | production_scheme | Production → Scheme | `/production/scheme` | `production-scheme` | done |
 | production_free_goods | Production → Free Goods | `/production/free-goods` | `production-free-goods` | done |
+| production_expiry | Production → Near Expiry | `/production/expiry` | `production-expiry` | done |
 | production_recipe | Production → Recipe | `/production/recipe` | `production-recipe` | done |
 | production_register | Production → Production Register | `/production/register` | `production-register` | done |
 | production_costing | Production → Production Register → Detail | `/production/costing/:id` | `production-costing` | done |

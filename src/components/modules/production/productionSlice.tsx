@@ -23,6 +23,7 @@ import {
   API_PRODUCTION_SCHEME_UPDATE_URL,
   API_PRODUCTION_SCHEME_DESTROY_URL,
   API_PRODUCTION_FREE_GOODS_URL,
+  API_PRODUCTION_EXPIRY_URL,
   API_PRODUCTION_STOCK_URL,
   API_PRODUCTION_STORE_URL,
   API_PRODUCTION_UPDATE_URL,
@@ -265,6 +266,7 @@ export const destroyProductionScheme = productionPost(API_PRODUCTION_SCHEME_DEST
 export const getProductionSchemes = productionGet(API_PRODUCTION_SCHEME_LIST_URL);
 export const matchProductionScheme = productionGet(API_PRODUCTION_SCHEME_MATCH_URL);
 export const getProductionFreeGoods = productionGet(API_PRODUCTION_FREE_GOODS_URL);
+export const getProductionExpiry = productionGet(API_PRODUCTION_EXPIRY_URL);
 
 const getProductionRegisterThunk = createAsyncThunk<
   any,

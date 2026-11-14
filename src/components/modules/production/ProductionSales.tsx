@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiXCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
+import useVoucherAutoEditSearch from '../../utils/hooks/useVoucherAutoEditSearch';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import StockShortageModal, { StockShortage } from '../../utils/components/StockShortageModal';
 import {
   getProductionSaleForEdit,
   matchProductionScheme,
@@ -72,8 +74,13 @@ const ProductionSales = () => {
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [searchNo, setSearchNo] = useState('');
+  // Opened from a report's Edit button: the sale is found as if its number
+  // had been typed in the Find box.
+  useVoucherAutoEditSearch({ setSearch: setSearchNo, triggerSearch: (no) => loadForEdit(no) });
   const [searching, setSearching] = useState(false);
   const [editing, setEditing] = useState<{ mtmId: string; vrNo: string } | null>(null);
+  // Not enough stock: the invoice is held here while the seller is asked.
+  const [stockWarning, setStockWarning] = useState<(StockShortage & { payload: any }) | null>(null);
 
   // A line added here has no server id yet; negative numbers keep them apart
   // from the ids an existing invoice brings back (always positive), so a
@@ -219,9 +226,10 @@ const ProductionSales = () => {
   };
 
   // Find a posted production sale by its Vr. No. The server looks it up by
-  // voucher_type (by name), so a number from another kind is simply not found.
-  const loadForEdit = () => {
-    const invoiceNo = searchNo.trim();
+  // production mark, so a number from another screen is simply not found.
+  // `given` is the number a report's Edit button sent; the Find box sends none.
+  const loadForEdit = (given?: string) => {
+    const invoiceNo = (given ?? searchNo).trim();
     if (!invoiceNo) return toast.error('Enter the Vr. No. of the sale');
 
     setSearching(true);
@@ -288,9 +296,29 @@ const ProductionSales = () => {
 
     if (editing) payload.mtmId = editing.mtmId;
 
+    send(payload);
+  };
+
+  // `allowNegative` is the seller's answer to the stock question, on the
+  // second submission of the same invoice.
+  const send = (payload: any, allowNegative = false) => {
+    setSaving(true);
     dispatch(
-      (editing ? updateProductionSale : storeProductionSale)(payload, (response: any) => {
+      (editing ? updateProductionSale : storeProductionSale)(
+        allowNegative ? { ...payload, allow_negative: true } : payload,
+        (response: any) => {
         setSaving(false);
+        // Nothing saved and nothing wrong: the branch asked to be asked.
+        if (response?.stock_shortage) {
+          setStockWarning({
+            rows: Array.isArray(response?.shortage_rows) ? response.shortage_rows : [],
+            shortages: Array.isArray(response?.shortages) ? response.shortages : [],
+            message: response?.message || 'Not enough stock.',
+            blocked: Boolean(response?.stock_blocked),
+            payload,
+          });
+          return;
+        }
         if (response?.success) {
           toast.success(
             editing
@@ -323,7 +351,7 @@ const ProductionSales = () => {
           className="w-full md:w-64"
         />
         <ButtonLoading
-          onClick={loadForEdit}
+          onClick={() => loadForEdit()}
           buttonLoading={searching}
           label={searching ? 'Finding...' : 'Find'}
           className="whitespace-nowrap text-center mr-0 py-2"
@@ -463,10 +491,10 @@ const ProductionSales = () => {
                   {thousandSeparator(Number(row.qty))} {row.unit}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.price))}
+                  {row.free ? '0' : thousandSeparator(Number(row.price))}
                 </td>
                 <td className="px-2 py-2 text-right text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {thousandSeparator(Number(row.qty) * Number(row.price))}
+                  {row.free ? '0' : thousandSeparator(Number(row.qty) * Number(row.price))}
                 </td>
                 <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">
                   <Button onClick={() => deleteLine(row.id)} className="text-red-500 ml-2 text-center">
@@ -534,6 +562,18 @@ const ProductionSales = () => {
         ফ্রি মাল নিজের সারিতে, দাম ০ — স্কিম মিললে ফ্রি সারি নিজে থেকেই যোগ হয়। ফ্রি সারির মালও স্টক থেকে বের হয়,
         তাই তার খরচ বিক্রিত মালের খরচেই ধরা থাকে।
       </p>
+
+      <StockShortageModal
+        warning={stockWarning}
+        action="sell"
+        saving={saving}
+        onCancel={() => setStockWarning(null)}
+        onContinue={() => {
+          const pending = stockWarning;
+          setStockWarning(null);
+          if (pending) send(pending.payload, true);
+        }}
+      />
     </div>
   );
 };

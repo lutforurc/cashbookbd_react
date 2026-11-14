@@ -112,6 +112,7 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
   '/production/recipe': 'production-recipe',
   '/production/register': 'production-register',
   '/production/free-goods': 'production-free-goods',
+  '/production/expiry': 'production-expiry',
   '/production/scheme': 'production-scheme',
   '/production/costing/:id': 'production-costing',
   '/production/sales-return': 'production-sales-return',

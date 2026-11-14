@@ -143,12 +143,35 @@ const EDIT_SCREEN_TARGETS: Record<string, VoucherEditTarget> = {
   employee_loan: { route: routes.employee_loan, label: 'Employee Loan', prefix: '2' },
 };
 
+/**
+ * The Production screens, for a voucher one of them wrote.
+ *
+ * A Production Sales, Production Purchase or Production Sales Return is
+ * numbered as the old forms number theirs (3-/10-, 4-/9-, 13-), so the prefix
+ * would open the old screen -- which the server will not let rebuild it. The
+ * row says which form wrote it (`invoice_workflow: 'production'`), and that
+ * wins over the prefix.
+ */
+const PRODUCTION_EDIT_TARGETS: Record<string, VoucherEditTarget> = {
+  '3': { route: routes.production_sales, label: 'Production Sales', prefix: '3' },
+  '10': { route: routes.production_sales, label: 'Production Sales', prefix: '10' },
+  '4': { route: routes.production_purchase, label: 'Production Purchase', prefix: '4' },
+  '9': { route: routes.production_purchase, label: 'Production Purchase', prefix: '9' },
+  '13': { route: routes.production_sales_return, label: 'Production Sales Return', prefix: '13' },
+};
+
+const productionEditTarget = (row: any): VoucherEditTarget | null =>
+  row?.invoice_workflow === 'production'
+    ? PRODUCTION_EDIT_TARGETS[getVoucherTypePrefix(getEditableVoucherNo(row))] || null
+    : null;
+
 /** Where a report row's voucher is edited: its own screen first, then the prefix. */
 export const getVoucherEditTargetForRow = (
   row: any,
   options?: { bank?: boolean },
 ): VoucherEditTarget | null =>
   EDIT_SCREEN_TARGETS[String(row?.edit_screen ?? '')] ||
+  productionEditTarget(row) ||
   getVoucherEditTarget(getEditableVoucherNo(row), options);
 
 /** The auto-edit state for a report row, opened on the screen above. */
