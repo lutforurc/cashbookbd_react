@@ -23,6 +23,11 @@ import PurchaseBillView from './PurchaseBillView';
  * the company owing him, and is marked so rather than shown as a bare minus.
  *
  * A bill row opens to show what it bought, from the purchase screen's own lines.
+ *
+ * ⚠️ A MODAL, NOT A PANEL UNDER THE LIST (owner, 14 Nov 2026). Under the list it
+ * opened below every employee of the branch, and with a long staff the person
+ * who pressed Ledger had to go looking for it. Esc or a click outside closes
+ * it -- unless a bill is open on top, which Esc closes first.
  */
 
 const money = (value: number) => thousandSeparator(Number(value) || 0);
@@ -118,8 +123,28 @@ const PurchaseAdvanceLedger = ({ employee, today, refreshKey, onClose }: Props) 
   const cell = 'px-2 py-2 text-gray-900 dark:text-[rgb(var(--c-text))]';
   const rows = ledger?.rows ?? [];
 
+  // Esc closes the ledger -- but a bill opened on top of it is closed first,
+  // by its own handler, and the ledger stays.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !billOpen) onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [billOpen, onClose]);
+
   return (
-    <div className="mt-4 rounded border border-stroke p-3 dark:border-strokedark">
+    <div
+      className="fixed inset-0 z-9999 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Ledger of ${employee.name}`}
+    >
+    <div
+      className="my-6 w-full max-w-5xl rounded border border-stroke bg-[rgb(var(--c-surface))] p-4 shadow-lg dark:border-strokedark"
+      onClick={(event) => event.stopPropagation()}
+    >
       <div className="mb-3 flex items-center justify-between gap-2">
         <h3 className="text-base font-semibold text-black dark:text-white">
           Ledger — {employee.name}
@@ -185,9 +210,9 @@ const PurchaseAdvanceLedger = ({ employee, today, refreshKey, onClose }: Props) 
               <th className="px-2 py-2">Date</th>
               <th className="px-2 py-2">Vr. No.</th>
               <th className="px-2 py-2">Particulars</th>
-              <th className="px-2 py-2 text-right">Debit</th>
-              <th className="px-2 py-2 text-right">Credit</th>
-              <th className="px-2 py-2 text-right">Balance</th>
+              <th className="px-2 py-2 text-right align-middle">Debit</th>
+              <th className="px-2 py-2 text-right align-middle">Credit</th>
+              <th className="px-2 py-2 text-right align-middle">Balance</th>
             </tr>
           </thead>
           <tbody>
@@ -198,7 +223,7 @@ const PurchaseAdvanceLedger = ({ employee, today, refreshKey, onClose }: Props) 
                 <td className={cell}>Opening Balance</td>
                 <td className={cell} />
                 <td className={cell} />
-                <td className={`${cell} text-right`}>{balanceText(ledger.opening)}</td>
+                <td className={`${cell} text-right align-middle`}>{balanceText(ledger.opening)}</td>
               </tr>
             ) : null}
 
@@ -244,9 +269,9 @@ const PurchaseAdvanceLedger = ({ employee, today, refreshKey, onClose }: Props) 
                       {row.bought_from ? <span className="ml-1 text-xs text-gray-500">from {row.bought_from}</span> : null}
                       {row.note ? <span className="ml-1 text-xs text-gray-500">— {row.note}</span> : null}
                     </td>
-                    <td className={`${cell} text-right`}>{Number(row.given) ? money(Number(row.given)) : ''}</td>
-                    <td className={`${cell} text-right`}>{Number(row.used) ? money(Number(row.used)) : ''}</td>
-                    <td className={`px-2 py-2 text-right font-semibold ${Number(row.balance) < 0 ? 'text-danger' : 'text-gray-900 dark:text-[rgb(var(--c-text))]'}`}>
+                    <td className={`${cell} text-right align-middle`}>{Number(row.given) ? money(Number(row.given)) : ''}</td>
+                    <td className={`${cell} text-right align-middle`}>{Number(row.used) ? money(Number(row.used)) : ''}</td>
+                    <td className={`px-2 py-2 text-right align-middle font-semibold ${Number(row.balance) < 0 ? 'text-danger' : 'text-gray-900 dark:text-[rgb(var(--c-text))]'}`}>
                       {balanceText(Number(row.balance))}
                     </td>
                   </tr>
@@ -298,9 +323,9 @@ const PurchaseAdvanceLedger = ({ employee, today, refreshKey, onClose }: Props) 
                 <td className="px-2 py-2 text-right" colSpan={3}>
                   Total / Closing Balance
                 </td>
-                <td className="px-2 py-2 text-right">{money(ledger.debit)}</td>
-                <td className="px-2 py-2 text-right">{money(ledger.credit)}</td>
-                <td className={`px-2 py-2 text-right ${ledger.balance < 0 ? 'text-danger' : ''}`}>{balanceText(ledger.balance)}</td>
+                <td className="px-2 py-2 text-right align-middle">{money(ledger.debit)}</td>
+                <td className="px-2 py-2 text-right align-middle">{money(ledger.credit)}</td>
+                <td className={`px-2 py-2 text-right align-middle ${ledger.balance < 0 ? 'text-danger' : ''}`}>{balanceText(ledger.balance)}</td>
               </tr>
             ) : null}
 
@@ -338,6 +363,7 @@ const PurchaseAdvanceLedger = ({ employee, today, refreshKey, onClose }: Props) 
           withItems={withItems}
         />
       ) : null}
+    </div>
     </div>
   );
 };

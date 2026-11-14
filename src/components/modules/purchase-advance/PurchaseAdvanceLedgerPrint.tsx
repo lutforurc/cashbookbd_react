@@ -76,9 +76,9 @@ const PurchaseAdvanceLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
               <th className={`${td} text-left`}>Date</th>
               <th className={`${td} text-left`}>Vr. No.</th>
               <th className={`${td} text-left`}>Particulars</th>
-              <th className={`${td} text-right`}>Debit</th>
-              <th className={`${td} text-right`}>Credit</th>
-              <th className={`${td} text-right`}>Balance</th>
+              <th className={`${td} text-right !align-middle`}>Debit</th>
+              <th className={`${td} text-right !align-middle`}>Credit</th>
+              <th className={`${td} text-right !align-middle`}>Balance</th>
             </tr>
           </thead>
           <tbody>
@@ -88,7 +88,7 @@ const PurchaseAdvanceLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
               <td className={td}>Opening Balance</td>
               <td className={td} />
               <td className={td} />
-              <td className={`${td} text-right`}>{balanceText(opening)}</td>
+              <td className={`${td} text-right !align-middle`}>{balanceText(opening)}</td>
             </tr>
 
             {rows.map((row) => (
@@ -117,9 +117,9 @@ const PurchaseAdvanceLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
                       </table>
                     ) : null}
                   </td>
-                  <td className={`${td} text-right`}>{Number(row.given) ? money(Number(row.given)) : ''}</td>
-                  <td className={`${td} text-right`}>{Number(row.used) ? money(Number(row.used)) : ''}</td>
-                  <td className={`${td} text-right`}>{balanceText(Number(row.balance))}</td>
+                  <td className={`${td} text-right !align-middle`}>{Number(row.given) ? money(Number(row.given)) : ''}</td>
+                  <td className={`${td} text-right !align-middle`}>{Number(row.used) ? money(Number(row.used)) : ''}</td>
+                  <td className={`${td} text-right !align-middle`}>{balanceText(Number(row.balance))}</td>
                 </tr>
               </Fragment>
             ))}
@@ -128,9 +128,9 @@ const PurchaseAdvanceLedgerPrint = React.forwardRef<HTMLDivElement, Props>(
               <td className={`${td} text-right`} colSpan={3}>
                 Total / Closing Balance
               </td>
-              <td className={`${td} text-right`}>{money(debit)}</td>
-              <td className={`${td} text-right`}>{money(credit)}</td>
-              <td className={`${td} text-right`}>{balanceText(balance)}</td>
+              <td className={`${td} text-right !align-middle`}>{money(debit)}</td>
+              <td className={`${td} text-right !align-middle`}>{money(credit)}</td>
+              <td className={`${td} text-right !align-middle`}>{balanceText(balance)}</td>
             </tr>
           </tbody>
         </table>
