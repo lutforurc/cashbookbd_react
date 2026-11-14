@@ -89,7 +89,7 @@ const ExpiryReport = () => {
         <ButtonLoading
           onClick={run}
           buttonLoading={loading}
-          label={loading ? 'Loading...' : 'Show'}
+          label="Show"
           className="whitespace-nowrap text-center mr-0 py-2"
           icon={<FiSearch className="text-lg" />}
         />

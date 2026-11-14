@@ -39,7 +39,10 @@ const ItemPurchasePrint = forwardRef<HTMLDivElement, Props>(({ data, fontSize = 
     .join(', ');
 
   const total = lines.reduce((sum, line) => sum + (Number(line.amount) || 0), 0);
-  const isCredit = String(data?.vr_no ?? '').startsWith('9-');
+  // Bought out of an employee's purchase advance: a 9- like a credit bill, but
+  // nobody is owed -- the paper names the employee and the shop instead.
+  const advance = data?.purchase_advance ?? null;
+  const isCredit = !advance && String(data?.vr_no ?? '').startsWith('9-');
 
   const preparedBy = data?.user?.name ?? '';
   const approvedBy = data?.approved_user?.name ?? '';
@@ -51,7 +54,7 @@ const ItemPurchasePrint = forwardRef<HTMLDivElement, Props>(({ data, fontSize = 
       <PadPrinting />
 
       <h1 className="my-4 text-center font-bold uppercase" style={{ fontSize: fontSize + 6 }}>
-        {isCredit ? 'Credit Purchase' : 'Purchase Voucher'}
+        {advance ? 'Purchase from Employee Advance' : isCredit ? 'Credit Purchase' : 'Purchase Voucher'}
       </h1>
 
       <div className="mb-3 grid grid-cols-2 gap-1">
@@ -62,10 +65,22 @@ const ItemPurchasePrint = forwardRef<HTMLDivElement, Props>(({ data, fontSize = 
           <b>Date:</b> {data?.vr_date ? dayjs(data.vr_date).format('DD/MM/YYYY') : '-'}
         </div>
         <div>
-          <b>{isCredit ? 'Supplier' : 'Paid from'}:</b> {paidFrom || '-'}
+          {advance ? (
+            <>
+              <b>Bought by:</b> {advance.employee || '-'}
+            </>
+          ) : (
+            <>
+              <b>{isCredit ? 'Supplier' : 'Paid from'}:</b> {paidFrom || '-'}
+            </>
+          )}
         </div>
         <div className="text-right">
-          {data?.manual_voucher_no ? (
+          {advance?.bought_from ? (
+            <>
+              <b>Bought from:</b> {advance.bought_from}
+            </>
+          ) : data?.manual_voucher_no ? (
             <>
               <b>Cheque No:</b> {data.manual_voucher_no}
             </>

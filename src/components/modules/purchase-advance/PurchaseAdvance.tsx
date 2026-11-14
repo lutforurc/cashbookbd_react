@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FiDollarSign, FiFileText, FiRefreshCcw, FiSave, FiX } from 'react-icons/fi';
+import { FiDollarSign, FiFileText, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { FaUniversity } from 'react-icons/fa';
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
+import ToggleSwitch from '../../utils/fields/ToggleSwitch';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
@@ -13,6 +14,7 @@ import { hasPermission } from '../../utils/permissionChecker';
 import { FIELD_HEIGHT, FIELD_LABEL } from '../../../theme/fieldStyles';
 import httpService from '../../services/httpService';
 import { API_PURCHASE_ADVANCE_URL } from '../../services/apiRoutes';
+import PurchaseAdvanceLedger from './PurchaseAdvanceLedger';
 
 /**
  * Purchase Advance -- money handed to a member of staff to buy goods with.
@@ -47,29 +49,12 @@ type Staff = {
   last_movement?: string | null;
 };
 
-type StatementRow = {
-  id: number;
-  kind: 'advance' | 'bill' | 'refund' | 'topup';
-  given: number;
-  used: number;
-  bought_from?: string | null;
-  note?: string | null;
-  vr_no: string;
-  vr_date: string;
-  balance: number;
-};
 
 const GIVE = 'give';
 const SETTLE = 'settle';
 const CASH = 'cash';
 const BANK = 'bank';
 
-const KIND_LABEL: Record<StatementRow['kind'], string> = {
-  advance: 'Advance given',
-  bill: 'Goods bought',
-  refund: 'Returned',
-  topup: 'Paid over the advance',
-};
 
 const money = (value: number) => thousandSeparator(Number(value) || 0);
 const day = (value?: string | null) => (value ? String(value).slice(0, 10).split('-').reverse().join('/') : '-');
@@ -100,9 +85,10 @@ const PurchaseAdvance = () => {
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const [statementOf, setStatementOf] = useState<Staff | null>(null);
-  const [statement, setStatement] = useState<StatementRow[]>([]);
-  const [statementLoading, setStatementLoading] = useState(false);
+  // The employee whose ledger is open below the list, and a counter bumped
+  // after every save so an open ledger reads again.
+  const [ledgerOf, setLedgerOf] = useState<Staff | null>(null);
+  const [savedCount, setSavedCount] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -143,28 +129,6 @@ const PurchaseAdvance = () => {
     if (action === SETTLE) setAmount(held !== 0 ? String(Math.abs(held)) : '');
   }, [action, held]);
 
-  const openStatement = async (one: Staff) => {
-    setStatementOf(one);
-    setStatement([]);
-    setStatementLoading(true);
-
-    try {
-      const res = await httpService.get(`${API_PURCHASE_ADVANCE_URL}/statement`, { params: { employee_id: one.id } });
-      const body = res?.data;
-
-      if (!body?.success) {
-        toast.error(body?.message || 'Could not read the statement.');
-        return;
-      }
-
-      setStatement(body?.data?.data?.rows ?? []);
-    } catch (error: any) {
-      if (!error?.toastReported) toast.error('Could not read the statement.');
-    } finally {
-      setStatementLoading(false);
-    }
-  };
-
   const save = async () => {
     if (!employeeId) return toast.error('Choose the employee.');
     if (!(Number(amount) > 0)) return toast.error('How much? Enter an amount.');
@@ -204,7 +168,7 @@ const PurchaseAdvance = () => {
       setAmount('');
       setNote('');
       await load();
-      if (statementOf && String(statementOf.id) === employeeId) openStatement(statementOf);
+      setSavedCount((n) => n + 1);
     } catch (error: any) {
       if (!error?.toastReported) {
         toast.error(error?.response?.data?.message || error?.message || 'Could not save');
@@ -234,8 +198,8 @@ const PurchaseAdvance = () => {
   return (
     <div>
       <HelmetTitle title="Purchase Advance" />
-
-      <h2 className="mb-3 text-center text-xl font-semibold text-black dark:text-white">Purchase Advance</h2>
+      <div className='mb-2'></div>
+      
 
       {check && !check.agrees ? (
         <div className="mb-3 rounded border border-danger bg-danger/10 px-3 py-2 text-sm text-black dark:text-white">
@@ -346,7 +310,7 @@ const PurchaseAdvance = () => {
                 onClick={save}
                 buttonLoading={saving}
                 disabled={saving}
-                label={saving ? 'Saving...' : action === GIVE ? 'Give advance' : held < 0 ? 'Pay the difference' : 'Receive back'}
+                label={action === GIVE ? 'Give advance' : held < 0 ? 'Pay the difference' : 'Receive back'}
                 className="whitespace-nowrap text-center mr-0 py-2"
                 icon={<FiSave className="text-lg" />}
               />
@@ -356,10 +320,14 @@ const PurchaseAdvance = () => {
 
         <div className={canEnter ? 'lg:col-span-2' : 'lg:col-span-3'}>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <label className={`${FIELD_LABEL} inline-flex items-center gap-2`}>
-              <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} />
-              Show every employee
-            </label>
+            <ToggleSwitch
+              id="showEveryEmployee"
+              name="showEveryEmployee"
+              checked={showAll}
+              onChange={(e) => setShowAll(e.target.checked)}
+              label="Show every employee"
+              labelClassName={FIELD_LABEL}
+            />
             <ButtonLoading
               onClick={load}
               buttonLoading={loading}
@@ -393,7 +361,7 @@ const PurchaseAdvance = () => {
                         {one.designation ? <span className="ml-1 text-xs text-gray-500">({one.designation})</span> : null}
                       </td>
                       <td className={`px-2 py-2 text-right font-semibold ${one.balance < 0 ? 'text-danger' : 'text-gray-900 dark:text-[rgb(var(--c-text))]'}`}>
-                        {one.balance === 0 ? '0' : money(Math.abs(one.balance))}
+                        {one.balance === 0 ? '-' : money(Math.abs(one.balance))}
                         {one.balance < 0 ? <span className="ml-1 text-xs font-normal">owed to him</span> : null}
                       </td>
                       <td className={cell}>{day(one.last_advance)}</td>
@@ -401,10 +369,10 @@ const PurchaseAdvance = () => {
                       <td className="px-2 py-2 text-right">
                         <button
                           type="button"
-                          onClick={() => openStatement(one)}
+                          onClick={() => setLedgerOf(one)}
                           className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                         >
-                          <FiFileText size={15} /> Statement
+                          <FiFileText size={15} /> Ledger
                         </button>
                       </td>
                     </tr>
@@ -421,56 +389,14 @@ const PurchaseAdvance = () => {
             </table>
           </div>
 
-          {statementOf ? (
-            <div className="mt-4 rounded border border-stroke p-3 dark:border-strokedark">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <h3 className="text-base font-semibold text-black dark:text-white">Statement — {statementOf.name}</h3>
-                <button type="button" onClick={() => setStatementOf(null)} aria-label="Close the statement" className="text-gray-500 hover:text-black dark:hover:text-white">
-                  <FiX size={18} />
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-                  <thead className="bg-[rgb(var(--c-table-head))] text-xs uppercase text-gray-700 dark:text-gray-200">
-                    <tr>
-                      <th className="px-2 py-2">Date</th>
-                      <th className="px-2 py-2">Vr. No.</th>
-                      <th className="px-2 py-2">What</th>
-                      <th className="px-2 py-2 text-right">Given</th>
-                      <th className="px-2 py-2 text-right">Used / returned</th>
-                      <th className="px-2 py-2 text-right">Balance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {statement.map((row) => (
-                      <tr key={row.id} className="border-b bg-[rgb(var(--c-table-body))] dark:border-gray-700">
-                        <td className={cell}>{day(row.vr_date)}</td>
-                        <td className={cell}>{row.vr_no}</td>
-                        <td className={cell}>
-                          {KIND_LABEL[row.kind] ?? row.kind}
-                          {row.bought_from ? <span className="ml-1 text-xs text-gray-500">from {row.bought_from}</span> : null}
-                          {row.note ? <span className="ml-1 text-xs text-gray-500">— {row.note}</span> : null}
-                        </td>
-                        <td className={`${cell} text-right`}>{Number(row.given) ? money(Number(row.given)) : ''}</td>
-                        <td className={`${cell} text-right`}>{Number(row.used) ? money(Number(row.used)) : ''}</td>
-                        <td className={`px-2 py-2 text-right font-semibold ${Number(row.balance) < 0 ? 'text-danger' : 'text-gray-900 dark:text-[rgb(var(--c-text))]'}`}>
-                          {Number(row.balance) === 0 ? '0' : money(Math.abs(Number(row.balance)))}
-                          {Number(row.balance) < 0 ? <span className="ml-1 text-xs font-normal">owed</span> : null}
-                        </td>
-                      </tr>
-                    ))}
-                    {!statement.length ? (
-                      <tr className="border-b bg-[rgb(var(--c-table-body))] dark:border-gray-700">
-                        <td colSpan={6} className="px-2 py-3 text-center text-gray-500 dark:text-gray-300">
-                          {statementLoading ? 'Loading...' : 'Nothing has been entered for him yet.'}
-                        </td>
-                      </tr>
-                    ) : null}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          {ledgerOf ? (
+            <PurchaseAdvanceLedger
+              key={ledgerOf.id}
+              employee={ledgerOf}
+              today={summary.date}
+              refreshKey={savedCount}
+              onClose={() => setLedgerOf(null)}
+            />
           ) : null}
         </div>
       </div>

@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS `employee_purchase_advances` (
 | খাত patch-এ তৈরি হবে (§৫) | খাত তৈরি হয় প্রথম অগ্রিম দেওয়ার সময় | যে কোম্পানি এটা ব্যবহার করে না, তার chart-এ নতুন খাত ঢোকে না |
 | Purchase Ledger-এ বদল (§৪, §৮) | করা হয়নি | Accounts Transaction-এর বিল Purchase Ledger-এ আসেই না (ওটা সাধারণ Purchase Invoice-এর রিপোর্ট); বদলের কিছু নেই |
 | খাত সব dropdown থেকে বাদ (§৭) | শুধু Accounts Transaction-এর Credit-এ এই খাত বাছা আটকানো | অন্য স্ক্রিনের dropdown ছোঁয়া হয়নি; সরাসরি এন্ট্রি হলে স্ক্রিনের লাল সতর্কতা তা ধরে |
-| Statement প্রিন্ট (§৬-ক) | এখনো নেই | পরের কাজ |
+| Statement প্রিন্ট (§৬-ক) | Statement এখন পূর্ণ **Ledger** (১৪ নভেম্বর): From/To, Opening Balance, Debit/Credit, মোট ও Closing Balance, বিলের পণ্যের তালিকা, আর প্রিন্ট (পণ্যের তালিকাসহ বা ছাড়া) | মালিকের অনুরোধ |
 | Permission Owner ও Administrator-কে (§৭) | যাদের `hrm.loan.create` বা `hotel.accounts.transaction.create` আছে, তারা পায় | একই মানুষ এই কাজ করেন; patch-এর চালু ব্যবস্থাটাই ব্যবহার করা হয়েছে |
 
 ### যাচাই
