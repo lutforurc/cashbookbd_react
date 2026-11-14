@@ -26,6 +26,7 @@ export const MENU_PERMISSIONS = {
     'budget.view',
     'installment.create',
     'hrm.loan.create',
+    'purchase.advance.view',
     'journal.create',
     // Inter-Branch money transfers. The menu answers to "view"; "receive" and
     // "reverse" are what a holder may do once inside.

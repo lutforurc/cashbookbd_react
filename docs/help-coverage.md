@@ -25,6 +25,7 @@
 | cash_received | Transaction → Cash Received | `/accounts/cash/receive` | `cash-received` | done |
 | cheque_register | Accounts → Cheque Register | `/accounts/cheque-register` | `cheque-register` | done |
 | employee_loan | Accounts → Employee Loan | `/accounts/employee-loan` | `employee-loan` | done |
+| purchase_advance | Accounts → Purchase Advance | `/accounts/purchase-advance` | `purchase-advance` | done |
 | employee_loan_balance | Accounts → Employee Loan Balance | `/accounts/employee-loan/balance` | `loan-balance` | done |
 | employee_loan_ledger | Accounts → Employee Loan Ledger | `/accounts/employee-loan/ledger` | `loan-ledger` | done |
 | inter_branch | Accounts → Inter-Branch Transfer | `/accounts/inter-branch` | `inter-branch` | done |

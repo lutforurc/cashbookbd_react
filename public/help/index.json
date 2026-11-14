@@ -315,6 +315,7 @@
         "budget",
         "cheque-register",
         "employee-loan",
+        "purchase-advance",
         "loan-balance",
         "loan-ledger",
         "inter-branch",

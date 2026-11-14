@@ -272,6 +272,7 @@ import ProductionSalesReturn from './components/modules/production/ProductionSal
 import ProductionScheme from './components/modules/production/ProductionScheme';
 import FreeGoodsReport from './components/modules/production/FreeGoodsReport';
 import ExpiryReport from './components/modules/production/ExpiryReport';
+import PurchaseAdvance from './components/modules/purchase-advance/PurchaseAdvance';
 import ProductionRegister from './components/modules/production/ProductionRegister';
 import BatchCosting from './components/modules/production/BatchCosting';
 import SendSms from './components/modules/sms/SendSms';
@@ -707,6 +708,10 @@ function App() {
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.loan.create']} loading={permissionsLoading} />}>
               <Route path={routes.employee_loan} element={<EmployeeLoan />} />
+            </Route>
+            {/* Money handed to staff to buy goods with -- not a loan. */}
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.advance.view']} loading={permissionsLoading} />}>
+              <Route path={routes.purchase_advance} element={<PurchaseAdvance />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['employee.loan.ledger.view']} loading={permissionsLoading} />}>
               <Route path={routes.employee_loan_ledger} element={<LoanLedger user={me} />} />

@@ -1141,6 +1141,8 @@ export const API_HOTEL_LAYOUT_URL = `${API_BASE_URL}/hotel-setup/layout`;
  * touches stock.
  */
 export const API_HOTEL_ASSET_PURCHASE_URL = `${API_BASE_URL}/hotel-setup/asset-purchases`;
+// Employee Purchase Advance: /list, /statement, /give, /settle.
+export const API_PURCHASE_ADVANCE_URL = `${API_BASE_URL}/purchase-advance`;
 // The asset heads, level 4, under Assets. Read from the chart of accounts
 // rather than the fixed-asset module's categories: an asset head is what the
 // ledger understands, and the two are not the same list.

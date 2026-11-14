@@ -82,6 +82,7 @@ const ROUTES = {
   bank_payment: '/accounts/bank/payment',
 
   employee_loan: '/accounts/employee-loan', 
+  purchase_advance: '/accounts/purchase-advance',
   employee_loan_ledger: '/accounts/employee-loan/ledger', 
   employee_loan_balance: '/accounts/employee-loan/balance',
   labour_category: '/labour-items/category',

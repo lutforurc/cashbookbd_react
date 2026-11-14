@@ -10,6 +10,7 @@ import {
   FiRefreshCcw,
   FiSave,
   FiTrash2,
+  FiUser,
   FiX,
 } from 'react-icons/fi';
 import { FaUniversity } from 'react-icons/fa';
@@ -26,6 +27,7 @@ import {
   API_HOTEL_ASSET_PURCHASE_ACCOUNTS_URL,
   API_HOTEL_ASSET_PURCHASE_ITEMS_URL,
   API_HOTEL_ASSET_PURCHASE_URL,
+  API_PURCHASE_ADVANCE_URL,
 } from '../../../services/apiRoutes';
 import { FIELD_HEIGHT, FIELD_LABEL, FIELD_TEXTAREA } from '../../../../theme/fieldStyles';
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
@@ -69,8 +71,14 @@ import HotelVoucherList from '../payments/HotelVoucherList';
 const CASH_MODE = 'cash';
 const BANK_MODE = 'bank';
 const CREDIT_MODE = 'credit';
+/**
+ * Bought by a member of staff out of money handed to him beforehand (Purchase
+ * Advance). A `9-` journal like credit -- no till moves on the day of the bill
+ * -- but nobody is owed: the bill comes off what the employee holds.
+ */
+const ADVANCE_MODE = 'advance';
 
-type Mode = typeof CASH_MODE | typeof BANK_MODE | typeof CREDIT_MODE;
+type Mode = typeof CASH_MODE | typeof BANK_MODE | typeof CREDIT_MODE | typeof ADVANCE_MODE;
 
 const round2 = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
@@ -141,6 +149,33 @@ const HotelAssetPurchase = () => {
   const [bankAccount, setBankAccount] = useState('');
   const [chequeNo, setChequeNo] = useState('');
   const [supplier, setSupplier] = useState<{ value: string; label: string } | null>(null);
+  // Employee advance: who bought it, where, and what each of them holds.
+  const [advanceStaff, setAdvanceStaff] = useState<{ id: number; name: string; balance: number }[]>([]);
+  const [advanceEmployee, setAdvanceEmployee] = useState('');
+  const [boughtFrom, setBoughtFrom] = useState('');
+
+  const loadAdvanceStaff = () =>
+    httpService
+      .get(`${API_PURCHASE_ADVANCE_URL}/list`)
+      .then((res: any) => {
+        const body = res?.data;
+        if (!body?.success) {
+          toast.error(body?.message || 'Could not read the purchase advances.');
+          return;
+        }
+        setAdvanceStaff(body?.data?.data?.employees ?? []);
+      })
+      .catch(() => undefined);
+
+  // Asked when the mode is chosen, and again after a save: the bill just
+  // entered has changed what the employee holds.
+  useEffect(() => {
+    if (mode === ADVANCE_MODE) loadAdvanceStaff();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+
+  const advanceHeld =
+    advanceStaff.find((one) => String(one.id) === advanceEmployee)?.balance ?? null;
 
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
@@ -328,6 +363,7 @@ const HotelAssetPurchase = () => {
     // bill was owed to and its cheque belong to the bill just saved.
     setSupplier(null);
     setChequeNo('');
+    setBoughtFrom('');
     // A fresh entry has no number yet, so the one just saved must leave the box.
     setSavedVoucher('');
   };
@@ -358,6 +394,11 @@ const HotelAssetPurchase = () => {
       return;
     }
 
+    if (mode === ADVANCE_MODE && !advanceEmployee) {
+      toast.error('Bought by which employee? Choose who was given the advance.');
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -370,6 +411,8 @@ const HotelAssetPurchase = () => {
         bank_account: mode === BANK_MODE ? Number(bankAccount) : null,
         cheque_no: mode === BANK_MODE ? chequeNo.trim() || null : null,
         supplier: mode === CREDIT_MODE ? Number(supplier?.value) : null,
+        employee: mode === ADVANCE_MODE ? Number(advanceEmployee) : null,
+        bought_from: mode === ADVANCE_MODE ? boughtFrom.trim() || null : null,
         // ⚠️ THE ITEM, NOT A TYPED NAME. The server reads the head from the
         // item's category and writes one register row per unit, so the id is
         // the only thing it needs besides the figures.
@@ -398,6 +441,15 @@ const HotelAssetPurchase = () => {
       setLastVoucherId(Number(saved?.main_trx_id) || null);
       setSavedMode(mode);
       toast.success(`Voucher ${saved?.vr_no} saved`);
+
+      if (mode === ADVANCE_MODE) {
+        const left = Number(saved?.advance_balance ?? 0);
+        // Below zero the bill ran past the advance: the company owes him.
+        if (left < 0) {
+          toast.info(`The bill ran ${money(Math.abs(left))} over the advance — pay it from Purchase Advance.`);
+        }
+        loadAdvanceStaff();
+      }
     } catch (error: any) {
       if (!error?.toastReported) {
         toast.error(error?.response?.data?.message || error?.message || 'Could not save');
@@ -461,7 +513,9 @@ const HotelAssetPurchase = () => {
         <div className="mb-3 flex items-center justify-between gap-3 rounded border border-success bg-success/10 px-3 py-2">
           <span className="text-sm font-medium text-black dark:text-white">
             Saved — voucher <strong>{savedVoucher}</strong>.{' '}
-            {savedMode === CREDIT_MODE
+            {savedMode === ADVANCE_MODE
+              ? "It came off the employee's advance — see Purchase Advance."
+              : savedMode === CREDIT_MODE
               ? "It is owed to the supplier — see the Supplier Ledger."
               : savedMode === BANK_MODE
                 ? 'It is in the bank book and the ledger like any other payment.'
@@ -688,12 +742,13 @@ const HotelAssetPurchase = () => {
           <div
             role="radiogroup"
             aria-label="Payment mode"
-            className="mb-2 grid grid-cols-3 overflow-hidden rounded border border-stroke dark:border-strokedark"
+            className="mb-2 grid grid-cols-2 overflow-hidden rounded border border-stroke sm:grid-cols-4 dark:border-strokedark"
           >
             {[
               { value: CASH_MODE, label: 'Cash', icon: <FiDollarSign size={16} /> },
               { value: BANK_MODE, label: 'Bank', icon: <FaUniversity size={15} /> },
               { value: CREDIT_MODE, label: 'Credit', icon: <FiCreditCard size={16} /> },
+              { value: ADVANCE_MODE, label: 'Advance', icon: <FiUser size={16} /> },
             ].map((item) => (
               <button
                 key={item.value}
@@ -714,7 +769,9 @@ const HotelAssetPurchase = () => {
           </div>
 
           <p className="mb-3 text-xs leading-snug text-gray-500 dark:text-gray-400">
-            {mode === CREDIT_MODE
+            {mode === ADVANCE_MODE
+              ? 'Bought by an employee out of his purchase advance. Nothing leaves the till now; the bill comes off what he holds.'
+              : mode === CREDIT_MODE
               ? 'Nothing paid now — the whole bill is owed to the supplier and is settled later from the payment screens.'
               : mode === BANK_MODE
                 ? 'Paid in full from the bank account below.'
@@ -763,6 +820,41 @@ const HotelAssetPurchase = () => {
               </div>
             ) : null}
 
+            {mode === ADVANCE_MODE ? (
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div>
+                  <DropdownCommon
+                    id="advanceEmployee"
+                    name="advanceEmployee"
+                    label="Employee *"
+                    data={[
+                      { id: '', name: 'Select the employee' },
+                      ...advanceStaff.map((one) => ({
+                        id: one.id,
+                        name: `${one.name} — holds ${money(Number(one.balance))}`,
+                      })),
+                    ]}
+                    value={advanceEmployee}
+                    onChange={(e: any) => setAdvanceEmployee(e.target.value)}
+                  />
+                  {advanceHeld !== null && netTotal > Number(advanceHeld) ? (
+                    <p className="mt-1 text-xs text-warning">
+                      This bill is {money(round2(netTotal - Number(advanceHeld)))} more than he holds; the
+                      difference will be owed to him.
+                    </p>
+                  ) : null}
+                </div>
+                <InputElement
+                  id="boughtFrom"
+                  name="boughtFrom"
+                  label="Bought from"
+                  placeholder="The shop's name (optional)"
+                  value={boughtFrom}
+                  onChange={(e: any) => setBoughtFrom(e.target.value)}
+                />
+              </div>
+            ) : null}
+
             <InputElement
               id="paidAmount"
               name="paidAmount"
@@ -771,7 +863,9 @@ const HotelAssetPurchase = () => {
               disabled
               onChange={() => undefined}
               description={
-                mode === CREDIT_MODE
+                mode === ADVANCE_MODE
+                  ? "The whole of it, out of the employee's advance."
+                  : mode === CREDIT_MODE
                   ? 'Nothing now. Part payment is not built yet.'
                   : 'The whole of it. Part payment is not built yet.'
               }

@@ -62,6 +62,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'accounts/budget', title: "Budget" },
     { id: 'installment_list', title: "Installments" },
     { id: 'employee_loan', title: "Employee Loan" },
+    { id: 'purchase_advance', title: "Purchase Advance" },
     { id: 'accounts/journal', title: "Journal" },
     { id: 'accounts/inter-branch', title: "Inter-Branch Transfers" },
   ],
@@ -1085,6 +1086,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Employee Loan
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'purchase.advance.view') && (
+                            <li style={subSlot('transaction', 'purchase_advance')}>
+                              <NavLink
+                                to={routes.purchase_advance}
+                                className={subMenuLinkClass}
+                              >
+                                Purchase Advance
                               </NavLink>
                             </li>
                           )}

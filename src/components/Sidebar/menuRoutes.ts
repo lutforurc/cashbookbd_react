@@ -33,6 +33,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.budget,
     routes.installment_list,
     routes.employee_loan,
+    routes.purchase_advance,
     '/accounts/journal',
     routes.inter_branch,
   ],

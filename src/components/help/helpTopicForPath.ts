@@ -224,6 +224,7 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
   '/accounts/budget': 'budget',
   '/accounts/cheque-register': 'cheque-register',
   '/accounts/employee-loan': 'employee-loan',
+  '/accounts/purchase-advance': 'purchase-advance',
   '/accounts/employee-loan/balance': 'loan-balance',
   '/accounts/employee-loan/ledger': 'loan-ledger',
   '/accounts/inter-branch': 'inter-branch',
