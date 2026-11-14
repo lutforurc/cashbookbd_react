@@ -22,6 +22,8 @@ export const MENU_PERMISSIONS = {
     // The unified Received / Payment Entry, on keys of their own.
     'received.entry.create',
     'payment.entry.create',
+    // Accounts Transaction (moved from Assets 2026-11-14); keeps its hotel. key.
+    'hotel.accounts.transaction.create',
     'year.closing.run',
     'budget.view',
     'installment.create',
@@ -264,14 +266,11 @@ export const MENU_PERMISSIONS = {
     'hotel.resource.view',
   ],
   // Fixed assets. The categories and the register share a screen, each tab on
-  // its own key; either opens the menu. The third entry is the purchase form,
-  // moved here from Hotel on 2026-11-11 -- its key keeps the `hotel.` prefix for
-  // the reason given on the entry in index.tsx. Granted to nobody when the patch
-  // creates them.
+  // its own key; either opens the menu. Granted to nobody when the patch
+  // creates them. (The purchase form moved on to Transaction on 2026-11-14.)
   asset: [
     'asset.category.view',
     'asset.register.view',
-    'hotel.accounts.transaction.create',
   ],
   // Old Software. Its own group rather than a corner of Reports: looking an old
   // bill up at the counter is not bookkeeping. Each sub-item is gated on its

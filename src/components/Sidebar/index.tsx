@@ -58,11 +58,15 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'accounts/cheque-register', title: "Cheque Register" },
     { id: 'hotel_received_entry', title: "Received Entry" },
     { id: 'hotel_payment_entry', title: "Payment Entry" },
+    // ⚠️ MOVED HERE from Assets (2026-11-14), which had it from Hotel. The id
+    // and permission keep their `hotel_` spelling: saved arrangements and
+    // granted permissions refer to them by name.
+    { id: 'hotel_asset_purchase', title: "Accounts Transaction" },
     { id: 'accounts/year-closing', title: "Year Closing" },
     { id: 'accounts/budget', title: "Budget" },
     { id: 'installment_list', title: "Installments" },
     { id: 'employee_loan', title: "Employee Loan" },
-    { id: 'purchase_advance', title: "Purchase Advance" },
+    { id: 'purchase_advance', title: "Advance for Purchase" },
     { id: 'accounts/journal', title: "Journal" },
     { id: 'accounts/inter-branch', title: "Inter-Branch Transfers" },
   ],
@@ -214,12 +218,6 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'asset': [
     { id: 'asset_setup', title: "Assets" },
-    // ⚠️ MOVED HERE from Hotel (2026-11-11). It buys what the asset module
-    // keeps -- the register's own purchases land from this form. The id and the
-    // permission keep their `hotel_` spelling: a saved menu arrangement and a
-    // granted permission both refer to them by name, and neither should be
-    // rewritten to move a link.
-    { id: 'hotel_asset_purchase', title: "Accounts Transaction" },
   ],
   'hotel': [
     { id: 'hotel_bookings', title: "Bookings" },
@@ -1095,7 +1093,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.purchase_advance}
                                 className={subMenuLinkClass}
                               >
-                                Purchase Advance
+                                Advance for Purchase
                               </NavLink>
                             </li>
                           )}
@@ -1119,6 +1117,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             <li style={subSlot('transaction', 'hotel_payment_entry')}>
                               <NavLink to={routes.hotel_payment_entry} className={subMenuLinkClass}>
                                 Payment Entry
+                              </NavLink>
+                            </li>
+                          )}
+
+                          {/* Buying assets and expense items against an accounts
+                              head -- not a purchase invoice, nothing lands in
+                              stock. Moved here from Assets on 2026-11-14. Its
+                              own key, hotel.accounts.transaction.create. */}
+                          {hasPermission(permissions, 'hotel.accounts.transaction.create') && (
+                            <li style={subSlot('transaction', 'hotel_asset_purchase')}>
+                              <NavLink to={routes.hotel_asset_purchase} className={subMenuLinkClass}>
+                                Accounts Transaction
                               </NavLink>
                             </li>
                           )}
@@ -3018,19 +3028,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               Categories &amp; Register
                             </NavLink>
                           </li>
-                          )}
-
-                          {/* Buying what the register keeps. Not a purchase
-                              invoice -- nothing here lands in stock -- and the
-                              register gets a row for each thing bought. Moved
-                              up from Hotel on 2026-11-11: it is an asset entry
-                              form. Its own key, hotel.accounts.transaction.create. */}
-                          {hasPermission(permissions, 'hotel.accounts.transaction.create') && (
-                            <li style={subSlot('asset', 'hotel_asset_purchase')}>
-                              <NavLink to={routes.hotel_asset_purchase} className={subMenuLinkClass}>
-                                Accounts Transaction
-                              </NavLink>
-                            </li>
                           )}
                         </ul>
                       </div>

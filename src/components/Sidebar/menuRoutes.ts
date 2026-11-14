@@ -29,6 +29,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     // marked while one of these is on screen.
     routes.hotel_received_entry,
     routes.hotel_payment_entry,
+    routes.hotel_asset_purchase,
     routes.year_closing,
     routes.budget,
     routes.installment_list,
@@ -188,7 +189,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
   // The purchase form sits here too, so opening it keeps Assets open and marked
   // (moved from Hotel on 2026-11-11). Without this line the Assets group closes
   // the moment the link is followed.
-  'asset': [routes.asset_setup, routes.hotel_asset_purchase],
+  'asset': [routes.asset_setup],
   // The manual has no submenu of its own; listed so the entry is marked while
   // its page is open.
   'help': [routes.help],

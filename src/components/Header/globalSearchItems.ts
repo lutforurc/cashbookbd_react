@@ -241,7 +241,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Assets', path: routes.asset_setup, group: 'Assets', keywords: ['fixed asset', 'depreciation', 'asset register'], permissions: ['asset.category.view', 'asset.register.view'] },
   // Filed under Assets with the sidebar entry it opens (2026-11-11). The old
   // words stay in `keywords`: people who knew it as a hotel screen will type them.
-  { title: 'Accounts Transaction', path: routes.hotel_asset_purchase, group: 'Assets', keywords: ['hotel asset purchase', 'buy furniture', 'asset purchase'], permissions: ['hotel.accounts.transaction.create'] },
+  { title: 'Accounts Transaction', path: routes.hotel_asset_purchase, group: 'Transaction', keywords: ['hotel asset purchase', 'buy furniture', 'asset purchase'], permissions: ['hotel.accounts.transaction.create'] },
 
   { title: 'Hotel Bookings', path: routes.hotel_bookings, group: 'Hotel', keywords: ['room booking', 'guest', 'check in', 'check out'], permissions: ['hotel.booking.view'] },
   { title: 'Hotel Calendar', path: routes.hotel_calendar, group: 'Hotel', keywords: ['tape chart', 'room availability'], permissions: ['hotel.calendar.view'] },

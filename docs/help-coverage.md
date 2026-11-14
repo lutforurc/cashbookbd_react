@@ -98,7 +98,7 @@
 | help | — | `/help` | — | skipped: Help page itself |
 | hotel_amenity_issue | Hotel → Amenity & Issues | `/hotel/amenity-issue` | `hotel-amenity-issue` | done |
 | hotel_amenity_issue_new | Hotel → Amenity & Issues → Issue/Opening/Count | `/hotel/amenity-issue/new` | `hotel-amenity-issue-form` | done |
-| hotel_asset_purchase | Assets → Accounts Transaction | `/hotel/assets/purchase` | `hotel-asset-purchase` | done |
+| hotel_asset_purchase | Transaction → Accounts Transaction | `/hotel/assets/purchase` | `hotel-asset-purchase` | done |
 | hotel_booking_due | Hotel → Booking Due | `/hotel/booking-due` | `hotel-booking-due` | done |
 | hotel_bookings | Hotel → Bookings | `/hotel/bookings` | `hotel-bookings` | done |
 | hotel_booking_new | Hotel → Bookings → New Booking | `/hotel/bookings/new` | `hotel-booking-form` | done |
