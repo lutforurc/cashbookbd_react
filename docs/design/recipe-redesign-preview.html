@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Recipe — design preview</title>
+<style>
+  :root {
+    --primary: #2b5fd9;
+    --primary-soft: rgba(43, 95, 217, 0.1);
+    --warning: #f0a000;
+    --warning-soft: rgba(240, 160, 0, 0.14);
+    --success: #17804c;
+    --success-soft: rgba(23, 128, 76, 0.12);
+    --danger: #cb3a4c;
+    --text: #1c2430;
+    --muted: #667085;
+    --border: #e3e7ee;
+    --surface: #ffffff;
+    --page: #f5f7fb;
+    --head: #f2f5f9;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 24px;
+    background: var(--page);
+    color: var(--text);
+    font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .preview-note {
+    max-width: 1320px;
+    margin: 0 auto 14px;
+    padding: 10px 14px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .page { max-width: 1320px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    overflow: hidden;
+  }
+
+  /* ---------------------------------------------------------------- header */
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .brand { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+
+  .brand-icon {
+    display: grid;
+    place-items: center;
+    width: 44px; height: 44px;
+    flex: none;
+    border-radius: 12px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-size: 20px;
+  }
+
+  h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  .sub { margin: 1px 0 0; font-size: 13px; color: var(--muted); }
+
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .pill.new { background: var(--primary-soft); color: var(--primary); }
+  .pill.editing { background: rgba(240, 160, 0, 0.15); color: var(--text); font-weight: 500; }
+  .pill .ver { padding: 1px 6px; border-radius: 999px; background: rgba(240, 160, 0, 0.25); font-size: 11px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 38px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-default { background: #374151; color: #fff; }
+  .btn-ghost { background: transparent; color: var(--muted); }
+  .btn-icon {
+    display: grid; place-items: center;
+    width: 30px; height: 30px;
+    border: 0; border-radius: 8px;
+    background: transparent;
+    color: var(--primary);
+    cursor: pointer;
+  }
+  .btn-icon.danger { color: var(--danger); }
+
+  /* ----------------------------------------------------------------- grid */
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 16px;
+    align-items: start;
+  }
+
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    .top { flex-direction: column; align-items: stretch; }
+  }
+
+  .main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+  /* --------------------------------------------------------------- section */
+  .card-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-title { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+  .card-icon {
+    display: grid; place-items: center;
+    width: 28px; height: 28px;
+    flex: none;
+    border-radius: 8px;
+    background: var(--primary-soft);
+    color: var(--primary);
+  }
+
+  .card-icon.warn { background: var(--warning-soft); color: var(--warning); }
+
+  h2 { margin: 0; font-size: 14px; font-weight: 600; }
+  .hint { margin: 1px 0 0; font-size: 12px; color: var(--muted); }
+  .makes { font-size: 12px; color: var(--muted); }
+  .makes b { color: var(--text); font-weight: 600; }
+
+  .card-body { padding: 16px; }
+
+  /* --------------------------------------------------------------- fields */
+  .group-label {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .group-label.divided { padding-top: 14px; border-top: 1px solid var(--border); }
+
+  .grid-fields {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .span-12 { grid-column: span 12; }
+  .span-6 { grid-column: span 6; }
+  .span-4 { grid-column: span 4; }
+
+  @media (max-width: 760px) {
+    .grid-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .span-12, .span-6, .span-4 { grid-column: span 2; }
+  }
+
+  label { display: block; margin-bottom: 4px; font-size: 13px; }
+  input, select {
+    width: 100%; height: 38px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+    font: inherit;
+  }
+  input:disabled { background: #f7f8fa; color: var(--muted); }
+
+  /* ------------------------------------------------------------- materials */
+  .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .chip.neutral { background: var(--page); color: var(--muted); }
+  .chip.warn { background: rgba(240, 160, 0, 0.18); color: var(--text); }
+  .chip.blue { background: var(--primary-soft); color: var(--primary); }
+  .chip.ok { background: var(--success-soft); color: var(--success); }
+
+  .add-row {
+    display: grid;
+    grid-template-columns: 5fr 2fr 2fr 2fr 1fr;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 16px;
+    padding: 12px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: var(--page);
+  }
+
+  @media (max-width: 900px) { .add-row { grid-template-columns: 1fr 1fr; } }
+
+  .add-row .btn { width: 100%; padding: 0 10px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--head); }
+  th {
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    white-space: nowrap;
+  }
+  th.num, td.num { text-align: right; }
+  th.act, td.act { text-align: right; width: 96px; }
+  tbody tr { border-top: 1px solid var(--border); }
+  tbody tr:hover { background: var(--page); }
+  td { padding: 10px 12px; }
+  td.sl { color: var(--muted); width: 48px; }
+  td.name { font-weight: 600; }
+  td.note { color: var(--muted); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td .unit { margin-left: 4px; font-size: 12px; color: var(--muted); }
+  td.num { font-variant-numeric: tabular-nums; }
+
+  /* --------------------------------------------------------------- versions */
+  .versions { position: sticky; top: 16px; }
+  .version-list { max-height: 72vh; overflow-y: auto; }
+
+  .version {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .version:last-child { border-bottom: 0; }
+  .version.selected { background: rgba(43, 95, 217, 0.07); }
+  .version:hover:not(.selected) { background: var(--page); }
+
+  .version-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .version-name { font-size: 14px; font-weight: 600; margin: 0; }
+  .version-makes { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+  .version-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+
+  .empty { padding: 36px 16px; text-align: center; color: var(--muted); }
+  .empty-icon { font-size: 22px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+  <p class="preview-note">
+    Static preview of the redesigned <strong>Production → Recipe</strong> screen — no live data, drawn from the
+    real screen's markup so the layout, spacing and colours can be judged before a build.
+  </p>
+
+  <div class="page">
+    <!-- ------------------------------------------------------------ header -->
+    <div class="card top">
+      <div class="brand">
+        <span class="brand-icon">▤</span>
+        <div>
+          <h1>Recipe</h1>
+          <p class="sub">What one product takes to make, and how much of each per batch.</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <span class="pill editing">✎ Editing <strong>Spice mix 1 kg</strong> <span class="ver">v3</span></span>
+        <button class="btn btn-primary">💾 Update</button>
+        <button class="btn btn-default">⧉ New version</button>
+        <button class="btn btn-ghost">↻ Clear</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="main">
+        <!-- -------------------------------------------------------- details -->
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title">
+              <span class="card-icon">≡</span>
+              <h2>Recipe details</h2>
+            </div>
+            <p class="makes">Makes <b>Spice Mix</b> · 95 kg</p>
+          </div>
+
+          <div class="card-body">
+            <div class="grid-fields">
+              <p class="group-label">What it makes</p>
+
+              <div class="span-6">
+                <label>Recipe name</label>
+                <input value="Spice mix 1 kg" />
+              </div>
+
+              <div class="span-6">
+                <label>Product it makes</label>
+                <input value="Spice Mix" />
+              </div>
+
+              <div class="span-4">
+                <label>Yield (kg)</label>
+                <input value="95" />
+              </div>
+
+              <div class="span-4">
+                <label>Effective from</label>
+                <input value="15/11/2026" />
+              </div>
+
+              <div class="span-4">
+                <label>Version</label>
+                <input value="3" disabled />
+              </div>
+
+              <p class="group-label divided">Loss &amp; costing</p>
+
+              <div class="span-4">
+                <label>Normal loss %</label>
+                <input value="5" />
+              </div>
+
+              <div class="span-4">
+                <label>Loss measured in</label>
+                <input value="kg" />
+              </div>
+
+              <div class="span-4">
+                <label>Suggested cost (optional)</label>
+                <input placeholder="A reminder only" />
+              </div>
+
+              <p class="group-label divided">Note</p>
+
+              <div class="span-12">
+                <label>Note</label>
+                <input placeholder="Anything worth writing down" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ------------------------------------------------------ materials -->
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title">
+              <span class="card-icon warn">▣</span>
+              <div>
+                <h2>Materials</h2>
+                <p class="hint">Per batch of the yield above — packets, labels and cartons count too.</p>
+              </div>
+            </div>
+
+            <div class="chips">
+              <span class="chip neutral">4 lines</span>
+              <span class="chip warn">1 packaging</span>
+              <span class="hint">Total 92 kg · 400 pcs</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="add-row">
+              <div>
+                <label>Material</label>
+                <input placeholder="Choose a material" />
+              </div>
+              <div>
+                <label>Quantity (kg)</label>
+                <input placeholder="0.00" />
+              </div>
+              <div>
+                <label>Kind</label>
+                <select><option>Material</option><option>Packaging</option></select>
+              </div>
+              <div>
+                <label>Note</label>
+                <input placeholder="Optional" />
+              </div>
+              <div>
+                <button class="btn btn-default">＋ Add</button>
+              </div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th class="sl">Sl</th>
+                  <th>Material</th>
+                  <th class="num">Qty per batch</th>
+                  <th>Kind</th>
+                  <th>Note</th>
+                  <th class="act">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="sl">1</td>
+                  <td class="name">Turmeric</td>
+                  <td class="num">40 <span class="unit">kg</span></td>
+                  <td><span class="chip blue">Material</span></td>
+                  <td class="note">—</td>
+                  <td class="act">
+                    <button class="btn-icon">✎</button>
+                    <button class="btn-icon danger">🗑</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="sl">2</td>
+                  <td class="name">Chili powder</td>
+                  <td class="num">35 <span class="unit">kg</span></td>
+                  <td><span class="chip blue">Material</span></td>
+                  <td class="note">Kashmiri, for colour</td>
+                  <td class="act">
+                    <button class="btn-icon">✎</button>
+                    <button class="btn-icon danger">🗑</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="sl">3</td>
+                  <td class="name">Cumin</td>
+                  <td class="num">12 <span class="unit">kg</span></td>
+                  <td><span class="chip blue">Material</span></td>
+                  <td class="note">—</td>
+                  <td class="act">
+                    <button class="btn-icon">✎</button>
+                    <button class="btn-icon danger">🗑</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="sl">4</td>
+                  <td class="name">Pouch 100 g</td>
+                  <td class="num">400 <span class="unit">pcs</span></td>
+                  <td><span class="chip warn">Packaging</span></td>
+                  <td class="note">Printed front and back</td>
+                  <td class="act">
+                    <button class="btn-icon">✎</button>
+                    <button class="btn-icon danger">🗑</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- ---------------------------------------------------------- versions -->
+      <aside class="versions">
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title">
+              <span class="card-icon">◷</span>
+              <h2>Versions</h2>
+            </div>
+            <span class="hint">3 saved</span>
+          </div>
+
+          <div class="version-list">
+            <div class="version selected">
+              <div class="version-top">
+                <div>
+                  <p class="version-name">Spice mix 1 kg</p>
+                  <p class="version-makes">Makes Spice Mix</p>
+                </div>
+                <div>
+                  <button class="btn-icon">✎</button>
+                  <button class="btn-icon danger">🗑</button>
+                </div>
+              </div>
+              <div class="version-meta">
+                <span class="chip neutral">v3</span>
+                <span class="chip ok">Active</span>
+                <span>95 kg</span>
+                <span>·</span>
+                <span>15/11/2026</span>
+              </div>
+            </div>
+
+            <div class="version">
+              <div class="version-top">
+                <div>
+                  <p class="version-name">Spice mix 1 kg</p>
+                  <p class="version-makes">Makes Spice Mix</p>
+                </div>
+                <div>
+                  <button class="btn-icon">✎</button>
+                  <button class="btn-icon danger">🗑</button>
+                </div>
+              </div>
+              <div class="version-meta">
+                <span class="chip neutral">v2</span>
+                <span class="chip warn">Retired</span>
+                <span>100 kg</span>
+                <span>·</span>
+                <span>01/08/2026</span>
+              </div>
+            </div>
+
+            <div class="version">
+              <div class="version-top">
+                <div>
+                  <p class="version-name">Chili paste</p>
+                  <p class="version-makes">Makes Chili Paste</p>
+                </div>
+                <div>
+                  <button class="btn-icon">✎</button>
+                  <button class="btn-icon danger">🗑</button>
+                </div>
+              </div>
+              <div class="version-meta">
+                <span class="chip neutral">v1</span>
+                <span class="chip ok">Active</span>
+                <span>20 kg</span>
+                <span>·</span>
+                <span>04/07/2026</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,14 +1,25 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiCopy, FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
+import {
+  FiBookOpen,
+  FiClock,
+  FiCopy,
+  FiEdit2,
+  FiList,
+  FiPlus,
+  FiRefreshCcw,
+  FiSave,
+  FiTrash2,
+} from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, TabButton } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { formatDayMonthYear } from '../../utils/utils-functions/formatDate';
 import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import { hasPermission } from '../../utils/permissionChecker';
 import {
@@ -106,6 +117,11 @@ const Recipe = () => {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Writing a recipe and looking back through the versions already saved are
+  // two different jobs, so they get a tab each. The list used to sit under the
+  // form, where only a scroll to the bottom of a long recipe found it.
+  const [tab, setTab] = useState<'recipe' | 'versions'>('recipe');
+
   useEffect(() => {
     dispatch(getProductionRecipes());
   }, [dispatch]);
@@ -167,6 +183,9 @@ const Recipe = () => {
 
           setLine({ ...emptyLine });
           setEditingLineId(null);
+          // Opening a version is a request to work on it, so the form comes to
+          // the front rather than leaving the reader on the list.
+          setTab('recipe');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         },
       }) as any,
@@ -281,10 +300,20 @@ const Recipe = () => {
     );
   };
 
+  // The app's own dialog rather than window.confirm: this one can say what the
+  // copy will and will not carry, and it stays on screen while the API answers.
+  const [confirmNewVersion, setConfirmNewVersion] = useState(false);
+  const [creatingVersion, setCreatingVersion] = useState(false);
+
   const saveAsNewVersion = () => {
     if (!form.id) return toast.error('Open a version first');
-    if (!window.confirm('Copy this version into a new one, effective from the date on the form?')) return;
+    setConfirmNewVersion(true);
+  };
 
+  const createNewVersion = () => {
+    if (!form.id) return;
+
+    setCreatingVersion(true);
     dispatch(
       newProductionRecipeVersion(form.id, form.effectiveDate || null, (response: any) => {
         if (response?.success) {
@@ -295,6 +324,8 @@ const Recipe = () => {
         } else {
           toast.error(response?.message || 'Could not copy the version');
         }
+        setCreatingVersion(false);
+        setConfirmNewVersion(false);
       }) as any,
     );
   };
@@ -333,43 +364,15 @@ const Recipe = () => {
       <HelmetTitle title="Recipe" />
       <div className='md:mt-2'></div>
 
-      {/* The three actions sit above everything, not under the materials
-          table: Save is the point of the screen, and a long recipe should not
-          have to be scrolled to the end to be saved. */}
-      <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
-        <ButtonLoading
-          onClick={save}
-          buttonLoading={saving}
-          disabled={!canCreate}
-          title={!canCreate ? 'You do not have production.create' : undefined}
-          label={form.id ? 'Update' : 'Save'}
-          className="whitespace-nowrap"
-          icon={<FiSave className="text-lg" />}
-        />
-        <ButtonLoading
-          onClick={saveAsNewVersion}
-          buttonLoading={false}
-          disabled={!canCreate}
-          title={!canCreate ? 'You do not have production.create' : undefined}
-          label="New version"
-          className="whitespace-nowrap"
-          icon={<FiCopy className="text-lg" />}
-        />
-        <ButtonLoading
-          onClick={clearForm}
-          buttonLoading={false}
-          label="Clear"
-          className="whitespace-nowrap"
-          icon={<FiRefreshCcw className="text-lg" />}
-        />
-      </div>
-
-      <section className="mb-4 rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+      {/* One heading line: what the screen is and which version is open, with
+          the actions at its right. Save used to sit under the materials table,
+          where a long recipe had to be scrolled to the end to reach it. */}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h1 className="text-xl font-semibold text-[rgb(var(--c-text))]">Recipe</h1>
           {form.id ? (
-            <span className="flex items-center gap-3 rounded-full bg-[rgb(var(--c-warning)/0.15)] px-3 py-1 text-sm text-[rgb(var(--c-text))]">
-              Editing <strong>{form.name || `#${form.id}`}</strong>
+            <span className="flex flex-wrap items-center gap-2 rounded-full bg-[rgb(var(--c-warning)/0.15)] px-3 py-1 text-sm text-[rgb(var(--c-text))]">
+              Editing <strong className="truncate">{form.name || `#${form.id}`}</strong>
               {form.version ? <span>version {form.version}</span> : null}
               <button type="button" onClick={clearForm} className="font-medium text-[rgb(var(--c-primary))] underline">
                 Cancel
@@ -382,7 +385,59 @@ const Recipe = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ButtonLoading
+            onClick={save}
+            buttonLoading={saving}
+            disabled={!canCreate}
+            title={!canCreate ? 'You do not have production.create' : undefined}
+            label={form.id ? 'Update' : 'Save'}
+            className="whitespace-nowrap"
+            icon={<FiSave className="text-lg" />}
+          />
+          <ButtonLoading
+            onClick={saveAsNewVersion}
+            buttonLoading={false}
+            disabled={!canCreate}
+            title={!canCreate ? 'You do not have production.create' : undefined}
+            label="New version"
+            className="whitespace-nowrap"
+            icon={<FiCopy className="text-lg" />}
+          />
+          <ButtonLoading
+            onClick={clearForm}
+            buttonLoading={false}
+            label="Clear"
+            className="whitespace-nowrap"
+            icon={<FiRefreshCcw className="text-lg" />}
+          />
+        </div>
+      </div>
+
+      {/* Two tabs, because the screen holds two jobs: writing this version, and
+          reading back the versions already saved. The list used to sit under
+          the form, found only by scrolling past a recipe's every material. */}
+      <div className="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Recipe">
+        <TabButton
+          label="Recipe"
+          icon={<FiEdit2 />}
+          active={tab === 'recipe'}
+          onClick={() => setTab('recipe')}
+        />
+        <TabButton
+          label={`Recipe List${recipes.length ? ` (${recipes.length})` : ''}`}
+          icon={<FiList />}
+          active={tab === 'versions'}
+          onClick={() => setTab('versions')}
+        />
+      </div>
+
+      {tab === 'recipe' ? (
+        <>
+          <section className="mb-4 rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
+            <h2 className="mb-3 text-base font-semibold text-[rgb(var(--c-text))]">Recipe details</h2>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
           <InputElement
             id="recipeName"
             name="recipeName"
@@ -478,10 +533,10 @@ const Recipe = () => {
 
       <section className="mb-4 rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
         <h2 className="text-base font-semibold text-[rgb(var(--c-text))]">Materials</h2>
-        <p className="mb-3 mt-0.5 text-sm text-[rgb(var(--c-text-muted))]">
+        {/* <p className="mb-3 mt-0.5 text-sm text-[rgb(var(--c-text-muted))]">
           Per batch of the yield above. Empty packets, labels and cartons are materials too — mark
           them as packaging so the count stays visible.
-        </p>
+        </p> */}
 
         <div className="mb-4 grid grid-cols-1 items-end gap-3 md:grid-cols-12">
           <div className="md:col-span-5">
@@ -607,11 +662,12 @@ const Recipe = () => {
           </table>
         </div>
       </section>
-
-      <section className="rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
-        <h2 className="mb-3 text-base font-semibold text-[rgb(var(--c-text))]">
-          Recipes {loading ? <span className="text-sm font-normal">(opening…)</span> : null}
-        </h2>
+        </>
+      ) : (
+        <section className="rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
+          <h2 className="mb-3 text-base font-semibold text-[rgb(var(--c-text))]">
+            Recipe List {loading ? <span className="text-sm font-normal">(opening…)</span> : null}
+          </h2>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -679,6 +735,31 @@ const Recipe = () => {
           </table>
         </div>
       </section>
+      )}
+
+      <ConfirmModal
+        show={confirmNewVersion}
+        title="New version"
+        message={
+          <>
+            Copy <span className="font-bold">{form.name || `#${form.id}`}</span>
+            {form.version ? ` version ${form.version}` : ''} into a new version, effective from{' '}
+            <span className="font-bold">
+              {form.effectiveDate ? formatDayMonthYear(form.effectiveDate) : 'today'}
+            </span>
+            {'?'}
+            <span className="mt-2 block text-sm text-gray-500 dark:text-gray-400">
+              The copy is taken from the saved version, so anything changed on this form but not yet
+              updated is not carried over. Change the new version after it opens.
+            </span>
+          </>
+        }
+        confirmLabel="New version"
+        loading={creatingVersion}
+        onCancel={() => setConfirmNewVersion(false)}
+        onConfirm={createNewVersion}
+        className="bg-primary hover:bg-primary/90"
+      />
 
       <ConfirmModal
         show={removeRow !== null}
