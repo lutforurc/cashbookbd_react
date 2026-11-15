@@ -8,6 +8,18 @@ import { FIELD_LABEL } from '../../../theme/fieldStyles';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
+import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
+
+const BN_DIGITS = '০১২৩৪৫৬৭৮৯';
+const toBanglaDigits = (value: string | number) =>
+  String(value).replace(/[0-9]/g, (d) => BN_DIGITS[Number(d)]);
+
+// The Repeat switch in words anyone reads: on, the free goods come again at
+// every threshold (30 bought on "10 gets 1" earns 3), not once per invoice.
+const repeatLabel = (threshold: string, freeQty: string) =>
+  Number(threshold) > 0 && Number(freeQty) > 0
+    ? `যত কিনবে তত ফ্রি · প্রতি ${toBanglaDigits(threshold)}-এ ${toBanglaDigits(freeQty)}`
+    : 'যত কিনবে তত ফ্রি';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import {
   destroyProductionScheme,
@@ -185,7 +197,24 @@ const ProductionScheme = () => {
           />
         </div>
         <div className="md:col-span-4">
-          <label className={FIELD_LABEL}>Free item</label>
+          {/* The switch rides on the label's line, above the box it governs.
+              On: the free item is the product bought. Off: pick another
+              product to hand out free (buy biscuits, get a cup). */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label className={FIELD_LABEL}>Free item</label>
+            <ToggleSwitch
+              label="একই পণ্য ফ্রি"
+              checked={form.sameProduct}
+              onChange={(checked) =>
+                setForm((p) => ({
+                  ...p,
+                  sameProduct: checked,
+                  freeProduct: checked ? p.product : p.freeProduct,
+                  freeProductName: checked ? p.productName : p.freeProductName,
+                }))
+              }
+            />
+          </div>
 
           {form.sameProduct ? (
             <InputElement
@@ -212,22 +241,6 @@ const ProductionScheme = () => {
               value={form.freeProduct ? { value: form.freeProduct, label: form.freeProductName } : null}
             />
           )}
-
-          <label className="mt-1 flex items-center gap-2 whitespace-nowrap text-xs text-[rgb(var(--c-text))]">
-            <input
-              type="checkbox"
-              checked={form.sameProduct}
-              onChange={(e) =>
-                setForm((p) => ({
-                  ...p,
-                  sameProduct: e.target.checked,
-                  freeProduct: e.target.checked ? p.product : p.freeProduct,
-                  freeProductName: e.target.checked ? p.productName : p.freeProductName,
-                }))
-              }
-            />
-            Same as the product above
-          </label>
         </div>
       </div>
 
@@ -292,14 +305,11 @@ const ProductionScheme = () => {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-2 whitespace-nowrap text-sm text-[rgb(var(--c-text))]">
-          <input
-            type="checkbox"
-            checked={form.repeatable}
-            onChange={(e) => setField('repeatable', e.target.checked)}
-          />
-          Repeat (every {form.threshold || '—'} buys {form.freeQty || '—'} more)
-        </label>
+        <ToggleSwitch
+          label={repeatLabel(form.threshold, form.freeQty)}
+          checked={form.repeatable}
+          onChange={(checked) => setField('repeatable', checked)}
+        />
         <ButtonLoading
           onClick={save}
           buttonLoading={saving}
