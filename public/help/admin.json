@@ -27,13 +27,13 @@
   "voucher-images": {
     "title": "ভাউচারের ছবি আপলোড",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "15/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "ভাউচারের সাথে কাগজের ছবি জোড়া হয় — একসাথে অনেক ভাউচারে (Bulk) বা একটি একটি করে।",
     "sections": [
       { "heading": "একসাথে আপলোড", "menu": "Admin → Bulk Voucher Upload", "steps": ["Select Branch, Voucher Type, Attachment Type, Start Date ও End Date দিন।", "Update চেপে ভাউচার আনুন; Choose Voucher দিয়ে ফাইল বাছুন।", "ফাইল বাছা হলে আপলোড শুরু হয়; N file(s) selected দেখায়।"] },
-      { "heading": "একটি একটি করে", "menu": "Admin → Upload Voucher Image", "steps": ["Branch, Voucher Type, Attachment Type ও তারিখ দিয়ে Run চাপুন।", "SL No., Voucher No., Voucher Details, Amount ও Voucher Images দেখা যায়।", "প্রতিটি সারিতে Upload / Add More দিয়ে ছবি দিন; Cancel দিয়ে বাতিল।"] },
+      { "heading": "একটি একটি করে", "menu": "Admin → Upload Voucher Image", "steps": ["Branch, Voucher Type, Attachment Type ও তারিখ দিয়ে Run চাপুন।", "প্রতিটি ভাউচার এক সারিতে আসে — SL No., Voucher No., Voucher Details, Amount ও Voucher Images।", "Voucher Details-এ প্রথম লাইনটি ভাউচারের প্রধান খাত, নিচে ছোট করে বিপরীত পাশ (যেমন Cash); Amount-এ ভাউচারের মোট টাকা।", "সেই এক সারিতে Upload / Add More দিয়ে ছবি দিন; Cancel দিয়ে বাতিল।"] },
       { "heading": "সতর্কতা", "warning": "খুব বড় ফাইল বাদ পড়ে যাবে — ছোট ছবি দিন। ছবি ভাউচারের তারিখের মধ্যে থাকা ভাউচারেই যুক্ত হয়।" }
     ]
   },

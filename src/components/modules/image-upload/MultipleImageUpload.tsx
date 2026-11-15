@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FIELD_FILE_BUTTON } from '../../../theme/fieldStyles';
 import { getVoucherForImage, uploadImage } from './imageUploadSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -48,6 +48,27 @@ interface Voucher {
   nam: string;
   debit: number;
   credit: number;
+  /** `acc_transaction_master.id` -- which balanced leg of the voucher this line belongs to. */
+  trx_mstr_id?: number;
+}
+
+/**
+ * One row of the table as it is drawn: one row per voucher.
+ *
+ * ⚠️ THE API ANSWERS IN ACCOUNTING LINES, NOT IN VOUCHERS. A cash payment
+ * comes back as two rows -- the expense head and its `Cash` contra -- both
+ * carrying the same `vr_no`, the same date, the same amount and, crucially, the
+ * same `main_trx_master.id`. They are one voucher, and the screen has to say so
+ * once: a voucher number listed twice reads as two vouchers, and it also meant
+ * two upload boxes pointing at the same voucher, so a file chosen in one
+ * appeared in the other.
+ *
+ * `heads` is every account head of the voucher, in the order the API sent them,
+ * so the caller can show the first as the voucher's subject and the rest -- the
+ * contra side -- as the small line beneath it.
+ */
+interface VoucherGroup extends Voucher {
+  heads: string[];
 }
 
 interface OptionType {
@@ -65,6 +86,87 @@ const getSelectedFileBadge = (file: File) => {
   if (file.type === 'application/pdf' || fileName.endsWith('.pdf')) return 'PDF';
   if (/\.(xls|xlsx|csv)$/i.test(file.name)) return 'Excel';
   return 'File';
+};
+
+const getVoucherRowId = (row: Voucher) => Number(row?.id ?? row?.mtm_id ?? 0);
+
+/**
+ * One row per voucher, built from the accounting lines the API sends.
+ *
+ * ⚠️ THE KEY IS THE VOUCHER ID, NOT THE VOUCHER NUMBER. Two genuinely different
+ * vouchers can share a `vr_no` in this database (old recycles), so grouping by
+ * the number would hide one of them behind the other -- and the upload box
+ * would then point at whichever id survived. `id` is `main_trx_master.id`, the
+ * voucher itself, so every line of one voucher carries the same value. A row
+ * without it is left alone rather than matched to a neighbour by guesswork.
+ *
+ * The amount is the voucher's own -- not the sum of every line. One
+ * `acc_transaction_master` row is one balanced leg, and a voucher can hold
+ * more than one: a purchase recorded together with the cash paid for it has a
+ * leg for the bill and a leg for the money, each for the full amount. Adding
+ * them would report the bill twice, so the largest single leg is what the row
+ * shows. A plain two-line voucher has one leg, and there it is simply the
+ * amount.
+ */
+const groupVoucherRows = (rows: Voucher[]): VoucherGroup[] => {
+  const order: string[] = [];
+  const byVoucher = new Map<string, Voucher[]>();
+
+  rows.forEach((row, index) => {
+    const voucherId = getVoucherRowId(row);
+    const key = voucherId ? `voucher-${voucherId}` : `row-${index}`;
+
+    const group = byVoucher.get(key);
+    if (group) {
+      group.push(row);
+      return;
+    }
+
+    byVoucher.set(key, [row]);
+    order.push(key);
+  });
+
+  const roundTo = (value: number) => Math.round(value * 100) / 100;
+
+  return order.map((key, index) => {
+    const group = byVoucher.get(key) ?? [];
+    const [first] = group;
+
+    const heads: string[] = [];
+    for (const row of group) {
+      const head = String(row?.nam ?? '').trim();
+      if (head && !heads.includes(head)) heads.push(head);
+    }
+
+    // Each leg is balanced on its own, so the legs are what the sum has to be
+    // taken over -- never the whole voucher.
+    const legs = new Map<string, { debit: number; credit: number }>();
+
+    group.forEach((row, lineIndex) => {
+      const legKey = row?.trx_mstr_id ? `leg-${row.trx_mstr_id}` : `line-${lineIndex}`;
+      const leg = legs.get(legKey) ?? { debit: 0, credit: 0 };
+
+      leg.debit += Number(row?.debit || 0);
+      leg.credit += Number(row?.credit || 0);
+      legs.set(legKey, leg);
+    });
+
+    let debit = 0;
+    let credit = 0;
+
+    for (const leg of legs.values()) {
+      debit = Math.max(debit, leg.debit);
+      credit = Math.max(credit, leg.credit);
+    }
+
+    return {
+      ...first,
+      serial_no: index + 1,
+      heads,
+      debit: roundTo(debit),
+      credit: roundTo(credit),
+    };
+  });
 };
 
 export default function VoucherUpload(user: any): JSX.Element {
@@ -87,6 +189,11 @@ export default function VoucherUpload(user: any): JSX.Element {
   const [tableData, setTableData] = useState<Voucher[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
   const [buttonLoading, setButtonLoading] = useState(false);
+
+  // The API's accounting lines, folded into one row per voucher. Kept derived
+  // rather than stored so a refresh cannot leave the table showing the lines
+  // again.
+  const voucherRows = useMemo(() => groupVoucherRows(tableData || []), [tableData]);
 
   const [voucherImageFormData, setVoucherImageFormData] = useState({
     branch_id: user.user.branch_id,
@@ -137,8 +244,6 @@ export default function VoucherUpload(user: any): JSX.Element {
       setBranchId(user.user.branch_id);
     }
   }, [branchDdlData?.protectedData?.data, branchDdlData?.protectedData?.transactionDate, user.user.branch_id]);
-
-  const getVoucherRowId = (row: Voucher) => Number(row?.id ?? row?.mtm_id ?? 0);
 
   const buildPreviewList = async (selectedFiles: File[]) => {
     const previewReaders = selectedFiles.map((file) => {
@@ -459,6 +564,23 @@ export default function VoucherUpload(user: any): JSX.Element {
     {
       key: 'nam',
       header: 'Voucher Details',
+      render: (row: VoucherGroup) => {
+        const [head, ...contra] = row.heads;
+
+        return (
+          <div className="flex flex-col" title={row.heads.join(' / ')}>
+            <span>{head || '-'}</span>
+            {contra.length > 0 ? (
+              // The other side of the voucher -- `Cash`, the bank, a second
+              // expense head. Small and quiet: it identifies the voucher but
+              // it is not what the row is about.
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {contra.join(' · ')}
+              </span>
+            ) : null}
+          </div>
+        );
+      },
     },
     {
       key: 'debit',
@@ -560,7 +682,7 @@ export default function VoucherUpload(user: any): JSX.Element {
         </div>
       </div>
 
-      <Table columns={columns} data={tableData || []} />
+      <Table columns={columns} data={voucherRows} getRowKey={(row) => getVoucherRowId(row)} />
     </div>
   );
 }
