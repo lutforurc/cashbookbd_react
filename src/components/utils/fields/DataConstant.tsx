@@ -62,6 +62,17 @@ export const printPadHeading = [
   { id: 3, name: 'Custom Image Pad' },
 ];
 
+/**
+ * Where the company logo sits on a pad head. The ids are the values the
+ * pad_logo_position meta is read for; the margins beside them are in CSS px, the
+ * same unit the pre-printed pad's blank space is measured in.
+ */
+export const padLogoPositions = [
+  { id: 'right', name: 'Right Side' },
+  { id: 'left', name: 'Left Side' },
+  { id: 'top', name: 'Top (above the heading)' },
+];
+
 export const printerSettings = [
   { id: 1, name: 'Normal Printer' },
   { id: 2, name: 'POS Printer' },

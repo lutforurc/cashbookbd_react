@@ -2,11 +2,12 @@
   "account-deletions": {
     "title": "অ্যাকাউন্ট মোছার অনুরোধ",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "কোম্পানি বা ব্যক্তিগত অ্যাকাউন্ট মোছার অনুরোধগুলো দেখা ও পর্যালোচনা করার তালিকা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ account.deletion.manage permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Admin → Account Deletions", "steps": ["All statuses, All types, Personal বা Company বাছুন।", "Reference, name, email… বক্সে লিখে খুঁজুন।", "Reference, Type, Requester, Company, Status ও Submitted দেখা যায়; Review দিয়ে অনুরোধ খুলুন।"] },
       { "heading": "সতর্কতা", "warning": "অনুরোধ মঞ্জুর করলেও ১৪ দিন অপেক্ষা ও যাচাই ছাড়া মোছা চলে না।" }
     ]
@@ -26,24 +27,25 @@
   "voucher-images": {
     "title": "ভাউচারের ছবি আপলোড",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "15/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "ভাউচারের সাথে কাগজের ছবি জোড়া হয় — একসাথে অনেক ভাউচারে (Bulk) বা একটি একটি করে।",
     "sections": [
       { "heading": "একসাথে আপলোড", "menu": "Admin → Bulk Voucher Upload", "steps": ["Select Branch, Voucher Type, Attachment Type, Start Date ও End Date দিন।", "Update চেপে ভাউচার আনুন; Choose Voucher দিয়ে ফাইল বাছুন।", "ফাইল বাছা হলে আপলোড শুরু হয়; N file(s) selected দেখায়।"] },
-      { "heading": "একটি একটি করে", "menu": "Admin → Upload Voucher Image", "steps": ["Branch, Voucher Type, Attachment Type ও তারিখ দিয়ে Run চাপুন।", "SL No., Voucher No., Voucher Details, Amount ও Voucher Images দেখা যায়।", "প্রতিটি সারিতে Upload / Add More দিয়ে ছবি দিন; Cancel দিয়ে বাতিল।"] },
+      { "heading": "একটি একটি করে", "menu": "Admin → Upload Voucher Image", "steps": ["Branch, Voucher Type, Attachment Type ও তারিখ দিয়ে Run চাপুন।", "প্রতিটি ভাউচার এক সারিতে আসে — SL No., Voucher No., Voucher Details, Amount ও Voucher Images।", "Voucher Details-এ প্রথম লাইনটি ভাউচারের প্রধান খাত, নিচে ছোট করে বিপরীত পাশ (যেমন Cash); Amount-এ ভাউচারের মোট টাকা।", "সেই এক সারিতে Upload / Add More দিয়ে ছবি দিন; Cancel দিয়ে বাতিল।"] },
       { "heading": "সতর্কতা", "warning": "খুব বড় ফাইল বাদ পড়ে যাবে — ছোট ছবি দিন। ছবি ভাউচারের তারিখের মধ্যে থাকা ভাউচারেই যুক্ত হয়।" }
     ]
   },
   "admin-business-types": {
     "title": "ব্যবসার ধরন",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "শাখা যোগ করার সময় ও নিবন্ধনে যে ব্যবসার ধরন দেখানো হয়, তার তালিকা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ business.create permission থাকলে।"] },
       { "heading": "ধরন যোগ ও বদল", "menu": "Admin → Business Types", "steps": ["Name, Status (Enabled/Disabled) ও Description লিখে Add করুন।", "তালিকায় #, Name, Description, Branches ও Offered দেখা যায়; Edit দিয়ে বদলান।"] },
       { "heading": "সতর্কতা", "warning": "Disabled করলে নতুন শাখার তালিকা থেকে সরে যায়, কিন্তু পুরনো শাখা আগের মতোই চলে; কিছু মোছে না।" }
     ]
@@ -51,11 +53,12 @@
   "admin-inventory-systems": {
     "title": "ইনভেন্টরি সিস্টেম",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "শাখা যে ইনভেন্টরি মডেলে চলে (যেমন সাধারণ, ট্রেডিং) তার তালিকা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ inventory.systems.view permission থাকলে।"] },
       { "heading": "সিস্টেম", "menu": "Admin → Inventory Systems", "steps": ["Name, Slug, Status ও Description দিয়ে Add করুন।", "তালিকায় #, Name, Slug, Status ও Description দেখা যায়; Edit দিয়ে বদলান।"] },
       { "heading": "সতর্কতা", "warning": "Core system-এর Slug লক করা — रাউটিং এর ওপর নির্ভর করে, তাই বদলানো বা মোছা যায় না।" }
     ]
@@ -63,11 +66,12 @@
   "admin-tutorial-videos": {
     "title": "টিউটোরিয়াল ভিডিও",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "প্রতিটি স্ক্রিনের পাশে যে ভিডিও লিংক দেখায়, তার তালিকা ও লিংক।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ tutorial.videos.manage permission থাকলে।"] },
       { "heading": "লিংক বসানো", "menu": "Admin → Tutorial Videos", "steps": ["Add New চেপে Screen key, Title, Group, Web URL ও Mobile URL দিন।", "Save করলে তালিকায় Sl., Screen, Web URL, Mobile URL ও Show দেখা যায়।", "Edit দিয়ে বদলান, Remove দিয়ে স্ক্রিন বাদ দিন।"] },
       { "heading": "সতর্কতা", "warning": "স্ক্রিনটি অ্যাপে থাকলে আবার নিজেই তালিকায় যোগ হয়ে যাবে — Remove স্থায়ী নয়।" }
     ]
@@ -75,11 +79,12 @@
   "admin-inapp-list": {
     "title": "ইন-অ্যাপ বার্তা",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "অ্যাপের ভেতরে ব্যবহারকারীকে দেখানো প্রচার বার্তার তালিকা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ admin.in.app.messages.view permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Admin → In-App Messages", "steps": ["New Campaign দিয়ে নতুন বার্তা; Refresh দিয়ে তালিকা নতুন করে আনুন।", "#, Campaign, Layout / Trigger, Audience / Platform, Frequency, Schedule, Delivery ও Status দেখা যায়।", "Edit বা Delete দিয়ে বার্তা সামলান।"] },
       { "heading": "সতর্কতা", "warning": "Status বন্ধ থাকলে বার্তা দেখাবে না; Schedule-এর বাইরে গেলেও দেখাবে না।" }
     ]
@@ -135,11 +140,12 @@
   "admin-notifications": {
     "title": "অ্যাডমিন নোটিশ",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "সবাইকে, একটি শাখাকে বা একটি পদকে অ্যাপের ভেতরে নোটিশ পাঠানো হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ admin.notifications.view permission থাকলে।"] },
       { "heading": "নোটিশ পাঠানো", "menu": "Admin → Admin Notifications", "steps": ["Title ও Message লিখুন।", "Tone (Info/Warning/Danger/Success) ও Audience (Global/Branch/Role) বাছুন।", "Branch বা Role, Expires at দিন; Send চাপুন।"] },
       { "heading": "পাঠানো তালিকা", "steps": ["Sent Notifications-এ Title, Tone, Audience, Read, Created, Expires ও Action দেখা যায়।", "কেউ পড়েছে কি না Read ঘরে বোঝা যায়।"] },
       { "heading": "সতর্কতা", "warning": "Expires at খালি রাখলে নোটিশের মেয়াদ শেষ হয় না; বন্ধ করতে চাইলে তারিখ দিন।" }
@@ -172,11 +178,12 @@
   "admin-resellers": {
     "title": "রিসেলার প্রশাসন",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "রিসেলার অ্যাকাউন্ট, কোম্পানি বরাদ্দ ও কমিশন পরিশোধের জায়গা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ reseller.view permission থাকলে।"] },
       { "heading": "রিসেলার ও বরাদ্দ", "menu": "Admin → Reseller Admin", "steps": ["Name, Business Name, Phone, Email, Login Password, Commission ও Value দিয়ে Save করুন।", "Reseller List-এ Name, Contact, Companies, Commission ও Status দেখা যায়।", "Assign Company-তে Unassigned Company বেছে Assign করুন।"] },
       { "heading": "কমিশন", "steps": ["Pay Reseller Commission-এ Reseller, Amount, Payment Method, Payment Date, Paid To Account ও Reference দিয়ে Pay করুন।", "Payment Commissions ও Commission Payments-এ হিসাব মিলিয়ে নিন।"] },
       { "heading": "সতর্কতা", "warning": "রিসেলার বন্ধ করলে তার কোম্পানিগুলো মুছে যায় না; কমিশন পরিশোধ কেবল Approved Payment থেকেই হয়।" }
@@ -234,11 +241,12 @@
   "admin-website-templates": {
     "title": "ওয়েবসাইট টেমপ্লেট",
     "module": "Admin",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "কোম্পানিগুলোকে দেওয়া ওয়েবসাইটের নমুনা (টেমপ্লেট) তৈরি ও প্রকাশের তালিকা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু platform admin-এর কাছে, এবং Roles-এ website.templates.manage permission থাকলে।"] },
       { "heading": "টেমপ্লেট", "menu": "Admin → Website Templates", "steps": ["Create a template-এ Name লিখে নতুন নমুনা বানান।", "Master templates-এ Name, Pages, Status ও Published দেখা যায়।", "Edit, Duplicate, Publish / Unpublish ও Delete দিয়ে সামলান।"] },
       { "heading": "সতর্কতা", "warning": "Draft নমুনা কোম্পানির গ্যালারিতে দেখা যায় না; Publish করলে নকল তৈরি হয়, Unpublish করলে মোছে না।" }
     ]

@@ -15,13 +15,14 @@
   "hotel-bookings": {
     "title": "বুকিং তালিকা",
     "module": "Hotel",
-    "updated": "09/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "প্রপার্টির সব বুকিং দেখা যায় — কে কখন আসবে, কী অবস্থায় আছে এবং কোন কাজ করা যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hotel.booking.view permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Hotel → Bookings", "steps": ["Property, Search, Start Date ও End Date দিন।", "Sold (Rooms & halls/Walk-in only/Everything) ও Show (All bookings/Confirmed/Held/Checked in/Checked out/Cancelled/Hold expired/Expired) বাছুন। Hold expired = সময়মতো কনফার্ম না হওয়া hold; Expired = কনফার্ম হয়েছিল কিন্তু অতিথি আসেননি।", "New Booking চাপলে নতুন বুকিং খোলে।"] },
-      { "heading": "সারির কাজ", "steps": ["Booking Information-এ Guest, তারিখ ও ঘর/হল দেখা যায়; Status-এ Held/Confirmed/Checked in/Checked out/Cancelled/Hold expired/Expired।", "Action থেকে Guests, Check in, Bill, Check out, Edit, Transfer, Cancel করা যায়।"] },
+      { "heading": "সারির কাজ", "steps": ["Booking Information-এ Guest, তারিখ ও ঘর/হল দেখা যায়। Holds-এ রুম হলে 'N Room' ও অতিথির সংখ্যা, হল/কনভেনশন সেন্টার হলে প্রতি শিফট 'N Hall Room' আর তার নিচে হলের আসন সংখ্যা (যেমন '50 Seats') দেখায়। একই বুকিংয়ে রুম ও হল দুটো থাকলে রুমের নিচে অতিথি, হলের নিচে আসন দেখায়। আসন সংখ্যা আসে Rooms ট্যাবে হলের capacity থেকে।", "Status-এStatus-এ Held/Confirmed/Checked in/Checked out/Cancelled/Hold expired/Expired।", "Action থেকে Guests, Check in, Bill, Check out, Edit, Transfer, Cancel করা যায়।"] },
       { "heading": "টাকা নেওয়া ও হিসাব", "steps": ["নিচের নিয়ম খাটে যখন Branch → Hotel Setup → Income Setup-এ Income at Settlement বাছাই করা থাকে। Income at Bill থাকলে Bill চাপলেই Income ও VAT ওঠে, আর সেটেলের টাকা অ্যাডভান্স হেডে জমা হয়।", "অ্যাডভান্স নিলে টাকা Advance from Room Rent হেডে জমা হয়।", "Bill the nights চাপলে বিল Folio-তে ওঠে, তবে হিসাবে ওঠে সেটেলের সময়।", "Settlement নিলে নগদ টাকা রিসিট ভাউচারে আগে পুরো VAT-এ, বাকিটা Room Rent আয়ে ওঠে। অ্যাডভান্সের অংশ আলাদা জার্নালে আয়ে সমন্বয় হয়, তাই Cash Book-এ তা Payment হিসেবে দেখায় না।", "অতিথি বাকি রেখে checkout করলে বাকি টাকা Guest Receivable হেডে যায়। পরে টাকা পেলে ওই হেডেই জমা হয়।", "বিলে পয়সা থাকলে পয়সাসহই টাকা নেওয়া হয়, বিল টাকায় রাউন্ড হয় না।", "ডিসকাউন্ট বিলের মোট টাকা (ভ্যাটসহ) থেকে বাদ যায়, আর VAT বসে যা অতিথি দেন তার ওপর। ভ্যাটসহ 1,150 টাকার রুমে 150 ডিসকাউন্টে বিল পড়া যায় ওপর থেকে নিচে: Room Charges (VAT incl.) 1,150 → Discount 150 → Net Amount 1,000 → Rent (excl. VAT) 869.57 + VAT 15% 130.43। বিলে একাধিক হারের VAT থাকলেও VAT এক লাইনেই থাকে — যে হারগুলো বিলে আছে শুধু সেগুলোর নাম (যেমন VAT 5% / 7.5% / 15%) আর মোট VAT। ডিসকাউন্ট না থাকলে বিল আগের মতো (Room & Charges, VAT, Gross)। হিসাবে VAT Payable 130.43, আর Discount Allowed-এ যায় ভাড়ার অংশ 130.43 (বাকি 19.57 ভ্যাটের অংশ, যা আর সরকারকে দিতে হয় না)।", "ডিসকাউন্ট রিসিট ভাউচারে থাকে না, আলাদা জার্নালে যায় (Dr Hotel Discount Allowed / Cr Room Rent)। তাই Cash Book ও Cash & Bank Book-এ শুধু হাতে আসা টাকা দেখায়: Room Rent 869.57 + VAT 130.43 = 1,000।"] },
       { "heading": "সতর্কতা", "warning": "Cancel করলে বুকিংয়ের টাকা ফেরত বা cancellation charge হিসেবে আয় হতে পারে — কোন হিসাব থেকে ফেরত যাবে তা বাছতে হবে।" }
     ]
@@ -54,11 +55,12 @@
   "hotel-reports": {
     "title": "হোটেল রিপোর্ট",
     "module": "Hotel",
-    "updated": "10/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "গত রাতে কে ছিল, কী টাকা এলো, কত ভ্যাট কোন হারে জমা হলো, প্রপার্টি কত ভরা ছিল এবং কিট কীভাবে খরচ হলো — পাঁচ রিপোর্ট এক স্ক্রিনে।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hotel.report.view permission থাকলে।"] },
       { "heading": "রিপোর্টগুলো", "menu": "Hotel → Reports", "steps": ["Guest register — Night of, Showing (In the building/Arriving/Leaving), Find; তালিকায় Guest, Room, Mobile, NID, Stay ও Booking; Print আছে।", "Collection — From, To ও Method; উপরে Receipts, Taken, Given back ও In hand; নিচে By method ও By account।", "VAT by rate — From ও To দিন (দুই তারিখই ধরা হয়); প্রতিটি হারে মোট VAT Collected এবং নিচে Grand Total দেখা যায়।", "Performance — Occupancy, ADR, RevPAR ও Room revenue; By room type ও Night by night টেবিল।", "Amenity & issues — Room-nights, Kits, Issued this range ও Tagged to an event; Expected against issued ও What each event ate।"] },
       { "heading": "সতর্কতা", "warning": "VAT by rate-এ হার বিলের লাইনে যেভাবে লেখা হয়েছিল সেভাবেই দেখায় — পরে হার বদলালেও আগের বিল বদলাবে না; ডিসকাউন্ট থাকলে VAT-ও সেই অনুপাতে কমে। Performance-এ halls নেই — হল শিফটে বিক্রি হয়, রাতে নয়; Complimentary ঘর occupancy-তে গোনা হয় কিন্তু ADR/RevPAR-এ নয়।" }
     ]
@@ -66,11 +68,12 @@
   "hotel-booking-due": {
     "title": "বুকিংয়ের বাকি",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "যে বুকিং checkout হয়ে গেছে কিন্তু অতিথি এখনো টাকা owes — তাদের তালিকা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hotel.booking.due.view permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Hotel → Booking Due", "steps": ["Booking, Guest, Mobile, Checked out, Billed, Paid, Written off, Due, Days, Checked out by ও Reason দেখা যায়।", "নিচে Total due ও Advance held on open bookings।"] },
       { "heading": "সতর্কতা", "warning": "কোনো ব্যালেন্স party-র খাতায় সরানো হলে সেটি এখানে আসবে না — ওই party-র লেজার দেখুন।" }
     ]
@@ -78,11 +81,12 @@
   "hotel-calendar": {
     "title": "হোটেল ক্যালেন্ডার",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "মাসজুড়ে প্রপার্টি কত ভরা ছিল এবং কোন রাত খালি — তা দেখা যায়। এটি শুধু পড়ার স্ক্রিন, কিছু বুক হয় না।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hotel.calendar.view permission থাকলে।"] },
       { "heading": "দেখা", "menu": "Hotel → Calendar", "steps": ["The month বা Room by room ট্যাব বাছুন।", "Property ও Month ঠিক করুন; From ও How far দিয়ে দিনের সংখ্যা বাছুন।", "Occupancy, Seat-nights sold, Held, not sold, ADR ও RevPAR দেখা যায়।"] },
       { "heading": "সতর্কতা", "warning": "ক্যালেন্ডার কিছু বুক করে না — বুকিং Bookings স্ক্রিনে করতে হবে।" }
     ]
@@ -90,11 +94,12 @@
   "hotel-housekeeping": {
     "title": "হাউসকিপিং বোর্ড",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "ঘর তৈরি কি না — Dirty, Being cleaned, Ready ও Out of order অবস্থা ধরে ঘরগুলো দেখা যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hotel.housekeeping.view permission থাকলে।"] },
       { "heading": "অবস্থা বদল", "menu": "Hotel → Housekeeping", "steps": ["Property বাছুন।", "উপরে Dirty, Being cleaned, Ready ও Out of order সংখ্যা দেখা যায়।", "ঘরের কার্ডে অন্য অবস্থার বাটনে চাপ দিলে অবস্থা বদলায়।", "Out of order-এ What is wrong with it লিখে নিশ্চিত করুন।"] },
       { "heading": "সতর্কতা", "warning": "Out of order ঘর বুকিং স্ক্রিনে আর দেখাবে না, যতক্ষণ কেউ সেটি ঠিক না করে।" }
     ]
@@ -102,11 +107,12 @@
   "hotel-amenity-issue": {
     "title": "অ্যামেনিটি স্টোর",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "হোটেলের খরচের মাল (কিট, সাবান ইত্যাদি) কত আছে, কে নিল এবং কত খরচ হলো — তা দেখা যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hotel.amenity.issue.view permission থাকলে।"] },
       { "heading": "এন্ট্রি ও স্টক", "menu": "Hotel → Amenity & Issues", "steps": ["Entries ট্যাবে Search, Type, From ও To দিয়ে তালিকা দেখুন; No, Date, Type, Building, Event, Received by, Items ও Total qty থাকে।", "Stock Balance ট্যাবে Item, Head, Opening, Bought, Opening/Count, Issued, Balance ও Approx. value দেখা যায়।", "Issue, Opening বা Count Adjustment চেপে নতুন এন্ট্রি করুন।"] },
       { "heading": "সতর্কতা", "warning": "মাল কেনার সময় খরচের খাতে দাম ধরা হয়; এখানে শুধু পরিমাণের হিসাব থাকে।" }
     ]
@@ -126,37 +132,41 @@
   "hotel-asset-purchase": {
     "title": "অ্যাসেট ও ইনভেন্টরি ক্রয়",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "14/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "হোটেলের ফার্নিচার বা খরচের মাল এক ভাউচারে কেনা হয়, সাথে টাকা পরিশোধ।",
     "sections": [
-      { "heading": "ক্রয় লেখা", "menu": "Hotel → Asset Purchase", "steps": ["Accounts Head, Select Item, Quantity ও Rate দিয়ে Add Item চাপুন।", "Payment Details-এ Cash, Bank বা Credit বাছুন; Bank হলে Bank Account ও Cheque No দিন।", "Supplier ও Payment Amount দিন; Notes লিখুন।", "Save Transaction চাপুন।", "Print চাপলে এইমাত্র সেভ করা ভাউচার প্রিন্ট হয়। List চাপলে মাস অনুযায়ী এই ধরনের ভাউচারের তালিকা আসে; সারির Print আইকনে পুরনো ভাউচার আবার প্রিন্ট করা যায়।"] },
+      { "heading": "ক্রয় লেখা", "menu": "Transaction → Accounts Transaction", "steps": ["Accounts Head, Select Item, Quantity ও Rate দিয়ে Add Item চাপুন।", "Payment Details-এ Cash, Bank বা Credit বাছুন; Bank হলে Bank Account ও Cheque No দিন।", "Supplier ও Payment Amount দিন; Notes লিখুন।", "Save Transaction চাপুন।", "Print চাপলে এইমাত্র সেভ করা ভাউচার প্রিন্ট হয়। List চাপলে মাস অনুযায়ী এই ধরনের ভাউচারের তালিকা আসে; সারির Print আইকনে পুরনো ভাউচার আবার প্রিন্ট করা যায়।"] },
       { "heading": "হিসাব", "steps": ["Cash/Bank হলে পরিশোধের ভাউচার ক্যাশ বা ব্যাংক বইয়ে যায়।", "Credit হলে পুরো বিল সরবরাহকারীর কাছে বাকি থাকে।", "Print দিয়ে ভাউচার ছাপা হয়।"] },
+      { "heading": "কর্মচারীর অগ্রিম থেকে কেনা", "steps": ["কর্মচারী আগে নেওয়া অগ্রিমের টাকায় কিনে মেমো দিলে Payment Details-এ Advance বাছুন।", "Employee-তে যিনি কিনেছেন তাঁকে বাছুন; নামের পাশে তাঁর হাতে কত টাকা আছে দেখায়। Bought from-এ দোকানের নাম লিখতে পারেন।", "বিলের পুরো টাকা তাঁর অগ্রিম থেকে কমে; এই দিন ক্যাশ বা ব্যাংক থেকে কিছু যায় না।", "এই বিলের ছাপা কাগজে শিরোনাম Purchase from Employee Advance, সাথে কে কিনেছেন আর কোন দোকান থেকে।", "বিল অগ্রিমের চেয়ে বেশি হলেও Save হয়; বাড়তি টাকা তাঁর পাওনা থাকে, যা Transaction → Purchase Advance থেকে দেওয়া হয়।"] },
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hotel.accounts.transaction.create permission থাকলে।"] },
       { "heading": "সতর্কতা", "warning": "Payment Amount-এ আংশিক পরিশোধ এখনো চলে না — Cash/Bank হলে পুরো টাকা, Credit হলে শূন্য।" }
     ]
   },
   "hotel-payment-entry": {
     "title": "একাধিক খাতে পরিশোধ",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক ভাউচারে একাধিক হিসাবের টাকা পরিশোধ করা হয়।",
     "sections": [
-      { "heading": "পরিশোধ লেখা", "menu": "Hotel → Payment Entry", "steps": ["Account Heads-এ Account Head, Amount (Tk.) ও Notes দিয়ে Add Row করুন।", "Cash বা Bank বাছুন; Bank হলে Bank Account দিন।", "Voucher No ও Notes লিখুন।", "Total Debit, Total Credit ও Total Payment মিলিয়ে Save Payment চাপুন।", "Print চাপলে এইমাত্র সেভ করা ভাউচার প্রিন্ট হয়। List চাপলে মাস অনুযায়ী এই ধরনের ভাউচারের তালিকা আসে; সারির Print আইকনে পুরনো ভাউচার আবার প্রিন্ট করা যায়।"] },
+      { "heading": "পরিশোধ লেখা", "menu": "Transaction → Payment Entry", "steps": ["Account Heads-এ Account Head, Amount (Tk.) ও Notes দিয়ে Add Row করুন।", "Cash বা Bank বাছুন; Bank হলে Bank Account দিন।", "Voucher No ও Notes লিখুন।", "Total Debit, Total Credit ও Total Payment মিলিয়ে Save Payment চাপুন।", "Print চাপলে এইমাত্র সেভ করা ভাউচার প্রিন্ট হয়। List চাপলে মাস অনুযায়ী এই ধরনের ভাউচারের তালিকা আসে; সারির Print আইকনে পুরনো ভাউচার আবার প্রিন্ট করা যায়।"] },
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ payment.entry.create permission থাকলে।"] },
       { "heading": "সতর্কতা", "warning": "মোট debit ও credit সমান না হলে ভাউচার লেখা যাবে না।" }
     ]
   },
   "hotel-received-entry": {
     "title": "একাধিক খাতে আদায়",
     "module": "Hotel",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক ভাউচারে একাধিক হিসাবের টাকা গ্রহণ করা হয়।",
     "sections": [
-      { "heading": "আদায় লেখা", "menu": "Hotel → Received Entry", "steps": ["Account Heads-এ Account Head, Received Amount (Tk.) ও Received From দিয়ে Add Row করুন।", "Cash বা Bank বাছুন; Bank হলে Bank Account দিন।", "Notes লিখুন।", "Received Summary মিলিয়ে Save Received চাপুন।", "Print চাপলে এইমাত্র সেভ করা ভাউচার প্রিন্ট হয়। List চাপলে মাস অনুযায়ী এই ধরনের ভাউচারের তালিকা আসে; সারির Print আইকনে পুরনো ভাউচার আবার প্রিন্ট করা যায়।"] },
+      { "heading": "আদায় লেখা", "menu": "Transaction → Received Entry", "steps": ["Account Heads-এ Account Head, Received Amount (Tk.) ও Received From দিয়ে Add Row করুন।", "Cash বা Bank বাছুন; Bank হলে Bank Account দিন।", "Notes লিখুন।", "Received Summary মিলিয়ে Save Received চাপুন।", "Print চাপলে এইমাত্র সেভ করা ভাউচার প্রিন্ট হয়। List চাপলে মাস অনুযায়ী এই ধরনের ভাউচারের তালিকা আসে; সারির Print আইকনে পুরনো ভাউচার আবার প্রিন্ট করা যায়।"] },
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ received.entry.create permission থাকলে।"] },
       { "heading": "সতর্কতা", "warning": "Total Debit, Total Credit ও Total Received না মিললে ভাউচার লেখা যাবে না।" }
     ]
   }

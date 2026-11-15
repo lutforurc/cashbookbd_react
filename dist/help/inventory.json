@@ -76,11 +76,12 @@
   "branch-issue": {
     "title": "শাখায় পণ্য পাঠানো",
     "module": "Inventory",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক শাখা থেকে আরেক শাখায় চালান দিয়ে স্টক পাঠানোর এন্ট্রি।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ branch.issue.create permission থাকলে।"] },
       { "heading": "চালান", "menu": "Inventory → Branch Issue", "steps": ["From Branch, To Branch, Challan Date ও Challan Number দিন।", "Receiver Name, Receiver Mobile, Driver Name, Driver Mobile ও Note দিন।", "Select Product, Quantity, Damaged Qty, Short Qty ও Rate দিয়ে Add Item করুন; Save চাপুন।"] },
       { "heading": "সতর্কতা", "warning": "উৎস শাখায় স্টক কম থাকলে Not Enough Stock জানালা আসবে — Available ও Requested দেখে Cancel করুন বা Continue Save। Receive করার সময় দায়িত্ব নেওয়া হয়, তাই চালান মিলিয়ে নিন।" }
     ]
@@ -88,11 +89,12 @@
   "branch-receive": {
     "title": "শাখায় পণ্য গ্রহণ",
     "module": "Inventory",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "অন্য শাখা থেকে আসা চালানের পণ্য গ্রহণ করে স্টকে যোগ করা হয়; নষ্ট বা কম পণ্যও এখানে লেখা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ branch.received.create permission থাকলে।"] },
       { "heading": "গ্রহণ", "menu": "Inventory → Branch Receive", "steps": ["From Branch, Receive Branch, Receive Date ও Challan Number দিন।", "Receiver ও Driver-এর নাম-মোবাইল এবং Note দিন।", "Select Product, Quantity, Damaged Qty, Short Qty ও Rate দিয়ে Add Item করে Save করুন।"] },
       { "heading": "সতর্কতা", "warning": "চালানের সাথে মিলিয়ে Quantity দিন; Damaged Qty ও Short Qty আলাদা ঘরে লিখলে স্টকে সেগুলোও গণনা হবে।" }
     ]
@@ -100,11 +102,12 @@
   "material-issue": {
     "title": "প্রকল্পে মালামাল ইস্যু",
     "module": "Inventory",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "গুদামের স্টক কোনো প্রকল্প বা সাইটে, কোন ভবন/ফ্লোরে, কোন কাজে দেওয়া হলো — তা লেখা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ material.issue.create permission থাকলে।"] },
       { "heading": "ইস্যু", "menu": "Inventory → Material Issue", "steps": ["Issue Date, From Warehouse, Project / Site ও Received By দিন।", "Select Product, Quantity, Building / Floor, Work Item ও Line Note দিয়ে Add Item করুন।", "Save চাপুন; Issue List-এ Issue No, Date, Project, Warehouse, Received By ও Total Qty দেখা যায়।"] },
       { "heading": "সতর্কতা", "warning": "ছাপার চালান Material Issue Challan; প্রকল্প না বাছলে সেভ হবে না। কাজ শেষে Received By-এর নাম রাখুন, নাহলে দায় মেলানো কঠিন।" }
     ]

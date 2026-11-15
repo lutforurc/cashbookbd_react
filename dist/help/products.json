@@ -28,11 +28,12 @@
   "product-low-stock": {
     "title": "কম স্টকের পণ্য",
     "module": "Products",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "যে পণ্য ন্যূনতম স্টকে নেমেছে বা শেষ হয়ে গেছে, তার তালিকা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ low.stock permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Products → Low Stock", "steps": ["Category ও Brand বাছুন, Search দিয়ে খুঁজুন।", "Sl, Product, Category, Brand, Unit, Minimum Stock, Stock In, Stock Out, Current Stock ও Status দেখা যায়।", "Low Stock বা Out of Stock ব্যাজে অবস্থা বোঝা যায়।", "Print দিয়ে তালিকা ছাপা হয়।"] },
       { "heading": "সতর্কতা", "warning": "ন্যূনতম স্টক পণ্যের Order Level থেকে আসে — সেটি ঠিক না থাকলে এই তালিকা ভুল দেখাবে।" }
     ]
@@ -40,11 +41,12 @@
   "product-stock-alerts": {
     "title": "স্টকের ব্যতিক্রম তালিকা",
     "module": "Products",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "তিনটি আলাদা তালিকা একই ধরনের — Negative Stock (বাইরে যাওয়া বেশি), Slow Moving (কম চলাচল) ও Warehouse Stock Difference (গুদামে অসম)।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ negative.stock permission থাকলে।"] },
       { "heading": "Negative Stock Products", "menu": "Products → Negative Stock", "steps": ["Category ও Brand বাছুন, Search করুন।", "Stock In, Stock Out ও Current Stock-এ ঋণাত্মক ব্যালেন্স দেখা যায়; Print আছে।"] },
       { "heading": "Slow Moving ও Warehouse Difference", "steps": ["Slow Moving-এ Days ঘরে দিন; Last Movement ও Days Idle দেখা যায়; Print আছে।", "Warehouse Stock Difference-এ Warehouses, Min, Max ও Difference দেখা যায়; এই স্ক্রিনে Print নেই।"] },
       { "heading": "সতর্কতা", "warning": "Negative stock মানে বইয়ে বাইরে যাওয়া বেশি — বিক্রি বা নষ্টের এন্ট্রি মিলিয়ে দেখুন।" }
@@ -53,11 +55,12 @@
   "product-statement": {
     "title": "পণ্যের বিবরণ",
     "module": "Products",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "নির্বাচিত শাখা ও সময়ে একটি পণ্যের প্রতিটি ইনভয়েসে কত ঢুকল বা বের হলো এবং স্টক কত রইল — তা দেখা যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ product.statement.view permission থাকলে।"] },
       { "heading": "রিপোর্ট দেখা", "menu": "Products → Product Statement", "steps": ["Select Branch, Select Product, Start Date ও End Date দিন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Sl. No., Name, Type, Inv. No., Inv. Date, Qty, Purchase Price, Sales Price, Amount ও Stock দেখা যায়।", "শুরুতে Opening ও শেষে Total সারি থাকে; Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "Branch ও তারিখ না দিলে রিপোর্ট আসবে না।" }
@@ -66,11 +69,12 @@
   "product-opening-import": {
     "title": "পণ্যের শুরুর স্টক আপলোড",
     "module": "Products",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "Excel শিট থেকে অনেক পণ্যের শুরুর স্টক একসাথে লেখা হয়; প্রতিটি সারি যাচাই করে তবেই Save হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ product.opening.edit permission থাকলে।"] },
       { "heading": "আপলোড ও যাচাই", "menu": "Products → Opening Import", "steps": ["Download Format দিয়ে শিটের নমুনা নামান, অথবা Paste Rows দিয়ে Excel থেকে সারি পেস্ট করুন।", "Product Type (for new products) বাছুন এবং Load Rows চাপুন।", "Check চাপলে প্রতিটি সারির অবস্থা দেখা যায় — New product, Existing, Will create বা To fix।", "সব ঠিক হলে Ok চেপে Save করুন।"] },
       { "heading": "সতর্কতা", "warning": "শাখায় opening বন্ধ থাকলে উপরে বার্তা আসবে। To fix থাকা সারি ঠিক না করে Ok চাপলে সেগুলো Save হবে না।" }
     ]
@@ -90,11 +94,12 @@
   "product-brand": {
     "title": "ব্র্যান্ড",
     "module": "Products",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "পণ্যের ব্র্যান্ড বা নির্মাতার তালিকা, সাথে যোগাযোগের তথ্য।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ brand.list permission থাকলে।"] },
       { "heading": "ব্র্যান্ড", "menu": "Products → Brand", "steps": ["Search দিয়ে খুঁজুন; New Brand চাপলে ফর্ম খোলে।", "Brand Name, Email, Address ও Contact দিয়ে Save/Update চাপুন।", "তালিকায় Sl, Brand, Email, Address, Contact ও Action দেখা যায়।"] },
       { "heading": "সতর্কতা", "warning": "যে ব্র্যান্ডের নিচে পণ্য আছে সেটি মোছা যায় না।" }
     ]
@@ -102,11 +107,12 @@
   "product-unit": {
     "title": "পরিমাপের একক",
     "module": "Products",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "পণ্যের একক (কেজি, পিস, লিটার ইত্যাদি) তৈরি ও দেখা যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ product.unit permission থাকলে।"] },
       { "heading": "একক", "menu": "Products → Unit", "steps": ["Search দিয়ে খুঁজুন; New Unit চাপলে ফর্ম খোলে।", "Unit Name, Short Name ও Description লিখে Save/Update চাপুন।", "তালিকায় Sl, Unit Name, Short Name ও Description দেখা যায়।"] },
       { "heading": "সতর্কতা", "warning": "একক বদলালে পুরনো পণ্যের স্টক ও দামের হিসাব বদলে যেতে পারে — নতুন পণ্যের জন্য নতুন এককই ভালো।" }
     ]
@@ -138,11 +144,12 @@
   "item-chart": {
     "title": "পণ্য/হিসাবের তুলনা",
     "module": "Products",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একটি হিসাবের চলাচল দুই সময়ের মধ্যে তুলনা করে লাইন চার্টে দেখা যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ analytics.comparison permission থাকলে।"] },
       { "heading": "চার্ট দেখা", "menu": "Analytics → Item Chart", "steps": ["Select Branch ও Select Account বাছুন।", "Start Date (P1), End Date (P1), Start Date (P2) ও End Date (P2) দিন।", "Run বাটন নেই — ঘর বদলালেই চার্ট নতুন করে আসে।"] },
       { "heading": "সতর্কতা", "warning": "কোনো তথ্য না এলে চার্টে কিছুই আঁকা হয় না; তারিখ দুটো উল্টে দিলে তুলনা অর্থহীন হবে।" }
     ]

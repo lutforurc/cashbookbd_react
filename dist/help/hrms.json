@@ -211,11 +211,12 @@
   "designation-list": {
     "title": "পদবির তালিকা",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "প্রতিষ্ঠানের পদবিগুলো, তাদের স্তর ও ক্রম এই তালিকায় থাকে।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.designation.view permission থাকলে।"] },
       {
         "heading": "তালিকা ও নতুন পদবি",
         "menu": "HRM → Designation",
@@ -252,11 +253,12 @@
   "designation-level-list": {
     "title": "পদবির স্তর",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "পদবিগুলোকে যে স্তরে ভাগ করা হয় (যেমন ব্যবস্থাপনা, কর্মী), তার তালিকা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.designation.level.view permission থাকলে।"] },
       {
         "heading": "তালিকা",
         "menu": "HRM → Designation Level",
@@ -292,11 +294,12 @@
   "attendance-setup": {
     "title": "হাজিরার সেটআপ",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "হাজিরার পেছনের নিয়ম এখানে ঠিক করা হয় — শিফট, পলিসি, রোস্টার, সাপ্তাহিক ছুটি, ছুটির দিন ও ছুটির ধরন।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.setup.view permission থাকলে।"] },
       {
         "heading": "ট্যাবগুলো",
         "menu": "HRM → Attendance → Setup",
@@ -322,11 +325,12 @@
   "manual-attendance": {
     "title": "হাতের হাজিরা",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক দিনের হাজিরা হাতে লেখা হয় — একজন কর্মচারীর জন্য একবারে, অথবা অনেকের জন্য একসাথে।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.view permission থাকলে।"] },
       {
         "heading": "একজনের হাজিরা",
         "menu": "HRM → Attendance → Manual Attendance",
@@ -357,11 +361,12 @@
   "attendance-daily-reports": {
     "title": "দৈনিক হাজিরার রিপোর্ট",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একই রিপোর্টের চারটি রূপ — Daily Attendance, Absent, Late ও Early Out। তারিখের পরিসরে প্রতি কর্মচারীর প্রতিদিনের হাজিরা ও সারসংক্ষেপ দেখা যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["Attendance Report মেনু দেখা যায় শুধু Roles-এ hrm.attendance.report.view permission থাকলে।", "Attendance Alerts (Absent / Late / Early Out) মেনু দেখা যায় শুধু Roles-এ hrm.attendance.exception.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
         "menu": "HRM → Attendance → Report / Absent / Late / Early Out",
@@ -385,11 +390,12 @@
   "overtime-report": {
     "title": "ওভারটাইম রিপোর্ট",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "মাসের প্রতিটি দিনে প্রতি কর্মচারীর ওভারটাইম ঘণ্টা গ্রিড আকারে দেখা যায়, সাথে দিন ও মোটের যোগফল।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.overtime.report.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
         "menu": "HRM → Attendance → Overtime Report",
@@ -412,11 +418,12 @@
   "employee-attendance-report": {
     "title": "কর্মচারীর হাজিরা",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একজন কর্মচারীর নিজের হাজিরা তারিখ ধরে দেখা যায়, সাথে প্রতিটি অবস্থার মোট সংখ্যা।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.employee.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
         "menu": "HRM → Attendance → Employee Report",
@@ -438,11 +445,12 @@
   "branch-attendance-summary": {
     "title": "শাখাভিত্তিক হাজিরার সারসংক্ষেপ",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক মাসের হাজিরা শাখা বা প্রকল্প ধরে মোট করে দেখায়, যাতে শাখাগুলো পাশাপাশি মেলানো যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.branch.summary.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
         "menu": "HRM → Attendance → Branch Summary",
@@ -464,11 +472,12 @@
   "holiday-calendar": {
     "title": "ছুটির ক্যালেন্ডার",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক মাসের ছুটি ও সাপ্তাহিক ছুটি দিনের ঘরে চিহ্নিত করে দেখা যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.holiday.calendar.view permission থাকলে।"] },
       {
         "heading": "ক্যালেন্ডার দেখা",
         "menu": "HRM → Attendance → Holiday Calendar",
@@ -491,11 +500,12 @@
   "monthly-attendance": {
     "title": "মাসিক হাজিরা",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক মাসের হাজিরা প্রথমে সংখ্যায়, তারপর দিনভিত্তিক গ্রিডে দেখা যায় — প্রতি কর্মচারীর পাশে ১ থেকে ৩১ তারিখ।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.monthly.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
         "menu": "HRM → Attendance → Monthly Report",
@@ -518,11 +528,12 @@
   "leave-applications": {
     "title": "ছুটির আবেদন",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "কর্মচারীর ছুটির আবেদন লেখা হয় এবং অনুমোদন বা বাতিল করা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.leave.view permission থাকলে।"] },
       {
         "heading": "আবেদন লেখা",
         "menu": "HRM → Attendance → Leave Applications",
@@ -546,11 +557,12 @@
   "attendance-audit": {
     "title": "হাজিরার পরিবর্তনের ইতিহাস",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "হাজিরার এন্ট্রিতে কে কী বদল করেছেন, কখন এবং কেন — তার ইতিহাস এই স্ক্রিনে দেখা যায়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.audit.view permission থাকলে।"] },
       {
         "heading": "ইতিহাস দেখা",
         "menu": "HRM → Attendance → Audit History",
@@ -632,11 +644,12 @@
   "festival-bonus": {
     "title": "উৎসব বোনাস",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "তৈরি হওয়া উৎসব বোনাসের তালিকা, কত দেওয়া হয়েছে ও কত বাকি। Bonus Title-এ চাপলে বিস্তারিত শিট খোলে।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ festival.bonus.view permission থাকলে।"] },
       {
         "heading": "তালিকা দেখা",
         "menu": "HRM → Bonus → Bonus Reports",
@@ -659,11 +672,12 @@
   "festival-bonus-generate": {
     "title": "উৎসব বোনাস তৈরি",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "বেসিক বেতনের একটি শতাংশ ধরে উৎসব বোনাসের তালিকা তৈরি করা হয়।",
     "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ festival.bonus.generate permission থাকলে।"] },
       {
         "heading": "বোনাস তৈরি",
         "menu": "HRM → Bonus → Bonus Generate",

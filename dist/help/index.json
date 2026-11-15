@@ -315,6 +315,7 @@
         "budget",
         "cheque-register",
         "employee-loan",
+        "purchase-advance",
         "loan-balance",
         "loan-ledger",
         "inter-branch",
@@ -386,7 +387,17 @@
       "id": "assets",
       "title": "Assets",
       "file": "assets.json",
-      "topics": ["asset-category"]
+      "topics": [
+        "asset-setup",
+        "asset-category",
+        "asset-items",
+        "asset-register",
+        "asset-cwip",
+        "asset-depreciation",
+        "asset-schedule",
+        "asset-handover",
+        "asset-verification"
+      ]
     },
     {
       "id": "production",
@@ -394,10 +405,15 @@
       "file": "production.json",
       "topics": [
         "production-entry",
+        "production-sales",
+        "production-purchase",
+        "production-sales-return",
+        "production-scheme",
         "production-recipe",
         "production-register",
-        "production-costing",
-        "production-sales-return"
+        "production-free-goods",
+        "production-expiry",
+        "production-costing"
       ]
     }
   ]

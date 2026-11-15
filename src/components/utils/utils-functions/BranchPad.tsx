@@ -3,6 +3,8 @@ import { useSelector } from 'react-redux';
 import { API_REMOTE_URL } from '../../services/apiRoutes';
 import { PrintBranch, hasPrintBranch, usePrintBranch } from './printBranch';
 import { formatMobile, useMobileFormat } from './mobileFormat';
+import PadLogo from './PadLogo';
+import { padLogoBlockHeight, padLogoReserve, usePadLogo } from './padLogoLayout';
 
 const loadedImageUrls = new Set<string>();
 const imageLoadPromises = new Map<string, Promise<string>>();
@@ -89,6 +91,9 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
     Number.isFinite(measuredPadHeight) && measuredPadHeight >= 0 ? measuredPadHeight : 150;
   const useCustomImage = !usesPreprintedPad && Number(branch?.pad_heading_print) === 3;
   const [cachedImageSrc, setCachedImageSrc] = useState('');
+  // The branch's logo arrangement, or null when it prints no logo. The hook
+  // already turns it off for pre-printed stationery and for a custom image pad.
+  const logo = usePadLogo();
 
   // A report pulled for another branch heads the page with that branch's own
   // details. Address and phone come from the override too — falling back to the
@@ -174,6 +179,28 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
     };
   }, [resolvedImagePath]);
 
+  /**
+   * Room the logo needs. A side logo is drawn against the head rather than in
+   * the flow, so the heading reserves that space on BOTH sides -- the name stays
+   * centred on the paper and can never run under the mark. A logo above the
+   * heading is in the flow and reserves nothing.
+   */
+  const logoReserve = logo ? padLogoReserve(logo) : 0;
+  const logoBlockHeight = logo ? padLogoBlockHeight(logo) : undefined;
+  const headingStyle: React.CSSProperties = {};
+
+  if (logoReserve) {
+    headingStyle.paddingLeft = logoReserve;
+    headingStyle.paddingRight = logoReserve;
+  }
+
+  if (logoBlockHeight) {
+    headingStyle.minHeight = logoBlockHeight;
+    headingStyle.display = 'flex';
+    headingStyle.flexDirection = 'column';
+    headingStyle.justifyContent = 'center';
+  }
+
   return (
     <div>
       {usesPreprintedPad ? (
@@ -187,14 +214,17 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
           />
         </div>
       ) : (
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-center uppercase">{headingName}</h1>
-          <div className="mt-2 text-center">
-            <div>
-              <span>{headingAddress}</span>
-            </div>
-            <div>
-              <span>{headingPhone}</span>
+        <div className="relative mb-6">
+          {logo && <PadLogo config={logo} />}
+          <div style={headingStyle}>
+            <h1 className="text-2xl font-bold text-center uppercase">{headingName}</h1>
+            <div className="mt-2 text-center">
+              <div>
+                <span>{headingAddress}</span>
+              </div>
+              <div>
+                <span>{headingPhone}</span>
+              </div>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FIELD_FILE } from '../../../theme/fieldStyles';
 import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
@@ -9,6 +9,7 @@ import {
   downPaymentBases,
   ledgerDiscountSplit,
   moneySpellFormat,
+  padLogoPositions,
   padPrintModes,
   printerSettings,
   printPadHeading,
@@ -34,6 +35,25 @@ import ConfirmModal from '../../utils/components/ConfirmModalProps';
 import httpService from '../../services/httpService';
 import { hasPermission } from '../../utils/permissionChecker';
 import { Input } from '../../utils/fields/FormControls';
+import PadLogo from '../../utils/utils-functions/PadLogo';
+import {
+  PAD_LOGO_DEFAULT_HEIGHT,
+  PAD_LOGO_DEFAULT_MARGIN,
+  PAD_LOGO_DEFAULT_WIDTH,
+  PAD_LOGO_MAX_HEIGHT,
+  PAD_LOGO_MAX_MARGIN,
+  PAD_LOGO_MAX_WIDTH,
+  PAD_LOGO_MIN_HEIGHT,
+  PAD_LOGO_MIN_WIDTH,
+  normalizePadLogoPosition,
+  padLogoBlockHeight,
+  padLogoHeight,
+  padLogoMargin,
+  padLogoReserve,
+  padLogoWidth,
+} from '../../utils/utils-functions/padLogoLayout';
+import type { PadLogoConfig } from '../../utils/utils-functions/padLogoLayout';
+import { resolveAssetUrl } from '../../services/resolveAssetUrl';
 
 const shouldStripPublicPrefix = /^(https?:\/\/)?(localhost|127\.0\.0\.1|cashbook_api\.test)(:\d+)?$/i.test(
   API_REMOTE_URL,
@@ -60,6 +80,17 @@ interface branchItem {
   pad_print_mode: string;
   /** How much of the page top a pre-printed pad head takes, in px. */
   preprinted_pad_height: NumberField;
+  /** Whether the pad head prints the company's logo at all. Off by default. */
+  pad_logo_enabled: boolean;
+  /** Which side of the pad head the logo takes: 'right', 'left' or 'top'. */
+  pad_logo_position: string;
+  /** The box the logo is drawn in, in CSS px. */
+  pad_logo_width: NumberField;
+  pad_logo_height: NumberField;
+  /** How far the logo sits from the paper's edges, in px. */
+  pad_logo_margin_top: NumberField;
+  pad_logo_margin_right: NumberField;
+  pad_logo_margin_left: NumberField;
   address: string;
   print_size: string;
   contact_person: string;
@@ -717,6 +748,15 @@ const AddBranch = () => {
     pad_heading_print: '',
     pad_print_mode: 'software',
     preprinted_pad_height: defaultPreprintedPadHeight,
+    // Off unless the branch asks: the pad prints exactly as it did before the
+    // logo existed, and no branch has to opt out after an upgrade.
+    pad_logo_enabled: false,
+    pad_logo_position: 'right',
+    pad_logo_width: PAD_LOGO_DEFAULT_WIDTH,
+    pad_logo_height: PAD_LOGO_DEFAULT_HEIGHT,
+    pad_logo_margin_top: PAD_LOGO_DEFAULT_MARGIN,
+    pad_logo_margin_right: PAD_LOGO_DEFAULT_MARGIN,
+    pad_logo_margin_left: PAD_LOGO_DEFAULT_MARGIN,
     address: '',
     print_size: '',
     contact_person: '',
@@ -1051,6 +1091,16 @@ const AddBranch = () => {
         pad_heading_print: b.pad_heading_print != null ? String(b.pad_heading_print) : '',
         pad_print_mode: metaTextOr(b.pad_print_mode, 'software'),
         preprinted_pad_height: metaNumberOr(b.preprinted_pad_height, defaultPreprintedPadHeight),
+        // A logo is off unless a saved answer says otherwise, which is what an
+        // untouched meta reads as. The numbers fall back to the defaults the
+        // form starts with, so an older branch never opens the screen blank.
+        pad_logo_enabled: toBooleanFlag(b.pad_logo_enabled),
+        pad_logo_position: normalizePadLogoPosition(b.pad_logo_position),
+        pad_logo_width: metaNumberOr(b.pad_logo_width, PAD_LOGO_DEFAULT_WIDTH),
+        pad_logo_height: metaNumberOr(b.pad_logo_height, PAD_LOGO_DEFAULT_HEIGHT),
+        pad_logo_margin_top: metaNumberOr(b.pad_logo_margin_top, PAD_LOGO_DEFAULT_MARGIN),
+        pad_logo_margin_right: metaNumberOr(b.pad_logo_margin_right, PAD_LOGO_DEFAULT_MARGIN),
+        pad_logo_margin_left: metaNumberOr(b.pad_logo_margin_left, PAD_LOGO_DEFAULT_MARGIN),
         paper_size: b.paper_size != null ? String(b.paper_size) : '',
         device_identifier_text:
           b.device_identifier_text == null ||
@@ -1201,6 +1251,55 @@ const AddBranch = () => {
   // Stationery that already carries the letterhead: nothing here draws one, so
   // the heading choice and its image have nothing to say.
   const usesPreprintedPad = formData?.pad_print_mode === 'preprinted';
+
+  // Pad Logo. The preview draws the company's own mark where this branch puts
+  // it, so the margins can be tuned without wasting a sheet of paper. The image
+  // itself is uploaded on the Company screen -- this screen only places it.
+  const padLogoEnabled = Boolean(formData.pad_logo_enabled);
+  const companyLogoPath = settings?.data?.company?.company_logo || '';
+  const companyLogoPreviewUrl = companyLogoPath
+    ? resolveAssetUrl(companyLogoPath, settings?.data?.env)
+    : '';
+  const padLogoPreviewConfig: PadLogoConfig | null =
+    padLogoEnabled && companyLogoPreviewUrl
+      ? {
+          src: companyLogoPreviewUrl,
+          alt: settings?.data?.company?.name || 'Company logo',
+          position: normalizePadLogoPosition(formData.pad_logo_position),
+          width: padLogoWidth(formData.pad_logo_width),
+          height: padLogoHeight(formData.pad_logo_height),
+          marginTop: padLogoMargin(formData.pad_logo_margin_top),
+          marginRight: padLogoMargin(formData.pad_logo_margin_right),
+          marginLeft: padLogoMargin(formData.pad_logo_margin_left),
+        }
+      : null;
+  const padLogoPreviewReserve = padLogoPreviewConfig ? padLogoReserve(padLogoPreviewConfig) : 0;
+  const padLogoPreviewBlockHeight = padLogoPreviewConfig
+    ? padLogoBlockHeight(padLogoPreviewConfig)
+    : undefined;
+  const padLogoHeadingStyle: React.CSSProperties = {};
+
+  if (padLogoPreviewReserve) {
+    padLogoHeadingStyle.paddingLeft = padLogoPreviewReserve;
+    padLogoHeadingStyle.paddingRight = padLogoPreviewReserve;
+  }
+
+  // Centred beside the mark, exactly as the printed head is.
+  if (padLogoPreviewBlockHeight) {
+    padLogoHeadingStyle.minHeight = padLogoPreviewBlockHeight;
+    padLogoHeadingStyle.display = 'flex';
+    padLogoHeadingStyle.flexDirection = 'column';
+    padLogoHeadingStyle.justifyContent = 'center';
+  }
+  // A pad the software does not draw gets no logo, and the screen says why
+  // rather than leaving the switch on and the printing mysteriously bare.
+  const padLogoDisabledNotice = !padLogoEnabled
+    ? ''
+    : usesPreprintedPad
+      ? 'Pre-printed Pad is chosen, so the logo is not printed -- the paper already carries it.'
+      : Number(formData?.pad_heading_print) === 3
+        ? 'Custom Image Pad is chosen, so the logo is not printed -- the uploaded image is the letterhead.'
+        : '';
 
   // Both conditions, not either: the permission says who may clear an opening,
   // and "Opening ongoing?" says the branch is still in the period where an
@@ -1703,6 +1802,159 @@ const AddBranch = () => {
                           )}
                         </div>
                       </div>
+                    )}
+
+                    {/* ---------- Pad Logo ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Pad Logo
+                    </h4>
+                    <FormToggleField
+                      label="Show Company Logo on Pad"
+                      description="Prints the company's logo on every pad head. Off by default, so the pad prints exactly as it did before. The image is uploaded once on the Company screen -- here only its place, size and margins are set."
+                      checked={padLogoEnabled}
+                      onChange={(checked) => handleToggleFieldChange('pad_logo_enabled', checked)}
+                      className="mb-2"
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="pad_logo_position"
+                        name={'pad_logo_position'}
+                        label="Logo Position"
+                        description="Which part of the pad head the logo takes. Top puts it above the branch name."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.pad_logo_position || 'right'}
+                        data={padLogoPositions}
+                        disabled={!padLogoEnabled}
+                      />
+                      <InputElement
+                        id="pad_logo_width"
+                        name="pad_logo_width"
+                        value={formData.pad_logo_width ?? ''}
+                        type="number"
+                        min={PAD_LOGO_MIN_WIDTH}
+                        max={PAD_LOGO_MAX_WIDTH}
+                        step="1"
+                        placeholder={'Enter Logo Width'}
+                        label={'Logo Width (px)'}
+                        description="The width of the box the logo is drawn in. The image keeps its own shape inside it."
+                        className={''}
+                        onChange={handleOnNumberChange}
+                        disabled={!padLogoEnabled}
+                      />
+                      <InputElement
+                        id="pad_logo_height"
+                        name="pad_logo_height"
+                        value={formData.pad_logo_height ?? ''}
+                        type="number"
+                        min={PAD_LOGO_MIN_HEIGHT}
+                        max={PAD_LOGO_MAX_HEIGHT}
+                        step="1"
+                        placeholder={'Enter Logo Height'}
+                        label={'Logo Height (px)'}
+                        description="The height of that same box. A wide logo leaves blank space above and below, so it is never stretched."
+                        className={''}
+                        onChange={handleOnNumberChange}
+                        disabled={!padLogoEnabled}
+                      />
+                      <InputElement
+                        id="pad_logo_margin_top"
+                        name="pad_logo_margin_top"
+                        value={formData.pad_logo_margin_top ?? ''}
+                        type="number"
+                        min={0}
+                        max={PAD_LOGO_MAX_MARGIN}
+                        step="1"
+                        placeholder={'Enter Top Margin'}
+                        label={'Top Margin (px)'}
+                        description="Distance from the top of the pad head to the logo. Read for every position."
+                        className={''}
+                        onChange={handleOnNumberChange}
+                        disabled={!padLogoEnabled}
+                      />
+                      <InputElement
+                        id="pad_logo_margin_right"
+                        name="pad_logo_margin_right"
+                        value={formData.pad_logo_margin_right ?? ''}
+                        type="number"
+                        min={0}
+                        max={PAD_LOGO_MAX_MARGIN}
+                        step="1"
+                        placeholder={'Enter Right Margin'}
+                        label={'Right Margin (px)'}
+                        description="Distance from the paper's right edge. Used when the logo sits on the right."
+                        className={''}
+                        onChange={handleOnNumberChange}
+                        disabled={!padLogoEnabled || formData.pad_logo_position !== 'right'}
+                      />
+                      <InputElement
+                        id="pad_logo_margin_left"
+                        name="pad_logo_margin_left"
+                        value={formData.pad_logo_margin_left ?? ''}
+                        type="number"
+                        min={0}
+                        max={PAD_LOGO_MAX_MARGIN}
+                        step="1"
+                        placeholder={'Enter Left Margin'}
+                        label={'Left Margin (px)'}
+                        description="Distance from the paper's left edge. Used when the logo sits on the left."
+                        className={''}
+                        onChange={handleOnNumberChange}
+                        disabled={!padLogoEnabled || formData.pad_logo_position !== 'left'}
+                      />
+                    </div>
+
+                    {/* The same placement, drawn on a sheet the size of a pad
+                        head -- margins are easier to judge than to imagine. */}
+                    {padLogoEnabled && (
+                      <div className="mb-2">
+                        <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
+                          Pad Logo Preview
+                        </label>
+                        <div className="rounded border border-gray-300 bg-white p-3">
+                          <div
+                            className="relative mx-auto overflow-hidden rounded border border-dashed border-gray-200 p-2"
+                            style={{
+                              maxWidth: 560,
+                              minHeight: padLogoPreviewBlockHeight ?? 64,
+                            }}
+                          >
+                            {padLogoPreviewConfig ? (
+                              <PadLogo config={padLogoPreviewConfig} />
+                            ) : (
+                              <div className="flex min-h-16 items-center justify-center text-xs text-gray-500">
+                                No company logo uploaded yet -- add one on the Company screen.
+                              </div>
+                            )}
+                            <div style={padLogoHeadingStyle}>
+                              <div className="text-center text-base font-bold uppercase text-gray-900">
+                                {formData.name || 'Branch Name'}
+                              </div>
+                              <div className="text-center text-xs text-gray-900">
+                                {formData.address || 'Branch address'}
+                              </div>
+                              <div className="text-center text-xs text-gray-900">
+                                {formData.phone || 'Phone'}
+                              </div>
+                            </div>
+                          </div>
+                          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            The logo prints on this branch's pad head and on the
+                            company pad head -- every sheet of every print. A
+                            pre-printed pad or a Custom Image Pad draws none,
+                            because the paper already carries the mark. On a
+                            narrow POS roll, use a smaller size or the Top
+                            position.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {padLogoDisabledNotice && (
+                      <p className="mb-2 text-xs text-amber-600 dark:text-amber-400">
+                        {padLogoDisabledNotice}
+                      </p>
                     )}
 
                     {/* Letter greetings, picked by the customer's sex when a
