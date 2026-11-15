@@ -39,9 +39,18 @@ export const getTransactionTypeLabel = (value?: string | null) => {
   return label;
 };
 
-export const isOpeningRow = (row: LedgerWithProductRow) =>
-  String(row?.vr_no || '').toLowerCase() === 'opening' ||
-  /opening balance/i.test(String(row?.remarks || ''));
+// The server marks its own opening line trx_type 'Opening'. A real journal
+// whose narration says "Opening Balance" (5-260400005) is a voucher, not this
+// line; the remarks test is only for a server too old to send trx_type.
+export const isOpeningRow = (row: LedgerWithProductRow) => {
+  const trxType = String(row?.trx_type ?? '').trim();
+  if (trxType) return trxType.toLowerCase() === 'opening';
+
+  return (
+    String(row?.vr_no || '').toLowerCase() === 'opening' ||
+    /opening balance/i.test(String(row?.remarks || ''))
+  );
+};
 
 export const getDisplayedReceivedValue = (row: LedgerWithProductRow) => {
   if (Number.isFinite(Number(row?.displayed_received))) {
@@ -253,11 +262,45 @@ export const getInvoiceAmountValue = (row: LedgerWithProductRow) => {
   return 0;
 };
 
-export const getDebitColumnValue = (row: LedgerWithProductRow) =>
-  isInvoiceRow(row) ? 0 : getBalanceDebitValue(row);
+// A receipt or payment shows what THIS party was posted, not the voucher's whole
+// money leg: one receipt for two parties (1-260500048) put the full amount on
+// both statements.
+export const getDebitColumnValue = (row: LedgerWithProductRow) => {
+  if (isInvoiceRow(row)) return 0;
+  return isOpeningRow(row) ? getBalanceDebitValue(row) : getPostedDebitValue(row);
+};
 
-export const getCreditColumnValue = (row: LedgerWithProductRow) =>
-  isInvoiceRow(row) ? 0 : getBalanceCreditValue(row);
+export const getCreditColumnValue = (row: LedgerWithProductRow) => {
+  if (isInvoiceRow(row)) return 0;
+  return isOpeningRow(row) ? getBalanceCreditValue(row) : getPostedCreditValue(row);
+};
+
+/**
+ * The footer, built only from what the table shows:
+ * Closing = Opening + Sal. Amt - Pur. Amt - Inv. Amt + Debit - Credit.
+ * Inv. Amt is the cash settled on the invoices (purchase -, sale +), so it
+ * comes off. Debit and Credit are the two columns, opening line left out --
+ * Opening is its own figure.
+ */
+export const getFooterTotals = (rows: LedgerWithProductRow[], openingBalance: unknown) => {
+  const body = rows.filter((row) => !isOpeningRow(row));
+  const sum = (pick: (row: LedgerWithProductRow) => number) =>
+    body.reduce((total, row) => total + pick(row), 0);
+
+  const opening = parseAmount(openingBalance);
+  const salesAmt = sum(getSalesAmount);
+  const purchaseAmt = sum(getPurchaseAmount);
+  const invAmt = sum(getInvoiceAmountValue);
+  const debit = sum(getDebitColumnValue);
+  const credit = sum(getCreditColumnValue);
+  const round = (value: number) => Math.round(value * 100) / 100;
+
+  return {
+    debit: round(debit),
+    credit: round(credit),
+    closing: round(opening + salesAmt - purchaseAmt - invAmt + debit - credit),
+  };
+};
 
 export const getPurchaseQty = (row: LedgerWithProductRow) => {
   if (isOpeningRow(row)) return 0;

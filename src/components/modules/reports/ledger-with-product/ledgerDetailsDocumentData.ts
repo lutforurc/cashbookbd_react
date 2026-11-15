@@ -8,6 +8,7 @@ import type {
 import {
   getBalanceCreditValue,
   getBalanceDebitValue,
+  getFooterTotals,
   getCreditColumnValue,
   getDebitColumnValue,
   getInvoiceAmountValue,
@@ -126,21 +127,11 @@ export const toLedgerDetailsDocumentData = ({
     running_balance: parseAmount(row?.running_balance ?? row?.balance),
   }));
 
-  /*
-    ⚠️ THE TWO FOOTING FIGURES THE SERVER MAY SEND, PREFERRED THE WAY THE
-    SCREEN PREFERS THEM. `summary.debit` / `summary.credit` are the server's own
-    totals for this statement and the on-screen foot prints them when they are
-    there; the client's sum of the column is the fallback. DocumentPrint can
-    only sum the column (see the totals map), so on a statement where the two
-    disagree the paper's foot follows the rows -- which is the figure a reader
-    can add up for themselves.
-  */
-  const footDebit = Number.isFinite(Number(summary?.debit))
-    ? Number(summary.debit)
-    : list.reduce((sum, row) => sum + getBalanceDebitValue(row), 0);
-  const footCredit = Number.isFinite(Number(summary?.credit))
-    ? Number(summary.credit)
-    : list.reduce((sum, row) => sum + getBalanceCreditValue(row), 0);
+  // The same foot the screen shows: sums of the Debit and Credit columns, and
+  // Closing built from Opening, Sal./Pur. Amt, Inv. Amt, Debit and Credit.
+  const footer = getFooterTotals(list, summary?.opening_balance);
+  const footDebit = footer.debit;
+  const footCredit = footer.credit;
 
   return {
     basic: {
@@ -152,9 +143,7 @@ export const toLedgerDetailsDocumentData = ({
       ledger_product: productName ?? 'All',
       report_trx_type: transactionTypeLabel ?? 'All',
       opening_balance: parseAmount(summary?.opening_balance),
-      closing_balance: list.length
-        ? parseAmount(list[list.length - 1]?.running_balance ?? list[list.length - 1]?.balance)
-        : parseAmount(summary?.closing_balance),
+      closing_balance: footer.closing,
       total_inv_amt: list.reduce(
         (sum, row) => sum + getInvoiceAmountValue(row),
         0,

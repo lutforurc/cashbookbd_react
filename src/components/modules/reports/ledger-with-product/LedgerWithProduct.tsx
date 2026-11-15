@@ -62,8 +62,7 @@ import type {
 } from './ledgerWithProductTypes';
 import {
   buildRowsWithRunningBalance,
-  getBalanceCreditValue,
-  getBalanceDebitValue,
+  getFooterTotals,
   getCreditColumnValue,
   getDebitColumnValue,
   getInvoiceAmountValue,
@@ -446,24 +445,10 @@ const LedgerWithProduct = (user: any) => {
     }),
     [rawSummary, rows],
   );
-  const footerReceivedValue = Number.isFinite(Number(summary?.debit))
-    ? Number(summary.debit)
-    : rows.reduce(
-        (sum: number, row: any) => sum + getBalanceDebitValue(row),
-        0,
-      );
-  const footerPaymentValue = Number.isFinite(Number(summary?.credit))
-    ? Number(summary.credit)
-    : rows.reduce(
-        (sum: number, row: any) => sum + getBalanceCreditValue(row),
-        0,
-      );
-  const footerClosingValue = rows.length
-    ? parseAmount(
-        rows[rows.length - 1]?.running_balance ??
-          rows[rows.length - 1]?.balance,
-      )
-    : parseAmount(summary?.closing_balance);
+  const footerTotals = getFooterTotals(rows, summary?.opening_balance);
+  const footerReceivedValue = footerTotals.debit;
+  const footerPaymentValue = footerTotals.credit;
+  const footerClosingValue = footerTotals.closing;
 
   const hasLoaded = !!statementState?.data;
   const hasTransactions = rows.length > 1;
