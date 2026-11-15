@@ -9,6 +9,7 @@ import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
+import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import {
   getProductionPurchaseForEdit,
@@ -386,14 +387,13 @@ const ProductionPurchase = () => {
             className="w-full"
           />
         </div>
-        <label className="md:col-span-2 mb-2 flex items-center gap-2 whitespace-nowrap text-sm text-[rgb(var(--c-text))]">
-          <input
-            type="checkbox"
+        <div className="md:col-span-2 mb-2 flex items-center">
+          <ToggleSwitch
+            label="Free"
             checked={line.free}
-            onChange={(e) => setLine((p) => ({ ...p, free: e.target.checked, price: e.target.checked ? '0' : p.price }))}
+            onChange={(checked) => setLine((p) => ({ ...p, free: checked, price: checked ? '0' : p.price }))}
           />
-          ফ্রি (free)
-        </label>
+        </div>
         <div className="md:col-span-2">
           <ButtonLoading
             onClick={editingLineId === null ? addLine : updateLine}

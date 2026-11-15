@@ -2533,7 +2533,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_sales}
                                 className={subMenuLinkClass}
                               >
-                                Production Sales
+                                Sales
                               </NavLink>
                             </li>
                           )}
@@ -2543,7 +2543,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_purchase}
                                 className={subMenuLinkClass}
                               >
-                                Production Purchase
+                                Purchase
                               </NavLink>
                             </li>
                           )}
@@ -2553,7 +2553,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_sales_return}
                                 className={subMenuLinkClass}
                               >
-                                Production Sales Return
+                                Sales Return
                               </NavLink>
                             </li>
                           )}
@@ -2583,7 +2583,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_register}
                                 className={subMenuLinkClass}
                               >
-                                Production Register
+                                Register
                               </NavLink>
                             </li>
                           )}

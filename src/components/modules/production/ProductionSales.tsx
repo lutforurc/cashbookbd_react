@@ -450,7 +450,7 @@ const ProductionSales = () => {
             checked={line.free}
             onChange={(e) => setLine((p) => ({ ...p, free: e.target.checked, price: e.target.checked ? '0' : p.price }))}
           />
-          ফ্রি (free)
+          Free
         </label>
         <div className="md:col-span-2">
           <ButtonLoading
