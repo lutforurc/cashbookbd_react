@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { PrintBranch, hasPrintBranch, usePrintBranch } from './printBranch';
 import { formatMobile, useMobileFormat } from './mobileFormat';
 import PadLogo from './PadLogo';
-import { padLogoBlockHeight, padLogoReserve, usePadLogo } from './padLogoLayout';
+import { usePadLogo } from './padLogoLayout';
 
 type Props = {
   /** The branch the report is about; falls back to the logged-in user's. */
@@ -22,27 +22,11 @@ const CompanyPad: React.FC<Props> = ({ branch }) => {
   const branchAddress = overridden ? printBranch?.address : settings?.branch?.address;
   // The same mark, position and margins the branch set for its own pad heading.
   const logo = usePadLogo();
-  const logoReserve = logo ? padLogoReserve(logo) : 0;
-  const logoBlockHeight = logo ? padLogoBlockHeight(logo) : undefined;
-  const headingStyle: React.CSSProperties = {};
-
-  if (logoReserve) {
-    headingStyle.paddingLeft = logoReserve;
-    headingStyle.paddingRight = logoReserve;
-  }
-
-  if (logoBlockHeight) {
-    headingStyle.minHeight = logoBlockHeight;
-    headingStyle.display = 'flex';
-    headingStyle.flexDirection = 'column';
-    headingStyle.justifyContent = 'center';
-  }
 
   return (
     <div>
-      <div className="relative mb-0">
-        {logo && <PadLogo config={logo} />}
-        <div style={headingStyle}>
+      <div className="mb-0">
+        <PadLogo config={logo}>
           <h1 className="text-2xl font-bold text-center uppercase">
             {settings?.company?.name}
           </h1>
@@ -59,7 +43,7 @@ const CompanyPad: React.FC<Props> = ({ branch }) => {
               </div>
             )}
           </div>
-        </div>
+        </PadLogo>
       </div>
       <div className="border-t-2 border-gray-900"></div>
       {/* The print time used to sit on the right of this row, level with the

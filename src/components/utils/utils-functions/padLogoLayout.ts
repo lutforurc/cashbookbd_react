@@ -36,13 +36,17 @@ export type PadLogoConfig = {
 export const PAD_LOGO_DEFAULT_WIDTH = 96;
 export const PAD_LOGO_DEFAULT_HEIGHT = 56;
 export const PAD_LOGO_DEFAULT_MARGIN = 8;
-export const PAD_LOGO_MIN_WIDTH = 16;
-export const PAD_LOGO_MAX_WIDTH = 320;
-export const PAD_LOGO_MIN_HEIGHT = 16;
-export const PAD_LOGO_MAX_HEIGHT = 240;
+export const PAD_LOGO_MIN_WIDTH = 8;
+export const PAD_LOGO_MAX_WIDTH = 600;
+export const PAD_LOGO_MIN_HEIGHT = 8;
+export const PAD_LOGO_MAX_HEIGHT = 400;
 export const PAD_LOGO_MAX_MARGIN = 400;
-/** Air between the mark and the heading when the logo takes a side. */
-export const PAD_LOGO_GAP = 8;
+/**
+ * Margins may go below zero: a negative margin pulls the logo past the edge it
+ * is measured from -- up into the top of the page, or out towards the paper's
+ * side -- for a mark that must sit tighter than the pad head allows.
+ */
+export const PAD_LOGO_MIN_MARGIN = -400;
 
 const clamp = (value: unknown, fallback: number, min: number, max: number): number => {
   if (value === null || value === undefined || value === '' || typeof value === 'boolean') {
@@ -63,7 +67,7 @@ export const padLogoHeight = (value: unknown): number =>
   clamp(value, PAD_LOGO_DEFAULT_HEIGHT, PAD_LOGO_MIN_HEIGHT, PAD_LOGO_MAX_HEIGHT);
 
 export const padLogoMargin = (value: unknown): number =>
-  clamp(value, PAD_LOGO_DEFAULT_MARGIN, 0, PAD_LOGO_MAX_MARGIN);
+  clamp(value, PAD_LOGO_DEFAULT_MARGIN, PAD_LOGO_MIN_MARGIN, PAD_LOGO_MAX_MARGIN);
 
 /** Anything a saved meta may hold, read as one of the three places. */
 export const normalizePadLogoPosition = (value: unknown): PadLogoPosition => {
@@ -75,30 +79,6 @@ export const normalizePadLogoPosition = (value: unknown): PadLogoPosition => {
 };
 
 export const padLogoIsSide = (config: PadLogoConfig): boolean => config.position !== 'top';
-
-/**
- * The room a side logo needs on the heading, in px.
- *
- * ⚠️ BOTH SIDES GET THIS PADDING, not just the side the logo sits on. That keeps
- * the branch name centred on the paper -- one-sided padding would push it away
- * from the mark and leave the head looking lopsided -- while still keeping the
- * text from running underneath the image.
- */
-export const padLogoReserve = (config: PadLogoConfig): number => {
-  if (!padLogoIsSide(config)) return 0;
-
-  const sideMargin = config.position === 'right' ? config.marginRight : config.marginLeft;
-
-  return config.width + sideMargin + PAD_LOGO_GAP;
-};
-
-/**
- * The least height a pad head must stand when a logo takes a side, so the rule
- * under the heading never crosses the mark. Undefined for a logo above the
- * heading, which is in the flow and adds its own height.
- */
-export const padLogoBlockHeight = (config: PadLogoConfig): number | undefined =>
-  padLogoIsSide(config) ? config.marginTop + config.height + PAD_LOGO_GAP : undefined;
 
 const isFlagOn = (value: unknown): boolean =>
   value === true || value === 1 || value === '1' || value === 'true';

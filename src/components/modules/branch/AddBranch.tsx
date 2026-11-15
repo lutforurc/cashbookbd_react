@@ -44,12 +44,11 @@ import {
   PAD_LOGO_MAX_MARGIN,
   PAD_LOGO_MAX_WIDTH,
   PAD_LOGO_MIN_HEIGHT,
+  PAD_LOGO_MIN_MARGIN,
   PAD_LOGO_MIN_WIDTH,
   normalizePadLogoPosition,
-  padLogoBlockHeight,
   padLogoHeight,
   padLogoMargin,
-  padLogoReserve,
   padLogoWidth,
 } from '../../utils/utils-functions/padLogoLayout';
 import type { PadLogoConfig } from '../../utils/utils-functions/padLogoLayout';
@@ -1273,24 +1272,32 @@ const AddBranch = () => {
           marginLeft: padLogoMargin(formData.pad_logo_margin_left),
         }
       : null;
-  const padLogoPreviewReserve = padLogoPreviewConfig ? padLogoReserve(padLogoPreviewConfig) : 0;
-  const padLogoPreviewBlockHeight = padLogoPreviewConfig
-    ? padLogoBlockHeight(padLogoPreviewConfig)
-    : undefined;
-  const padLogoHeadingStyle: React.CSSProperties = {};
+  /**
+   * Logo Size: grows or shrinks the logo's box as a whole. The width is set and
+   * the height follows in the same proportion, so the box keeps its shape --
+   * changing only one side of an `object-fit: contain` box often shows no
+   * change at all, because the other side is what holds the image back.
+   */
+  const setPadLogoSize = (nextWidth: number) => {
+    setFormData((prev) => {
+      const width = padLogoWidth(prev.pad_logo_width);
+      const height = padLogoHeight(prev.pad_logo_height);
+      const newWidth = Math.round(
+        Math.min(PAD_LOGO_MAX_WIDTH, Math.max(PAD_LOGO_MIN_WIDTH, nextWidth)),
+      );
+      const newHeight = Math.round(
+        Math.min(
+          PAD_LOGO_MAX_HEIGHT,
+          Math.max(PAD_LOGO_MIN_HEIGHT, (newWidth * height) / width),
+        ),
+      );
 
-  if (padLogoPreviewReserve) {
-    padLogoHeadingStyle.paddingLeft = padLogoPreviewReserve;
-    padLogoHeadingStyle.paddingRight = padLogoPreviewReserve;
-  }
+      return { ...prev, pad_logo_width: newWidth, pad_logo_height: newHeight };
+    });
+  };
+  const padLogoCurrentWidth = padLogoWidth(formData.pad_logo_width);
+  const padLogoCurrentHeight = padLogoHeight(formData.pad_logo_height);
 
-  // Centred beside the mark, exactly as the printed head is.
-  if (padLogoPreviewBlockHeight) {
-    padLogoHeadingStyle.minHeight = padLogoPreviewBlockHeight;
-    padLogoHeadingStyle.display = 'flex';
-    padLogoHeadingStyle.flexDirection = 'column';
-    padLogoHeadingStyle.justifyContent = 'center';
-  }
   // A pad the software does not draw gets no logo, and the screen says why
   // rather than leaving the switch on and the printing mysteriously bare.
   const padLogoDisabledNotice = !padLogoEnabled
@@ -1816,6 +1823,57 @@ const AddBranch = () => {
                       className="mb-2"
                     />
 
+                    {/* Logo Size: one control that makes the whole logo bigger
+                        or smaller, keeping its shape. Width and Height below
+                        still set each side exactly. */}
+                    <div className="mb-2">
+                      <label
+                        htmlFor="pad_logo_size"
+                        className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
+                      >
+                        Logo Size
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPadLogoSize(padLogoCurrentWidth * 0.9)}
+                          disabled={!padLogoEnabled || padLogoCurrentWidth <= PAD_LOGO_MIN_WIDTH}
+                          className="h-8 w-8 shrink-0 rounded border border-[rgb(var(--c-border))] text-lg leading-none disabled:opacity-40"
+                          title="Make the logo smaller"
+                          aria-label="Make the logo smaller"
+                        >
+                          −
+                        </button>
+                        <input
+                          id="pad_logo_size"
+                          type="range"
+                          min={PAD_LOGO_MIN_WIDTH}
+                          max={PAD_LOGO_MAX_WIDTH}
+                          step={1}
+                          value={padLogoCurrentWidth}
+                          onChange={(e) => setPadLogoSize(Number(e.target.value))}
+                          disabled={!padLogoEnabled}
+                          className="w-full max-w-md disabled:opacity-40"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setPadLogoSize(padLogoCurrentWidth * 1.1 + 1)}
+                          disabled={!padLogoEnabled || padLogoCurrentWidth >= PAD_LOGO_MAX_WIDTH}
+                          className="h-8 w-8 shrink-0 rounded border border-[rgb(var(--c-border))] text-lg leading-none disabled:opacity-40"
+                          title="Make the logo bigger"
+                          aria-label="Make the logo bigger"
+                        >
+                          +
+                        </button>
+                        <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">
+                          {padLogoCurrentWidth} × {padLogoCurrentHeight} px
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Drag, or press − / +, to make the whole logo smaller or bigger. It keeps its shape.
+                      </p>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       <DropdownCommon
                         id="pad_logo_position"
@@ -1863,12 +1921,13 @@ const AddBranch = () => {
                         name="pad_logo_margin_top"
                         value={formData.pad_logo_margin_top ?? ''}
                         type="number"
-                        min={0}
+                        min={PAD_LOGO_MIN_MARGIN}
+                        allowNegative
                         max={PAD_LOGO_MAX_MARGIN}
                         step="1"
                         placeholder={'Enter Top Margin'}
                         label={'Top Margin (px)'}
-                        description="Distance from the top of the pad head to the logo. Read for every position."
+                        description="Distance from the top of the pad head to the logo. Read for every position. A minus value pulls the logo up."
                         className={''}
                         onChange={handleOnNumberChange}
                         disabled={!padLogoEnabled}
@@ -1878,12 +1937,13 @@ const AddBranch = () => {
                         name="pad_logo_margin_right"
                         value={formData.pad_logo_margin_right ?? ''}
                         type="number"
-                        min={0}
+                        min={PAD_LOGO_MIN_MARGIN}
+                        allowNegative
                         max={PAD_LOGO_MAX_MARGIN}
                         step="1"
                         placeholder={'Enter Right Margin'}
                         label={'Right Margin (px)'}
-                        description="Distance from the paper's right edge. Used when the logo sits on the right."
+                        description="Distance from the paper's right edge. Used when the logo sits on the right. A minus value pushes the logo further right."
                         className={''}
                         onChange={handleOnNumberChange}
                         disabled={!padLogoEnabled || formData.pad_logo_position !== 'right'}
@@ -1893,12 +1953,13 @@ const AddBranch = () => {
                         name="pad_logo_margin_left"
                         value={formData.pad_logo_margin_left ?? ''}
                         type="number"
-                        min={0}
+                        min={PAD_LOGO_MIN_MARGIN}
+                        allowNegative
                         max={PAD_LOGO_MAX_MARGIN}
                         step="1"
                         placeholder={'Enter Left Margin'}
                         label={'Left Margin (px)'}
-                        description="Distance from the paper's left edge. Used when the logo sits on the left."
+                        description="Distance from the paper's left edge. Used when the logo sits on the left. A minus value pushes the logo further left."
                         className={''}
                         onChange={handleOnNumberChange}
                         disabled={!padLogoEnabled || formData.pad_logo_position !== 'left'}
@@ -1914,20 +1975,15 @@ const AddBranch = () => {
                         </label>
                         <div className="rounded border border-gray-300 bg-white p-3">
                           <div
-                            className="relative mx-auto overflow-hidden rounded border border-dashed border-gray-200 p-2"
-                            style={{
-                              maxWidth: 560,
-                              minHeight: padLogoPreviewBlockHeight ?? 64,
-                            }}
+                            className="mx-auto overflow-hidden rounded border border-dashed border-gray-200 p-2"
+                            style={{ maxWidth: 560 }}
                           >
-                            {padLogoPreviewConfig ? (
-                              <PadLogo config={padLogoPreviewConfig} />
-                            ) : (
-                              <div className="flex min-h-16 items-center justify-center text-xs text-gray-500">
+                            {!padLogoPreviewConfig && (
+                              <div className="mb-2 flex min-h-10 items-center justify-center text-xs text-gray-500">
                                 No company logo uploaded yet -- add one on the Company screen.
                               </div>
                             )}
-                            <div style={padLogoHeadingStyle}>
+                            <PadLogo config={padLogoPreviewConfig}>
                               <div className="text-center text-base font-bold uppercase text-gray-900">
                                 {formData.name || 'Branch Name'}
                               </div>
@@ -1937,7 +1993,9 @@ const AddBranch = () => {
                               <div className="text-center text-xs text-gray-900">
                                 {formData.phone || 'Phone'}
                               </div>
-                            </div>
+                            </PadLogo>
+                            {/* The rule under the head, as the print draws it. */}
+                            <div className="mt-1 border-t-2 border-gray-900" />
                           </div>
                           <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                             The logo prints on this branch's pad head and on the

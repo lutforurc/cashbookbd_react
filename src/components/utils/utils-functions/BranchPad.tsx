@@ -4,7 +4,7 @@ import { API_REMOTE_URL } from '../../services/apiRoutes';
 import { PrintBranch, hasPrintBranch, usePrintBranch } from './printBranch';
 import { formatMobile, useMobileFormat } from './mobileFormat';
 import PadLogo from './PadLogo';
-import { padLogoBlockHeight, padLogoReserve, usePadLogo } from './padLogoLayout';
+import { usePadLogo } from './padLogoLayout';
 
 const loadedImageUrls = new Set<string>();
 const imageLoadPromises = new Map<string, Promise<string>>();
@@ -179,28 +179,6 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
     };
   }, [resolvedImagePath]);
 
-  /**
-   * Room the logo needs. A side logo is drawn against the head rather than in
-   * the flow, so the heading reserves that space on BOTH sides -- the name stays
-   * centred on the paper and can never run under the mark. A logo above the
-   * heading is in the flow and reserves nothing.
-   */
-  const logoReserve = logo ? padLogoReserve(logo) : 0;
-  const logoBlockHeight = logo ? padLogoBlockHeight(logo) : undefined;
-  const headingStyle: React.CSSProperties = {};
-
-  if (logoReserve) {
-    headingStyle.paddingLeft = logoReserve;
-    headingStyle.paddingRight = logoReserve;
-  }
-
-  if (logoBlockHeight) {
-    headingStyle.minHeight = logoBlockHeight;
-    headingStyle.display = 'flex';
-    headingStyle.flexDirection = 'column';
-    headingStyle.justifyContent = 'center';
-  }
-
   return (
     <div>
       {usesPreprintedPad ? (
@@ -214,9 +192,8 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
           />
         </div>
       ) : (
-        <div className="relative mb-6">
-          {logo && <PadLogo config={logo} />}
-          <div style={headingStyle}>
+        <div className="mb-6">
+          <PadLogo config={logo}>
             <h1 className="text-2xl font-bold text-center uppercase">{headingName}</h1>
             <div className="mt-2 text-center">
               <div>
@@ -226,7 +203,7 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
                 <span>{headingPhone}</span>
               </div>
             </div>
-          </div>
+          </PadLogo>
         </div>
       )}
       {/* The rule belongs to the letterhead, so printed stationery draws it. */}
