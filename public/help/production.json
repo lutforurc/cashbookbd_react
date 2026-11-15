@@ -43,7 +43,7 @@
   "production-recipe": {
     "title": "রেসিপি",
     "module": "Production",
-    "updated": "10/11/2026",
+    "updated": "15/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একটি তৈরি পণ্যের এক ব্যাচে কোন কাঁচামাল কতটুকু লাগে, তা আগে থেকে লিখে রাখা। Production Entry-তে রেসিপি বাছলে লাইন নিজে ভরে যায়।",
@@ -52,17 +52,19 @@
         "heading": "রেসিপি লেখা",
         "menu": "Production → Recipe",
         "steps": [
+          "পর্দার একেবারে উপরে ডান পাশে Save (বা Update), New version ও Clear বোতাম।",
           "Recipe name, Product it makes দিন।",
           "Yield-এ এক ব্যাচে কতটা ভালো পণ্য হয় তা লিখুন — ঘরে ধূসর 'e.g. 95' শুধু উদাহরণ, মান নয়।",
           "Normal loss %-এ স্বাভাবিক নষ্টের সীমা, Loss measured in-এ একক দিন।",
           "Effective from নিজে থেকে ব্রাঞ্চের লেনদেনের তারিখ নেয়; এই তারিখের আগের ব্যাচে রেসিপিটি দেখাবে না।",
-          "Materials-এ Material, Quantity ও Kind (Material বা Packaging) দিয়ে Add, তারপর Save recipe।"
+          "Materials-এ Material, Quantity ও Kind (Material বা Packaging) দিয়ে Add, তারপর উপরের Save।"
         ]
       },
       {
         "heading": "নতুন সংস্করণ",
         "steps": [
           "উপকরণ বা পরিমাণ বড় করে বদলালে New version চাপুন — পুরনো সংস্করণ থাকে, নতুনটি তার নিজের তারিখ থেকে চলে।",
+          "নিচের Recipes তালিকায় সব সংস্করণ দেখা যায়; নাম চাপলে সেটি খোলে, পাশের কলম দিয়ে মোছা যায়।",
           "আগে সেভ হওয়া ব্যাচ নিজের কপি রাখে, তাই রেসিপি বদলালে পুরনো ব্যাচের খরচ বদলায় না।"
         ]
       }

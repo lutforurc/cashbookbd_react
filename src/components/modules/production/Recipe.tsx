@@ -333,6 +333,37 @@ const Recipe = () => {
       <HelmetTitle title="Recipe" />
       <div className='md:mt-2'></div>
 
+      {/* The three actions sit above everything, not under the materials
+          table: Save is the point of the screen, and a long recipe should not
+          have to be scrolled to the end to be saved. */}
+      <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+        <ButtonLoading
+          onClick={save}
+          buttonLoading={saving}
+          disabled={!canCreate}
+          title={!canCreate ? 'You do not have production.create' : undefined}
+          label={form.id ? 'Update' : 'Save'}
+          className="whitespace-nowrap"
+          icon={<FiSave className="text-lg" />}
+        />
+        <ButtonLoading
+          onClick={saveAsNewVersion}
+          buttonLoading={false}
+          disabled={!canCreate}
+          title={!canCreate ? 'You do not have production.create' : undefined}
+          label="New version"
+          className="whitespace-nowrap"
+          icon={<FiCopy className="text-lg" />}
+        />
+        <ButtonLoading
+          onClick={clearForm}
+          buttonLoading={false}
+          label="Clear"
+          className="whitespace-nowrap"
+          icon={<FiRefreshCcw className="text-lg" />}
+        />
+      </div>
+
       <section className="mb-4 rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h1 className="text-xl font-semibold text-[rgb(var(--c-text))]">Recipe</h1>
@@ -576,34 +607,6 @@ const Recipe = () => {
           </table>
         </div>
       </section>
-
-      <div className="mb-6 flex flex-wrap gap-2">
-        <ButtonLoading
-          onClick={save}
-          buttonLoading={saving}
-          disabled={!canCreate}
-          title={!canCreate ? 'You do not have production.create' : undefined}
-          label={form.id ? 'Update' : 'Save'}
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiSave className="text-lg" />}
-        />
-        <ButtonLoading
-          onClick={saveAsNewVersion}
-          buttonLoading={false}
-          disabled={!canCreate}
-          title={!canCreate ? 'You do not have production.create' : undefined}
-          label="New version"
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiCopy className="text-lg " />}
-        />
-        <ButtonLoading
-          onClick={clearForm}
-          buttonLoading={false}
-          label="Clear"
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-lg " />}
-        />
-      </div>
 
       <section className="rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
         <h2 className="mb-3 text-base font-semibold text-[rgb(var(--c-text))]">
