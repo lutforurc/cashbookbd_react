@@ -78,12 +78,12 @@
   "recycle-bin": {
     "title": "রিসাইকেল বিন",
     "module": "Settings",
-    "updated": "06/11/2026",
+    "updated": "15/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "মোছা ভাউচার দেখা, ফিরিয়ে আনা বা চিরতরে মুছে ফেলার জায়গা।",
     "sections": [
-      { "heading": "তালিকা", "menu": "Voucher Settings → Recycle Bin", "steps": ["Search দিয়ে Voucher No, নাম বা তারিখ খুঁজুন।", "Sl. No., Voucher No, Voucher Date, Name, Deleted At, Deleted By, Debit, Credit ও Action দেখা যায়।", "প্রিন্ট প্রিভিউ দেখুন, Restore দিয়ে ফেরান, Remove দিয়ে চিরতরে মুছুন।"] },
+      { "heading": "তালিকা", "menu": "Voucher Settings → Recycle Bin", "steps": ["Search দিয়ে Voucher No, নাম বা তারিখ খুঁজুন।", "Sl. No., Voucher No, Voucher Date, Name, Deleted At, Deleted By, Debit, Credit ও Action দেখা যায়।", "Name-এ বিক্রির ভাউচার Sales (পার্টি) আর কেনার ভাউচার Purchase (পার্টি) হিসেবে দেখায়।", "প্রিন্ট প্রিভিউ দেখুন, Restore দিয়ে ফেরান, Remove দিয়ে চিরতরে মুছুন।"] },
       { "heading": "সতর্কতা", "warning": "Remove করলে আর ফেরানো যায় না। Restore করলে ভাউচার আগের জায়গায় ফিরে যায়, কিন্তু সংশ্লিষ্ট রিপোর্ট নতুন করে চালাতে হবে।" }
     ]
   },
