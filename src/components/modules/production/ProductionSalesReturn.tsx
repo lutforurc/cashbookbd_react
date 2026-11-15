@@ -269,7 +269,7 @@ const ProductionSalesReturn = () => {
           id="productionReturnSearch"
           name="searchNo"
           label="Vr. No. (find a return to edit)"
-          placeholder="e.g. 28-0001"
+          placeholder="e.g. 13-261000001"
           value={searchNo}
           onChange={(e: any) => setSearchNo(e.target.value)}
           onKeyDown={(e: any) => {
@@ -300,7 +300,7 @@ const ProductionSalesReturn = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
         <div>
           <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Customer</label>
           <DdlMultiline
@@ -327,10 +327,65 @@ const ProductionSalesReturn = () => {
           setCurrentDate={() => undefined}
           className="w-full"
         />
+        <InputElement
+          id="returnNotes"
+          name="notes"
+          label="Note"
+          placeholder="Optional"
+          value={form.notes}
+          onChange={(e: any) => setField('notes', e.target.value)}
+          className="w-full"
+        />
+      </div>
+
+      {/* Laid out as Production Sales: the money and the actions above the
+          product line, so Save is in reach however long the return grows. */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end mb-3">
+        <div className="md:col-span-3">
+          <InputElement
+            id="returnDiscount"
+            name="discountAmt"
+            type="number"
+            step="0.01"
+            label="Discount"
+            value={form.discountAmt}
+            onChange={(e: any) => setField('discountAmt', e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="md:col-span-3">
+          <InputElement
+            id="returnReceived"
+            name="receivedAmt"
+            type="number"
+            step="0.01"
+            label={`Cash Payment (refund ${refundTotal.toFixed(2)})`}
+            value={cashPayment}
+            onChange={(e: any) => setField('receivedAmt', e.target.value)}
+            disabled={isCashCustomer}
+            className="w-full"
+          />
+        </div>
+        <div className="md:col-span-6 flex flex-wrap gap-2 md:justify-end">
+          <ButtonLoading
+            onClick={save}
+            buttonLoading={saving}
+            label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
+            className="whitespace-nowrap text-center mr-0 py-2"
+            icon={<FiSave className="text-lg" />}
+          />
+          <ButtonLoading
+            onClick={resetForm}
+            buttonLoading={false}
+            label="Reset"
+            className="whitespace-nowrap text-center mr-0 py-2"
+            icon={<FiRefreshCcw className="text-lg" />}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end mb-3">
-        <div className="md:col-span-5">
+        <div className="md:col-span-4">
           <label className={FIELD_LABEL}>Returned product</label>
           <ProductDropdown
             id="returnProduct"
@@ -343,7 +398,7 @@ const ProductionSalesReturn = () => {
         {/* ⚠️ The span classes go on a WRAPPER, never on InputElement's own
             className: that one lands on the <input>, where a grid span does
             nothing and the box comes out a finger wide. */}
-        <div className="md:col-span-3">
+        <div className="md:col-span-2">
           <InputElement
             id="returnQty"
             name="returnQty"
@@ -440,64 +495,12 @@ const ProductionSalesReturn = () => {
         </table>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
-        <InputElement
-          id="returnDiscount"
-          name="discountAmt"
-          type="number"
-          step="0.01"
-          label="Discount"
-          value={form.discountAmt}
-          onChange={(e: any) => setField('discountAmt', e.target.value)}
-          className="w-full"
-        />
-        <InputElement
-          id="returnReceived"
-          name="receivedAmt"
-          type="number"
-          step="0.01"
-          label={`Cash Payment (refund ${refundTotal.toFixed(2)})`}
-          value={cashPayment}
-          onChange={(e: any) => setField('receivedAmt', e.target.value)}
-          disabled={isCashCustomer}
-          className="w-full"
-        />
-        <div className="md:col-span-2">
-          <InputElement
-            id="returnNotes"
-            name="notes"
-            label="Note"
-            placeholder="Optional"
-            value={form.notes}
-            onChange={(e: any) => setField('notes', e.target.value)}
-            className="w-full"
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-3">
-        <ButtonLoading
-          onClick={save}
-          buttonLoading={saving}
-          label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiSave className="text-lg" />}
-        />
-        <ButtonLoading
-          onClick={resetForm}
-          buttonLoading={false}
-          label="Reset"
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-lg" />}
-        />
-      </div>
-
-      <p className="text-xs text-gray-500 dark:text-gray-400">
+      {/* <p className="text-xs text-gray-500 dark:text-gray-400">
         The refund is on the paid quantity. The returned goods re-enter stock at the original sale's FIFO
         cost, so the profit the sale showed is not inflated by the return. A free row (price 0) comes back
         with the paid quantity it was earned on -- the server works out how many, and the last return
         settles what is left over.
-      </p>
+      </p> */}
     </div>
   );
 };

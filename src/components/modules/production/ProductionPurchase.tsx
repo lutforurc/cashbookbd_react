@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiXCircle } from 'react-icons/fi';
+import { useDispatch } from 'react-redux';
+import { FiEdit2, FiPlus, FiPrinter, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiXCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import useVoucherAutoEditSearch from '../../utils/hooks/useVoucherAutoEditSearch';
@@ -16,9 +16,10 @@ import {
   storeProductionPurchase,
   updateProductionPurchase,
 } from './productionSlice';
-import { branchTodayIso } from './branchDate';
+import { VoucherPrintRegistry } from '../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../vouchers';
 
-type Option = { value: string; label: string; label_5?: string };
+type Option = { value: string; label: string; label_3?: string; label_5?: string };
 
 type PurchaseLine = {
   id: number;
@@ -54,13 +55,14 @@ const isoFromDate = (date: Date | null): string =>
  */
 const ProductionPurchase = () => {
   const dispatch = useDispatch<any>();
-  const trxDt = useSelector((s: any) => s.settings?.data?.trx_dt);
-  const today = () => branchTodayIso(trxDt);
 
+  // `invoiceDate` is the SUPPLIER'S BILL DATE, beside its Bill No. The voucher
+  // itself is dated by the server on the system's transaction date, as the
+  // ordinary purchase is, and a correction never moves it.
   const [form, setForm] = useState({
     account: '',
     accountName: '',
-    invoiceDate: today(),
+    invoiceDate: '',
     invoiceNo: '',
     discountAmt: '',
     paidAmt: '',
@@ -75,7 +77,12 @@ const ProductionPurchase = () => {
   // had been typed in the Find box.
   useVoucherAutoEditSearch({ setSearch: setSearchNo, triggerSearch: (no) => loadForEdit(no) });
   const [searching, setSearching] = useState(false);
-  const [editing, setEditing] = useState<{ mtmId: string; vrNo: string } | null>(null);
+  const [editing, setEditing] = useState<{ mtmId: string; vrNo: string; printId?: number } | null>(null);
+  // The purchase Print prints when nothing is open: the one saved last. It is
+  // printed by its id -- a Vr. No. alone repeats across branches.
+  const [lastSaved, setLastSaved] = useState<{ id: number; vrNo: string } | null>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
 
   const lineSeq = useRef(0);
   const newLineId = () => -(++lineSeq.current);
@@ -99,7 +106,9 @@ const ProductionPurchase = () => {
       code: option?.value || '',
       name: option?.label || '',
       unit: option?.label_5 || '',
-      price: p.free ? '0' : p.price,
+      // The dropdown carries the product's purchase price (label_3), as on the
+      // ordinary Purchase Invoice; it may still be changed.
+      price: p.free ? '0' : String(Number(option?.label_3) || ''),
     }));
 
   const addLine = () => {
@@ -168,7 +177,7 @@ const ProductionPurchase = () => {
     setForm({
       account: '',
       accountName: '',
-      invoiceDate: today(),
+      invoiceDate: '',
       invoiceNo: '',
       discountAmt: '',
       paidAmt: '',
@@ -208,7 +217,7 @@ const ProductionPurchase = () => {
         setForm({
           account: String(found.account ?? ''),
           accountName: found.accountName || '',
-          invoiceDate: found.invoice_date ? String(found.invoice_date).slice(0, 10) : today(),
+          invoiceDate: found.invoice_date ? String(found.invoice_date).slice(0, 10) : '',
           invoiceNo: found.invoice_no || '',
           discountAmt: Number(found.discount) > 0 ? String(Number(found.discount)) : '',
           paidAmt: String(Number(found.netpayment ?? 0)),
@@ -217,7 +226,11 @@ const ProductionPurchase = () => {
         });
         setLine({ ...emptyLine });
         setEditingLineId(null);
-        setEditing({ mtmId: String(found.mtmId), vrNo: found.vr_no || invoiceNo });
+        setEditing({
+          mtmId: String(found.mtmId),
+          vrNo: found.vr_no || invoiceNo,
+          printId: Number(found.print_id) || undefined,
+        });
         toast.success(`Editing ${found.vr_no || invoiceNo}`);
       }) as any,
     );
@@ -234,7 +247,7 @@ const ProductionPurchase = () => {
     const payload: any = {
       account: form.account,
       accountName: form.accountName,
-      invoice_date: form.invoiceDate,
+      invoice_date: form.invoiceDate || null,
       invoice_no: form.invoiceNo || null,
       discountAmt: Number(form.discountAmt) || 0,
       paymentAmt: Number(paid) || 0,
@@ -259,12 +272,25 @@ const ProductionPurchase = () => {
               ? `Purchase updated — ${editing.vrNo}`
               : `Purchase saved — ${response?.data?.data?.vr_no || ''}`.trim(),
           );
+          const savedId = editing ? editing.printId : Number(response?.data?.data?.id);
+          const savedNo = editing ? editing.vrNo : response?.data?.data?.vr_no;
+          setLastSaved(savedId && savedNo ? { id: savedId, vrNo: savedNo } : null);
           resetForm();
         } else {
           toast.error(response?.message || 'Could not save the purchase');
         }
       }) as any,
     );
+  };
+
+  // The open purchase if one was found, else the one saved last. The paper is
+  // the ordinary Purchase Invoice; a free row prints with its free mark.
+  const printInvoice = () => {
+    const target = editing?.printId
+      ? { id: editing.printId, vrNo: editing.vrNo }
+      : lastSaved;
+    if (!target) return toast.info('Save the purchase first, or find one to print.');
+    handleVoucherPrint({ vr_no: target.vrNo, mtm_id: target.id });
   };
 
   return (
@@ -276,7 +302,7 @@ const ProductionPurchase = () => {
           id="productionPurchaseSearch"
           name="searchNo"
           label="Vr. No. (find a purchase to edit)"
-          placeholder="e.g. 30-0001"
+          placeholder="e.g. 4-261000001"
           value={searchNo}
           onChange={(e: any) => setSearchNo(e.target.value)}
           onKeyDown={(e: any) => {
@@ -319,15 +345,6 @@ const ProductionPurchase = () => {
             acType={'3'}
           />
         </div>
-        <InputDatePicker
-          id="productionPurchaseDate"
-          name="invoiceDate"
-          label="Date"
-          selectedDate={dateFromIso(form.invoiceDate)}
-          setSelectedDate={(date) => setField('invoiceDate', isoFromDate(date))}
-          setCurrentDate={() => undefined}
-          className="w-full"
-        />
         <InputElement
           id="productionPurchaseBillNo"
           name="invoiceNo"
@@ -335,6 +352,15 @@ const ProductionPurchase = () => {
           placeholder="Supplier's bill, optional"
           value={form.invoiceNo}
           onChange={(e: any) => setField('invoiceNo', e.target.value)}
+          className="w-full"
+        />
+        <InputDatePicker
+          id="productionPurchaseBillDate"
+          name="invoiceDate"
+          label="Bill Date"
+          selectedDate={dateFromIso(form.invoiceDate)}
+          setSelectedDate={(date) => setField('invoiceDate', isoFromDate(date))}
+          setCurrentDate={() => undefined}
           className="w-full"
         />
         <InputElement
@@ -346,6 +372,59 @@ const ProductionPurchase = () => {
           onChange={(e: any) => setField('notes', e.target.value)}
           className="w-full"
         />
+      </div>
+
+      {/* Laid out as Production Sales: the money and the actions above the
+          product line, so Save is in reach however long the bill grows. */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end mb-3">
+        <div className="md:col-span-3">
+          <InputElement
+            id="productionPurchaseDiscount"
+            name="discountAmt"
+            type="number"
+            step="0.01"
+            label="Discount"
+            value={form.discountAmt}
+            onChange={(e: any) => setField('discountAmt', e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="md:col-span-3">
+          <InputElement
+            id="productionPurchasePaid"
+            name="paidAmt"
+            type="number"
+            step="0.01"
+            label={`Paid (net ${net.toFixed(2)})`}
+            value={paid}
+            onChange={(e: any) => setField('paidAmt', e.target.value)}
+            disabled={isCashSupplier}
+            className="w-full"
+          />
+        </div>
+        <div className="md:col-span-6 flex flex-wrap gap-2 md:justify-end">
+          <ButtonLoading
+            onClick={save}
+            buttonLoading={saving}
+            label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
+            className="whitespace-nowrap text-center mr-0 py-2"
+            icon={<FiSave className="text-lg" />}
+          />
+          <ButtonLoading
+            onClick={resetForm}
+            buttonLoading={false}
+            label="Reset"
+            className="whitespace-nowrap text-center mr-0 py-2"
+            icon={<FiRefreshCcw className="text-lg" />}
+          />
+          <ButtonLoading
+            onClick={printInvoice}
+            buttonLoading={false}
+            label={editing ? `Print ${editing.vrNo}` : lastSaved ? `Print ${lastSaved.vrNo}` : 'Print'}
+            className="whitespace-nowrap text-center mr-0 py-2"
+            icon={<FiPrinter className="text-lg" />}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end mb-3">
@@ -459,51 +538,13 @@ const ProductionPurchase = () => {
         </table>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
-        <InputElement
-          id="productionPurchaseDiscount"
-          name="discountAmt"
-          type="number"
-          step="0.01"
-          label="Discount"
-          value={form.discountAmt}
-          onChange={(e: any) => setField('discountAmt', e.target.value)}
-          className="w-full"
-        />
-        <InputElement
-          id="productionPurchasePaid"
-          name="paidAmt"
-          type="number"
-          step="0.01"
-          label={`Paid (net ${net.toFixed(2)})`}
-          value={paid}
-          onChange={(e: any) => setField('paidAmt', e.target.value)}
-          disabled={isCashSupplier}
-          className="w-full"
-        />
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-3">
-        <ButtonLoading
-          onClick={save}
-          buttonLoading={saving}
-          label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiSave className="text-lg" />}
-        />
-        <ButtonLoading
-          onClick={resetForm}
-          buttonLoading={false}
-          label="Reset"
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-lg" />}
-        />
-      </div>
-
-      <p className="text-xs text-gray-500 dark:text-gray-400">
-        ফ্রি মাল নিজের সারিতে, দাম ০ — সরবরাহকারী যে মাল বিনামূল্যে দিয়েছেন, সেটি আলাদা সারিতে টিক দিয়ে লিখুন। ফ্রি
+      {/* <p className="text-xs text-gray-500 dark:text-gray-400">
+        ফ্রি মাল নিজের সারিতে, দাম ০ — সরবরাহকারী যে মাল বিনামূল্যে দিয়েছেন, সেটি আলাদা সারিতে Free সুইচ চালু করে লিখুন। ফ্রি
         সারির মালও স্টকে ঢোকে (দাম ০-এর স্তরে), তাই স্টকের পরিমাণ ঠিক থাকে; মোট স্টক মূল্যও ঠিক থাকে।
-      </p>
+      </p> */}
+      <div className="hidden">
+        <VoucherPrintRegistry ref={voucherRegistryRef} rowsPerPage={12} fontSize={12} />
+      </div>
     </div>
   );
 };

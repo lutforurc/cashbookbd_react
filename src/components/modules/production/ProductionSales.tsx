@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiXCircle } from 'react-icons/fi';
+import { FiEdit2, FiPlus, FiPrinter, FiRefreshCcw, FiSave, FiSearch, FiTrash2, FiXCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import useVoucherAutoEditSearch from '../../utils/hooks/useVoucherAutoEditSearch';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
-import InputDatePicker from '../../utils/fields/DatePicker';
+import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
 import DdlMultiline from '../../utils/utils-functions/DdlMultiline';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
@@ -18,8 +18,10 @@ import {
   updateProductionSale,
 } from './productionSlice';
 import { branchTodayIso } from './branchDate';
+import { VoucherPrintRegistry } from '../vouchers/VoucherPrintRegistry';
+import { useVoucherPrint } from '../vouchers';
 
-type Option = { value: string; label: string; label_5?: string };
+type Option = { value: string; label: string; label_4?: string; label_5?: string };
 
 type SaleLine = {
   id: number;
@@ -33,16 +35,6 @@ type SaleLine = {
 };
 
 const emptyLine = { code: '', name: '', unit: '', qty: '', price: '', free: false };
-
-// The shared picker works in Date objects; the form and the API keep ISO,
-// parsed in local time so the day never shifts.
-const dateFromIso = (value: string | null | undefined): Date | null => {
-  const [year, month, day] = String(value || '').split('-').map(Number);
-  return year && month && day ? new Date(year, month - 1, day) : null;
-};
-
-const isoFromDate = (date: Date | null): string =>
-  date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : '';
 
 /**
  * A sale on a Production branch, with free goods (v4 খ-৯, Phase 3).
@@ -78,7 +70,12 @@ const ProductionSales = () => {
   // had been typed in the Find box.
   useVoucherAutoEditSearch({ setSearch: setSearchNo, triggerSearch: (no) => loadForEdit(no) });
   const [searching, setSearching] = useState(false);
-  const [editing, setEditing] = useState<{ mtmId: string; vrNo: string } | null>(null);
+  const [editing, setEditing] = useState<{ mtmId: string; vrNo: string; printId?: number } | null>(null);
+  // The invoice Print prints when nothing is open: the one saved last. It is
+  // printed by its id -- a Vr. No. alone repeats across branches.
+  const [lastSaved, setLastSaved] = useState<{ id: number; vrNo: string } | null>(null);
+  const voucherRegistryRef = useRef<any>(null);
+  const { handleVoucherPrint } = useVoucherPrint(voucherRegistryRef);
   // Not enough stock: the invoice is held here while the seller is asked.
   const [stockWarning, setStockWarning] = useState<(StockShortage & { payload: any }) | null>(null);
 
@@ -107,7 +104,9 @@ const ProductionSales = () => {
       code: option?.value || '',
       name: option?.label || '',
       unit: option?.label_5 || '',
-      price: p.free ? '0' : p.price,
+      // The dropdown carries the product's sales price (label_4), as on the
+      // ordinary Sales Invoice; the seller may still change it.
+      price: p.free ? '0' : String(Number(option?.label_4) || ''),
     }));
 
   // Ask the scheme master what this product and quantity earn, and add that
@@ -263,7 +262,11 @@ const ProductionSales = () => {
         });
         setLine({ ...emptyLine });
         setEditingLineId(null);
-        setEditing({ mtmId: String(found.mtmId), vrNo: found.vr_no || invoiceNo });
+        setEditing({
+          mtmId: String(found.mtmId),
+          vrNo: found.vr_no || invoiceNo,
+          printId: Number(found.print_id) || undefined,
+        });
         toast.success(`Editing ${found.vr_no || invoiceNo}`);
       }) as any,
     );
@@ -280,7 +283,6 @@ const ProductionSales = () => {
     const payload: any = {
       account: form.account,
       accountName: form.accountName,
-      invoice_date: form.invoiceDate,
       discountAmt: Number(form.discountAmt) || 0,
       receivedAmt: Number(received) || 0,
       notes: form.notes || null,
@@ -325,12 +327,25 @@ const ProductionSales = () => {
               ? `Sale updated — ${editing.vrNo}`
               : `Sale saved — ${response?.data?.data?.vr_no || ''}`.trim(),
           );
+          const savedId = editing ? editing.printId : Number(response?.data?.data?.id);
+          const savedNo = editing ? editing.vrNo : response?.data?.data?.vr_no;
+          setLastSaved(savedId && savedNo ? { id: savedId, vrNo: savedNo } : null);
           resetForm();
         } else {
           toast.error(response?.message || 'Could not save the sale');
         }
       }) as any,
     );
+  };
+
+  // The open invoice if one was found, else the one saved last. The paper is
+  // the ordinary Sales Invoice; a free row prints with its free mark.
+  const printInvoice = () => {
+    const target = editing?.printId
+      ? { id: editing.printId, vrNo: editing.vrNo }
+      : lastSaved;
+    if (!target) return toast.info('Save the sale first, or find one to print.');
+    handleVoucherPrint({ vr_no: target.vrNo, mtm_id: target.id });
   };
 
   return (
@@ -342,7 +357,7 @@ const ProductionSales = () => {
           id="productionSaleSearch"
           name="searchNo"
           label="Vr. No. (find a sale to edit)"
-          placeholder="e.g. 29-0001"
+          placeholder="e.g. 3-261000001"
           value={searchNo}
           onChange={(e: any) => setSearchNo(e.target.value)}
           onKeyDown={(e: any) => {
@@ -385,15 +400,6 @@ const ProductionSales = () => {
             acType={'3'}
           />
         </div>
-        <InputDatePicker
-          id="productionSaleDate"
-          name="invoiceDate"
-          label="Date"
-          selectedDate={dateFromIso(form.invoiceDate)}
-          setSelectedDate={(date) => setField('invoiceDate', isoFromDate(date))}
-          setCurrentDate={() => undefined}
-          className="w-full"
-        />
         <InputElement
           id="productionSaleNotes"
           name="notes"
@@ -403,6 +409,59 @@ const ProductionSales = () => {
           onChange={(e: any) => setField('notes', e.target.value)}
           className="w-full"
         />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end mb-3">
+        <div className="md:col-span-4">
+          <InputElement
+            id="productionSaleDiscount"
+            name="discountAmt"
+            type="number"
+            step="0.01"
+            label="Discount"
+            value={form.discountAmt}
+            onChange={(e: any) => setField('discountAmt', e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="md:col-span-4">
+          <InputElement
+            id="productionSaleReceived"
+            name="receivedAmt"
+            type="number"
+            step="0.01"
+            label={`Received (net ${net.toFixed(2)})`}
+            value={received}
+            onChange={(e: any) => setField('receivedAmt', e.target.value)}
+            disabled={isCashCustomer}
+            className="w-full"
+          />
+        </div>
+        {/* The actions sit above the lines, so Save is in reach however long
+            the invoice grows. */}
+        <div className="md:col-span-4 flex flex-wrap gap-2 md:justify-end">
+          <ButtonLoading
+            onClick={save}
+            buttonLoading={saving}
+            label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
+            className="whitespace-nowrap text-center mr-0 py-2"
+            icon={<FiSave className="text-lg" />}
+          />
+          <ButtonLoading
+            onClick={resetForm}
+            buttonLoading={false}
+            label="Reset"
+            className="whitespace-nowrap text-center mr-0 py-2"
+            icon={<FiRefreshCcw className="text-lg" />}
+          />
+          <ButtonLoading
+            onClick={printInvoice}
+            buttonLoading={false}
+            label={editing ? `Print ${editing.vrNo}` : lastSaved ? `Print ${lastSaved.vrNo}` : 'Print'}
+            className="whitespace-nowrap text-center mr-0 py-2"
+            icon={<FiPrinter className="text-lg" />}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end mb-3">
@@ -444,14 +503,13 @@ const ProductionSales = () => {
             className="w-full"
           />
         </div>
-        <label className="md:col-span-2 mb-2 flex items-center gap-2 whitespace-nowrap text-sm text-[rgb(var(--c-text))]">
-          <input
-            type="checkbox"
+        <div className="md:col-span-2 mb-2 flex items-center">
+          <ToggleSwitch
+            label="Free"
             checked={line.free}
-            onChange={(e) => setLine((p) => ({ ...p, free: e.target.checked, price: e.target.checked ? '0' : p.price }))}
+            onChange={(checked) => setLine((p) => ({ ...p, free: checked, price: checked ? '0' : p.price }))}
           />
-          Free
-        </label>
+        </div>
         <div className="md:col-span-2">
           <ButtonLoading
             onClick={editingLineId === null ? addLine : updateLine}
@@ -517,51 +575,10 @@ const ProductionSales = () => {
         </table>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
-        <InputElement
-          id="productionSaleDiscount"
-          name="discountAmt"
-          type="number"
-          step="0.01"
-          label="Discount"
-          value={form.discountAmt}
-          onChange={(e: any) => setField('discountAmt', e.target.value)}
-          className="w-full"
-        />
-        <InputElement
-          id="productionSaleReceived"
-          name="receivedAmt"
-          type="number"
-          step="0.01"
-          label={`Received (net ${net.toFixed(2)})`}
-          value={received}
-          onChange={(e: any) => setField('receivedAmt', e.target.value)}
-          disabled={isCashCustomer}
-          className="w-full"
-        />
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-3">
-        <ButtonLoading
-          onClick={save}
-          buttonLoading={saving}
-          label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiSave className="text-lg" />}
-        />
-        <ButtonLoading
-          onClick={resetForm}
-          buttonLoading={false}
-          label="Reset"
-          className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-lg" />}
-        />
-      </div>
-
-      <p className="text-xs text-gray-500 dark:text-gray-400">
+      {/* <p className="text-xs text-gray-500 dark:text-gray-400">
         ফ্রি মাল নিজের সারিতে, দাম ০ — স্কিম মিললে ফ্রি সারি নিজে থেকেই যোগ হয়। ফ্রি সারির মালও স্টক থেকে বের হয়,
         তাই তার খরচ বিক্রিত মালের খরচেই ধরা থাকে।
-      </p>
+      </p> */}
 
       <StockShortageModal
         warning={stockWarning}
@@ -574,6 +591,9 @@ const ProductionSales = () => {
           if (pending) send(pending.payload, true);
         }}
       />
+      <div className="hidden">
+        <VoucherPrintRegistry ref={voucherRegistryRef} rowsPerPage={12} fontSize={12} />
+      </div>
     </div>
   );
 };

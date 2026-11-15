@@ -224,6 +224,10 @@ const PurchaseInvoicePrintBase = React.forwardRef<HTMLDivElement, Props>(
 
                 <div className="text-right space-y-1">
                   <div><span className="font-semibold">Voucher No:</span> {data?.vr_no}</div>
+                  {/* The supplier's own bill number, where the purchase was entered against one. */}
+                  {meta.purchaseMaster?.invoice_number && (
+                    <div><span className="font-semibold">Bill No:</span> {meta.purchaseMaster.invoice_number}</div>
+                  )}
                   <div>
                     <span className="font-semibold">Date:</span>{' '}
                     {dayjs(meta.purchaseMaster?.invoice_date || meta.purchaseMaster?.transact_date || data?.vr_date).format('DD/MM/YYYY')}

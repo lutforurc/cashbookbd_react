@@ -1042,6 +1042,31 @@ const ProductionEntry = () => {
             </React.Fragment>
           );
         })}
+        {/* Save sits beside the steps, so a batch can be saved from any of
+            them; the register has nothing of its own to save. */}
+        {tab !== 'batches' && (
+          <div className="flex min-w-[18rem] flex-1 flex-wrap items-center justify-between gap-3 rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-4 py-2">
+            <p className="text-xs text-[rgb(var(--c-text-muted))]">
+              A draft moves no stock. Post it from Recent batches when the batch is done.
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={resetForm}
+                className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-[rgb(var(--c-text-muted))] hover:text-[rgb(var(--c-text))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgb(var(--c-primary))]"
+              >
+                <FiRefreshCcw /> Start over
+              </button>
+              <ButtonLoading
+                onClick={save}
+                buttonLoading={saving}
+                label={editing ? 'Update draft' : 'Save draft'}
+                className="whitespace-nowrap text-center mr-0 py-2"
+                icon={<FiSave className="text-lg ml-2 mr-2" />}
+              />
+            </div>
+          </div>
+        )}
         <button
           type="button"
           role="tab"
@@ -1448,32 +1473,6 @@ const ProductionEntry = () => {
             )}
           </>,
         )}
-
-      {/* Save sits under every step, so a batch can be saved from any of
-          them; the register has nothing of its own to save. */}
-      {tab !== 'batches' && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-4 py-3">
-          <p className="text-sm text-[rgb(var(--c-text-muted))]">
-            A draft moves no stock. Post it from Recent batches when the batch is done.
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={resetForm}
-              className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-[rgb(var(--c-text-muted))] hover:text-[rgb(var(--c-text))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgb(var(--c-primary))]"
-            >
-              <FiRefreshCcw /> Start over
-            </button>
-            <ButtonLoading
-              onClick={save}
-              buttonLoading={saving}
-              label={editing ? 'Update draft' : 'Save draft'}
-              className="whitespace-nowrap text-center mr-0 py-2"
-              icon={<FiSave className="text-lg ml-2 mr-2" />}
-            />
-          </div>
-        </div>
-      )}
 
       {/* ---- The register ---- */}
       {tab === 'batches' &&
