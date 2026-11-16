@@ -7,7 +7,7 @@
     "video": "",
     "intro": "পাঠানো এসএমএসগুলোর তালিকা — কাকে, কী লেখা, কোন মাধ্যমে গেল এবং গেল কি না।",
     "sections": [
-      { "heading": "লগ", "menu": "SMS → SMS Logs", "steps": ["Branch বাছুন, Search বক্সে নাম বা মোবাইল লিখে Search করুন।", "Sl., Name, Mobile, Message, Provider, Status, Attempts, Sent At ও Created At দেখা যায়।"] },
+      { "heading": "লগ", "menu": "SMS → SMS Logs", "steps": ["Branch বাছুন, Search বক্সে নাম বা মোবাইল লিখে Search করুন।", "Sl., Name, Mobile, Message, Provider, Status, Attempts, Sent At ও Created At দেখা যায়।","Name আসে যে পার্টিকে মেসেজ পাঠানো হয়েছে তার নাম থেকে। পার্টি না থাকলে, যেমন হোটেল বুকিং বা walk-in বিক্রিতে, পাঠানোর সময় যে নাম লেখা ছিল (Who is booking বা ইনভয়েসের নাম) সেটাই দেখায়।"] },
       { "heading": "সতর্কতা", "warning": "Status ব্যর্থ হলে Attempts দেখুন; বারবার পাঠানোর আগে নম্বর ঠিক আছে কি না মিলিয়ে নিন।" }
     ]
   },
@@ -19,7 +19,7 @@
     "video": "",
     "intro": "বারবার ব্যবহৃত এসএমএসের নমুনা তালিকা।",
     "sections": [
-      { "heading": "তালিকা", "menu": "SMS → Templates", "steps": ["Search দিয়ে Template বা Placeholders খুঁজুন।", "Sl., Template, Placeholders, Message, Status ও Updated দেখা যায়।", "New Template দিয়ে নতুন; view / edit / delete আইকনে পুরনো নমুনা সামলান।"] },
+      { "heading": "তালিকা", "menu": "SMS → Templates", "steps": ["Search দিয়ে Template বা Placeholders খুঁজুন।", "Sl., Template, Placeholders, Message, Status ও Updated দেখা যায়।", "New Template দিয়ে নতুন; view / edit / delete আইকনে পুরনো নমুনা সামলান।","যে শাখায় হোটেলের রুম সেটআপ করা আছে, সেখানে Hotel Booking Confirmed (hotel_booking_confirmed) নমুনা নিজে থেকেই তৈরি হয়। হোটেল বুকিং সেভ হওয়ার সময় এটি নিজে থেকেই যায়। চলক: {{party_name}}, {{mobile}}, {{booking_date}}, {{booking_no}}, {{check_in}}, {{check_out}}, {{rooms}}, {{nights}}, {{adults}}, {{children}}, {{room_tariff}}, {{branch_name}}, {{branch_mobile}}। {{branch_mobile}}-এ শাখার Phone যেমন লেখা আছে তেমনই যায়।"] },
       { "heading": "সতর্কতা", "warning": "Status Inactive হলে নমুনাটি পাঠানোর সময় বাছাইয়ে আসে না।" }
     ]
   },
@@ -318,7 +318,7 @@
       { "heading": "ধাপগুলো", "menu": "Setup → Branch List → Add Branch", "steps": ["Basic Info-তে Select Branch Type, Select Business Type, Select Inventory System, Select Status ও যোগাযোগ দিন।", "Print Setup, Invoice Setup ও Forms Setup-এ ছাপা ও ভাউচার ফর্মের ধরন ঠিক করুন। প্যাডের লোগো Print Setup-এর Pad Logo অংশে।", "Customer Setup, Product Setup ও Dropdown-এ গ্রাহক-পণ্যের ঘর বাছুন।", "Real Estate Setup, Hotel Setup, Feature Controls ও SaaS Setup দিয়ে বাকি সুবিধা চালু করুন।", "প্রতিটি ধাপে Next, শেষে Save / Update চাপুন।"] },
       { "heading": "প্যাডে লোগো", "menu": "Setup → Branch List → Add/Edit Branch → Print Setup", "steps": ["Pad Logo-তে Show Company Logo on Pad চালু করুন; ডিফল্টে এটি বন্ধ থাকে, তাই চালু না করলে প্যাড আগের মতোই ছাপে।", "Logo Position থেকে ডান পাশ, বাম পাশ বা উপরে বাছুন। প্যাডের নাম-ঠিকানা সব সময় পাতার মাঝখানে থাকে; লোগো নিজের আলাদা ঘরে মার্জিন অনুযায়ী বসে, তাই লোগো ছোট-বড় করলে বা সরালে প্যাড নড়ে না। লোগো নামের ওপর পড়লে লোগো ছোট করুন বা মার্জিন বদলান।", "Logo Size-এর স্লাইডার টেনে বা − / + চেপে পুরো লোগো ছোট-বড় করুন; আকৃতি একই থাকে। নির্দিষ্ট মাপ লাগলে Logo Width ও Logo Height (px) সরাসরি লিখুন; ছবিটি নিজের আকৃতি ধরে রাখবে।", "Top Margin, Right Margin ও Left Margin (px) দিয়ে প্যাডের কিনারা থেকে দূরত্ব ঠিক করুন। যে পাশে লোগো বসবে সেই পাশের মার্জিনটিই কাজ করে; Top Margin সব সময়েই। মাইনাস মান (যেমন -10) দেওয়া যায়: Top Margin মাইনাস দিলে লোগো ওপরে ওঠে, Right বা Left Margin মাইনাস দিলে লোগো কাগজের কিনারার দিকে আরও সরে যায়।", "Pad Logo Preview-তে অবস্থান মিলিয়ে নিন, তারপর Save / Update চাপুন।"] },
       { "heading": "লোগো কোথা থেকে আসে", "steps": ["লোগোর ছবি একবার আপলোড হয় Setup → Company List → Edit → Company Logo-তে; ব্রাঞ্চ স্ক্রিনে শুধু তার স্থান, মাপ ও মার্জিন ঠিক হয়।", "Pre-printed Pad বা Custom Image Pad বাছা থাকলে লোগো ছাপা হয় না, কারণ ওই কাগজেই হেডার থাকে।", "লোগো ব্রাঞ্চ প্যাড ও কোম্পানি প্যাড — দুই হেডারেই ছাপে, প্রতিটি পৃষ্ঠায়।"] },
-      { "heading": "সতর্কতা", "warning": "Stock With Zero, Multiple Warehouse, Opening ongoing ও Block Negative Stock Sale-এর মতো সুইচ পরে বদলালে পুরনো লেনদেনে প্রভাব পড়তে পারে। SMS Service বন্ধ থাকলে এসএমএস যাবে না।" },
+      { "heading": "সতর্কতা", "warning": "Stock With Zero, Multiple Warehouse, Opening ongoing ও Block Negative Stock Sale-এর মতো সুইচ পরে বদলালে পুরনো লেনদেনে প্রভাব পড়তে পারে। SMS Service বন্ধ থাকলে এসএমএস যাবে না। Feature Controls → SMS Services-এর Hotel Booking SMS চালু থাকলে হোটেল বুকিং সেভ হওয়ার সাথে সাথে বুকারকে এসএমএস যায়; এটি বদলাতে Sales SMS-এর permission লাগে।" },
       { "heading": "হোটেলের Income Setup", "steps": ["Hotel Setup ধাপে Income Setup থেকে ঠিক করুন আয় কখন হিসাবে উঠবে।", "Income at Bill: বিল হলেই Income ও VAT ওঠে। এটি ডিফল্ট।", "Income at Settlement: সেটেলের টাকা রিসিট ভাউচারে আগে পুরো VAT-এ, বাকিটা Income-এ ওঠে। অ্যাডভান্সের অংশ আলাদা জার্নালে সমন্বয় হয়। বাকি থাকলে টাকা Guest Receivable হেডে যায়।", "Income at Settlement বাছতে Guest Receivable হেড থাকতে হবে।", "সেটিং বদলালে শুধু নতুন বিলে প্রভাব পড়ে। Guest Receivable-এ আগের বাকি ওই হেড থেকেই আদায় হয়।"] }
     ]
   }

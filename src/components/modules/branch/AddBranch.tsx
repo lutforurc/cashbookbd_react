@@ -182,6 +182,7 @@ interface branchItem {
   purchase_sms: boolean;
   sales_sms: boolean;
   payment_sms: boolean;
+  booking_sms: boolean;
   pad_header_image?: string;
   show_instalment_list: boolean;
   show_brand_in_invoice: boolean;
@@ -819,6 +820,7 @@ const AddBranch = () => {
     purchase_sms: false,
     sales_sms: false,
     payment_sms: false,
+    booking_sms: false,
     pad_header_image: '',
     show_instalment_list: false,
     show_brand_in_invoice: false,
@@ -1210,6 +1212,7 @@ const AddBranch = () => {
         purchase_sms: toBooleanFlag(b.purchase_sms),
         sales_sms: toBooleanFlag(b.sales_sms),
         payment_sms: toBooleanFlag(b.payment_sms),
+        booking_sms: toBooleanFlag(b.booking_sms),
         pad_header_image: b.pad_header_image || b.pad_heading_image || b.letterhead_image || b.pad_image || b.header_image || '',
         show_brand_in_invoice: toBooleanFlag(b.show_brand_in_invoice),
         show_category_in_invoice: toBooleanFlag(b.show_category_in_invoice),
@@ -3710,6 +3713,12 @@ const AddBranch = () => {
                               description="Texts the supplier when a purchase is posted against them."
                               checked={Boolean(formData.purchase_sms)}
                               onChange={(checked) => handleToggleFieldChange('purchase_sms', checked)}
+                            />
+                            <FormToggleField
+                              label="Hotel Booking SMS"
+                              description="Texts the booker the booking-confirmed message the moment a hotel booking is saved."
+                              checked={Boolean(formData.booking_sms)}
+                              onChange={(checked) => handleToggleFieldChange('booking_sms', checked)}
                             />
                           </>
                         )}
