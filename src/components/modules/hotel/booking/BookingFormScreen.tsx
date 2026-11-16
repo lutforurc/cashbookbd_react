@@ -460,8 +460,13 @@ const BookingFormScreen = ({ user }: any) => {
   const forget = () => {
     dispatch(clearAvailability());
     setDayOnly(false);
-    setPicked([]);
-    setPickedSeats([]);
+    // ⚠️ An edit keeps its rooms. Moving the departure from the 17th to the
+    // 19th is "the same three rooms, two more nights" -- wiping the picks made
+    // the clerk find and re-pick every room just to extend a stay.
+    if (!id) {
+      setPicked([]);
+      setPickedSeats([]);
+    }
     setOpenBeds(null);
   };
 
@@ -613,7 +618,8 @@ const BookingFormScreen = ({ user }: any) => {
       return;
     }
 
-    return checkFor(form.check_in_date, form.check_out_date, true);
+    // Search on an edit keeps the rooms too -- see forget().
+    return checkFor(form.check_in_date, form.check_out_date, !id);
   };
 
   /**
@@ -647,11 +653,53 @@ const BookingFormScreen = ({ user }: any) => {
             check_in_date: from,
             check_out_date: to,
             building_id: building || undefined,
+            // The booking being edited: its own nights read as free, so its
+            // rooms can be kept when the stay is made longer.
+            booking_id: id ? Number(id) : undefined,
           }),
         ).unwrap();
 
         if (!result.free_count) {
           toast.info('Nothing is free on those dates.');
+        }
+
+        // ⚠️ AN EDIT KEEPS A ROOM SOMEBODY ELSE HAS LATER -- SHORT. The read
+        // counts this booking's own nights as free, so a kept room that comes
+        // back taken is somebody else's on one of the new nights: 313 extended
+        // to the 20th while BK-…-00067 has the 19th. The save stops 313 the
+        // night before (firstTakenByOthers), and the summary prices it so --
+        // see roomNights. Only a room taken from the FIRST night has nothing
+        // left to keep, and only that one comes off.
+        if (!clearPicks) {
+          const all: LayoutRoom[] = (result.buildings ?? []).flatMap((b: LayoutBuilding) => [
+            ...b.floors.flatMap((f) => f.rooms),
+            ...b.unfloored,
+          ]);
+          const lost = all.filter(
+            (room) =>
+              room.state !== 'free' &&
+              picked.includes(room.id) &&
+              (!room.taken_from || room.taken_from <= from),
+          );
+          const lostSeats = all.flatMap((room) =>
+            (room.seats ?? [])
+              .filter((seat) => seat.state !== 'free' && pickedSeats.includes(seat.id))
+              .map((seat) => ({ seat, room })),
+          );
+
+          if (lost.length || lostSeats.length) {
+            setPicked((prev) => prev.filter((rid) => !lost.some((room) => room.id === rid)));
+            setPickedSeats((prev) => prev.filter((sid) => !lostSeats.some(({ seat }) => seat.id === sid)));
+
+            const names = [
+              ...lost.map((room) => `${room.display_name}${room.taken_by ? ` (${room.taken_by})` : ''}`),
+              ...lostSeats.map(({ seat, room }) => `${room.display_name} bed ${seat.code}`),
+            ];
+            toast.warning(
+              `Taken on these dates, so taken off this booking: ${names.join(', ')}. ` +
+                'Pick another room, or shorten the stay.',
+            );
+          }
         }
       } catch (error: any) {
         toast.error(String(error));
@@ -730,6 +778,20 @@ const BookingFormScreen = ({ user }: any) => {
     () => rooms.filter((room) => picked.includes(room.id)),
     [rooms, picked],
   );
+
+  /**
+   * The nights a picked room is actually held for. Every night of the stay,
+   * except a room kept on an edit that somebody else has from `taken_from`:
+   * it stops the night before, exactly as the save does it.
+   */
+  const roomNights = (room: LayoutRoom): number => {
+    const from = String(availability?.check_in_date ?? '').slice(0, 10);
+    if (room.state === 'free' || !room.taken_from || !from) return nights;
+    const days = Math.round(
+      (Date.parse(`${room.taken_from}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000,
+    );
+    return Math.max(0, Math.min(nights, days));
+  };
 
   /** The chosen beds, each with the room it is in, for the summary line. */
   const pickedBeds = useMemo(
@@ -833,14 +895,15 @@ const BookingFormScreen = ({ user }: any) => {
   // another -- see 2.8 and the note at the top.
   const total = useMemo(
     () =>
-      pickedRooms.reduce((sum, room) => sum + Number(room.rent ?? 0) * nights, 0) +
+      pickedRooms.reduce((sum, room) => sum + Number(room.rent ?? 0) * roomNights(room), 0) +
       pickedBeds.reduce((sum, { seat }) => sum + Number(seat.rent ?? 0) * nights, 0) +
       // ⚠️ NOT multiplied by the nights. A room earns its rent once per
       // night; a hall earns its rent once per SITTING taken, and a three-night
       // stay with one wedding in it is one hall charge. Multiplying here would
       // quote that wedding three times over.
       sittingsTotal,
-    [pickedRooms, pickedBeds, nights, sittingsTotal],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- roomNights reads availability
+    [pickedRooms, pickedBeds, nights, sittingsTotal, availability],
   );
 
   /**
@@ -1487,9 +1550,19 @@ const BookingFormScreen = ({ user }: any) => {
                       <ul className="mb-3 divide-y divide-stroke text-sm dark:divide-strokedark">
                         {pickedRooms.map((room) => (
                           <li key={`room-${room.id}`} className="flex items-baseline justify-between gap-3 py-1.5">
-                            <span className="min-w-0 text-black dark:text-white">{room.display_name}</span>
+                            <span className="min-w-0 text-black dark:text-white">
+                              {room.display_name}
+                              {/* Kept short on an edit: somebody else has it from
+                                  this morning on -- see roomNights. */}
+                              {roomNights(room) < nights && room.taken_from ? (
+                                <span className="block text-xs text-amber-700 dark:text-amber-300">
+                                  until {formatDate(room.taken_from)} · {roomNights(room)}{' '}
+                                  {roomNights(room) === 1 ? 'night' : 'nights'}
+                                </span>
+                              ) : null}
+                            </span>
                             <span className="shrink-0 text-gray-600 dark:text-gray-300">
-                              {money(Number(room.rent ?? 0) * nights)}
+                              {money(Number(room.rent ?? 0) * roomNights(room))}
                             </span>
                           </li>
                         ))}
@@ -1558,7 +1631,9 @@ const BookingFormScreen = ({ user }: any) => {
                           <p className="mt-1 text-xs leading-snug text-primary dark:text-secondary">
                             Stayed here before — <strong>{returning.name}</strong>
                             {returning.stays > 1 ? `, ${returning.stays} stays` : ''}
-                            {returning.last_stay ? `, last ${formatDate(returning.last_stay)}` : ''}.
+                            {/* formatDate returns JSX, not text -- inside a template
+                                string it printed "last [object Object]". */}
+                            {returning.last_stay ? <>, last {formatDate(returning.last_stay)}</> : ''}.
                             {/* The two facts worth knowing before saying yes, said
                         in the same breath and not hidden in the history. */}
                             {Number(returning.no_shows) > 0 ? (

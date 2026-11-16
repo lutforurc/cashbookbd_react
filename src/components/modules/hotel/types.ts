@@ -297,6 +297,13 @@ export interface LayoutRoom {
   free_from?: string | null;
 
   /**
+   * The first night in the range somebody else holds this room, YYYY-MM-DD.
+   * An edit that keeps the room stops it the night before (server:
+   * firstTakenByOthers), so the form prices it up to here.
+   */
+  taken_from?: string | null;
+
+  /**
    * The stay the tile is coloured for: its own dates, its deadline, and who is
    * in the room.
    *
