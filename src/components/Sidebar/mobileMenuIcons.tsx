@@ -156,17 +156,17 @@ export const CompanySchemeMenuIcon = ({ className }: GlyphProps) => (
   </MenuGlyph>
 );
 
-/** A reception desk with a receptionist and a suitcase — the Hotel menu. */
+/** A concierge service bell — the mobile app's Hotel. */
 export const HotelMenuIcon = ({ className }: GlyphProps) => (
-  <MenuGlyph className={className} viewBox="1.7 2.9 20.9 20.9">
+  <MenuGlyph className={className} viewBox="1.2 1.2 21.6 21.6">
     <path
       stroke="currentColor"
       strokeWidth="1.6"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M7 7.4a2 2 0 0 1 4 0a2 2 0 0 1-4 0ZM5.9 13.6a3.1 3.1 0 0 1 6.2 0M16.8 16.8a1 1 0 0 1 2 0M16 16.8H19.6Q20.8 16.8 20.8 18V20Q20.8 21.2 19.6 21.2H16Q14.8 21.2 14.8 20V18Q14.8 16.8 16 16.8Z"
+      d="M5 16.2Q5 8.3 12 8.3Q19 8.3 19 16.2M12 8.3V6.9M10.9 5.9a1.1 1.1 0 1 1 2.2 0a1.1 1.1 0 1 1-2.2 0Z"
     />
-    <path stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" d="M3.4 14.2H20.6" />
+    <path stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" d="M4.2 16.4H19.8M3 19.2H21" />
   </MenuGlyph>
 );
 

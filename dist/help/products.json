@@ -7,7 +7,7 @@
     "video": "",
     "intro": "শাখার সব পণ্য ক্যাটাগরি ধরে দেখা যায়। এখান থেকেই পণ্যের opening stock (শুরুর স্টক) সারিতে সারিতে লেখা বা ঠিক করা হয়।",
     "sections": [
-      { "heading": "তালিকা দেখা", "menu": "Products → Product List", "steps": ["Brand, Category ও Group বাছুন, নাহলে All Brand / All Categories / All Groups রাখুন।", "Search বক্সে নাম বা কোড লিখে Search করুন।", "Sl, Product, Category, Unit ও স্টকের ঘরগুলো দেখা যায়; Category: নাম (সংখ্যা) দলে ভাগ থাকে।"] },
+      { "heading": "তালিকা দেখা", "menu": "Products → Product List", "steps": ["Brand, Category ও Group বাছুন, নাহলে All Brand / All Categories / All Groups রাখুন।", "Search বক্সে নাম, কোড, বারকোড, ক্যাটাগরি, ইউনিট বা ব্র্যান্ড লিখে Enter চাপুন। কয়েকটা শব্দ লিখলে প্রতিটা শব্দ যেকোনো ক্রমে মিলিয়ে খোঁজে — যেমন \"tiles 12x16\" — ঠিক Sales Invoice-এর Select Product-এর মতো।", "Sl, Product, Category, Unit ও স্টকের ঘরগুলো দেখা যায়; Category: নাম (সংখ্যা) দলে ভাগ থাকে।"] },
       { "heading": "Opening stock ও বাটন", "steps": ["Stock Qty, IMEI/Serial, Qty ও Rate ঘরে শুরুর স্টক লিখে সারির Save চাপুন; ভুল হলে Cancel বা Delete opening stock।", "New দিয়ে নতুন পণ্য, Edit/Delete দিয়ে সারির পণ্য, Change log দিয়ে বদলের ইতিহাস দেখা যায়।", "Print দিয়ে Product List ছাপা হয়; Excel দিয়ে পুরো তালিকা opening import শিট হিসেবে নামে।"] },
       { "heading": "সতর্কতা", "warning": "Qty ও Rate ঋণাত্মক হতে পারে না। Opening stock মুছলে ওই ভাউচার Recycle Bin-এ যায়, পণ্য মোছে না; বিক্রি হয়ে যাওয়া স্টক এভাবে সরানো যায় না।" }
     ]
