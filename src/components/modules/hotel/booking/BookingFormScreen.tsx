@@ -34,6 +34,7 @@ import {
   bookingUpdate,
   clearAvailability,
   hallsRead,
+  tillList,
 } from './bookingSlice';
 import { BookingType, StayKind } from './types';
 import formatDate from '../../../utils/utils-functions/formatDate';
@@ -159,7 +160,28 @@ const blankBooking = () => ({
   stated_adults: 1,
   stated_children: 0,
   notes: '',
+  // Money taken while booking -- an ADVANCE, the same receipt Folio > Receive
+  // Money writes. Empty means none.
+  advance_amount: '',
+  advance_method: 'cash',
+  advance_coa4_id: '',
+  advance_reference: '',
 });
+
+const ADVANCE_METHOD_OPTIONS = [
+  { id: 'cash', name: 'Cash' },
+  { id: 'bank', name: 'Bank' },
+  { id: 'card', name: 'Card' },
+  { id: 'mobile', name: 'Mobile' },
+];
+
+/** Which accounts "Into which account" lists for each way of paying; null = all. */
+const ADVANCE_SIDE: Record<string, 'cash' | 'bank' | null> = {
+  cash: 'cash',
+  bank: 'bank',
+  card: 'bank',
+  mobile: null,
+};
 
 const BookingFormScreen = ({ user }: any) => {
   const dispatch = useDispatch<any>();
@@ -183,6 +205,11 @@ const BookingFormScreen = ({ user }: any) => {
   // May this person give a room for nothing? Decides whether the Stay box is
   // drawn at all -- see STAY_KIND_OPTIONS.
   const mayGiveRooms = hasPermission(settings?.data?.permissions ?? [], 'hotel.booking.complimentary');
+
+  // May this person take money? The same permission as Folio > Receive Money,
+  // because an advance taken here is that same receipt and voucher.
+  const mayTakeMoney = hasPermission(settings?.data?.permissions ?? [], 'hotel.folio.bill');
+  const tills = useSelector((state: any) => state.hotelBooking.tills);
 
   const branches: any[] = branchDdlData?.protectedData?.data ?? [];
 
@@ -907,6 +934,47 @@ const BookingFormScreen = ({ user }: any) => {
   );
 
   /**
+   * ⚠️ AN ADVANCE ONLY WITH A NEW, CHARGED BOOKING. An edit takes money on the
+   * Folio, where what has already been paid is in front of the clerk -- here it
+   * would be a second advance taken blind. A walk-in is paid on its bill, and a
+   * complimentary or house-use stay has nothing to take an advance against.
+   */
+  const canTakeAdvance =
+    !form?.id && !isWalkIn && (form?.stay_kind || 'paid') === 'paid' && mayTakeMoney && Boolean(anyPicked);
+
+  useEffect(() => {
+    if (canTakeAdvance && !tills?.length) dispatch(tillList());
+  }, [dispatch, canTakeAdvance, tills?.length]);
+
+  // 'Cash (Cash in Hand)' -- the group in the label, as on the Folio.
+  //
+  // ⚠️ ONLY THE SIDE "HOW" NAMES (owner, 2026-11-17), the split Cash Received
+  // and Bank Received keep: Cash lists the cash heads, Bank and Card the bank
+  // heads. `side` comes from the server (acc_source_id 7 = cash, 8 = bank).
+  // Mobile money may be kept in either, so it lists both.
+  const advanceSide = ADVANCE_SIDE[form?.advance_method || 'cash'] ?? null;
+
+  const tillOptions = useMemo(
+    () =>
+      (tills ?? [])
+        .filter((till: any) => !advanceSide || till.side === advanceSide)
+        .map((till: any) => ({
+          id: till.id,
+          name: `${till.name} (${till.group_name})`,
+        })),
+    [tills, advanceSide],
+  );
+
+  const advance = canTakeAdvance ? Number(form?.advance_amount) || 0 : 0;
+  // The first till where none was chosen: on a property with one drawer it is
+  // the only one, and the box is beside the amount for the ones with several.
+  // A choice no longer on the list (How was changed) is not kept.
+  const advanceTill =
+    (tillOptions.some((one: any) => String(one.id) === String(form?.advance_coa4_id))
+      ? form?.advance_coa4_id
+      : '') || tillOptions[0]?.id || '';
+
+  /**
    * What the form is asking for, in the server's own words.
    *
    * ⚠️ Built ONCE and used three times -- the dry run, the write, and the
@@ -978,6 +1046,28 @@ const BookingFormScreen = ({ user }: any) => {
       return;
     }
 
+    if (advance < 0) {
+      toast.error('The advance cannot be less than nothing.');
+      return;
+    }
+
+    // In poisha, never as floats -- see paymentPurpose.
+    if (advance > 0 && Math.round(advance * 100) > Math.round(total * 100)) {
+      toast.error(`The advance is more than the booking (${money(total)}).`);
+      return;
+    }
+
+    if (advance > 0 && !advanceTill) {
+      toast.error(
+        advanceSide === 'cash'
+          ? 'There is no cash account to take the advance into.'
+          : advanceSide === 'bank'
+            ? 'There is no bank account to take the advance into — add one in the chart of accounts.'
+            : 'Which cash or bank account did the advance go into?',
+      );
+      return;
+    }
+
     // ⚠️ AN EDIT ASKS FIRST. A night that is already billed cannot be dropped
     // -- the server refuses it -- so the dry run is what turns that refusal
     // into something the clerk reads BEFORE filling the form in, instead of an
@@ -1044,6 +1134,16 @@ const BookingFormScreen = ({ user }: any) => {
             ...(mayGiveRooms && form.stay_kind !== 'paid'
               ? { stay_kind: form.stay_kind, stay_kind_reason: form.stay_kind_reason }
               : {}),
+            // Written in the booking's own transaction on the server: the
+            // booking and its advance stand or fall together.
+            ...(advance > 0
+              ? {
+                advance_amount: advance,
+                advance_method: form.advance_method || 'cash',
+                advance_coa4_id: Number(advanceTill),
+                advance_reference: String(form.advance_reference ?? '').trim() || undefined,
+              }
+              : {}),
           }),
       ).unwrap();
 
@@ -1106,6 +1206,10 @@ const BookingFormScreen = ({ user }: any) => {
     !isWalkIn && mayGiveRooms && form?.stay_kind !== 'paid' ? 'stay_kind_reason' : null,
     isWalkIn ? null : 'booking_status',
     'booking_notes',
+    canTakeAdvance ? 'advance_amount' : null,
+    canTakeAdvance ? 'advance_method' : null,
+    canTakeAdvance ? 'advance_coa4_id' : null,
+    canTakeAdvance ? 'advance_reference' : null,
     'booking_save',
   ].filter(Boolean) as string[];
 
@@ -1770,6 +1874,77 @@ const BookingFormScreen = ({ user }: any) => {
                           onChange={set('notes')}
                         />
                       </div>
+
+                      {/* Money taken while booking. Optional: an empty box takes
+                          nothing, and the booking saves as it always has. */}
+                      {canTakeAdvance ? (
+                        <>
+                          <div className="col-span-2 mt-1 border-t border-stroke pt-3 text-sm font-medium text-black dark:border-strokedark dark:text-white">
+                            Advance
+                          </div>
+                          <InputElement
+                            id="advance_amount"
+                            onKeyDown={enterTo('advance_amount')}
+                            name="advance_amount"
+                            label="Amount"
+                            type="number"
+                            min={0}
+                            placeholder="0.00"
+                            value={String(form.advance_amount ?? '')}
+                            onChange={set('advance_amount')}
+                          />
+                          <DropdownCommon
+                            id="advance_method"
+                            onKeyDown={enterTo('advance_method')}
+                            name="advance_method"
+                            label="How"
+                            data={ADVANCE_METHOD_OPTIONS}
+                            value={form.advance_method || 'cash'}
+                            // A new way of paying is a new list of accounts: the
+                            // old choice is dropped, and the first of the new
+                            // list is taken until the clerk picks another.
+                            onChange={(e: any) =>
+                              setForm((prev: any) => ({
+                                ...prev,
+                                advance_method: e.target.value,
+                                advance_coa4_id: '',
+                              }))
+                            }
+                          />
+                          <div className="col-span-2">
+                            <DropdownCommon
+                              id="advance_coa4_id"
+                              onKeyDown={enterTo('advance_coa4_id')}
+                              name="advance_coa4_id"
+                              label="Into which account"
+                              data={tillOptions}
+                              value={advanceTill}
+                              onChange={set('advance_coa4_id')}
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <InputElement
+                              id="advance_reference"
+                              onKeyDown={enterTo('advance_reference')}
+                              name="advance_reference"
+                              label="Reference"
+                              placeholder="bKash TrxID, cheque no…"
+                              value={form.advance_reference ?? ''}
+                              onChange={set('advance_reference')}
+                            />
+                          </div>
+                          {advance > 0 ? (
+                            <p className="col-span-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                              Saved with the booking as an advance receipt (Cash/Bank Dr., Advance
+                              Against Booking Cr.) — money held, not income, until the nights are billed.
+                              {form.status === 'hold' ? (
+                                <> The booking is saved <strong>confirmed</strong>, since money is on it.</>
+                              ) : null}{' '}
+                              The money receipt is printed from the Folio.
+                            </p>
+                          ) : null}
+                        </>
+                      ) : null}
                     </div>
 
                     <p className="mt-3 text-xs leading-snug text-gray-500 dark:text-gray-400">
@@ -1800,6 +1975,27 @@ const BookingFormScreen = ({ user }: any) => {
                     ) : (
                       <span className="text-xl font-semibold text-black dark:text-white">{money(total)}</span>
                     )}
+                  </div>
+                ) : null}
+
+                {advance > 0 ? (
+                  <div className="-mt-2 mb-3 text-sm">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-gray-600 dark:text-gray-300">Advance</span>
+                      <span className="text-gray-700 dark:text-gray-200">− {money(advance)}</span>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-gray-600 dark:text-gray-300">Due</span>
+                      <span
+                        className={
+                          advance > total
+                            ? 'font-semibold text-danger dark:text-red-400'
+                            : 'font-semibold text-black dark:text-white'
+                        }
+                      >
+                        {money(Math.max(0, total - advance))}
+                      </span>
+                    </div>
                   </div>
                 ) : null}
 
