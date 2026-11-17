@@ -212,6 +212,22 @@ const CashBookPrint = React.forwardRef<HTMLDivElement, Props>(
                       </tr>
                     )}
                   </tbody>
+
+                  {/* ⚠️ THE BAND THE PINNED FOOTER SITS IN, TAKEN OUT OF THE ROWS.
+                      When the report is one block (Rows = 0) the footer is
+                      position:fixed, and its `bottom: 0` is the content area's
+                      edge -- so on a full sheet the last row printed through the
+                      software line. A <tfoot> repeats at the foot of every printed
+                      sheet, so its height is held back on each one. 6mm covers the
+                      footer's ~4mm (see PrintFooter's leading-none). Same reserve
+                      as ItemDetailsPrint. */}
+                  {pages.length === 1 && (
+                    <tfoot>
+                      <tr>
+                        <td colSpan={5} style={{ height: '6mm', border: 'none' }} />
+                      </tr>
+                    </tfoot>
+                  )}
                 </table>
 
                 {/* 👇 Force break after each page except the last */}
