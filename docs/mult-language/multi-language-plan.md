@@ -59,11 +59,49 @@
 | ফন্ট | শুধু Satoshi (`src/css/satoshi.css`) |
 | অঙ্ক/তারিখ | `thousandSeparator`, `formatDate`, `chartDateTime` ইত্যাদি এক জায়গায় |
 | হেল্প | `public/help/*.json` শুধু বাংলায় |
-| ডাটাবেস | প্রতিটা ক্লায়েন্টের আলাদা ডাটাবেস — প্রতিটা মাইগ্রেশন সবগুলোতে চালাতে হবে |
+| ডাটাবেস | প্রতিটা ক্লায়েন্টের আলাদা ডাটাবেস। সব পরিবর্তন `php artisan patch:add-unit-type` (`AddUnitTypeToBuildingUnits`) দিয়ে প্রতিটা ডাটাবেসে যায় — দেখুন ৪.০ |
+| Branch Settings | টেবিলের কলামে নয়, `meta($companyId, $branchId, $key)` key-value-তে থাকে (যেমন `booking_sms`)। তাই ভাষা আর ফন্টের সেটিংয়ে নতুন কলাম লাগবে না |
+| Customer-এর বাংলা নাম | `cust_party_infos`-এ আগে থেকেই `bangla` ও `father_bangla` কলাম আছে। ⚠️ এগুলোর পুরনো লেখা **Bijoy/Sutonny (latin1)**, Unicode নয় — শুধু Bijoy ফন্টে বাংলা পড়া যায় (দেখুন ৪.৪) |
 
 ---
 
 ## ৪. ডাটাবেস
+
+### ৪.০ ⚠️ সব SQL পরিবর্তন `AddUnitTypeToBuildingUnits`-এ
+
+**আলাদা `.sql` ফাইল বা Laravel migration নয়।** এই পরিকল্পনার প্রতিটা ডাটাবেস পরিবর্তন (নতুন টেবিল, নতুন কলাম, শুরুর ডাটা, পুরনো ডাটার মান বদলানো) যোগ হবে:
+
+```
+cashbook_api/app/Console/Commands/AddUnitTypeToBuildingUnits.php
+চালানো:  php artisan patch:add-unit-type
+```
+
+এই কমান্ড প্রতিটা ক্লায়েন্টের ডাটাবেসে চলে (deploy-এর সময়ও)। তাই নিয়মগুলো:
+
+1. **প্রতিটা পরিবর্তন একটা আলাদা `private function`**, নাম `runMultiLanguage…Schema()`। ফাইলের বাকি মেথডের মতো (যেমন `runInvoiceWorkflowSchema()`)।
+2. **বারবার চালালেও ক্ষতি নেই (idempotent):** টেবিল/কলাম আছে কি না আগে `Schema::hasTable()` / `Schema::hasColumn()` দিয়ে দেখবে; থাকলে `skipped … already present` লিখে ফিরে যাবে। ডাটা বসালে আগে আছে কি না দেখে বসাবে।
+3. **টেবিল না থাকলে থেমে যাবে না:** সব ক্লায়েন্টের ডাটাবেস একই বয়সের নয়। যে টেবিল নেই, সেটা `warn("… skipped {$database} -- table is not there.")` দিয়ে এড়িয়ে যাবে।
+4. **প্রতিটা মেথডের ভিতরে নিজের `try/catch`**, আর `info` / `warn` / `error`-এ ডাটাবেসের নাম লিখবে, যাতে deploy log-এ বোঝা যায় কোথায় কী হলো।
+5. **`handle()`-এ নিজের আলাদা `try { … } catch (\Throwable $e)` ব্লক**, "Manufacturing" ব্লকের মতো। বহুভাষার কোনো ধাপ ব্যর্থ হলে বাকি patch যেন না থামে, আর বাকি patch-এর ভুলে যেন বহুভাষার ধাপ বাদ না পড়ে।
+6. **পুরনো ডাটা বদলানো** (যেমন Bijoy থেকে Unicode-এ রূপান্তর) নিজে থেকে চলবে না। এর জন্য একটা option (flag) লাগবে, যেমন `--bangla-convert`, কমান্ডের `$signature`-এ — `--return-fixes`-এর মতো।
+7. প্রতিটা মেথডের উপরে বাংলা বা ইংরেজিতে মন্তব্য: কী করে আর কেন।
+
+**যে মেথডগুলো যোগ হবে (ধাপ অনুযায়ী):**
+
+| মেথড | কাজ | ধাপ |
+|---|---|---|
+| `runMultiLanguageLanguagesSchema()` | `languages` টেবিলে নতুন কলাম (৪.১), `en` ও `bn` সারি বসানো | ১ |
+| `runMultiLanguageUserLangSchema()` | `users.lang`-এর ডিফল্ট `null`; আগের মান একবারই `null` করা (একবার চলার চিহ্ন রেখে) | ১ |
+| `runMultiLanguageFontsSchema()` | `fonts` টেবিল (৪.৬) আর শুরুর ফন্টগুলো | ১ |
+| `runMultiLanguageCoaSchema()` | `acc_coa_level1s` … `acc_coa_level4s`-এ `name_local` | ৩ |
+| `runMultiLanguageCoaSeedNames()` | স্ট্যান্ডার্ড অ্যাকাউন্টের Local নাম বসানো, শুধু যেখানে `name_local` ফাঁকা | ৩ |
+| `runMultiLanguagePartySchema()` | Customer/Supplier-এ `name_local`, `address_local` | ৪ |
+| `runMultiLanguageBanglaConvert()` | `--bangla-convert` দিলে তবেই: `cust_party_infos.bangla` (Bijoy) → Unicode `name_local` (৪.৪) | ৪ |
+| `runMultiLanguageMasterDataSchema()` | Product, Category, Brand, Unit, Employee, Bank, Warehouse, Branch, Company, Hotel room/Hall-এ `_local` কলাম | ৬ |
+| `runMultiLanguageUiTranslationsSchema()` | `ui_translations` টেবিল (৪.৫) | ৮ |
+| `runMultiLanguageSmsTemplateSchema()` | `sms_templates`-এ `lang` কলাম (৭) | ৯ |
+
+Branch Settings-এর ভাষা ও ফন্ট `meta()`-তে থাকে বলে সেগুলোর জন্য কোনো মেথড লাগবে না। শুধু ডিফল্ট মান কোডে থাকবে।
 
 ### ৪.১ `languages` (বিদ্যমান টেবিল বাড়ানো)
 
@@ -88,15 +126,19 @@
 |---|---|
 | local_language | `null` (শুধু ইংরেজি) / `bn` / `ar` … — `name_local` কোন ভাষায়, তা এটাই ঠিক করে |
 
-**শাখা (`branches`):**
+**শাখা — Branch Settings (`meta()` key, কোনো কলাম নয়):**
 
-| ঘর | মান | মন্তব্য |
-|---|---|---|
-| ui_language | `en` / `local` | শাখার স্ক্রিনের ডিফল্ট |
-| print_language | `en` / `local` | ইনভয়েস/রিপোর্টের ডিফল্ট |
-| digit_style | `auto` / `latin` / `native` | Local ভাষায় বাংলা অঙ্ক দেখাবে কি না |
+| meta key | মান | ডিফল্ট | মন্তব্য |
+|---|---|---|---|
+| `ui_language` | `en` / `local` | `en` | শাখার স্ক্রিনের ডিফল্ট |
+| `print_language` | `en` / `local` | `en` | ইনভয়েস/রিপোর্টের ডিফল্ট |
+| `digit_style` | `auto` / `latin` / `native` | `auto` | Local ভাষায় বাংলা অঙ্ক দেখাবে কি না |
+| `font_local` | `fonts.id` | NikoshBAN | Local ভাষার (বাংলা) ফন্ট — ৪.৬ |
+| `font_english` | `fonts.id` | Satoshi | ইংরেজির ফন্ট |
+| `font_print` | `same` / `fonts.id` | `same` | প্রিন্টে আলাদা ফন্ট চাইলে |
+| `font_scale` | `100` / `110` / `120` | `100` | বাংলা ছোট দেখালে লেখা বড় করা (%) |
 
-`local_language` null হলে শাখার এই ঘরগুলো লুকানো থাকবে, সব আজকের মতো ইংরেজিতে চলবে।
+`local_language` null হলে ভাষার ঘরগুলো লুকানো থাকবে, সব আজকের মতো ইংরেজিতে চলবে। ফন্টের ঘরগুলো সবসময় দেখাবে।
 
 ### ৪.৩ `users.lang`
 
@@ -119,6 +161,18 @@
 
 নিয়ম: অনুবাদযোগ্য প্রতিটা ঘরের পাশে একটা `<field>_local`। নতুন টেবিল বানালে একই নিয়ম।
 
+**⚠️ Customer-এর পুরনো `bangla` কলাম:**
+
+- `cust_party_infos`-এ আগে থেকেই `bangla` (নাম) আর `father_bangla` (পিতার নাম) আছে। এগুলোর পুরনো লেখা **Bijoy/Sutonny (latin1)**, যেমন "gyÄyqviv" — শুধু Bijoy ফন্টে বাংলা দেখায়। NikoshBAN-এর মতো Unicode ফন্টে এগুলো আজব অক্ষর দেখাবে।
+- কলামটা আগেই `utf8mb4`-এ চওড়া করা হয়েছে (`makeBanglaNameColumnsUnicode()`), তাই নতুন লেখা Unicode-এ রাখা যায়, পুরনো লেখা যেমন ছিল তেমনই আছে।
+- সিদ্ধান্ত: **`name_local` নতুন কলাম হবে, `bangla` ছোঁয়া হবে না।** পুরনো সফটওয়্যার/রিপোর্ট যেগুলো `bangla` পড়ে, সেগুলো আগের মতো চলবে।
+- পুরনো Bijoy লেখা Unicode-এ আনতে `runMultiLanguageBanglaConvert()` (শুধু `--bangla-convert` দিলে):
+  - শুধু যেখানে `name_local` ফাঁকা আর `bangla` আছে, সেখানে Bijoy → Unicode রূপান্তর করে `name_local`-এ বসাবে।
+  - `bangla` বা `father_bangla` বদলাবে না।
+  - কয়টা রূপান্তর হলো, আর কোনগুলো সন্দেহজনক (রূপান্তরের পরেও ইংরেজি অক্ষর রয়ে গেছে), তার তালিকা দেখাবে।
+  - প্রথমে একটা ক্লায়েন্টের কপিতে চালিয়ে নমুনা মিলিয়ে দেখুন, তারপর সবখানে।
+- পিতার নাম (`father_bangla`) একই নিয়মে `father_name_local`-এ যাবে, যদি সেই ঘর ফর্মে দেখানো হয়।
+
 ### ৪.৫ `ui_translations` — ক্লায়েন্টের নিজের লেবেল (ঐচ্ছিক, ধাপ ৮)
 
 | কলাম | উদাহরণ |
@@ -128,6 +182,32 @@
 | value | অগ্রিম |
 
 স্ট্যান্ডার্ড অনুবাদ সফটওয়্যারের সাথে ফাইলে যায়। কোনো ক্লায়েন্ট নিজে কোনো লেবেল বদলালে শুধু সেটা এই টেবিলে থাকবে এবং ফাইলের লেখার উপরে বসবে।
+
+### ৪.৬ `fonts` — ফন্টের তালিকা
+
+ইউজার Branch Settings-এ নিজের পছন্দমতো ফন্ট বাছবে। তালিকা কোডে নয়, এই টেবিলে — নতুন ফন্ট = ফাইল + একটা সারি।
+
+| কলাম | উদাহরণ | মন্তব্য |
+|---|---|---|
+| id | 1 | |
+| family | NikoshBAN | CSS `font-family` নাম |
+| script | `bn` / `latin` / `ar` | কোন ভাষার অক্ষরের জন্য |
+| file | `/fonts/NikoshBAN.woff2` | অ্যাপের `public/fonts/`-এ |
+| unicode_range | `U+0980-09FF, U+200C-200D` | শুধু এই অক্ষরে বসবে |
+| pdf_supported | 1 / 0 | সার্ভারের PDF (mPDF)-এ যোগ করা আছে কি না |
+| is_default | 1 | প্রতিটা `script`-এ একটা ডিফল্ট |
+| is_active | 1 | |
+
+শুরুর ফন্ট (`runMultiLanguageFontsSchema()` বসাবে):
+
+| script | ফন্ট | ডিফল্ট |
+|---|---|---|
+| bn | **NikoshBAN** | ✔ |
+| bn | SolaimanLipi, Kalpurush, Noto Sans Bengali, Hind Siliguri, Siyam Rupali | |
+| latin | **Satoshi** | ✔ |
+| latin | Roboto, Inter, Arial | |
+
+⚠️ **শুধু Unicode ফন্ট।** Bijoy/ANSI ফন্ট (SutonnyMJ ইত্যাদি) তালিকায় রাখা যাবে না — Unicode বাংলা লেখা তাতে ভেঙে যায়। প্রতিটা ফন্টের লাইসেন্স ব্যবহারযোগ্য কি না যাচাই করে যোগ করুন।
 
 ---
 
@@ -155,13 +235,22 @@
 - `<html lang="bn" dir="ltr">` আর `data-lang` বদলায়, যা ফন্ট আর লেখার দিক নিয়ন্ত্রণ করে।
 - লগইনের পর `settings` payload-এ আসবে: কোম্পানির `local_language` (ফন্ট, দিক, অঙ্কসহ), শাখার ডিফল্ট, ইউজারের বাছাই।
 
-### ৫.৩ ফন্ট
+### ৫.৩ ফন্ট (Branch Settings থেকে বাছাই)
 
-- `public/fonts/NikoshBAN.woff2` (ও `.woff`) অ্যাপের সাথে রাখুন।
-- `@font-face { font-family: 'NikoshBAN'; unicode-range: U+0980-09FF, U+200C-200D; }` — শুধু বাংলা অক্ষরে এই ফন্ট, ইংরেজি থাকে Satoshi-তে। তাই English স্ক্রিনেও কোনো `name_local` দেখালে ঠিক ফন্টে আসবে।
-- `body { font-family: 'Satoshi', var(--lang-font, sans-serif); }`
-- ⚠️ ফন্ট ফাইলটা **Unicode** ভার্সন কি না যাচাই করুন, Bijoy/ANSI ভার্সন নয়।
-- প্রিন্টেও (`PrintStyles`) একই ফন্ট।
+- বাংলার ডিফল্ট ফন্ট **NikoshBAN**। ইউজার Branch Settings → **Font** অংশে নিজের পছন্দমতো বদলাতে পারবে (৪.২-এর `font_*` key, তালিকা ৪.৬)।
+- ফন্ট ফাইলগুলো (`.woff2`, `.woff`) থাকবে `public/fonts/`-এ।
+- লগইনের পর `settings` payload-এ শাখার বাছাই করা ফন্ট (family, file, unicode_range) আসবে। **শুধু সেই ফন্টগুলোর `@font-face` লোড হবে**, পুরো তালিকা নয় — অ্যাপ ধীর হবে না।
+- Local ফন্ট শুধু তার অক্ষরে বসবে (`unicode-range`), ইংরেজি থাকবে ইংরেজি ফন্টে। একই লাইনে "রহিম Traders" দুটোই ঠিক ফন্টে আসবে, English স্ক্রিনেও।
+- পুরো অ্যাপের ফন্ট নিয়ন্ত্রিত হবে CSS ভ্যারিয়েবল দিয়ে:
+  ```css
+  body { font-family: var(--font-english, 'Satoshi'), var(--font-local, 'NikoshBAN'), sans-serif;
+         font-size: calc(1em * var(--font-scale, 1)); }
+  ```
+- প্রিন্ট (`PrintStyles`): `font_print` = `same` হলে স্ক্রিনের ফন্ট, নইলে বাছাই করা ফন্ট।
+- Branch Settings-এ ফন্ট বাছাইয়ের পাশে একটা **প্রিভিউ** লাইন: "রহিম ট্রেডার্স — ১২,৩৪৫.০০ টাকা / Rahim Traders — 12,345.00"।
+- ফন্ট ফাইল না পেলে Satoshi/sans-serif-এ ফিরে যাবে, লেখা কখনো অদৃশ্য হবে না।
+- **সার্ভারের PDF (mPDF):** শুধু `pdf_supported = 1` ফন্টগুলো PDF-এ চলবে, বাকিগুলোতে PDF ডিফল্ট ফন্ট নেবে। তাই PDF-এর তালিকা ছোট রাখুন।
+- **নিজের ফন্ট আপলোড** এখন নয় (পরের ধাপে, দরকার হলে): শুধু `.woff2/.woff/.ttf`, আকারের সীমা, সার্ভারে ফাইলের ধরন যাচাই, আর লাইসেন্সের দায় ক্লায়েন্টের।
 
 ### ৫.৪ অঙ্ক, তারিখ, টাকা
 
@@ -215,7 +304,7 @@ displayName(row, 'name', lang)
 6. **সার্চ:** নাম দিয়ে খোঁজে এমন সব API-তে `name LIKE ? OR name_local LIKE ?`।
 7. **রিপোর্ট:** Ledger, Cash Book, Trial Balance-এর query-তে `name`-এর সাথে `name_local`-ও select করুন। আলাদা join বা query লাগবে না, তাই গতি একই থাকবে।
 8. **PDF (resources/views/pdf):** বাংলা যুক্তাক্ষর ঠিক দেখাতে **mPDF** লাগবে। dompdf-এ যুক্তাক্ষর ভেঙে যায়। আগে একটা নমুনা দিয়ে পরীক্ষা করুন।
-9. **Chart of Account শুরুর ডাটা:** নতুন কোম্পানির স্ট্যান্ডার্ড অ্যাকাউন্টগুলোর (Cash, Bank, Sales, Purchase, Advance Against Booking …) প্রতিটা সমর্থিত ভাষার নাম seeder-এ রাখুন। কোম্পানি যে Local Language বাছবে, সেই ভাষার নাম `name_local`-এ বসবে।
+9. **Chart of Account শুরুর ডাটা:** নতুন কোম্পানির স্ট্যান্ডার্ড অ্যাকাউন্টগুলোর (Cash, Bank, Sales, Purchase, Advance Against Booking …) প্রতিটা সমর্থিত ভাষার নাম `runMultiLanguageCoaSeedNames()`-এ রাখুন (৪.০) — শুধু যেখানে `name_local` ফাঁকা, যাতে ক্লায়েন্টের নিজের লেখা নাম মুছে না যায়। কোম্পানি যে Local Language বাছবে, সেই ভাষার নাম `name_local`-এ বসবে।
 10. **Local Language বদলানো আটকানো:** কোনো টেবিলে `name_local` লেখা থাকলে কোম্পানির `local_language` বদলাতে দেবেন না (২.৪), অথবা স্পষ্ট সতর্কবার্তার পর।
 
 ---
@@ -236,7 +325,7 @@ displayName(row, 'name', lang)
 | **Company Settings** | Local Language বাছাই (শুধু ইংরেজি / বাংলা / আরবি …) |
 | **Settings → Languages** (সুপার অ্যাডমিন) | ভাষার তালিকা, ফন্ট, অঙ্ক, দিক। ইংরেজি বন্ধ বা মোছা যাবে না |
 | **Settings → Translations** (ধাপ ৮) | লেবেলের অনুবাদ দেখা ও বদলানো; "অনুবাদ নেই" ফিল্টার; Excel export/import |
-| **Branch Add/Edit** | Software Language, Print Language (English / Local), Digit style |
+| **Branch Settings** | Software Language, Print Language (English / Local), Digit style; **Font** অংশ: Local Font (ডিফল্ট NikoshBAN), English Font, Print Font, Font Size, প্রিভিউ |
 | **User Profile** | নিজের ভাষা (English / Local / শাখার ডিফল্ট) |
 
 ---
@@ -259,17 +348,18 @@ displayName(row, 'name', lang)
 
 | ধাপ | কাজ | শেষ হলে যা দেখা যাবে |
 |---|---|---|
-| **১. ভিত্তি** | `languages` বাড়ানো; কোম্পানির `local_language`; শাখার ভাষার ঘর; `users.lang`; Accept-Language middleware; react-i18next সেটআপ; NikoshBAN ফন্ট; হেডারে ভাষা বদলানোর বোতাম | ভাষা বদলানো যায়, ফন্ট বদলায়, সব আগের মতো ইংরেজিতেই চলে |
+| **১. ভিত্তি** | `AddUnitTypeToBuildingUnits`-এ বহুভাষার `try` ব্লক আর ধাপ ১-এর মেথড (৪.০); `languages` বাড়ানো; কোম্পানির `local_language`; শাখার ভাষার meta; `users.lang`; Accept-Language middleware; react-i18next সেটআপ; হেডারে ভাষা বদলানোর বোতাম | ভাষা বদলানো যায়, সব আগের মতো ইংরেজিতেই চলে |
+| **১ক. ফন্ট** | `fonts` টেবিল ও শুরুর ফন্ট; ফন্ট ফাইল `public/fonts/`-এ; Branch Settings-এ Font অংশ ও প্রিভিউ; CSS ভ্যারিয়েবল; প্রিন্টে প্রযোজ্য; হেল্প আপডেট | শাখা বদলালে ফন্ট বদলায়, বাংলার ডিফল্ট NikoshBAN |
 | **২. কমন লেখা** | Sidebar মেনু, হেডার, Save/Edit/Delete/Print/Search বাটন, কমন বার্তা, পেজিনেশন, অঙ্ক ও তারিখের ফাংশন | বাংলা বাছলে মেনু আর বাটন বাংলায় |
 | **৩. Chart of Account** | চার স্তরে `name_local` মাইগ্রেশন; `LocalNameInput`; `displayName`; COA ফর্ম/তালিকা/সার্চ; রিপোর্টের query-তে `name_local`; শুরুর অ্যাকাউন্টের Local নাম | অ্যাকাউন্টের বাংলা নাম লেখা ও দেখা যায় |
-| **৪. Customer ও Supplier** | `name_local`, `address_local`; ফর্ম, তালিকা, সার্চ, ইনভয়েস, লেজার, SMS | পার্টির নাম বাংলায় লেখা, দেখা ও প্রিন্ট করা যায় |
+| **৪. Customer ও Supplier** | `name_local`, `address_local`; ফর্ম, তালিকা, সার্চ, ইনভয়েস, লেজার, SMS; `--bangla-convert` দিয়ে পুরনো Bijoy `bangla` → Unicode `name_local` | পার্টির নাম বাংলায় লেখা, দেখা ও প্রিন্ট করা যায় |
 | **৫. প্রিন্ট** | ইনভয়েস, রসিদ, ভাউচার, Cash Book, Ledger; প্রিন্টের Language বাছাই; প্যাডে Local নাম/ঠিকানা; কথায় টাকা; mPDF | কাস্টমারকে বাংলায় ইনভয়েস দেওয়া যায় |
 | **৬. বাকি ডাটা** | Product, Category, Unit, Employee, Bank, Warehouse, Hotel room — একই নিয়মে `_local` কলাম | |
 | **৭. বাকি স্ক্রিন** | মডিউল ধরে লেবেল অনুবাদ — সবচেয়ে বেশি ব্যবহৃত মডিউল আগে | |
 | **৮. Admin ও Excel** | Translations স্ক্রিন, `ui_translations`; Excel import/export-এ `_local` কলাম | ক্লায়েন্ট নিজে অনুবাদ ঠিক করতে পারে |
 | **৯. SMS ও হেল্প** | ভাষাভিত্তিক SMS টেমপ্লেট; হেল্পের `en` ভার্সন | |
 
-প্রতিটা ধাপ আলাদাভাবে রিলিজ করা যাবে। ধাপ ১-এর পর থেকে প্রতিটা রিলিজে সফটওয়্যার পুরোপুরি চালু থাকবে, শুধু Local অংশ বাড়তে থাকবে। প্রতিটা মাইগ্রেশন সব ক্লায়েন্টের ডাটাবেসে চালাতে হবে।
+প্রতিটা ধাপ আলাদাভাবে রিলিজ করা যাবে। ধাপ ১-এর পর থেকে প্রতিটা রিলিজে সফটওয়্যার পুরোপুরি চালু থাকবে, শুধু Local অংশ বাড়তে থাকবে। প্রতিটা ধাপের ডাটাবেস পরিবর্তন সেই ধাপেই `AddUnitTypeToBuildingUnits`-এ যোগ হবে (৪.০), আর `php artisan patch:add-unit-type` দিয়ে সব ক্লায়েন্টের ডাটাবেসে যাবে।
 
 ---
 
@@ -278,6 +368,8 @@ displayName(row, 'name', lang)
 - নতুন স্ক্রিন বা বাটনে ইংরেজি লেখা সরাসরি বসানো যাবে না, `t('…')` ব্যবহার করতে হবে।
 - নতুন key যোগ হলে `src/locales/en/`-এ ইংরেজি দিতেই হবে।
 - নতুন টেবিলে নাম/ঠিকানার মতো অনুবাদযোগ্য ঘর থাকলে পাশে `<field>_local` রাখতে হবে, আর দেখাতে `displayName` ব্যবহার করতে হবে।
+- **কোনো SQL আলাদা ফাইলে নয়** — প্রতিটা ডাটাবেস পরিবর্তন `AddUnitTypeToBuildingUnits`-এ idempotent মেথড হিসেবে (৪.০-এর নিয়মে)।
+- Branch Settings বা স্ক্রিন বদলালে `public/help/`-এর হেল্প আপডেট করে `npm run help:check` চালাতে হবে (প্রজেক্টের নিয়ম)।
 - `npm run i18n:check` স্ক্রিপ্ট বানান, যা `help:check`-এর মতো চলবে:
   - `en` ফাইলে নেই এমন key ধরবে
   - `.tsx`-এ সরাসরি বসানো ইংরেজি লেখা ধরবে (ধাপে ধাপে কড়া করা হবে)
@@ -299,3 +391,9 @@ displayName(row, 'name', lang)
 - [ ] বড় Ledger রিপোর্ট বাংলায় আগের মতো দ্রুত আসে
 - [ ] `name_local` লেখা থাকলে Local Language বদলানো আটকায় বা সতর্ক করে
 - [ ] নতুন একটা ভাষা (যেমন `ar`) শুধু `languages` সারি, ফন্ট আর লেবেল ফাইল দিয়ে যোগ করা যায়, কোনো কলাম না বাড়িয়ে
+- [ ] নতুন শাখায় বাংলা ফন্ট নিজে থেকে NikoshBAN
+- [ ] Branch Settings-এ ফন্ট বদলালে স্ক্রিন আর প্রিন্ট দুটোই বদলায়, যুক্তাক্ষর ঠিক থাকে
+- [ ] ফন্ট ফাইল মুছে গেলেও লেখা Satoshi/sans-serif-এ দেখায়, অদৃশ্য হয় না
+- [ ] `php artisan patch:add-unit-type` দুইবার চালালে দ্বিতীয়বার সব `skipped … already present`, কোনো ভুল নেই
+- [ ] পুরনো (বয়সে ছোট) ক্লায়েন্ট ডাটাবেসে কোনো টেবিল না থাকলে patch থামে না, শুধু `skipped` লেখে
+- [ ] `--bangla-convert` ছাড়া Customer-এর `bangla` ও `name_local`-এ কিছু বদলায় না
