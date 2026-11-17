@@ -665,34 +665,8 @@ const ItemDetailsPrint = forwardRef<HTMLDivElement, Props>(
                     <React.Fragment key={i}>{renderLine(r)}</React.Fragment>
                   ))}
                 </tbody>
-
-                {/*
-                  ⚠️ THE BAND THE PINNED FOOTER SITS IN, TAKEN OUT OF THE ROWS.
-                  PrintFooter is position:fixed and repainted at the foot of
-                  every sheet, and `bottom: 0` there means the CONTENT area's
-                  edge -- not the paper's -- so it lands squarely on the last
-                  rows of a full page. A pinned box reserves nothing, so nothing
-                  it does can keep the rows off it; the space has to come out of
-                  the flow, on every sheet.
-
-                  ⚠️ A <tfoot> IS THE ONLY PART OF A TABLE THAT REPEATS AT THE
-                  FOOT OF EACH PRINTED PAGE, which is what makes it the reserve:
-                  its height is held back on every sheet, not just the last.
-                  Measured in Chrome: with this row the last line on a full page
-                  stops well clear of the software line, and without it the rows
-                  print through it.
-
-                  ⚠️ 6mm IS THE FOOTER'S OWN HEIGHT WITH ROOM TO SPARE. It is at
-                  most 10px of type over a 1px rule and 4px of padding -- a shade
-                  under 4mm -- but only because PrintFooter sets `leading-none`;
-                  left to inherit the report's line-height it was 6.6mm and would
-                  outgrow this reserve. Change one and the other has to follow.
-                */}
-                <tfoot>
-                  <tr>
-                    <td colSpan={5} style={{ height: "6mm", border: "none" }} />
-                  </tr>
-                </tfoot>
+                {/* No footer spacer here: PrintFooter holds the band clear at
+                    the foot of every sheet itself, for every report. */}
               </table>
             </div>
 

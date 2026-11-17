@@ -98,8 +98,10 @@ const PrintStyles: React.FC<Props> = ({
    * full page rather than beside them -- measured on 2026-10-10, and the fault
    * on Closing Stock Details. The bottom margin still has to be here -- it is
    * the gap under the footer, and it is what `--print-page-height` counts off --
-   * but the space the rows must leave is reserved by the report, out of its own
-   * flow. See the <tfoot> spacer in ItemDetailsPrint.
+   * but the space the rows must leave is reserved by PrintFooter itself, as a
+   * cloned bottom padding on the body that repeats on every sheet. It publishes
+   * --print-footer-reserve, and the page height below subtracts it so a
+   * one-sheet report is not pushed onto a second.
    */
   const SIDES =
     typeof sideMargin === 'number'
@@ -136,7 +138,7 @@ const PrintStyles: React.FC<Props> = ({
              against the SHEET rather than against the content: a footer pinned
              to the foot of every page. See PrintFooter. */
           :root {
-            --print-page-height: calc(${printedHeight} - ${MARGIN.top} - ${MARGIN.bottom} - 1mm);
+            --print-page-height: calc(${printedHeight} - ${MARGIN.top} - ${MARGIN.bottom} - 1mm - var(--print-footer-reserve, 0mm));
             --print-page-left: ${MARGIN.left};
             --print-page-right: ${MARGIN.right};
           }

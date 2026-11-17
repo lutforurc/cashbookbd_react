@@ -72,6 +72,15 @@ type Props = {
  */
 const FOOT_SIZE = 10;
 
+/**
+ * The band held clear at the foot of every sheet for a pinned line.
+ *
+ * The line is at most 10px of type over a 1px rule and 4px of padding -- a
+ * shade under 4mm, but only because of `leading-none` below. 6mm is that with
+ * room to spare. Change one and the other has to follow.
+ */
+const FOOT_RESERVE = '6mm';
+
 const footSize = (fontSize?: number) =>
   Number.isFinite(fontSize) ? Math.min(fontSize as number, FOOT_SIZE) : FOOT_SIZE;
 
@@ -95,12 +104,13 @@ const PrintFooter: React.FC<Props> = ({ page, total, fontSize, fixed, note, hide
             does NOT get a band of its own, and a full page of rows prints
             through it. That was the fault on Closing Stock Details.
 
-            Which leaves two things a report must do, and neither is optional:
-            keep this box short (see leading-none on the div, without which a
-            10px line carries a 20px box and eats 6.6mm instead of 4mm), and
-            take the band out of its own flow on every sheet -- a repeating
-            <tfoot> spacer, as ItemDetailsPrint does. A footer that reserves
-            nothing cannot be made safe from this side.
+            So the band is reserved HERE, once, for every report that pins the
+            line -- see the body rule below. Reports used to do it themselves
+            with a repeating <tfoot> spacer, and only the ones that had already
+            been caught out had one: Cash Book and Cash & Bank Book printed
+            their last row through the line. Keep this box short as well (see
+            leading-none on the div, without which a 10px line carries a 20px
+            box and eats 6.6mm instead of 4mm, more than the reserve).
 
             What is still true, and the reason it stays fixed: it is REPAINTED
             ON EVERY SHEET the document runs to, which is what a report that
@@ -113,6 +123,31 @@ const PrintFooter: React.FC<Props> = ({ page, total, fontSize, fixed, note, hide
             right: var(--print-page-right, 8mm);
             bottom: 0;
             margin-top: 0;
+          }
+
+          /*
+            ⚠️ THE BAND THE PINNED LINE SITS IN, TAKEN OUT OF EVERY SHEET.
+            A bottom padding on the body, with box-decoration-break: clone, is
+            repeated at the foot of EACH printed fragment rather than once at
+            the end -- so the rows stop ${FOOT_RESERVE} short of the content
+            edge on every sheet, and the line sits in that gap. Measured in
+            Chromium on 2026-11-17: without it the last row ran into the line;
+            with it, clear on every sheet.
+
+            The page block's min-height gives the same amount back
+            (--print-footer-reserve, read by PrintStyles), so a one-sheet report
+            stands exactly as tall as before and is not pushed onto a blank
+            second sheet.
+
+            Moving the line down into the @page margin instead does not work:
+            Chromium clips it there and repaints it at the top of the next
+            sheet. Measured, same day.
+          */
+          :root { --print-footer-reserve: ${FOOT_RESERVE}; }
+          body {
+            padding-bottom: ${FOOT_RESERVE} !important;
+            -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
           }
         }
       `}</style>

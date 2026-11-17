@@ -285,16 +285,8 @@ const SoldUnitListPrint = React.forwardRef<HTMLDivElement, Props>(
                 </tr>
               </tbody>
             ) : null}
-
-            {/* The pinned footer's band, held back at the foot of every sheet:
-                a <tfoot> is the one part of a table the browser repeats there.
-                Without it a full sheet's last rows print through the footer.
-                Same 6mm as ItemDetailsPrint. */}
-            <tfoot>
-              <tr>
-                <td colSpan={7} style={{ height: "6mm", border: "none" }} />
-              </tr>
-            </tfoot>
+            {/* No footer spacer here: PrintFooter holds the band clear at the
+                foot of every sheet itself, for every report. */}
           </table>
 
           {/* ⚠️ PINNED, as Cash Book pins its own when the report is one block.
