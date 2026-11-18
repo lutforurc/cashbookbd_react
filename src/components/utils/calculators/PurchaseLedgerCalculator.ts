@@ -1,3 +1,5 @@
+import { purchaseInvoiceTotal } from "../../modules/reports/utils/purchaseInvoiceTotal";
+
 class PurchaseLedgerCalculator {
   private tableData: any[];
 
@@ -14,13 +16,9 @@ class PurchaseLedgerCalculator {
     }, 0);
   }
 
-  // Total Payment
+  // Total Payment -- the bill's own total, not the sum of its lines.
   getTotalPayment(): number {
-    return this.tableData.reduce((sum, row) => {
-      const rowTotal = row?.purchase_master?.details?.reduce(
-        (subSum: number, detail: any) => subSum + (Number(detail?.purchase_price) || 0) * (Number(detail?.quantity) || 0), 0 ) || 0;
-      return sum + rowTotal;
-    }, 0);
+    return this.tableData.reduce((sum, row) => sum + purchaseInvoiceTotal(row), 0);
   }
 
   // Grand Total (Received / Credit)

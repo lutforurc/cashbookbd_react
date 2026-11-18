@@ -4,6 +4,7 @@ import type { PrintBranch } from '../../../utils/utils-functions/printBranch';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
 import { ledgerProductLabel } from '../utils/ledgerProductLabel';
+import { purchaseInvoiceTotal } from '../utils/purchaseInvoiceTotal';
 
 /**
  * A Purchase Ledger report, in the shape the print designer draws.
@@ -96,10 +97,8 @@ export const toPurchaseLedgerDocumentData = ({
 
     const discount = postedCredit(row, 40);
     const paid = postedCredit(row, 17);
-    const amount = details.reduce(
-      (sum, detail) => sum + num(detail?.quantity) * num(detail?.purchase_price),
-      0,
-    );
+    // The bill's own total, charges included -- see purchaseInvoiceTotal().
+    const amount = purchaseInvoiceTotal(row);
 
     // The products alone, for the composed column's {products} token -- empty
     // when the branch has switched product information off, so the cell keeps

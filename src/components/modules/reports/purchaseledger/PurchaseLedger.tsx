@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
@@ -20,6 +20,7 @@ import ImagePopup from '../../../utils/others/ImagePopup';
 import PurchaseLedgerCalculator from '../../../utils/calculators/PurchaseLedgerCalculator';
 import { getRelevantCoaName } from '../utils/ledgerNameResolver';
 import { ledgerProductLabel } from '../utils/ledgerProductLabel';
+import { purchaseInvoiceTotal } from '../utils/purchaseInvoiceTotal';
 import PurchaseLedgerPrint from './PurchaseLedgerPrint';
 import { useReactToPrint } from 'react-to-print';
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
@@ -689,11 +690,7 @@ const PurchaseLedger = (user: any) => {
         if (!showProductDetails) {
           // One summary line per invoice: its own total once. The discount is
           // the column beside it and is not taken off here.
-          const invoiceTotal = details.reduce(
-            (s: number, d: any) =>
-              s + (Number(d?.purchase_price) || 0) * (Number(d?.quantity) || 0),
-            0,
-          );
+          const invoiceTotal = purchaseInvoiceTotal(row);
 
           return <div>{formatAmountOrZeroMark(invoiceTotal)}</div>;
         }
@@ -789,13 +786,8 @@ const PurchaseLedger = (user: any) => {
           return Number.isFinite(n) ? n : 0;
         };
 
-        // Purchase total = sum of (rate × qty) across details (matches Total column).
-        const total = Array.isArray(row?.purchase_master?.details)
-          ? row.purchase_master.details.reduce(
-              (s: number, d: any) => s + parseNumber(d?.purchase_price) * parseNumber(d?.quantity),
-              0,
-            )
-          : 0;
+        // The bill's own total, charges included -- see purchaseInvoiceTotal().
+        const total = purchaseInvoiceTotal(row);
 
         const masters = Array.isArray(row?.acc_transaction_master)
           ? row.acc_transaction_master

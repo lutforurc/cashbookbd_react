@@ -4,6 +4,7 @@ import thousandSeparator from "../../../utils/utils-functions/thousandSeparator"
 import PurchaseLedgerCalculator from "../../../utils/calculators/PurchaseLedgerCalculator";
 import { getRelevantCoaName } from "../utils/ledgerNameResolver";
 import { ledgerProductLabel } from "../utils/ledgerProductLabel";
+import { purchaseInvoiceTotal } from "../utils/purchaseInvoiceTotal";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from "../../../utils/utils-functions/PrintFooter";
@@ -199,11 +200,7 @@ const PurchaseLedgerPrint = forwardRef<HTMLDivElement, Props>(
                         const details = row?.purchase_master?.details || [];
                         // The invoice's own total, for the one summary line the
                         // Total column reads when product information is off.
-                        const invoiceTotal = details.reduce(
-                          (s: number, d: any) =>
-                            s + (Number(d?.purchase_price) || 0) * (Number(d?.quantity) || 0),
-                          0,
-                        );
+                        const invoiceTotal = purchaseInvoiceTotal(row);
 
                         return (
                           <tr
