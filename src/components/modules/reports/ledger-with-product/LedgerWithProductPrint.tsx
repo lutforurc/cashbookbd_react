@@ -3,15 +3,10 @@ import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
-import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
-import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
-import type {
-  LedgerWithProductRow,
-  LedgerWithProductSummary,
-} from './ledgerWithProductTypes';
 import {
   getCreditColumnValue,
   getDebitColumnValue,
+  getFooterTotals,
   getInvoiceAmountValue,
   getPurchaseAmount,
   getPurchaseQty,
@@ -125,22 +120,24 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
     /** One unbroken run, the sheets cut by the browser rather than by us. */
     const continuous = !(asked > 0);
     const pages = continuous ? [rows] : paginateRows(rows, asked);
-    const dateWidthClass = fs >= 12 ? 'w-20' : fs <= 10 ? 'w-18' : 'w-22';
-    const truckWidthClass = fs >= 12 ? 'w-22' : fs <= 10 ? 'w-18' : 'w-20';
     const printablePartyName = partyName || '-';
     const printableMobile = mobile || '';
     const mobileFormat = useMobileFormat();
     const printableAddress = address || '-';
+    // The same bar the screen shows: the column totals built from the rows, so
+    // the paper and the screen cannot foot differently. Inv. Amt, Debit and
+    // Credit always appear -- a nought reads as a dash, as it does on screen.
+    const footer = getFooterTotals(rows, summary.opening_balance);
     const footerItems = [
       ['Opening', summary.opening_balance],
       Number(summary.purchase_qty || 0) > 0 ? ['Pur. Qty', summary.purchase_qty] : null,
       Number(summary.sales_qty || 0) > 0 ? ['Sal. Qty', summary.sales_qty] : null,
       Number(summary.purchase_amt || 0) > 0 ? ['Pur. Amt', summary.purchase_amt] : null,
       Number(summary.sales_amt || 0) > 0 ? ['Sal. Amt', summary.sales_amt] : null,
-      Number(summary.inv_amt || 0) !== 0 ? ['Inv. Amt', summary.inv_amt] : null,
-      Number(summary.total_received || 0) !== 0 ? ['Debit', summary.total_received] : null,
-      Number(summary.total_payment || 0) !== 0 ? ['Credit', summary.total_payment] : null,
-      ['Closing', summary.closing_balance],
+      ['Inv. Amt', summary.inv_amt],
+      ['Debit', footer.debit],
+      ['Credit', footer.credit],
+      ['Closing', footer.closing],
     ].filter(Boolean) as [string, unknown][];
     const footerFs = fs;
 
@@ -291,29 +288,19 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
             <table className="w-full table-fixed border-collapse">
               <thead className="bg-gray-100">
                 <tr>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-10 text-center">Sl</th>
-                  <th
-                    style={{ fontSize: fs }}
-                    className={`border border-gray-900 px-2 py-2 text-center ${dateWidthClass}`}
-                  >
-                    Vr No & Date
-                  </th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-36 text-left">Description</th>
-                  <th
-                    style={{ fontSize: fs }}
-                    className={`border border-gray-900 px-2 py-2 text-center ${truckWidthClass}`}
-                  >
-                    Truck
-                  </th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Pur. Qty.</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Sal. Qty.</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-14 text-center">Rate</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Pur. Total</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-16 text-center">Sal. Total</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Inv. Amt</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Debit</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Credit</th>
-                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-18 text-center">Balance</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[4%] text-center">Sl</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[9%] text-center">Vr No & Date</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[14%] text-left">Description</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[8%] text-center">Vehicle No</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[8%] text-center">Pur. Qty.</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[8%] text-center">Sal. Qty.</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[6%] text-center">Rate</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[8%] text-center">Pur. Total</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[8%] text-center">Sal. Total</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[7%] text-center">Inv. Amt</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[7%] text-center">Debit</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[7%] text-center">Credit</th>
+                  <th style={{ fontSize: fs }} className="border border-gray-900 px-2 py-2 w-[6%] text-center">Balance</th>
                 </tr>
               </thead>
               <tbody>
@@ -332,7 +319,7 @@ const LedgerWithProductPrint = React.forwardRef<HTMLDivElement, Props>(
 
                     <td
                       style={{ fontSize: fs, lineHeight: 0.95 }}
-                      className="border border-gray-900 px-2 py-[2px] align-middle w-36"
+                      className="border border-gray-900 px-2 py-[2px] align-middle w-[14%]"
                     >
                       <div style={{ lineHeight: 1.15, margin: 0, padding: 0 }} className="whitespace-normal">
                         {getTransactionTypeLabel(
