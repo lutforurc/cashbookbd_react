@@ -5,6 +5,10 @@ import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
 import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
+import type {
+  LedgerWithProductRow,
+  LedgerWithProductSummary,
+} from './ledgerWithProductTypes';
 import {
   getCreditColumnValue,
   getDebitColumnValue,
