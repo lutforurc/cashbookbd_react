@@ -1,0 +1,286 @@
+# धाप ১ — Multi-language Foundation (Implementation Plan)
+
+**সোর্স:** `docs/mult-language/multi-language-plan.md` — ধাপ ১ (ভিত্তি)
+**স্কোপ:** i18n ভিত্তি + ভাষা বদলানো। **কোনো লেবেল এখনো অনুবাদ হবে না** — সব স্ক্রিন আজকের মতো ইংরেজিতেই চলবে।
+**বাদ:** ধাপ ১ক (ফন্ট/fonts টেবিল/NikoshBAN), `name_local` কলাম, প্রিন্ট, SMS — এগুলো আলাদা plan।
+
+---
+
+## ০. যে সিন্ধান্তগুলো নেওয়া হলো
+
+| বিষয় | সিদ্ধান্ত | কারণ |
+|---|---|---|
+| Backend | এই রিপোতে নেই → **নিচের contract অনুযায়ী spec** | `D:\cashbook_api` ওয়ার্কস্পেসে নেই। Frontend API-র উপর নির্ভর করে, তাই contract আগে ঠিক করতে হবে |
+| `users.lang` মান | `null \| 'en' \| 'local'` | ভাষা-নিরপেক্ষ। নতুন ভাষা যোগে ইউজারের মান বদলাতে হয় না |
+| ভাষা নির্ধারণের ক্রম | ইউজার → শাখার `ui_language` → English | সোর্স plan §২.৩ |
+| স্বিচার UI | হেডারে ছোট segmented pill: `EN \| বাংলা` | কোম্পানিতে সর্বোচ্চ English + ১টি local, তাই ড্রপডাউন দরকার নেই |
+| স্বিচার কখন দেখাবে | `company.local_language` null হলে **কিছুই render হবে না** | সোর্স plan §৪.২ |
+| অনুবাদ ফাইল | `en` = `src/locales/en/` (bundled, বাধ্যতামূলক); `bn` = `public/locales/bn/` (runtime fetch) | সোর্স plan §৫.১ — অনুবাদ rebuild ছাড়া বদলানো যাবে |
+| Pre-paint | `index.html`-এর inline script-এ `localStorage['ui-lang']` পড়ে `<html lang>` সেট | ভুল ভাষার ফ্ল্যাশ এড়াতে (theme script-এর মতোই) |
+| ভাষা state | ছোট redux slice + optimistic update | কোডবেসে সবকিছু redux; API ব্যর্থ হলে rollback |
+
+**ধাপ ১-এর সফলতার মাপকাঠি:** ভাষা বদলানো যায়, `<html lang>`/`dir` বদলায়, reload ও পরের লগইনে থাকে, প্রতিটা request-এ `Accept-Language` যায় — এবং ইংরেজি বেছে নিলে অ্যাপ হুবহু আজকের মতো।
+
+---
+
+# পার্ট A — Backend Contract (আলাদা রিপোতে বসাতে হবে)
+
+> এই অংশটা `cashbook_api` রিপোতে করতে হবে। নিচের প্রতিটা পরিবর্তন সোর্স plan §৪.০-এর নিয়ম মানবে: `AddUnitTypeToBuildingUnits`-এ আলাদা idempotent `runMultiLanguage…Schema()` মেথড, নিজের `try/catch`, `Schema::hasTable()`/`hasColumn()` গার্ড, `info`/`warn`-এ ডাটাবেসের নাম, এবং `handle()`-এ আলাদা `try { … } catch (\Throwable $e)` ব্লক।
+
+## A1. `languages` টেবিল (`runMultiLanguageLanguagesSchema()`)
+
+বিদ্যমান `App\Models\Admin\Language` মডেল ও টেবিল আছে — **নতুন টেবিল নয়, কলাম যোগ**। যেগুলো আগেই আছে সেগুলো skip:
+
+| কলাম | ধরন | ডিফল্ট |
+|---|---|---|
+| `code` | varchar(10), unique | — |
+| `name` | varchar(100) | — |
+| `native_name` | varchar(100) | — |
+| `font_family` | varchar(100), null | null |
+| `font_file` | varchar(255), null | null |
+| `digits` | enum(`latin`,`native`) | `latin` |
+| `direction` | enum(`ltr`,`rtl`) | `ltr` |
+| `is_active` | tinyint(1) | 1 |
+
+শুরুর ডাটা (আগে `code` দেখে আছে কি না যাচাই):
+`en` / English / English / `ltr` / `latin` / active; `bn` / Bangla / বাংলা / `ltr` / `native` / active.
+
+## A2. কোম্পানি (`runMultiLanguageCompanySchema()`)
+
+- `companies` টেবিলে `local_language` varchar(10), null — `bn` / `ar` / null।
+- কোনো ডিফল্ট মান বসানো হবে না (null = শুধু ইংরেজি)।
+
+## A3. `users.lang` (`runMultiLanguageUserLangSchema()`)
+
+- কলামের ডিফল্ট `bn` → `null` (`->default(null)->change()`)।
+- **একবারই** সব ইউজারের মান null করা: আগে `meta`/flag টেবিলে চিহ্ন রেখে (`multi_language_user_lang_reset`), চিহ্ন থাকলে skip। এতে deploy-এর পর কেউ নিজে ভাষা বাছলে পরের deploy-এ তা মুছবে না।
+
+## A4. Middleware `SetLocaleFromHeader`
+
+`app/Http/Middleware/SetLocaleFromHeader.php`, `api` group-এ append (negative-value middleware-এর পাশে):
+
+```php
+$lang = $request->header('Accept-Language') ?? $request->input('print_lang');
+// 'bn-BD,en;q=0.9' → 'bn'; শুধু active languages-এর মধ্যে থাকলে setLocale
+if ($lang && Language::where('code', $lang)->where('is_active', 1)->exists()) {
+    App::setLocale($lang);
+}
+```
+
+নিয়ম: অচেনা/নিষ্ক্রিয় ভাষা নীরবে উপেক্ষা, exception নয় — পুরনো ক্লায়েন্ট ভাঙা যাবে না।
+
+## A5. `get-settings` payload বাড়ানো
+
+`POST /api/settings/get-settings` এ যোগ হবে (বিদ্যমান key অপরিবর্তিত):
+
+```jsonc
+{
+  "company": {
+    "local_language": "bn",
+    "languages": [
+      { "code": "en", "name": "English", "native_name": "English", "direction": "ltr", "digits": "latin" },
+      { "code": "bn", "name": "Bangla", "native_name": "বাংলা",  "direction": "ltr", "digits": "native" }
+    ]
+  },
+  "user": { "lang": null }
+}
+```
+
+`languages` = শুধু `is_active`, এবং English সবসময় প্রথমে। `users.lang` আগেই `/api/me` ও `/api/settings`-এ user object-এ আছে — নতুন কিছু লাগবে না।
+
+## A6. নতুন endpoint: `POST /api/user/language`
+
+```
+Body: { "lang": "en" | "local" | null }
+Auth: Sanctum (শুধু নিজের row)
+Response: { "success": true, "data": { "lang": "local" } }
+```
+
+- `in:en,local` + null অনুমোদিত, বাকি হলে 422।
+- নিজের `users.lang` আপডেট; permission চেক লাগবে না।
+- **`/user/user-update` ব্যবহার করবেন না** — সেটা পুরো ইউজার payload আশা করে।
+
+## A7. Deploy ধাপ
+
+`php artisan patch:add-unit-type` → সব টেন্যান্ট ডাটাবেসে। দুইবার চালালে সব `skipped … already present`। ছোট/পুরনো ডাটাবেসে টেবিল না থাকলে `warn` দিয়ে এগোবে, থামবে না।
+
+---
+
+# পার্ট B — Frontend
+
+## B1. Dependencies
+
+```bash
+npm i i18next@^24 react-i18next@^15 i18next-http-backend@^3
+```
+
+## B2. নতুন ফাইল
+
+| ফাইল | কাজ |
+|---|---|
+| `src/i18n/index.ts` | i18next init — `en` bundled, বাকি `public/locales/{{lng}}/{{ns}}.json` |
+| `src/i18n/languages.ts` | `resolveLanguageCode()`, `LangChoice`, `LanguageInfo` টাইপ |
+| `src/i18n/currentLanguage.ts` | non-React module store: `getCurrentLanguage()` / `setCurrentLanguage()` (httpService এইটা পড়বে) + `localStorage` persist |
+| `src/i18n/applyLanguage.ts` | `<html lang>`, `dir`, `data-lang`, `i18n.changeLanguage()` এক জায়গায় |
+| `src/i18n/useLanguage.ts` | redux → resolved code; `setLanguage(choice)` রিটার্ন করে |
+| `src/i18n/languageSlice.ts` | `{ choice: 'en' \| 'local' \| null \| undefined }` + `saveLanguage` thunk (POST, ব্যর্থ হলে rollback + toast) |
+| `src/components/Header/LanguageSwitcher.tsx` | `EN \| বাংলা` pill |
+| `src/locales/en/common.json` | শুরুর key-set (নিচে) |
+| `public/locales/bn/common.json` | একই key, বাংলা মান |
+| `scripts/check-i18n.mjs` | `npm run i18n:check` |
+
+`src/i18n/index.ts`:
+
+```ts
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import HttpBackend from 'i18next-http-backend';
+import enCommon from '../locales/en/common.json';
+import { getCurrentLanguage } from './currentLanguage';
+
+i18n
+  .use(HttpBackend)
+  .use(initReactI18next)
+  .init({
+    lng: getCurrentLanguage(),
+    fallbackLng: 'en',
+    ns: ['common'],
+    defaultNS: 'common',
+    resources: { en: { common: enCommon } },
+    partialBundledLanguages: true,      // en bundled, বাকিগুলো backend থেকে
+    backend: { loadPath: '/locales/{{lng}}/{{ns}}.json' },
+    interpolation: { escapeValue: false },
+    react: { useSuspense: false },      // অ্যাপে Suspense boundary নেই
+  });
+
+export default i18n;
+```
+
+`src/i18n/languages.ts`:
+
+```ts
+export type LangChoice = 'en' | 'local' | null | undefined;
+export type LanguageInfo = {
+  code: string; name: string; native_name: string;
+  direction: 'ltr' | 'rtl'; digits: 'latin' | 'native';
+};
+
+// কোম্পানির local_language না থাকলে local বেছে নিলেও English-এ ফিরবে
+export const resolveLanguageCode = (
+  choice: LangChoice,
+  branchDefault?: string | null,      // meta ui_language: 'en' | 'local'
+  companyLocal?: string | null,       // 'bn' | 'ar' | null
+): string => {
+  const pick = choice ?? branchDefault ?? null;
+  if (pick !== 'local') return 'en';
+  return companyLocal && companyLocal !== 'en' ? companyLocal : 'en';
+};
+```
+
+`src/i18n/applyLanguage.ts`:
+
+```ts
+export const applyLanguage = (code: string, info?: LanguageInfo) => {
+  setCurrentLanguage(code);
+  const root = document.documentElement;
+  root.lang = code;
+  root.dir = info?.direction === 'rtl' ? 'rtl' : 'ltr';
+  root.setAttribute('data-lang', code);
+  if (i18n.language !== code) i18n.changeLanguage(code);
+};
+```
+
+## B3. পুরনো ফাইলে বদল
+
+| ফাইল | বদল |
+|---|---|
+| `src/main.tsx` | `import './i18n';` (CSS import-গুলোর পরে, `App` import-এর আগে) |
+| `index.html` | inline script-এ যোগ: `localStorage['ui-lang']` / `['ui-dir']` পড়ে `document.documentElement.lang` ও `dir` সেট (theme script-এর ভেতরেই) |
+| `src/App.tsx` | `useLanguage()` কল — `useUserTheme(...)`-এর ঠিক পরে, শুধু side-effect বসানোর জন্য |
+| `src/components/services/httpService.tsx` | request interceptor-এ `config.headers['Accept-Language'] = getCurrentLanguage();` |
+| `src/components/services/apiRoutes.tsx` | `export const API_USER_LANGUAGE_URL = \`${API_BASE_URL}/user/language\`;` |
+| `src/store.tsx` | `language: languageReducer` যোগ |
+| `src/components/Header/index.tsx` | `<ul>`-এ `<li><LanguageSwitcher /></li>` — `DropdownNotification`-এর **আগে** |
+| `package.json` | `"i18n:check": "node scripts/check-i18n.mjs"` |
+| `CLAUDE.md` | নিয়ম: স্ক্রিনের লেখা বদলালে অনুবাদ ফাইলও বদলাতে হবে (সোর্স plan §১২) |
+
+**⚠️ `httpService` → `src/i18n/currentLanguage` circular import এড়াতে** ওই ফাইলে শুধু একটি module-level `let` + getter/setter থাকবে — কোনো i18next import নয়।
+
+## B4. `LanguageSwitcher` আচরণ
+
+- `useLanguage()` দেবে: `{ code, setLanguage, options, localCode }`।
+- `localCode = settings.data.company.local_language`. **null হলে `return null`** — বাটনই দেখাবে না।
+- `options` = `company.languages` থেকে English + ওই local ভাষা; label = `native_name` (English option-এর label `English`)।
+- ক্লিক: `setLanguage('en' | 'local')` → optimistic redux → `applyLanguage` তাৎক্ষণিক → background-এ `POST /api/user/language`; ব্যর্থ হলে আগের মান ফিরে আসে + toast।
+- Active option হাইলাইট (`bg-[rgb(var(--c-primary))] text-white`), inactive `text-[rgb(var(--c-text-muted))]` — হেডারের বিদ্যমান pill/button ঘরানায়।
+- `aria-pressed` + `aria-label` `t('language.label')` থেকে (এটাই `t()`-এর প্রথম ব্যবহার)।
+
+## B5. শুরুর locale ফাইল
+
+`src/locales/en/common.json` (অল্প, ইচ্ছাকৃতভাবে):
+
+```json
+{
+  "language": { "label": "Language", "english": "English", "local": "Local" },
+  "common": { "save": "Save", "cancel": "Cancel", "yes": "Yes", "no": "No" }
+}
+```
+
+`public/locales/bn/common.json` — একই key: `"label": "ভাষা"`, `"save": "সেভ"` ইত্যাদি। বাকি namespace (booking, coa, …) ধাপ ২-৭-এ যোগ হবে।
+
+## B6. `scripts/check-i18n.mjs`
+
+`scripts/check-help.mjs`-এর ঘরানায়, বার্তা বাংলায়:
+
+1. `src/locales/en/*.json` ও `public/locales/*/**.json` বৈধ JSON কি না।
+2. `en`-এর প্রতিটা key অন্য ভাষায় আছে কি না → ফাঁকা তালিকা + শতাংশ।
+3. `.tsx`-এ `t('…')`-এ ব্যবহৃত key `en` ফাইলে আছে কি না।
+4. Exit code 1 শুধু ১ ও ৩ ভাঙলে (২ শুধু রিপোর্ট — অনুবাদ অসম্পূর্ণ থাকা স্বাভাবিক)।
+
+> `.tsx`-এ hardcoded ইংরেজি ধরার কড়া নিয়ম ধাপ ২-এ যোগ হবে, এখন নয়।
+
+---
+
+## C. কাজের ক্রম
+
+1. **Backend contract** (পার্ট A) — ফ্রন্টএন্ডের আগে, কারণ payload-এর আকৃতি এর উপর নির্ভর
+2. Dependencies + `src/i18n/*` scaffold + locale ফাইল
+3. `main.tsx` / `index.html` / `store.tsx` / `App.tsx` wiring
+4. `httpService` Accept-Language + `apiRoutes` constant
+5. `LanguageSwitcher` + Header-এ বসানো
+6. `scripts/check-i18n.mjs` + `CLAUDE.md` নিয়ম
+
+প্রতিটা ধাপের পর অ্যাপ চালু থাকবে; কোনো স্ক্রিনের লেখা বদলাবে না।
+
+---
+
+## D. পরীক্ষা
+
+**Frontend (এই রিপো):**
+
+- [ ] `npm run build` — কোনো TS/ESLint ভুল নেই
+- [ ] `local_language` null কোম্পানিতে হেডারে কোনো ভাষার বাটন নেই
+- [ ] বাংলা বাছলে `<html lang="bn">`, English বাছলে `lang="en"`; `dir` সঠিক
+- [ ] বদলানোর সাথে সাথে বাটনের active state বদলায়, **পেজ reload হয় না**
+- [ ] reload করার পর ভাষা আগের মতোই থাকে (pre-paint script)
+- [ ] logout → login করলে DB-র মান ফিরে আসে
+- [ ] DevTools Network-এ প্রতিটা request-এ `Accept-Language: bn` (বা `en`) আছে
+- [ ] `POST /api/user/language` ব্যর্থ করে দিলে আগের ভাষা ফিরে আসে + toast
+- [ ] ইংরেজি বেছে নিলে অ্যাপ হুবহু আজকের মতো দেখায়
+- [ ] `npm run i18n:check` — en/bn key মিলে যায়, ভাঙা JSON ধরা পড়ে
+- [ ] `npm run help:check` আগের মতোই পাস করে
+
+**Backend (আলাদা রিপো):**
+
+- [ ] `php artisan patch:add-unit-type` দুইবার — দ্বিতীয়বার সব `skipped … already present`
+- [ ] ছোট ক্লায়েন্ট ডাটাবেসে `languages` টেবিল না থাকলে patch থামে না, `warn` লেখে
+- [ ] deploy-এর পর কোনো ইউজারের `users.lang` নিজে থেকে বদলায় না (`null` হয় একবারই)
+- [ ] `get-settings` payload-এ `company.local_language`, `company.languages`, `user.lang` আসে
+- [ ] `POST /api/user/language` — `en`/`local`/null গ্রহণ করে, বাকিতে 422
+- [ ] `Accept-Language: bn` পাঠালে middlewares `App::getLocale()` = `bn`; অচেনা কোডে exception নয়
+
+---
+
+## E. ইচ্ছাকৃতভাবে বাদ (পরের ধাপ)
+
+ধাপ ১ক (fonts টেবিল, NikoshBAN, Branch Settings Font অংশ, CSS ফন্ট ভ্যারিয়েবল), `name_local` কলাম, `LocalNameInput`/`displayName`, প্রিন্ট ভাষা, SMS, Translations স্ক্রিন, `use_bangla` পুরনো branch toggle-এর পরিবর্তন।

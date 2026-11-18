@@ -52,6 +52,7 @@ import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import { useNavigate } from 'react-router-dom';
 import { branchLabel } from '../../../utils/userFeatureSettings';
 import { useTilesWarehouseField } from '../../../utils/hooks/useTilesWarehouseField';
+import { getServiceList } from '../../settings/settingsSlice';
 /**
  * The Purchase Invoice for a Tiles and Sanitary shop -- the mirror of
  * TilesBusinessSales, with purchase accounting behind it.
@@ -108,6 +109,16 @@ const normalizeSuggestionItems = (items: any) =>
       .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
     : [];
 
+/**
+ * What a voucher posted to one chart-of-accounts row, read off its ledger
+ * details. A purchase charge is an expense, so it is the debit side the screen
+ * is looking for -- the mirror of the sales screen's findCoaCredit.
+ */
+const findCoaDebit = (items: any[], target: number) => {
+  const found = items.find((item) => Number(item?.coa4_id) === target);
+  return found ? Number(found.debit) || 0 : 0;
+};
+
 const TilesBusinessPurchase = () => {
   const navigate = useNavigate();
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -116,6 +127,10 @@ const TilesBusinessPurchase = () => {
   const { showWarehouse, defaultWarehouseId, branchWarehouseIds } = useTilesWarehouseField();
   const fieldLabel = (key: string, fallback: string) =>
     branchLabel(settings, key, fallback);
+  // The name a chart-of-accounts row carries on this branch's setup, so a
+  // charge is labelled by the account it posts to rather than by a word here.
+  const serviceList = (id: number, list: any[] = []) =>
+    list.find((item) => item.id === id)?.name || '';
   const dispatch = useDispatch<any>();
   const [buttonLoading, setButtonLoading] = useState(false);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
@@ -145,6 +160,9 @@ const TilesBusinessPurchase = () => {
   useEffect(() => {
     dispatch(userCurrentBranch());
     dispatch(getDdlWarehouse());
+    // Names the Carrying Inward box after the chart-of-accounts row it posts to,
+    // the way the tiles sales screen names its three charges.
+    dispatch(getServiceList());
   }, []);
 
   interface FormData {
@@ -153,6 +171,17 @@ const TilesBusinessPurchase = () => {
     accountName: string;
     paymentAmt: string;
     discountAmt: string | number;
+    // Carriage on goods coming in -- the chart-of-accounts row (coa4 197) the
+    // tiles sales screen mirrors with Carrying Outward on the way out. It is
+    // folded into the bill, never printed as a line of its own.
+    carryingInwardAmt: string;
+    // The tax the supplier charged on the same bill -- coa4 41, the head the
+    // sales screen calls on as `tdsAmount` and the branch's own setup names
+    // either "TDS" or "VAT". Like Carrying Inward, it is part of what is owed.
+    tdsAmount: string;
+    // coa4 42, the same third charge the tiles sales screen carries. Named by
+    // the branch, so a shop that calls it something else sees its own word.
+    serviceCharge: string;
     purchaseOrderNumber: string;
     purchaseOrderText: string;
     invoice_no: string;
@@ -183,6 +212,9 @@ const TilesBusinessPurchase = () => {
     accountName: '',
     paymentAmt: '',
     discountAmt: '',
+    carryingInwardAmt: '',
+    tdsAmount: '',
+    serviceCharge: '',
     purchaseOrderNumber: '',
     purchaseOrderText: '',
     invoice_no: '',
@@ -527,6 +559,11 @@ const TilesBusinessPurchase = () => {
         }
   
         // Update formData using previous state to maintain integrity
+        const trxDetails =
+          purchase?.data?.transaction?.acc_transaction_master?.flatMap(
+            (trxMaster: any) => trxMaster.acc_transaction_details ?? [],
+          ) ?? [];
+
         const updatedFormData = {
           ...formData,
           mtmId: purchase.data.mtmId,
@@ -537,6 +574,13 @@ const TilesBusinessPurchase = () => {
           invoice_date: purchase.data.transaction.purchase_master?.invoice_date || '',
           paymentAmt: purchase.data.transaction.purchase_master.netpayment.toString() || '',
           discountAmt: parseFloat(purchase.data.transaction.purchase_master.discount) || 0,
+          // Read back off the voucher's own ledger line, so an invoice saved
+          // before this box existed opens showing nought rather than guessing.
+          carryingInwardAmt: findCoaDebit(trxDetails, 197) || '',
+          // The same read for the tax head (41). A bill written before this box
+          // existed carries no such debit and opens at nought.
+          tdsAmount: findCoaDebit(trxDetails, 41) || '',
+          serviceCharge: findCoaDebit(trxDetails, 42) || '',
           notes: purchase.data.transaction.purchase_master.notes || '',
           // On the voucher itself, not on the purchase master: the edit query
           // returns the row whole, so they ride along. Absent on a database the
@@ -589,10 +633,16 @@ const TilesBusinessPurchase = () => {
    * carries nothing in: the counter is not a party, so its payment box is the
    * whole bill and the answer lands on nought.
    *
-   * Purchase has no service charge, TDS or transportation to fold in, so the
-   * Current Invoice term is the line total itself.
+   * Purchase has three charges to fold in, the same three the tiles sales
+   * screen carries on the way out: Carrying Inward (coa4 197), the tax head the
+   * branch calls TDS or VAT (41), and Service Charge (42). All three are part of
+   * what is owed, so they belong inside the Current Invoice term.
    */
-  const billAmount = totalAmount;
+  const carryingInwardAmount = Number(formData.carryingInwardAmt) || 0;
+  const tdsAmount = Number(formData.tdsAmount) || 0;
+  const serviceChargeAmount = Number(formData.serviceCharge) || 0;
+  const billAmount =
+    totalAmount + carryingInwardAmount + tdsAmount + serviceChargeAmount;
   const discountAmount = Number(formData.discountAmt) || 0;
   const receivedAmount = Number(formData.paymentAmt) || 0;
   const totalTkAmount =
@@ -847,6 +897,9 @@ const TilesBusinessPurchase = () => {
             ...prevFormData,
             paymentAmt: '',
             discountAmt: '',
+            carryingInwardAmt: '',
+            tdsAmount: '',
+            serviceCharge: '',
             notes: '',
             invoice_no: '',
             invoice_date: '',
@@ -1005,8 +1058,16 @@ const TilesBusinessPurchase = () => {
       return acc + qty * price;
     }, 0);
     const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    const carryingInward = parseFloat(formData.carryingInwardAmt?.toString() || '0') || 0;
+    const tds = parseFloat(formData.tdsAmount?.toString() || '0') || 0;
+    const serviceCharge = parseFloat(formData.serviceCharge?.toString() || '0') || 0;
     const isCashSupplier = Number(formData.account) === 17;
-    const cashPaymentAmt = Math.max(0, total - discount).toFixed(0);
+    // The counter pays the whole bill, every charge included -- they are part of
+    // what the supplier is owed, not a separate settlement.
+    const cashPaymentAmt = Math.max(
+      0,
+      total + carryingInward + tds + serviceCharge - discount,
+    ).toFixed(0);
     const existingNetPayment =
       purchase.data.transaction?.purchase_master?.netpayment?.toString() || '0';
 
@@ -1032,6 +1093,9 @@ const TilesBusinessPurchase = () => {
   }, [
     formData.account,
     formData.discountAmt,
+    formData.carryingInwardAmt,
+    formData.tdsAmount,
+    formData.serviceCharge,
     formData.mtmId,
     formData.paymentAmt,
     formData.products,
@@ -1083,6 +1147,29 @@ const TilesBusinessPurchase = () => {
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Notes shares this row with the supplier, in the space the
+                  single-field grid left empty beside it. Enter hands over to the
+                  first of the four handwritten figures below. */}
+              <div>
+                <InputElement
+                  id="notes"
+                  value={formData.notes}
+                  name="notes"
+                  placeholder={'Notes'}
+                  label={'Notes'}
+                  className={'py-1 w-full'}
+                  list="purchase-notes-suggestions"
+                  autoComplete="off"
+                  onChange={handleOnChange}
+                  onKeyDown={(e) => handleInputKeyDown(e, 'manual_voucher_no')}
+                />
+                <datalist id="purchase-notes-suggestions">
+                  {noteSuggestions.map((item) => (
+                    <option key={item} value={item} />
+                  ))}
+                </datalist>
               </div>
             </div>
 
@@ -1146,17 +1233,43 @@ const TilesBusinessPurchase = () => {
                 </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {/* Named by the account it posts to, so the branch's own wording
+                  for coa4 197 appears here without a word of it written in this
+                  file. Falls back only while the service list is still loading. */}
               <InputElement
-                id="paymentAmt"
-                value={formData.paymentAmt}
-                name="paymentAmt"
+                id="carryingInwardAmt"
+                value={formData.carryingInwardAmt ?? ''}
+                name="carryingInwardAmt"
                 type="number"
-                placeholder={'Payment Amount'}
-                label={'Payment Amount'}
-                disabled={Number(formData.account) === 17}
-                className={'py-1'}
+                placeholder={serviceList(197, settings?.serviceList) || 'Carrying Inward'}
+                label={serviceList(197, settings?.serviceList) || 'Carrying Inward'}
+                className={'py-1 text-right'}
                 onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')} // Pass the next field's ID
+                onKeyDown={(e) => handleInputKeyDown(e, 'tdsAmount')}
+              />
+              {/* coa4 41 -- the branch names this head "TDS" or "VAT" on its own
+                  chart of accounts, and that name is what the box shows. */}
+              <InputElement
+                id="tdsAmount"
+                value={formData.tdsAmount ?? ''}
+                name="tdsAmount"
+                type="number"
+                placeholder={serviceList(41, settings?.serviceList) || 'TDS / VAT'}
+                label={serviceList(41, settings?.serviceList) || 'TDS / VAT'}
+                className={'py-1 text-right'}
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'serviceCharge')}
+              />
+              <InputElement
+                id="serviceCharge"
+                value={formData.serviceCharge ?? ''}
+                name="serviceCharge"
+                type="number"
+                placeholder={serviceList(42, settings?.serviceList) || 'Service Charge'}
+                label={serviceList(42, settings?.serviceList) || 'Service Charge'}
+                className={'py-1 text-right'}
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
               <InputElement
                 id="discountAmt"
@@ -1167,25 +1280,20 @@ const TilesBusinessPurchase = () => {
                 label={'Discount Amount'}
                 className={'py-1 text-right'}
                 onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'notes')} // Dynamically pass the next element's ID
+                onKeyDown={(e) => handleInputKeyDown(e, 'paymentAmt')} // Dynamically pass the next element's ID
               />
               <InputElement
-                id="notes"
-                value={formData.notes}
-                name="notes"
-                placeholder={'Notes'}
-                label={'Notes'}
-                className={'py-1'}
-                list="purchase-notes-suggestions"
-                autoComplete="off"
+                id="paymentAmt"
+                value={formData.paymentAmt}
+                name="paymentAmt"
+                type="number"
+                placeholder={'Payment Amount'}
+                label={'Payment Amount'}
+                disabled={Number(formData.account) === 17}
+                className={'py-1 text-right'}
                 onChange={handleOnChange}
                 onKeyDown={handleNotesKeyDown}
               />
-              <datalist id="purchase-notes-suggestions">
-                {noteSuggestions.map((item) => (
-                  <option key={item} value={item} />
-                ))}
-              </datalist>
             </div>
 
             {/* One product for the whole invoice, picked by hand. It sits below

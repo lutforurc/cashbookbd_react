@@ -203,11 +203,13 @@ const TilesBusinessSales = () => {
     account: string;
     accountName: string;
     receivedAmt: string;
-    discountAmt: number;
+    // The four charges are held as typed, so an untouched box is empty rather
+    // than showing a nought the desk has to delete before writing a figure.
+    discountAmt: string | number;
     notes: string;
-    serviceCharge: number;
-    tdsAmount: number;
-    transportationAmt: number;
+    serviceCharge: string | number;
+    tdsAmount: string | number;
+    transportationAmt: string | number;
     currentProduct: { index?: number } | null;
     searchInvoice: string;
     products: Product[];
@@ -235,11 +237,11 @@ const TilesBusinessSales = () => {
     account: '',
     accountName: '',
     receivedAmt: '',
-    discountAmt: 0,
+    discountAmt: '',
     notes: '',
-    serviceCharge: 0,
-    tdsAmount: 0,
-    transportationAmt: 0,
+    serviceCharge: '',
+    tdsAmount: '',
+    transportationAmt: '',
     currentProduct: null,
     searchInvoice: '',
     products: [],
@@ -567,11 +569,11 @@ const TilesBusinessSales = () => {
         account: sales?.data?.transaction?.sales_master?.customer_id.toString() ?? '',
         accountName,
         receivedAmt: getCashReceivedDebit(sales.data.transaction),
-        discountAmt: parseFloat(sales.data.transaction.sales_master.discount) || 0,
+        discountAmt: parseFloat(sales.data.transaction.sales_master.discount) || '',
         notes: sales.data.transaction.sales_master.notes || '',
-        tdsAmount: findCoaCredit(details, 41),
-        serviceCharge: findCoaCredit(details, 42),
-        transportationAmt: findCoaCredit(details, 198),
+        tdsAmount: findCoaCredit(details, 41) || '',
+        serviceCharge: findCoaCredit(details, 42) || '',
+        transportationAmt: findCoaCredit(details, 198) || '',
         products: products || [],
         // The model hands a DATE column back as a raw 'YYYY-MM-DD', so these go
         // straight in -- asDate() reads them correctly on the way to the box.
@@ -596,6 +598,25 @@ const TilesBusinessSales = () => {
       void loadPreviousBalance(updatedFormData.account, sales.data.mtmId || '');
     }
   }, [sales.data.transaction]);
+
+  /**
+   * A screen opened fresh starts with no charges on it.
+   *
+   * The four below are the last invoice's own figures, and the edit payload the
+   * store still holds would otherwise carry them onto this blank bill. Wiping
+   * them here -- after the hydration effect above has had its turn on mount --
+   * leaves them at nought; a real edit fills them back in when its response
+   * lands, because that response re-runs the hydration.
+   */
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      discountAmt: '',
+      serviceCharge: '',
+      tdsAmount: '',
+      transportationAmt: '',
+    }));
+  }, []);
 
 
 
@@ -812,6 +833,18 @@ const TilesBusinessSales = () => {
 
 
 
+  /**
+   * The four charges as the server wants them. The screen holds them as typed,
+   * so an untouched box is empty -- but '' would reach the API as null, and the
+   * ledger needs a nought.
+   */
+  const chargePayload = () => ({
+    discountAmt: Number(formData.discountAmt) || 0,
+    serviceCharge: Number(formData.serviceCharge) || 0,
+    tdsAmount: Number(formData.tdsAmount) || 0,
+    transportationAmt: Number(formData.transportationAmt) || 0,
+  });
+
   const handleInvoiceSave = async () => {
     setSaveButtonLoading(true);
     const validationMessages = validateForm(formData, invoiceMessage);
@@ -831,6 +864,7 @@ const TilesBusinessSales = () => {
     // the key either way, and '' would only reach it as null.
     const payload = {
       ...formData,
+      ...chargePayload(),
       receivedAmt: formData.receivedAmt === '' ? '0' : formData.receivedAmt,
       // Stored on the voucher so a report's Edit button can reopen this form
       // even when the branch also has the order-driven one. The number cannot
@@ -900,6 +934,7 @@ const TilesBusinessSales = () => {
 
     const payload = {
       ...formData,
+      ...chargePayload(),
       receivedAmt: formData.receivedAmt === '' ? '0' : formData.receivedAmt,
       invoice_workflow: INVOICE_WORKFLOW_TILES,
     };
