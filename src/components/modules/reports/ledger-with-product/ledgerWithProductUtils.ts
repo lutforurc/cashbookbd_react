@@ -276,24 +276,31 @@ export const getCreditColumnValue = (row: LedgerWithProductRow) => {
 };
 
 /**
- * The footer, built only from what the table shows:
+ * The footer, built from what the table shows:
  * Closing = Opening + Sal. Amt - Pur. Amt - Inv. Amt + Debit - Credit.
  * Inv. Amt is the cash settled on the invoices (purchase -, sale +), so it
- * comes off. Debit and Credit are the two columns, opening line left out --
- * Opening is its own figure.
+ * comes off.
+ *
+ * ⚠️ THE OPENING ROW IS A ROW OF THE TABLE, so its figure sits inside the Debit
+ * or the Credit column and the two totals include it. The desk reads the footer
+ * as the column totals; leaving the row out of them used to foot "Debit: -"
+ * beside a 1,19,323.50 opening row.
+ *
+ * ⚠️ EXCEPT WHEN THERE IS NO OPENING ROW: the product filter drops it (the API
+ * only pushes it for an unfiltered statement), so it is in no column then and
+ * has to be added by hand -- otherwise the closing loses it.
  */
 export const getFooterTotals = (rows: LedgerWithProductRow[], openingBalance: unknown) => {
-  const body = rows.filter((row) => !isOpeningRow(row));
   const sum = (pick: (row: LedgerWithProductRow) => number) =>
-    body.reduce((total, row) => total + pick(row), 0);
+    rows.reduce((total, row) => total + pick(row), 0);
 
-  const opening = parseAmount(openingBalance);
   const salesAmt = sum(getSalesAmount);
   const purchaseAmt = sum(getPurchaseAmount);
   const invAmt = sum(getInvoiceAmountValue);
   const debit = sum(getDebitColumnValue);
   const credit = sum(getCreditColumnValue);
   const round = (value: number) => Math.round(value * 100) / 100;
+  const opening = rows.some((row) => isOpeningRow(row)) ? 0 : parseAmount(openingBalance);
 
   return {
     debit: round(debit),
