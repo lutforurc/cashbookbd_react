@@ -1544,6 +1544,18 @@ export const PURCHASE_INVOICE_FIELD_CATALOG: FieldDef[] = [
 
   // What it adds up to
   { key: 'total_amount', name: 'Total', group: 'total', numeric: true, format: 'money' },
+  // The three charges a Tiles purchase bill can carry. Their NAMES come from
+  // the accounts the bill posted to -- coa4 41, 42 and 197 -- the same way the
+  // sales paper's three do, so the label is whatever the branch calls that head
+  // ("TDS", "VAT", "Freight", ...) rather than a word fixed here. Listed under
+  // the charge's everyday name rather than "Extra Charge 1/2/3", because this
+  // paper's three are known and a designer list nobody can search is no use.
+  { key: 'tds_name', name: 'TDS / VAT -- Label', group: 'total' },
+  { key: 'tds_amount', name: 'TDS / VAT -- Amount', group: 'total', numeric: true, format: 'money' },
+  { key: 'service_charge_name', name: 'Service Charge -- Label', group: 'total' },
+  { key: 'service_charge_amount', name: 'Service Charge -- Amount', group: 'total', numeric: true, format: 'money' },
+  { key: 'carrying_inward_name', name: 'Carrying Inward -- Label', group: 'total' },
+  { key: 'carrying_inward_amount', name: 'Carrying Inward -- Amount', group: 'total', numeric: true, format: 'money' },
   { key: 'discount_amount', name: 'Discount', group: 'total', numeric: true, format: 'money' },
   { key: 'net_amount', name: 'Net Total', group: 'total', numeric: true, format: 'money' },
   { key: 'paid_amount', name: 'Paid', group: 'total', numeric: true, format: 'money' },
@@ -3461,6 +3473,9 @@ const purchaseInvoice = (): PrintTemplate => ({
       layout: 'rows',
       items: [
         { field: 'total_amount', label: 'Total Tk.', ruleAbove: false },
+        { field: 'tds_amount', label: '{tds_name} Tk.', hideIfEmpty: true },
+        { field: 'service_charge_amount', label: '{service_charge_name} Tk.', hideIfEmpty: true },
+        { field: 'carrying_inward_amount', label: '{carrying_inward_name} Tk.', hideIfEmpty: true },
         { field: 'discount_amount', label: 'Discount Tk.', hideIfEmpty: true },
         { field: 'net_amount', label: 'Net Tk.', ruleAbove: true },
         { field: 'paid_amount', label: 'Paid Tk.' },
@@ -4885,6 +4900,44 @@ const addBillAccountLine = (bands: Band[]): void => {
   });
 };
 
+/**
+ * A purchase layout saved before the bill could carry three charges.
+ *
+ * ⚠️ WHY A SAVED LAYOUT IS REWRITTEN. A Tiles and Sanitary purchase invoice now
+ * posts Carrying Inward (coa4 197), the tax head the branch names TDS or VAT
+ * (41) and Service Charge (42), and the paper has to show them or its net
+ * would not add up -- the total on screen includes them, and a saved layout
+ * printing Net without them would disagree with the ledger by exactly those
+ * three figures. That is wrong paper, not a styling preference.
+ *
+ * Added under Total Tk., hidden where the figure is nought, so a bill with no
+ * charges prints exactly as it did before the screen offered them. Only where
+ * the layout names Total Tk. at all, and never twice.
+ */
+const addPurchaseChargeLines = (bands: Band[]): void => {
+  bands.forEach((item) => {
+    if (item.type !== 'totals') return;
+
+    const at = item.items.findIndex((entry) => entry.field === 'total_amount');
+    if (at < 0) return;
+
+    const present = new Set(item.items.map((entry) => entry.field));
+    const missing = [
+      { field: 'tds_amount', label: '{tds_name} Tk.' },
+      { field: 'service_charge_amount', label: '{service_charge_name} Tk.' },
+      { field: 'carrying_inward_amount', label: '{carrying_inward_name} Tk.' },
+    ].filter((entry) => !present.has(entry.field));
+
+    if (!missing.length) return;
+
+    item.items.splice(
+      at + 1,
+      0,
+      ...missing.map((entry) => ({ ...entry, hideIfEmpty: true, ruleAbove: false })),
+    );
+  });
+};
+
 export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'): PrintTemplate => {
   const fallback = defaultTemplate(docType);
   if (!raw || typeof raw !== 'object') return fallback;
@@ -5024,6 +5077,7 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
     retargetBillSubLine(bands);
     addBillAccountLine(bands);
   }
+  if (docType === 'purchase_invoice') addPurchaseChargeLines(bands);
 
   return {
     version: 1,

@@ -418,11 +418,19 @@ export const PURCHASE_INVOICE_SAMPLE: DocumentData = {
     manual_challan_no: 'CH-P-4471',
     manual_challan_date: '2026-09-12',
     total_amount: 84000,
+    // The three charges a tiles purchase bill can carry, with the account names
+    // a branch would give them -- the labels on the paper read these.
+    tds_name: 'TDS / VAT',
+    tds_amount: 1100,
+    service_charge_name: 'Service Charge',
+    service_charge_amount: 500,
+    carrying_inward_name: 'Carrying Inward',
+    carrying_inward_amount: 300,
     discount_amount: 2000,
-    net_amount: 82000,
+    net_amount: 83900,
     paid_amount: 50000,
-    due_amount: 32000,
-    amount_words: 'Eighty Two Thousand Taka Only',
+    due_amount: 33900,
+    amount_words: 'Eighty Three Thousand Nine Hundred Taka Only',
   },
   products: [
     {

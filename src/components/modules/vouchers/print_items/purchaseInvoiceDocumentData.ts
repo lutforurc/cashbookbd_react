@@ -34,12 +34,43 @@ export const toPurchaseInvoiceDocumentData = (data: any): DocumentData => {
         d?.coa_l4?.cust_party_infos,
     )?.coa_l4?.cust_party_infos || {};
 
-  const totalAmount = Number(purchaseMaster?.total ?? 0);
+  const totalAmount = details.reduce(
+    (sum: number, row: any) =>
+      sum + (Number(row?.quantity) || 0) * (Number(row?.purchase_price) || 0),
+    0,
+  ) || Number(purchaseMaster?.total ?? 0);
   const discountFromLedger = trxDetails
     .filter((row: any) => Number(row?.coa4_id) === 40)
     .reduce((sum: number, row: any) => sum + Number(row?.credit ?? 0), 0);
   const discountAmount = discountFromLedger || Number(purchaseMaster?.discount ?? 0);
-  const netAmount = totalAmount - discountAmount;
+
+  // The three charges this screen can put on a bill. Either side is read: a
+  // purchase posts each as a DEBIT on its own head, but these are the same heads
+  // the sales paper credits, and the server may write them the other way round.
+  // Carriage is 197 here and 198 on a chart that keeps the sales head for it.
+  // Absent on a bill saved before the screen offered them, which is what keeps
+  // an old invoice printing exactly as it did.
+  const chargeAmount = (...targets: number[]) => {
+    for (const target of targets) {
+      const row = trxDetails.find((entry: any) => Number(entry?.coa4_id) === target);
+      if (row) return Number(row.debit) || Number(row.credit) || 0;
+    }
+    return 0;
+  };
+  const chargeName = (...targets: number[]) => {
+    for (const target of targets) {
+      const row = trxDetails.find((entry: any) => Number(entry?.coa4_id) === target);
+      if (row) return row?.coa_l4?.name || '';
+    }
+    return '';
+  };
+
+  const carryingInwardAmount = chargeAmount(197, 198);
+  const tdsAmount = chargeAmount(41);
+  const serviceChargeAmount = chargeAmount(42);
+
+  const netAmount =
+    totalAmount + carryingInwardAmount + tdsAmount + serviceChargeAmount - discountAmount;
   const paidAmount = trxDetails
     .filter((row: any) => Number(row?.coa4_id) === 17)
     .reduce((sum: number, row: any) => sum + Number(row?.credit ?? 0), 0);
@@ -83,6 +114,15 @@ export const toPurchaseInvoiceDocumentData = (data: any): DocumentData => {
       vehicle_no: purchaseMaster?.vehicle_no || '',
       created_by: data?.user?.name || '',
       total_amount: totalAmount,
+      // Named by the account each one posted to, exactly as the sales paper
+      // does -- the designer's label reads "{tds_name} Tk." and the branch's
+      // own wording for coa4 41 appears there, not a word written here.
+      tds_name: chargeName(41),
+      tds_amount: tdsAmount,
+      service_charge_name: chargeName(42),
+      service_charge_amount: serviceChargeAmount,
+      carrying_inward_name: chargeName(197, 198),
+      carrying_inward_amount: carryingInwardAmount,
       discount_amount: discountAmount,
       net_amount: netAmount,
       paid_amount: paidAmount,

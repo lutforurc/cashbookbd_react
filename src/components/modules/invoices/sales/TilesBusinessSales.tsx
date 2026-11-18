@@ -1129,6 +1129,51 @@ const TilesBusinessSales = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <InputElement
+                id="serviceCharge"
+                value={formData.serviceCharge ?? ""}
+
+                name="serviceCharge"
+                placeholder={serviceList(42, settings?.serviceList)}
+                label={serviceList(42, settings?.serviceList)}
+                className="py-1 text-right w-full"
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'tdsAmount')}
+              />
+              <InputElement
+                id="tdsAmount"
+                value={formData.tdsAmount ?? ""}
+                name="tdsAmount"
+                placeholder={serviceList(41, settings?.serviceList)}
+                label={serviceList(41, settings?.serviceList)}
+                className="py-1 text-right w-full"
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'transportationAmt')}
+              />
+              <InputElement
+                id="transportationAmt"
+                value={formData.transportationAmt ?? ""}
+                name="transportationAmt"
+                placeholder={serviceList(198, settings?.serviceList)}
+                label={serviceList(198, settings?.serviceList)}
+                className="py-1 text-right w-full"
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
+              />
+
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <InputElement
+                id="discountAmt"
+                value={formData.discountAmt ?? ""}
+                name="discountAmt"
+                placeholder="Discount Amount"
+                label="Discount Amount"
+                className="py-1 text-right w-full"
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')}
+              />
+              <InputElement
                 id="receivedAmt"
                 value={formData.receivedAmt ?? ""}
                 name="receivedAmt"
@@ -1140,16 +1185,6 @@ const TilesBusinessSales = () => {
                 // way; Electronics, which this screen was copied from, does
                 // not -- and that is the only reason it was missing here.
                 disabled={Number(formData.account) === 17}
-                className="py-1 text-right w-full"
-                onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
-              />
-              <InputElement
-                id="discountAmt"
-                value={formData.discountAmt ?? ""}
-                name="discountAmt"
-                placeholder="Discount Amount"
-                label="Discount Amount"
                 className="py-1 text-right w-full"
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')}
@@ -1183,41 +1218,6 @@ const TilesBusinessSales = () => {
                   <option key={item} value={item} />
                 ))}
               </datalist>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <InputElement
-                id="serviceCharge"
-                value={formData.serviceCharge ?? ""}
-
-                name="serviceCharge"
-                placeholder={serviceList(42, settings?.serviceList)}
-                label={serviceList(42, settings?.serviceList)}
-                className="py-1 text-right w-full"
-                onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
-              />
-              <InputElement
-                id="tdsAmount"
-                value={formData.tdsAmount ?? ""}
-                name="tdsAmount"
-                placeholder={serviceList(41, settings?.serviceList)}
-                label={serviceList(41, settings?.serviceList)}
-                className="py-1 text-right w-full"
-                onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
-              />
-              <InputElement
-                id="transportationAmt"
-                value={formData.transportationAmt ?? ""}
-                name="transportationAmt"
-                placeholder={serviceList(198, settings?.serviceList)}
-                label={serviceList(198, settings?.serviceList)}
-                className="py-1 text-right w-full"
-                onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
-              />
-
             </div>
 
             {/* The shop's own four figures, in one line at the lower left --

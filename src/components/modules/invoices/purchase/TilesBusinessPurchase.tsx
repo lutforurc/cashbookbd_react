@@ -111,12 +111,23 @@ const normalizeSuggestionItems = (items: any) =>
 
 /**
  * What a voucher posted to one chart-of-accounts row, read off its ledger
- * details. A purchase charge is an expense, so it is the debit side the screen
- * is looking for -- the mirror of the sales screen's findCoaCredit.
+ * details.
+ *
+ * ⚠️ Either side. A purchase charge is an expense and posts as a DEBIT on its
+ * own head, but the three heads here are the same ones the sales screen uses on
+ * the other side of the book, and the server may well write them credited. The
+ * figure is what matters to the box, not which column it landed in.
+ *
+ * More than one id may be named: the carriage on goods coming in is coa4 197 in
+ * this deployment, but a tenant whose chart is older may have it on 198 -- the
+ * same head the sales screen calls Carrying Outward.
  */
-const findCoaDebit = (items: any[], target: number) => {
-  const found = items.find((item) => Number(item?.coa4_id) === target);
-  return found ? Number(found.debit) || 0 : 0;
+const findCoaAmount = (items: any[], ...targets: number[]) => {
+  for (const target of targets) {
+    const found = items.find((item) => Number(item?.coa4_id) === target);
+    if (found) return Number(found.debit) || Number(found.credit) || 0;
+  }
+  return 0;
 };
 
 const TilesBusinessPurchase = () => {
@@ -576,11 +587,11 @@ const TilesBusinessPurchase = () => {
           discountAmt: parseFloat(purchase.data.transaction.purchase_master.discount) || 0,
           // Read back off the voucher's own ledger line, so an invoice saved
           // before this box existed opens showing nought rather than guessing.
-          carryingInwardAmt: findCoaDebit(trxDetails, 197) || '',
+          carryingInwardAmt: findCoaAmount(trxDetails, 197, 198) || '',
           // The same read for the tax head (41). A bill written before this box
           // existed carries no such debit and opens at nought.
-          tdsAmount: findCoaDebit(trxDetails, 41) || '',
-          serviceCharge: findCoaDebit(trxDetails, 42) || '',
+          tdsAmount: findCoaAmount(trxDetails, 41) || '',
+          serviceCharge: findCoaAmount(trxDetails, 42) || '',
           notes: purchase.data.transaction.purchase_master.notes || '',
           // On the voucher itself, not on the purchase master: the edit query
           // returns the row whole, so they ride along. Absent on a database the
