@@ -233,7 +233,7 @@ const PurchaseAdvance = () => {
               className="mb-3 grid grid-cols-2 overflow-hidden rounded border border-stroke dark:border-strokedark"
             >
               <button type="button" role="radio" aria-checked={action === GIVE} onClick={() => { setAction(GIVE); setAmount(''); }} className={pick(GIVE, action)}>
-                Give Payment
+                Advance Payment
               </button>
               <button type="button" role="radio" aria-checked={action === SETTLE} onClick={() => setAction(SETTLE)} className={pick(SETTLE, action)}>
                 Advance Settlement
@@ -310,7 +310,7 @@ const PurchaseAdvance = () => {
                 onClick={save}
                 buttonLoading={saving}
                 disabled={saving}
-                label={action === GIVE ? 'Give Payment' : held < 0 ? 'Pay the difference' : 'Receive back'}
+                label={action === GIVE ? 'Advance Payment' : held < 0 ? 'Pay the difference' : 'Receive back'}
                 className="whitespace-nowrap text-center mr-0 py-2"
                 icon={<FiSave className="text-lg" />}
               />
