@@ -6,8 +6,6 @@ import type {
   LedgerWithProductSummary,
 } from './ledgerWithProductTypes';
 import {
-  getBalanceCreditValue,
-  getBalanceDebitValue,
   getFooterTotals,
   getCreditColumnValue,
   getDebitColumnValue,
@@ -114,8 +112,13 @@ export const toLedgerDetailsDocumentData = ({
     inv_amt: getInvoiceAmountValue(row),
     debit: getDebitColumnValue(row),
     credit: getCreditColumnValue(row),
-    debit_full: getBalanceDebitValue(row),
-    credit_full: getBalanceCreditValue(row),
+    // ⚠️ THE GRAND TOTAL ROW FOOTS FROM THESE, so they must be what the Debit
+    // and Credit columns draw. They used to carry the balance-movement side
+    // instead -- a sale's 4,19,860 sat in debit_full while the column drew
+    // nought -- and the printed foot then read 5,39,183.50 under a column
+    // holding 1,19,323.50.
+    debit_full: getDebitColumnValue(row),
+    credit_full: getCreditColumnValue(row),
     // Carried down from the row above, so it is read off the row the rows
     // helper already walked -- never re-added here, which is what would make it
     // a second, different balance.
@@ -144,6 +147,15 @@ export const toLedgerDetailsDocumentData = ({
       report_trx_type: transactionTypeLabel ?? 'All',
       opening_balance: parseAmount(summary?.opening_balance),
       closing_balance: footer.closing,
+      // ⚠️ THE TOTALS BAND HIDES A LINE WHEN `basic` HAS NO SUCH KEY, even when
+      // the running totals map carries a figure -- its `nothing()` test reads
+      // `basic[field]`, sees nought and drops the line. Without these four the
+      // printed foot showed only Opening / Debit / Credit / Closing while the
+      // screen showed Sal. Qty and Sal. Amt as well.
+      total_pur_qty: list.reduce((sum, row) => sum + getPurchaseQty(row), 0),
+      total_sal_qty: list.reduce((sum, row) => sum + getSalesQty(row), 0),
+      total_pur_total: list.reduce((sum, row) => sum + getPurchaseAmount(row), 0),
+      total_sal_total: list.reduce((sum, row) => sum + getSalesAmount(row), 0),
       total_inv_amt: list.reduce(
         (sum, row) => sum + getInvoiceAmountValue(row),
         0,
