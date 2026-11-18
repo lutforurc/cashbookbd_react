@@ -3,6 +3,8 @@ import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
+import { formatTransportationNumber } from '../../../utils/utils-functions/formatRoleName';
+import { formatMobile, useMobileFormat } from '../../../utils/utils-functions/mobileFormat';
 import {
   getCreditColumnValue,
   getDebitColumnValue,
