@@ -1451,7 +1451,10 @@ export const SALES_INVOICE_FIELD_CATALOG: FieldDef[] = [
     numeric: true,
     format: 'money',
   },
-  { key: 'amount_words', name: 'Amount In Words', group: 'total', format: 'words', from: 'net_amount' },
+  { key: 'amount_words', name: 'Net Amount in Word', group: 'total', format: 'words', from: 'net_amount' },
+  // What is still owed on this bill, spelled out. Offered beside the net's own
+  // words so a tenant may print either, both, or neither.
+  { key: 'due_amount_words', name: 'Due Amount in Word', group: 'total', format: 'words', from: 'due_amount' },
   { key: 'line_count', name: 'Number of Items', group: 'total', numeric: true },
 ];
 
@@ -1560,7 +1563,10 @@ export const PURCHASE_INVOICE_FIELD_CATALOG: FieldDef[] = [
   { key: 'net_amount', name: 'Net Total', group: 'total', numeric: true, format: 'money' },
   { key: 'paid_amount', name: 'Paid', group: 'total', numeric: true, format: 'money' },
   { key: 'due_amount', name: 'Due', group: 'total', numeric: true, format: 'money' },
-  { key: 'amount_words', name: 'Amount In Words', group: 'total', format: 'words', from: 'net_amount' },
+  { key: 'amount_words', name: 'Net Amount in Word', group: 'total', format: 'words', from: 'net_amount' },
+  // What is still owed on this bill, spelled out. Offered beside the net's own
+  // words so a tenant may print either, both, or neither.
+  { key: 'due_amount_words', name: 'Due Amount in Word', group: 'total', format: 'words', from: 'due_amount' },
   { key: 'line_count', name: 'Number of Items', group: 'total', numeric: true },
 ];
 
@@ -3374,7 +3380,7 @@ const salesInvoice = (): PrintTemplate => ({
       labelWidth: DEFAULT_LABEL_WIDTH,
       rowPadding: DEFAULT_ROW_PADDING,
       rowGap: DEFAULT_ROW_GAP,
-      items: [{ field: 'amount_words', label: 'In Word', hideIfEmpty: true }],
+      items: [{ field: 'amount_words', label: 'Net Amount in Word', hideIfEmpty: true }],
     }),
     band<SignatureBand>({
       id: 'signature',
@@ -3492,7 +3498,7 @@ const purchaseInvoice = (): PrintTemplate => ({
       labelWidth: DEFAULT_LABEL_WIDTH,
       rowPadding: DEFAULT_ROW_PADDING,
       rowGap: DEFAULT_ROW_GAP,
-      items: [{ field: 'amount_words', label: 'In Word', hideIfEmpty: true }],
+      items: [{ field: 'amount_words', label: 'Net Amount in Word', hideIfEmpty: true }],
     }),
     band<SignatureBand>({
       id: 'signature',
