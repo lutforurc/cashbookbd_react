@@ -911,6 +911,33 @@ const AttendanceEntries = ({ user }: any) => {
     { key: 'employee_name', header: 'Employee' },
     { key: 'employment_type', header: 'Type', render: (row: any) => row.employment_type || '-' },
     { key: 'shift_name', header: 'Shift', render: (row: any) => row.shift_name || '-' },
+    {
+      key: 'attendance_source',
+      header: 'Source',
+      /**
+       * ⚠️ WHERE THE ROW CAME FROM, not just that there is one. A face terminal
+       * files rows here on its own, and a day the office corrected by hand looks
+       * identical without this -- which is exactly the question asked when a
+       * figure is disputed.
+       */
+      render: (row: any) => {
+        const source = String(row.attendance_source || 'manual');
+        const label =
+          source === 'biometric'
+            ? 'Face'
+            : source === 'manual'
+              ? 'Manual'
+              : source.charAt(0).toUpperCase() + source.slice(1);
+        const tone =
+          source === 'biometric'
+            ? 'bg-primary/10 text-primary'
+            : 'bg-slate-500/10 text-slate-600 dark:text-slate-300';
+
+        return (
+          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${tone}`}>{label}</span>
+        );
+      },
+    },
     { key: 'in_time', header: 'In', render: (row: any) => timeOnly(row.in_time) || '-' },
     { key: 'out_time', header: 'Out', render: (row: any) => timeOnly(row.out_time) || '-' },
     {

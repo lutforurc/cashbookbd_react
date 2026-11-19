@@ -123,6 +123,8 @@
 | hrms_overtime_report | HRM → Attendance → Overtime Report | `/hrms/attendance/overtime-report` | `overtime-report` | done |
 | hrms_attendance_report | HRM → Attendance → Report | `/hrms/attendance/report` | `attendance-daily-reports` | done |
 | hrms_attendance_setup | HRM → Attendance → Setup | `/hrms/attendance/setup` | `attendance-setup` | done |
+| hrms_attendance_devices | HRM → Attendance → Attendance Devices | `/hrms/attendance/devices` | `attendance-devices` | done |
+| hrms_attendance_unmatched | HRM → Attendance → Unmatched Punches | `/hrms/attendance/unmatched-punches` | `unmatched-punches` | done |
 | hrms_designation_level_list | HRM → Designation Level | `/hrms/designation-levels` | `designation-level-list` | done |
 | hrms_designation_level_create | HRM → Designation Level → New Level | `/hrms/designation-levels/create` | `designation-level-form` | done |
 | hrms_designation_level_edit | HRM → Designation Level → New Level | `/hrms/designation-levels/edit/:id` | `designation-level-form` | done |

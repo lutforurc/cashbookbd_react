@@ -934,6 +934,19 @@ export const API_ATTENDANCE_LEAVE_APPLICATION_LIST_URL = `${API_BASE_URL}/hrms/a
 export const API_ATTENDANCE_LEAVE_APPLICATION_STORE_URL = `${API_BASE_URL}/hrms/attendance/leave-applications/store`;
 export const API_ATTENDANCE_LEAVE_APPLICATION_APPROVE_URL = `${API_BASE_URL}/hrms/attendance/leave-applications/approve`;
 
+// ADMS face terminals: the registered devices, the employees enrolled on each,
+// and the codes nobody has claimed yet. The terminals themselves push to
+// /iclock/* with no login -- that address is not called from the browser.
+export const API_HRMS_ATTENDANCE_DEVICES_URL = `${API_BASE_URL}/hrms/attendance/devices`;
+export const API_HRMS_ATTENDANCE_DEVICE_STORE_URL = `${API_BASE_URL}/hrms/attendance/devices/store`;
+export const API_HRMS_ATTENDANCE_DEVICE_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/devices/update/`;
+export const API_HRMS_ATTENDANCE_DEVICE_STATUS_URL = `${API_BASE_URL}/hrms/attendance/devices/status/`;
+export const API_HRMS_ATTENDANCE_DEVICE_EMPLOYEES_URL = `${API_BASE_URL}/hrms/attendance/devices/`;
+export const API_HRMS_ATTENDANCE_MAPPING_URL = `${API_BASE_URL}/hrms/attendance/devices/`;
+export const API_HRMS_ATTENDANCE_MAPPING_DELETE_URL = `${API_BASE_URL}/hrms/attendance/devices/map/delete/`;
+export const API_HRMS_ATTENDANCE_UNMATCHED_URL = `${API_BASE_URL}/hrms/attendance/unmatched-punches`;
+export const API_HRMS_ATTENDANCE_UNMATCHED_ASSIGN_URL = `${API_BASE_URL}/hrms/attendance/unmatched-punches/assign`;
+
 
 // Real Estate Area url
 export const API_PROJECT_STORE_URL = `${API_BASE_URL}/real-estate/projects`;

@@ -159,6 +159,8 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Monthly Attendance', path: routes.hrms_attendance_monthly_report, group: 'HRM', keywords: ['attendance matrix monthly project'], permissions: ['hrm.attendance.monthly.view'] },
   { title: 'Leave Applications', path: routes.hrms_leave_applications, group: 'HRM', keywords: ['leave approval application'], permissions: ['hrm.leave.view'] },
   { title: 'Attendance Setup', path: routes.hrms_attendance_setup, group: 'HRM', keywords: ['shift holiday leave'], permissions: ['hrm.attendance.setup.view'] },
+  { title: 'Attendance Devices', path: routes.hrms_attendance_devices, group: 'HRM', keywords: ['face terminal adms zkteco senseface device serial'], permissions: ['hrm.attendance.setup.view'] },
+  { title: 'Unmatched Punches', path: routes.hrms_attendance_unmatched, group: 'HRM', keywords: ['punch unmatched biometric face map'], permissions: ['hrm.attendance.view'] },
   { title: 'Salary Generate', path: routes.hrms_salary_generate, group: 'HRM', permissions: ['salary.generate'] },
   { title: 'Bonus Generate', path: routes.hrms_festival_bonus_generate, group: 'HRM', permissions: ['festival.bonus.generate'] },
   { title: 'Loan Balance', path: routes.employee_loan_balance, group: 'HRM', permissions: ['employee.loan.balance.view'] },

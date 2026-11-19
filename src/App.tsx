@@ -182,6 +182,8 @@ import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetu
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
 import AttendanceAuditHistory from './components/modules/hrms/attendance/AttendanceAuditHistory';
+import AttendanceDevices from './components/modules/hrms/attendance/AttendanceDevices';
+import UnmatchedPunches from './components/modules/hrms/attendance/UnmatchedPunches';
 import AttendanceExceptionReports from './components/modules/hrms/attendance/AttendanceExceptionReports';
 import EmployeeAttendanceReport from './components/modules/hrms/attendance/EmployeeAttendanceReport';
 import BranchAttendanceSummaryReport from './components/modules/hrms/attendance/BranchAttendanceSummaryReport';
@@ -1639,6 +1641,12 @@ function App() {
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.audit.view']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_attendance_audit_history} element={<AttendanceAuditHistory user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.setup.view']} loading={permissionsLoading} />}>
+                <Route path={routes.hrms_attendance_devices} element={<AttendanceDevices user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.view']} loading={permissionsLoading} />}>
+                <Route path={routes.hrms_attendance_unmatched} element={<UnmatchedPunches user={me} />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.overtime.report.view']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_overtime_report} element={<AttendanceReport user={me} reportTitle="Overtime Report" reportType="overtime" />} />

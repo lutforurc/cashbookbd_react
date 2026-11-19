@@ -69,6 +69,8 @@ class EmployeeFormModel {
       ot_rate: '',
       standard_work_minutes: '480',
       employee_serial: '',
+      /** The id the face terminal knows this person by -- see Attendance Devices. */
+      device_employee_code: '',
     };
   }
 }
@@ -149,6 +151,7 @@ const EmployeeEdit = ({ user }: any) => {
       ot_rate: emp.ot_rate || '',
       standard_work_minutes: emp.standard_work_minutes || '480',
       employee_serial: emp.employee_serial,
+      device_employee_code: emp.device_employee_code || '',
     });
 
     setBranchId(emp.project_id);
@@ -503,6 +506,14 @@ const EmployeeEdit = ({ user }: any) => {
             name="employee_serial"
             value={formData.employee_serial}
             onChange={handleChange}
+          />
+          <InputElement
+            id="device_employee_code"
+            label="Device Code (face terminal)"
+            name="device_employee_code"
+            value={formData.device_employee_code}
+            onChange={handleChange}
+            placeholder="The id enrolled on the terminal"
           />
 
         </div>

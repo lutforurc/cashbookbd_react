@@ -293,6 +293,8 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.hrms_holiday_calendar_report,
     routes.hrms_leave_applications,
     routes.hrms_attendance_setup,
+    routes.hrms_attendance_devices,
+    routes.hrms_attendance_unmatched,
     '/hrms/salary/salary-generate',
     routes.hrms_festival_bonus_generate,
     routes.employee_loan_balance,

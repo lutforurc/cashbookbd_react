@@ -605,6 +605,8 @@ export const SIDEBAR_SUB_DEFAULTS: Record<string, string[]> = {
     'hrms_attendance_entries',
     'hrms_leave_applications',
     'hrms_attendance_setup',
+    'hrms_attendance_devices',
+    'hrms_attendance_unmatched',
     'divider:hsal:Salary & Bonus',
     'hrms/salary/salary-generate',
     'hrms_festival_bonus_generate',

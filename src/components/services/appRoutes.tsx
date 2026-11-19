@@ -434,6 +434,8 @@ const ROUTES = {
   hrms_attendance_monthly_report: '/hrms/attendance/monthly-report',
   hrms_leave_applications: '/hrms/attendance/leaves',
   hrms_attendance_setup: '/hrms/attendance/setup',
+  hrms_attendance_devices: '/hrms/attendance/devices',
+  hrms_attendance_unmatched: '/hrms/attendance/unmatched-punches',
   
   hrms_salary_sheet_list: '/hrms/salary-sheet',
   hrms_salary_generate: '/hrms/salary/salary-generate',

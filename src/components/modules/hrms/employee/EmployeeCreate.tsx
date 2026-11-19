@@ -60,6 +60,12 @@ class EmployeeFormModel {
       standard_work_minutes: '480',
 
       employee_serial: '',
+      /**
+       * The id the face terminal knows this person by. Left empty, the terminal
+       * has nothing to file a punch under until it is filled in on the
+       * Attendance Devices screen -- see the Unmatched Punches list.
+       */
+      device_employee_code: '',
     };
   }
 }
@@ -216,6 +222,7 @@ const EmployeeCreate = ({ user }: any) => {
       ot_rate: formData.ot_rate || '0',
       standard_work_minutes: formData.standard_work_minutes || '480',
       employee_serial: formData.employee_serial || '0',
+      device_employee_code: formData.device_employee_code || null,
     };
 
     try {
@@ -509,6 +516,14 @@ const EmployeeCreate = ({ user }: any) => {
             name="employee_serial"
             value={formData.employee_serial}
             onChange={handleChange}
+          />
+          <InputElement
+            id="device_employee_code"
+            label="Device Code (face terminal)"
+            name="device_employee_code"
+            value={formData.device_employee_code}
+            onChange={handleChange}
+            placeholder="The id enrolled on the terminal"
           />
 
         </div>

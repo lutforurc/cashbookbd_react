@@ -115,6 +115,8 @@
         "designation-level-list",
         "designation-level-form",
         "attendance-setup",
+        "attendance-devices",
+        "unmatched-punches",
         "manual-attendance",
         "attendance-daily-reports",
         "overtime-report",

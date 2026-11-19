@@ -49,6 +49,8 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
 
   // HRM attendance
   '/hrms/attendance/setup': 'attendance-setup',
+  '/hrms/attendance/devices': 'attendance-devices',
+  '/hrms/attendance/unmatched-punches': 'unmatched-punches',
   '/hrms/attendance/entries': 'manual-attendance',
   '/hrms/attendance/report': 'attendance-daily-reports',
   '/hrms/attendance/absent-report': 'attendance-daily-reports',

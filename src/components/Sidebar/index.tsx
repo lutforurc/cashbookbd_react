@@ -302,6 +302,8 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'hrms_holiday_calendar_report', title: "Holiday Calendar" },
     { id: 'hrms_leave_applications', title: "Leave Applications" },
     { id: 'hrms_attendance_setup', title: "Attendance Setup" },
+    { id: 'hrms_attendance_devices', title: "Attendance Devices" },
+    { id: 'hrms_attendance_unmatched', title: "Unmatched Punches" },
     { id: 'hrms/salary/salary-generate', title: "Salary Generate" },
     { id: 'hrms_festival_bonus_generate', title: "Bonus Generate" },
     { id: 'employee_loan_balance', title: "Loan Balance" },
@@ -4207,6 +4209,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 className={subMenuLinkClass}
                               >
                                 Attendance Setup
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'hrm.attendance.setup.view') && (
+                            <li style={subSlot('hrm', 'hrms_attendance_devices')}>
+                              <NavLink
+                                to={routes.hrms_attendance_devices}
+                                className={subMenuLinkClass}
+                              >
+                                Attendance Devices
+                              </NavLink>
+                            </li>
+                          )}
+                          {hasPermission(permissions, 'hrm.attendance.view') && (
+                            <li style={subSlot('hrm', 'hrms_attendance_unmatched')}>
+                              <NavLink
+                                to={routes.hrms_attendance_unmatched}
+                                className={subMenuLinkClass}
+                              >
+                                Unmatched Punches
                               </NavLink>
                             </li>
                           )}
