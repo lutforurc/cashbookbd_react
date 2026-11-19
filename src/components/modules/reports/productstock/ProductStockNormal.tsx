@@ -129,36 +129,62 @@ const matchesProduct = (row: any, productId: string, productLabel: string) => {
  * The Product Stock toolbar is one wrapping flex row, so a control is never
  * squeezed into a track narrower than it -- it takes the next line instead. The
  * basis decides how many share a line: a whole one per line on a phone, two
- * once the screen can hold them, three on a tablet, and a steady ~190px once
- * the sidebar is back. Every cell grows, so a line that ends short is filled by
- * its last control rather than left with a hole.
+ * from 360px, three on a tablet, and a steady ~190px once the sidebar is back.
+ *
+ * ⚠️ THE `max-w` IS THE CELL'S OWN SHARE OF THE LINE, never a fixed number of
+ * pixels. A cell grows into whatever room its line has, but only as far as one
+ * column -- `50% - half a gap` on two-a-line, `33.33% - a gap` on three,
+ * `25% - a gap` on four. A line of n cells then adds up to the container's width
+ * exactly, so no box is ever the odd one out.
+ *
+ * ⚠️ A FLAT CAP IS WHAT WENT WRONG BETWEEN 604px AND 639px. Two cells a line are
+ * ≈289px there, but the cap was 280px: Brand/Group stopped 15px short of the
+ * right edge while Product, whose cap was wider, ran to it, so two rows ended on
+ * two different edges. Given a share instead of a pixel count, every box is the
+ * same width and every row ends where the next one does.
+ *
+ * It also stops the opposite fault: with no cap at all a lone filter on the last
+ * line (End Date, usually) swelled to the full width of the screen.
  *
  * ⚠️ Written out, not composed at runtime: Tailwind reads this file as text,
  * and a class built from pieces would never be emitted.
  */
 const FILTER_CELL =
-  'min-w-0 grow basis-full min-[360px]:basis-[calc(50%-0.375rem)] min-[360px]:max-w-[280px] sm:basis-[calc(33.333%-0.5rem)] lg:basis-[190px]';
-
-/** The search box is the smaller of the two: it is a hint, not a narrowing. */
-const SEARCH_CELL = 'min-w-0 grow basis-full sm:basis-[180px] lg:max-w-[260px]';
+  'min-w-0 grow basis-full min-[360px]:basis-[calc(50%-0.375rem)] min-[360px]:max-w-[calc(50%-0.375rem)] sm:basis-[calc(33.333%-0.5rem)] sm:max-w-[calc(33.333%-0.5rem)] lg:basis-[190px] lg:max-w-[calc(25%-0.5625rem)]';
 
 /**
- * The Product box is the wider one. It carries a whole "CODE - NAME" and is
- * read as a selection, so it gets more room on every line than the Search box
- * beside it.
+ * Search is the one box that reads as a sentence: it takes the whole line on a
+ * phone. From 360px up it is the same size as the filters beside it, so the row
+ * it lands on is square with the ones above.
  */
-const PRODUCT_CELL =
-  'min-w-0 grow basis-full min-[360px]:basis-[calc(50%-0.375rem)] min-[360px]:max-w-[320px] sm:basis-[calc(33.333%-0.5rem)] sm:max-w-[360px] lg:basis-[300px] lg:max-w-[440px]';
+const SEARCH_CELL =
+  'min-w-0 grow basis-full sm:basis-[calc(33.333%-0.5rem)] sm:max-w-[calc(33.333%-0.5rem)] lg:basis-[190px] lg:max-w-[calc(25%-0.5625rem)]';
 
 /** Rows and Font stay as narrow as their boxes: they are settings, not filters. */
 const COMPACT_CELL = 'shrink-0';
 
 /**
+ * A cell inside the funnel.
+ *
+ * ⚠️ THE LINE MATHS MUST NOT APPLY THERE. The funnel stacks its controls with
+ * `space-y-3`, one per line in a ~320px panel -- so a `max-w` of a quarter of
+ * the line, which is measured against that panel, would squeeze every field to
+ * about 60px. Stacked, a cell simply takes the panel's width.
+ */
+const PANEL_CELL = 'min-w-0 w-full';
+
+/**
  * Apply, Reset and Print travel as one item, so a line too short for them moves
  * the whole group down instead of stranding a single button on its own.
+ *
+ * ⚠️ IT GROWS ON A PHONE instead of taking a line of its own (`basis-full`): the
+ * Rows and Font boxes sit at the start of that line, and a full-basis group
+ * pushed the buttons onto a second one, leaving two short rows with a hole down
+ * the right-hand side. Growing and ending at the right edge keeps the row full,
+ * with the settings at one end and the buttons at the other.
  */
 const ACTION_CELL =
-  'flex shrink-0 grow basis-full flex-wrap items-end gap-2 sm:ml-auto sm:basis-auto sm:grow-0';
+  'flex min-w-0 grow flex-wrap items-end justify-end gap-2 sm:ml-auto sm:grow-0';
 
 const ProductStockNormal = ({ user }: any) => {
   const dispatch = useDispatch();
@@ -169,6 +195,12 @@ const ProductStockNormal = ({ user }: any) => {
   const settings = useSelector((state: any) => state.settings);
   const authUser = user?.user ?? user;
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
+
+  /**
+   * A filter cell: its share of the row normally, the panel's width inside the
+   * funnel -- see PANEL_CELL for why the two cannot be the same class.
+   */
+  const cell = (rowCell: string) => (useFilterMenuEnabled ? PANEL_CELL : rowCell);
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [ddlCategory, setDdlCategory] = useState<any[]>([]);
@@ -695,7 +727,7 @@ const ProductStockNormal = ({ user }: any) => {
                       call comes back, success or failure, so the spinner covers
                       the whole wait and nothing after it. Same reading as
                       areaSlice's, and as Stock Details'. */}
-                  <div className={FILTER_CELL}>
+                  <div className={cell(FILTER_CELL)}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
                     {brand.loaded ? (
                       <CategoryDropdown
@@ -712,7 +744,7 @@ const ProductStockNormal = ({ user }: any) => {
                   {/* Same Group box, same place, as Stock Details: between Brand
                       and Category, before the search box. */}
                   {needProductGroup ? (
-                    <div className={FILTER_CELL}>
+                    <div className={cell(FILTER_CELL)}>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Group</label>
                       {productGroupData.loaded ? (
                         <CategoryDropdown
@@ -728,7 +760,7 @@ const ProductStockNormal = ({ user }: any) => {
                     </div>
                   ) : null}
 
-                  <div className={FILTER_CELL}>
+                  <div className={cell(FILTER_CELL)}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
                     {categoryData.loaded ? (
                       <CategoryDropdown
@@ -744,9 +776,14 @@ const ProductStockNormal = ({ user }: any) => {
 
                   {/* Product, immediately right of Category: the last and the
                       narrowest filter -- one product out of everything the
-                      Category box let through. Wider than the Search box
-                      beside it, which is only a hint. */}
-                  <div className={PRODUCT_CELL}>
+                      Category box let through.
+
+                      ⚠️ THE SAME CELL AS THE ONE ABOVE IT. It used to be given a
+                      wider box of its own, which made the Category/Product row
+                      end further right than the row above it on every screen
+                      narrow enough for two cells a line. One width for both
+                      keeps the columns square. */}
+                  <div className={cell(FILTER_CELL)}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Product</label>
                     <ProductDropdown
                       onSelect={handleProductChange}
@@ -760,7 +797,7 @@ const ProductStockNormal = ({ user }: any) => {
                       box with the filters, so Apply already runs the search and
                       a second button only invited a click that did the same
                       thing twice. Enter in the box still submits. */}
-                  <div className={SEARCH_CELL} onKeyDown={handleSearchKeyDown}>
+                  <div className={cell(SEARCH_CELL)} onKeyDown={handleSearchKeyDown}>
                     <SearchInput
                       id="productStockNormalSearch"
                       label="Search"
@@ -771,7 +808,7 @@ const ProductStockNormal = ({ user }: any) => {
                     />
                   </div>
 
-                  <div className={FILTER_CELL}>
+                  <div className={cell(FILTER_CELL)}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
                     <InputDatePicker
  setCurrentDate={handleStartDate}
@@ -781,7 +818,7 @@ const ProductStockNormal = ({ user }: any) => {
                     />
                   </div>
 
-                  <div className={FILTER_CELL}>
+                  <div className={cell(FILTER_CELL)}>
                     <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
                     <InputDatePicker
  setCurrentDate={handleEndDate}

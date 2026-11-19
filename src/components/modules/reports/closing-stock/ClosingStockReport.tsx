@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
-import { FiArrowRight, FiCheckSquare, FiRotateCcw } from "react-icons/fi";
+import { FiArrowRight, FiCheckSquare, FiFilter, FiRotateCcw } from "react-icons/fi";
 
-import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
+import { Button, ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import SearchInput from "../../../utils/fields/SearchInput";
@@ -22,7 +22,7 @@ import { getProductGroupDdl } from "../../productgroup/productGroupSlice";
 import { API_REPORT_CLOSING_STOCK_URL } from "../../../services/apiRoutes";
 import httpService from "../../../services/httpService";
 import ItemDetailsPrint from "../profit-loss/ItemDetailsPrint";
-import { isBranchSettingOn } from "../../../utils/userFeatureSettings";
+import { isBranchSettingOn, isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import { API_PRINT_TEMPLATE_URL } from "../../../services/apiRoutes";
 import { usePrintBranch } from "../../../utils/utils-functions/printBranch";
 import DocumentPrint from "../../../utils/print-designer/DocumentPrint";
@@ -193,6 +193,67 @@ const normalizeRows = (payload: any): StockRow[] => {
   return [];
 };
 
+/**
+ * The filter bar is one wrapping flex row, control for control Product Stock's.
+ *
+ * The basis decides how many share a line: a whole one per line on a phone, two
+ * from 360px, three on a tablet, and a steady ~190px once the sidebar is back.
+ *
+ * ⚠️ THE `max-w` IS THE CELL'S OWN SHARE OF THE LINE, never a fixed number of
+ * pixels. A cell grows into whatever room its line has, but only as far as one
+ * column -- `50% - half a gap` on two-a-line, `33.33% - a gap` on three,
+ * `25% - a gap` on four. So a line of n cells adds up to the container's width
+ * exactly, and no box can ever be the odd one out.
+ *
+ * That cap is the whole fix for 604-639px. At that width two cells a line are
+ * ≈289px each and the old cap was a flat 280px, so Brand/Group stopped 15px
+ * short of the right edge while Product -- whose old cap was wider -- ran to it.
+ * The two rows ended on different edges. Given a share instead of a pixel
+ * count, every box is the same width and every row ends where the next one does.
+ *
+ * It also stops the opposite fault: with no cap at all a lone filter on the last
+ * line (End Date, usually) swelled to the full width of the screen.
+ *
+ * ⚠️ Written out, not composed at runtime: Tailwind reads this file as text, and
+ * a class built from pieces would never be emitted.
+ */
+const FILTER_CELL =
+  "min-w-0 grow basis-full min-[360px]:basis-[calc(50%-0.375rem)] min-[360px]:max-w-[calc(50%-0.375rem)] sm:basis-[calc(33.333%-0.5rem)] sm:max-w-[calc(33.333%-0.5rem)] lg:basis-[190px] lg:max-w-[calc(25%-0.5625rem)]";
+
+/**
+ * Search is the one box that reads as a sentence: it takes the whole line on a
+ * phone. Above 360px it is the same size as the filters beside it, so the row
+ * it lands on is square with the ones above.
+ */
+const SEARCH_CELL =
+  "min-w-0 grow basis-full sm:basis-[calc(33.333%-0.5rem)] sm:max-w-[calc(33.333%-0.5rem)] lg:basis-[190px] lg:max-w-[calc(25%-0.5625rem)]";
+
+/** Rows and Font stay as narrow as their boxes: they are settings, not filters. */
+const COMPACT_CELL = "shrink-0";
+
+/**
+ * A cell inside the funnel.
+ *
+ * ⚠️ THE LINE MATHS MUST NOT APPLY THERE. The funnel stacks its controls with
+ * `space-y-3`, one per line in a ~320px panel -- so a `max-w` of a quarter of
+ * the line, which is measured against that panel, would squeeze every field to
+ * about 60px. Stacked, a cell simply takes the panel's width.
+ */
+const PANEL_CELL = "min-w-0 w-full";
+
+/**
+ * Apply, Reset and Print travel as one item, so a line too short for them moves
+ * the whole group down instead of stranding a single button on its own.
+ *
+ * ⚠️ IT GROWS ON A PHONE instead of taking a line of its own (`basis-full`): the
+ * Rows and Font boxes sit at the start of that line, and a full-basis group
+ * pushed the buttons onto a second one, leaving two short rows with a hole down
+ * the right-hand side. Growing and ending at the right edge keeps the row full,
+ * with the settings at one end and the buttons at the other.
+ */
+const ACTION_CELL =
+  "flex min-w-0 grow flex-wrap items-end justify-end gap-2 sm:ml-auto sm:grow-0";
+
 const ClosingStockReport = ({ user }: any) => {
   const dispatch = useDispatch();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
@@ -201,6 +262,15 @@ const ClosingStockReport = ({ user }: any) => {
   // The Group filter appears only where the branch files products under
   // groups at all -- the same switch that puts the box on the product form.
   const needProductGroup = isBranchSettingOn(settings, "need_product_group");
+  // The funnel, exactly as Product Stock reads it: where the branch keeps its
+  // filters behind the funnel, this screen does the same.
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, "use_filter_parameter");
+
+  /**
+   * A filter cell: its share of the row normally, the panel's width inside the
+   * funnel -- see PANEL_CELL for why the two cannot be the same class.
+   */
+  const cell = (rowCell: string) => (useFilterMenuEnabled ? PANEL_CELL : rowCell);
   const authUser = user?.user ?? user;
 
   const categoryData = useSelector((state: any) => state.category);
@@ -225,6 +295,7 @@ const ClosingStockReport = ({ user }: any) => {
   const [loading, setLoading] = useState(false);
   const [perPage, setPerPage] = useState(0);
   const [fontSize, setFontSize] = useState(12);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   /**
    * ⚠️ TWO boxes, not one. `search` is what is being typed and `appliedSearch`
@@ -758,162 +829,265 @@ const ClosingStockReport = ({ user }: any) => {
     <div className="">
       <HelmetTitle title="Stock Details" />
 
-      <div className="py-3">
+      {/* ⚠️ THIS IS PRODUCT STOCK'S TOOLBAR, CONTROL FOR CONTROL. Same wrapping
+          flex row, same cell widths, same order -- Brand, Group, Category,
+          Product, Search, the two dates, then Rows, Font and the
+          Apply/Reset/Print group. Nothing keeps a fixed width any more, so no
+          control is left hanging short of the right edge: the cells grow to
+          fill the line they land on, which is what makes the bar full width. */}
+      <div className="px-0 py-3">
         <div className="flex flex-wrap items-end gap-3">
-          {/* ⚠️ THE THREE GATES READ `loaded`, NOT `isLoading`. A slice's
-              isLoading starts false, so the render before its thunk's pending
-              action lands is indistinguishable from a finished fetch -- the box
-              drew empty for that frame and only then started spinning. `loaded`
-              is set the moment the call comes back, success or failure, so the
-              spinner covers the whole wait and nothing after it. Same reading as
-              areaSlice's, and as Product Stock's. */}
-          <div className="min-w-50">
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
-            {brandData.loaded ? (
-              <CategoryDropdown
-                onChange={(opt: any) => setBrandId(String(opt?.value ?? ""))}
-                className="w-full text-sm"
-                categoryDdl={brandOptions}
-                value={brandId}
-                placeholder="All Brand"
-              />
-            ) : (
-              <FieldLoading />
+          <div className={useFilterMenuEnabled ? "relative shrink-0" : "w-full"}>
+            {useFilterMenuEnabled && (
+              <Button
+                type="button"
+                onClick={() => setFilterOpen((prev) => !prev)}
+                className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${filterOpen
+                    ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300" : "border-blue-500 bg-white text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"}`}
+                title="Open filters"
+                aria-label="Open filters"
+              >
+                <FiFilter size={16} />
+              </Button>
+            )}
+
+            {(useFilterMenuEnabled ? filterOpen : true) && (
+              <div
+                className={
+                  useFilterMenuEnabled
+                    ? "absolute left-0 top-full z-1000 mt-2 w-[min(92vw,320px)] rounded-md border border-slate-300 bg-white p-4 shadow-2xl dark:border-slate-600 dark:bg-slate-800"
+                    : "w-full"
+                }
+              >
+                {/* One wrapping flex row for every control, in reading order:
+                    Brand, Group, Category, Product, Search, the two dates, then
+                    Rows, Font and the Apply/Reset/Print group. Nothing is
+                    forced onto a fixed column count, so no control is squeezed
+                    and no track is left empty. */}
+                <div
+                  className={
+                    useFilterMenuEnabled ? "space-y-3" : "flex flex-wrap items-end gap-3"
+                  }
+                >
+                  {useFilterMenuEnabled && (
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Show Rows</label>
+                      <PrintRowsInput
+                        id="stockDetailsRows"
+                        name="stockDetailsRows"
+                        label=""
+                        value={perPage.toString()}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPerPage(Number(e.target.value) || 0)}
+                        type="text"
+                        className="w-20! text-sm"
+                      />
+                    </div>
+                  )}
+
+                  {/* ⚠️ THE THREE GATES READ `loaded`, NOT `isLoading`. A slice's
+                      isLoading starts false, so the render before its thunk's
+                      pending action lands is indistinguishable from a finished
+                      fetch -- the box drew empty for that frame and only then
+                      started spinning. `loaded` is set the moment the call comes
+                      back, success or failure, so the spinner covers the whole
+                      wait and nothing after it. Same reading as areaSlice's, and
+                      as Product Stock's. */}
+                  <div className={cell(FILTER_CELL)}>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Brand</label>
+                    {brandData.loaded ? (
+                      <CategoryDropdown
+                        onChange={(opt: any) => setBrandId(String(opt?.value ?? ""))}
+                        className="w-full text-sm"
+                        categoryDdl={brandOptions}
+                        value={brandId}
+                        placeholder="All Brand"
+                      />
+                    ) : (
+                      <FieldLoading />
+                    )}
+                  </div>
+
+                  {/* Group sits between Brand and Category: the order the branch
+                      files products in, and the order Product Stock draws them.
+                      Hidden where the branch does not file products under groups
+                      at all. */}
+                  {needProductGroup ? (
+                    <div className={cell(FILTER_CELL)}>
+                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Group</label>
+                      {productGroupData.loaded ? (
+                        <CategoryDropdown
+                          onChange={(opt: any) => setGroupId(String(opt?.value ?? ""))}
+                          className="w-full text-sm"
+                          categoryDdl={groupOptions}
+                          value={groupId}
+                          placeholder="All Groups"
+                        />
+                      ) : (
+                        <FieldLoading />
+                      )}
+                    </div>
+                  ) : null}
+
+                  <div className={cell(FILTER_CELL)}>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
+                    {categoryData.loaded ? (
+                      <CategoryDropdown
+                        onChange={(opt: any) => setCategoryId(String(opt?.value ?? ""))}
+                        className="w-full text-sm"
+                        categoryDdl={categoryOptions}
+                        value={categoryId}
+                        placeholder="All Categories"
+                      />
+                    ) : (
+                      <FieldLoading />
+                    )}
+                  </div>
+
+                  {/* Product, immediately right of Category: the last and the
+                      narrowest filter -- one product out of everything the three
+                      boxes above it let through.
+
+                      ⚠️ THE SAME CELL AS THE THREE ABOVE IT. It used to be given
+                      a wider box of its own, which made the Category/Product
+                      row end further right than the Brand/Group row on every
+                      screen narrow enough for two cells a line. One width for
+                      all four keeps the columns square. */}
+                  <div className={cell(FILTER_CELL)}>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Product</label>
+                    <ProductDropdown
+                      onSelect={handleProductChange}
+                      className="w-full text-sm"
+                      value={selectedProductOption}
+                    />
+                  </div>
+
+                  {/* The box, immediately left of Start Date.
+                      ⚠️ No button beside it: the report is already loaded here,
+                      so a button only repeated what the box's own Enter key does
+                      -- and the hand that went looking for one pressed Apply
+                      next to it instead and got the whole stocktake back. The
+                      needle is the name *or* the code, which is what the row
+                      prints ("CODE - NAME") and therefore what a reader has in
+                      hand when they come looking. */}
+                  <div className={cell(SEARCH_CELL)} onKeyDown={handleSearchKeyDown}>
+                    <SearchInput
+                      id="stockDetailsSearch"
+                      label="Search"
+                      placeholder="Search product name or code..."
+                      search={search}
+                      setSearchValue={setSearch}
+                      className="w-full text-sm"
+                    />
+                  </div>
+
+                  <div className={cell(FILTER_CELL)}>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                    <InputDatePicker
+                      setCurrentDate={setStartDate}
+                      className="w-full text-sm"
+                      selectedDate={startDate}
+                      setSelectedDate={setStartDate}
+                    />
+                  </div>
+
+                  <div className={cell(FILTER_CELL)}>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                    <InputDatePicker
+                      setCurrentDate={setEndDate}
+                      className="w-full text-sm"
+                      selectedDate={endDate}
+                      setSelectedDate={setEndDate}
+                    />
+                  </div>
+
+                  {!useFilterMenuEnabled && (
+                    <div className={COMPACT_CELL}>
+                      <PrintRowsInput
+                        id="stockDetailsRows"
+                        name="stockDetailsRows"
+                        label="Rows"
+                        value={perPage.toString()}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPerPage(Number(e.target.value) || 0)}
+                        type="text"
+                        className="w-16! text-sm text-center sm:w-20!"
+                      />
+                    </div>
+                  )}
+
+                  {!useFilterMenuEnabled && (
+                    <div className={COMPACT_CELL}>
+                      <PrintFontInput
+                        id="stockDetailsFont"
+                        name="stockDetailsFont"
+                        label="Font"
+                        value={fontSize.toString()}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFontSize(Number(e.target.value) || 12)}
+                        type="text"
+                        className="w-16! text-sm text-center sm:w-20!"
+                      />
+                    </div>
+                  )}
+
+                  <div
+                    className={
+                      useFilterMenuEnabled ? "flex justify-end gap-2 pt-1" : ACTION_CELL
+                    }
+                  >
+                    <ButtonLoading
+                      onClick={handleLoad}
+                      buttonLoading={loading}
+                      disabled={loading}
+                      label="Apply"
+                      icon={<FiCheckSquare />}
+                      className="px-6"
+                    />
+                    <ButtonLoading
+                      onClick={handleReset}
+                      buttonLoading={false}
+                      label="Reset"
+                      icon={<FiRotateCcw />}
+                      className="px-4"
+                    />
+                    {!useFilterMenuEnabled && (
+                      <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={!visibleRows.length} />
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Group sits between Brand and Category: the order the branch files
-              products in, and the order Product Stock draws them. Hidden where
-              the branch does not file products under groups at all. */}
-          {needProductGroup ? (
-            <div className="min-w-50">
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Group</label>
-              {productGroupData.loaded ? (
-                <CategoryDropdown
-                  onChange={(opt: any) => setGroupId(String(opt?.value ?? ""))}
-                  className="w-full text-sm"
-                  categoryDdl={groupOptions}
-                  value={groupId}
-                  placeholder="All Groups"
-                />
-              ) : (
-                <FieldLoading />
-              )}
+          {useFilterMenuEnabled && (
+            <div className="hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300">
+              Use the filter
             </div>
-          ) : null}
+          )}
 
-          <div className="min-w-50">
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
-            {categoryData.loaded ? (
-              <CategoryDropdown
-                onChange={(opt: any) => setCategoryId(String(opt?.value ?? ""))}
-                className="w-full text-sm"
-                categoryDdl={categoryOptions}
-                value={categoryId}
-                placeholder="All Categories"
+          {/* The funnel hides everything behind the button, so Rows/Font/Print
+              stay out here, where they are always reachable. */}
+          {useFilterMenuEnabled && (
+            <div className="ml-auto flex shrink-0 flex-nowrap items-end gap-2">
+              <PrintRowsInput
+                id="stockDetailsRowsMenu"
+                name="stockDetailsRowsMenu"
+                label="Rows"
+                value={perPage.toString()}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPerPage(Number(e.target.value) || 0)}
+                type="text"
+                className="w-16! text-sm text-center sm:w-20!"
               />
-            ) : (
-              <FieldLoading />
-            )}
-          </div>
-
-          {/* Product, immediately right of Category: the last and the narrowest
-              filter -- one product out of everything the three boxes above it
-              let through. Wider than the Search box, because it carries a whole
-              "CODE - NAME" and is read as a choice, not a hint. */}
-          <div className="min-w-[340px]">
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Product</label>
-            <ProductDropdown
-              onSelect={handleProductChange}
-              className="w-full text-sm"
-              value={selectedProductOption}
-            />
-          </div>
-
-          {/* The box, immediately left of Start Date.
-              ⚠️ No button beside it: the report is already loaded here, so a
-              button only repeated what the box's own Enter key does -- and the
-              hand that went looking for one pressed Apply next to it instead
-              and got the whole stocktake back. The needle is the name *or* the
-              code, which is what the row prints ("CODE - NAME") and therefore
-              what a reader has in hand when they come looking. */}
-          {/* ⚠️ `flex-1`, not `min-w-max`: this row is a wrapping flex row, so
-              the box grows into whatever room is left on its line -- all of it
-              when it wraps, which is the mobile case. It is deliberately the
-              SMALLER of the two boxes beside Product: Search is the hint, the
-              Product selection is the narrowing, so the room goes to Product. */}
-          <div className="flex min-w-[160px] max-w-[260px] flex-1 items-end gap-2" onKeyDown={handleSearchKeyDown}>
-            <SearchInput
-              id="stockDetailsSearch"
-              label="Search"
-              placeholder="Search product name or code..."
-              search={search}
-              setSearchValue={setSearch}
-              className="w-full min-w-[160px] font-medium text-sm"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
-            <InputDatePicker
-              setCurrentDate={setStartDate}
-              className="font-medium text-sm w-full min-w-[220px]"
-              selectedDate={startDate}
-              setSelectedDate={setStartDate}
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
-            <InputDatePicker
-              setCurrentDate={setEndDate}
-              className="font-medium text-sm w-full min-w-[220px]"
-              selectedDate={endDate}
-              setSelectedDate={setEndDate}
-            />
-          </div>
-
-          {/* ⚠️ `xl:ml-auto` was removed on purpose. An auto margin swallows the
-              row's free space *before* flex-grow gets a look at it, so the
-              `flex-1` search box could never grow while it was here -- the
-              buttons stayed pinned right and the box stayed narrow. The search
-              box now does the pushing. */}
-          <div className="grid min-w-max grid-cols-[auto_auto_minmax(88px,0.45fr)_minmax(88px,0.45fr)_auto] items-end gap-2 overflow-x-auto">
-            <ButtonLoading
-              onClick={handleLoad}
-              buttonLoading={loading}
-              disabled={loading}
-              label="Apply"
-              icon={<FiCheckSquare />}
-              className="px-6"
-            />
-            <ButtonLoading
-              onClick={handleReset}
-              buttonLoading={false}
-              label="Reset"
-              icon={<FiRotateCcw />}
-              className="px-4"
-            />
-            <PrintRowsInput
-              id="stockDetailsRows"
-              name="stockDetailsRows"
-              label=""
-              value={perPage.toString()}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPerPage(Number(e.target.value) || 0)}
-              type="text"
-              className="font-medium text-sm w-full! text-center"
-            />
-            <PrintFontInput
-              id="stockDetailsFont"
-              name="stockDetailsFont"
-              label=""
-              value={fontSize.toString()}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFontSize(Number(e.target.value) || 12)}
-              type="text"
-              className="font-medium text-sm w-full! text-center"
-            />
-            <PrintButton onClick={handlePrint} label="Print" className="px-6" disabled={!visibleRows.length} />
-          </div>
+              <PrintFontInput
+                id="stockDetailsFontMenu"
+                name="stockDetailsFontMenu"
+                label="Font"
+                value={fontSize.toString()}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFontSize(Number(e.target.value) || 12)}
+                type="text"
+                className="w-16! text-sm text-center sm:w-20!"
+              />
+              <PrintButton onClick={handlePrint} label="" disabled={!visibleRows.length} />
+            </div>
+          )}
         </div>
       </div>
 
