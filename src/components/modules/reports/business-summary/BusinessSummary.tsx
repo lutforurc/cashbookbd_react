@@ -221,8 +221,12 @@ const BusinessSummary = () => {
 
       <div className="py-3">
         <div className="flex flex-wrap items-end gap-3">
-          <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-[minmax(240px,1.2fr)_minmax(170px,0.8fr)_minmax(170px,0.8fr)]">
-            <div>
+          {/* ⚠️ `min-w-0` here and on each cell. The columns were fixed pixel
+              minimums (240px / 170px / 170px), which cannot shrink -- in a flex
+              row they kept their width and painted over the action bar beside
+              them. A column may now narrow to whatever the row leaves. */}
+          <div className="grid min-w-0 flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3">
+            <div className="min-w-0">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Select Branch <span className="text-red-500">*</span>
               </label>
@@ -235,7 +239,7 @@ const BusinessSummary = () => {
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Month *</label>
               <InputDatePicker
                 selectedDate={startMonth}
@@ -246,7 +250,7 @@ const BusinessSummary = () => {
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Month *</label>
               <InputDatePicker
                 selectedDate={endMonth}
@@ -260,9 +264,11 @@ const BusinessSummary = () => {
 
           {/* The actions share the filters' row, the way the trial balances and
               Product Profit Loss lay theirs out -- a second row of buttons was
-              the one difference between these sibling screens. Below `sm` the
-              row wraps and each action keeps its full width. */}
-          <div className="flex w-full flex-wrap items-end justify-end gap-2 sm:w-auto sm:flex-nowrap">
+              the one difference between these sibling screens.
+              ⚠️ WRAPPING, never nowrap: a row that no longer fits breaks onto
+              the next line instead of running off the edge, and below `sm`
+              each action keeps its full width. */}
+          <div className="flex w-full flex-wrap items-end justify-end gap-2 sm:w-auto">
             <ButtonLoading
               onClick={runReport}
               buttonLoading={loading}
