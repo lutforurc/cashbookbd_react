@@ -80,7 +80,19 @@ const CustomerSupplier = () => {
 
   const search = searchParams.get("search") ?? "";
   const page = readNumber("page", 1);
-  const perPage = readNumber("per_page", 10);
+  /**
+   * "All" is `per_page=0`, which the API answers as every row it matched. It
+   * cannot go through `readNumber`: that one rejects nought, because a page
+   * number of nought means nothing, and reading it back turned the choice into
+   * the ten-row default the moment the address was written.
+   */
+  const readPerPage = () => {
+    const raw = searchParams.get("per_page");
+    if (raw === null || raw === "") return 10;
+    const value = Number(raw);
+    return Number.isFinite(value) && value >= 0 ? value : 10;
+  };
+  const perPage = readPerPage();
   // The classification rides in the address bar with the rest of the list's
   // position. Held in state alone it would be dropped the moment the reader
   // paged, searched or came back from an edit -- each of those rewrites the
@@ -125,8 +137,9 @@ const CustomerSupplier = () => {
 
         Object.entries(next).forEach(([key, value]) => {
           // An empty search or a first page is the default; leaving it out
-          // keeps the address readable.
-          if (value === null || value === "" || value === 0) {
+          // keeps the address readable. `per_page=0` is the exception: it is
+          // "All", not the default, so it has to be kept.
+          if (value === null || value === "" || (value === 0 && key !== "per_page")) {
             params.delete(key);
           } else {
             params.set(key, String(value));
@@ -174,7 +187,10 @@ const CustomerSupplier = () => {
   const customerPageData = customers?.customer || {};
   const tableData = Array.isArray(customerPageData?.data) ? customerPageData.data : [];
   const totalRecords = Number(customerPageData?.total || customers?.total || 0);
-  const totalPages = Math.max(1, Number(customerPageData?.last_page || Math.ceil(totalRecords / perPage) || 1));
+  // With "All" (perPage 0) the whole set is one page; dividing by it would make
+  // the fallback infinite, so only a real page size is asked to count pages.
+  const computedPages = perPage > 0 ? Math.ceil(totalRecords / perPage) : 1;
+  const totalPages = Math.max(1, Number(customerPageData?.last_page || computedPages || 1));
   // One reading of the branch's opening switch, so the two places below cannot
   // drift apart the way `settings?.data?.branch?.is_opening == 1` and
   // isBranchSettingOn() had on the Product list.
@@ -1209,6 +1225,7 @@ const CustomerSupplier = () => {
 
           <SelectOption
             onChange={handleSelectChange}
+            value={perPage === 0 ? '' : String(perPage)}
             className="mr-1 md:mr-2"
           />
 
