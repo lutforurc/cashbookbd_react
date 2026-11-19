@@ -1,3 +1,5 @@
+import store from '../../../store';
+
 const ones = [
   '',
   'One',
@@ -83,6 +85,25 @@ const convertIntegerToWords = (num: number): string => {
   return parts.join(' ');
 };
 
+/**
+ * How the branch writes money out in words.
+ *
+ * The four values are Branch > Invoice Setup > "Select Money Format":
+ *   1  Taka ... Only
+ *   2  ... Taka Only
+ *   3  Only ... Taka
+ *   4  Only Taka ...
+ *
+ * An unset branch gets 2, which is the wording every printed paper had before
+ * the setting was honoured at all. Read from the store on each call so a change
+ * on the branch screen reaches the next printed page without a reload --
+ * thousandSeparator reads decimals the same way.
+ */
+const moneyFormat = (): number => {
+  const raw = Number(store.getState()?.settings?.data?.branch?.money_format);
+  return raw >= 1 && raw <= 4 ? raw : 2;
+};
+
 const numberToWords = (value: number | string, currencyName = 'Taka'): string => {
   const amount = Number(value);
 
@@ -91,13 +112,21 @@ const numberToWords = (value: number | string, currencyName = 'Taka'): string =>
   const integerPart = Math.floor(Math.abs(amount));
   const decimalPart = Math.round((Math.abs(amount) - integerPart) * 100);
   const integerWords = convertIntegerToWords(integerPart);
+  const paisaWords =
+    decimalPart === 0 ? '' : `And ${convertIntegerToWords(decimalPart)} Paisa`;
+  const minus = amount < 0 ? 'Minus ' : '';
 
-  if (decimalPart === 0) {
-    return `${amount < 0 ? 'Minus ' : ''}${integerWords} ${currencyName}`.trim();
+  switch (moneyFormat()) {
+    case 1:
+      return `${minus}${currencyName} ${integerWords} ${paisaWords} Only`.replace(/\s+/g, ' ').trim();
+    case 3:
+      return `${minus}Only ${integerWords} ${paisaWords} ${currencyName}`.replace(/\s+/g, ' ').trim();
+    case 4:
+      return `${minus}Only ${currencyName} ${integerWords} ${paisaWords}`.replace(/\s+/g, ' ').trim();
+    case 2:
+    default:
+      return `${minus}${integerWords} ${currencyName} ${paisaWords} Only`.replace(/\s+/g, ' ').trim();
   }
-
-  const decimalWords = convertIntegerToWords(decimalPart);
-  return `${amount < 0 ? 'Minus ' : ''}${integerWords} ${currencyName} And ${decimalWords} Paisa`.trim();
 };
 
 export default numberToWords;

@@ -177,7 +177,8 @@ const declared = (key: string, raw: any, source: any): string => {
     const figure = num(source?.[field.from ?? key]);
     // ⚠️ Zero spells nothing. "Zero Only" on a receipt is a receipt for no
     // money, and printing it is worse than leaving the line blank.
-    return figure ? `${numberToWords(figure)} Only` : '';
+    // numberToWords already writes the branch's own money format, Only included.
+    return figure ? numberToWords(figure) : '';
   }
 
   if (blank(raw)) return '';
@@ -528,14 +529,24 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
             : thousandSeparator(num(basic.truck_fare)) || '0';
         case 'line_count':
           return String(totals.line_count);
-        case 'amount_words':
+        case 'amount_words': {
           // ⚠️ An invoice spells its NET -- after the installment charge, the
           // other charges and the discount -- and only its own adapter knows
           // that figure, so it sends the words ready-made. Spelling the lines
           // here printed 19,460 in words under a Net of 21,350. A challan or an
           // order sends none and spells the sum of its lines, as before.
+          //
+          // ⚠️ THE FIGURE IS SPELLED HERE where the catalogue names one, so the
+          // branch's money format applies to a ready-made string an adapter or a
+          // sample sent. `from` resolves through the flat catalogue map, so a
+          // paper with no such figure (a challan, an order) falls through below.
+          const spelled = fieldFormat('amount_words');
+          const figure = num(basic?.[spelled?.from ?? '']);
+          if (spelled?.from && figure) return numberToWords(figure);
+
           if (!blank(basic?.amount_words)) return String(basic.amount_words);
-          return totals.total_amount ? `${numberToWords(totals.total_amount)} Only` : '';
+          return totals.total_amount ? numberToWords(totals.total_amount) : '';
+        }
         default: {
           // A total, if the key names one -- total_qty and total_bag as before,
           // and total_received or any other numeric column of the table.

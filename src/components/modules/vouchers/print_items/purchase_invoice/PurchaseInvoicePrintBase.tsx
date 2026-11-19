@@ -148,7 +148,7 @@ const getPurchaseMeta = (data: any) => {
     purchaseInWord:
       data?.inword ||
       purchaseMaster?.inword ||
-      `${numberToWords(netAmount)} Only`.trim(),
+      numberToWords(netAmount),
   };
 };
 

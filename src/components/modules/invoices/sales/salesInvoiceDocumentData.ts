@@ -116,7 +116,8 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
       // From net_amount here rather than the server's `inword`, which leaves
       // out carrying outward (coa4 198) and so could disagree with the Net line
       // printed right above it.
-      amount_words: netAmount ? `${numberToWords(netAmount)} Only` : '',
+      // numberToWords writes the branch's own money format, Only included.
+      amount_words: netAmount ? numberToWords(netAmount) : '',
     },
     products: details.map((row: any, index: number) => ({
       sl: index + 1,

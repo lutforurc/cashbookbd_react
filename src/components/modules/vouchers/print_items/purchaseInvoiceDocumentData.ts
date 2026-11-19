@@ -130,7 +130,7 @@ export const toPurchaseInvoiceDocumentData = (data: any): DocumentData => {
       // Same fallback as PurchaseInvoicePrintBase's own paper: the Net, never
       // the lines before the discount.
       amount_words:
-        data?.inword || purchaseMaster?.inword || (netAmount ? `${numberToWords(netAmount)} Only` : ''),
+        data?.inword || purchaseMaster?.inword || (netAmount ? numberToWords(netAmount) : ''),
     },
     products: details.map((row: any, index: number) => ({
       sl: index + 1,
