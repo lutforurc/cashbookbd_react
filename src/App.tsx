@@ -1642,7 +1642,7 @@ function App() {
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.audit.view']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_attendance_audit_history} element={<AttendanceAuditHistory user={me} />} />
               </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.setup.view']} loading={permissionsLoading} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.device.manage']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_attendance_devices} element={<AttendanceDevices user={me} />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.view']} loading={permissionsLoading} />}>

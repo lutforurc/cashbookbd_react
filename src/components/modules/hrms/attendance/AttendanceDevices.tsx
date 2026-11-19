@@ -35,7 +35,11 @@ import {
   API_HRMS_ATTENDANCE_DEVICE_STORE_URL,
   API_HRMS_ATTENDANCE_DEVICE_UPDATE_URL,
   API_HRMS_ATTENDANCE_MAPPING_DELETE_URL,
+  API_HRMS_ATTENDANCE_MAPPING_UPDATE_URL,
+  API_HRMS_ATTENDANCE_MAPPING_COPY_URL,
+  API_HRMS_ATTENDANCE_DEVICE_SETTINGS_URL,
   API_HRMS_ATTENDANCE_MAPPING_URL,
+  API_HRMS_ATTENDANCE_PUNCHES_REBUILD_URL,
 } from '../../../services/apiRoutes';
 
 /**
@@ -139,6 +143,23 @@ const AttendanceDevices = ({ user }: any) => {
   const [mappingCode, setMappingCode] = useState('');
   const [mappingEmployee, setMappingEmployee] = useState<any>(null);
   const [mappingSaving, setMappingSaving] = useState(false);
+  // The row being corrected, if any. Editing reuses the form above, so a code
+  // does not have to be unmapped and re-added just to fix a typo.
+  const [editingMapping, setEditingMapping] = useState<any>(null);
+
+  /**
+   * Two tabs, because the screen answers two questions: which terminals are
+   * registered, and what the branch wants done with what they send.
+   */
+  const [tab, setTab] = useState<'devices' | 'settings'>('devices');
+  const [settings, setSettings] = useState<any>({
+    auto_approve: false,
+    retention_days: 0,
+    server_enrollment: false,
+    multi_device_template: false,
+  });
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
 
   /**
    * The punch panel: the raw records the terminal sent, and what has been asked
@@ -265,6 +286,7 @@ const AttendanceDevices = ({ user }: any) => {
     setMappings([]);
     setMappingCode('');
     setMappingEmployee(null);
+    setEditingMapping(null);
     await loadMappings(device.id);
   };
 
@@ -293,10 +315,15 @@ const AttendanceDevices = ({ user }: any) => {
 
     setMappingSaving(true);
     try {
-      const response = await httpService.post(`${API_HRMS_ATTENDANCE_MAPPING_URL}${mappingDevice.id}/map`, {
-        device_employee_code: mappingCode.trim(),
-        employee_id: mappingEmployee.value,
-      });
+      const response = editingMapping
+        ? await httpService.post(`${API_HRMS_ATTENDANCE_MAPPING_UPDATE_URL}${editingMapping.id}`, {
+            device_employee_code: mappingCode.trim(),
+            employee_id: mappingEmployee.value,
+          })
+        : await httpService.post(`${API_HRMS_ATTENDANCE_MAPPING_URL}${mappingDevice.id}/map`, {
+            device_employee_code: mappingCode.trim(),
+            employee_id: mappingEmployee.value,
+          });
 
       if (response?.data?.success === false) {
         toast.error(response.data.message || 'The code could not be mapped');
@@ -305,12 +332,15 @@ const AttendanceDevices = ({ user }: any) => {
 
       const rebuilt = response?.data?.data?.data?.days_rebuilt;
       toast.success(
-        rebuilt
-          ? `Mapped. ${rebuilt} earlier day${rebuilt === 1 ? '' : 's'} rebuilt from the punches already on file.`
-          : 'Mapped',
+        editingMapping
+          ? 'Mapping updated. The punches this code already sent now belong to the employee named here, and their days were rebuilt.'
+          : rebuilt
+            ? `Mapped. ${rebuilt} earlier day${rebuilt === 1 ? '' : 's'} rebuilt from the punches already on file.`
+            : 'Mapped',
       );
       setMappingCode('');
       setMappingEmployee(null);
+      setEditingMapping(null);
       await loadMappings(mappingDevice.id);
       loadDevices();
     } catch (error: any) {
@@ -318,6 +348,23 @@ const AttendanceDevices = ({ user }: any) => {
     } finally {
       setMappingSaving(false);
     }
+  };
+
+  /** Load an existing mapping into the form above, for a correction. */
+  const startEditMapping = (mapping: any) => {
+    setEditingMapping(mapping);
+    setMappingCode(mapping.device_employee_code || '');
+    setMappingEmployee(
+      mapping.employee_id
+        ? { value: mapping.employee_id, label: mapping.employee_name || `Employee ${mapping.employee_id}` }
+        : null,
+    );
+  };
+
+  const cancelEditMapping = () => {
+    setEditingMapping(null);
+    setMappingCode('');
+    setMappingEmployee(null);
   };
 
   const removeMapping = async (mapping: any) => {
@@ -328,6 +375,86 @@ const AttendanceDevices = ({ user }: any) => {
       loadDevices();
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Could not remove the mapping');
+    }
+  };
+
+  // -------------------------------------------------------- device settings
+
+  const loadSettings = async () => {
+    setSettingsLoading(true);
+    try {
+      const response = await httpService.get(API_HRMS_ATTENDANCE_DEVICE_SETTINGS_URL, {
+        params: branchId ? { branch_id: branchId } : {},
+      });
+      const value = itemFrom(response);
+      if (value) setSettings(value);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Could not load the device settings');
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (tab === 'settings') loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, branchId]);
+
+  const saveSettings = async () => {
+    setSettingsSaving(true);
+    try {
+      const response = await httpService.post(API_HRMS_ATTENDANCE_DEVICE_SETTINGS_URL, {
+        branch_id: branchId || null,
+        auto_approve: settings.auto_approve ? 1 : 0,
+        retention_days: Number(settings.retention_days || 0),
+      });
+
+      if (response?.data?.success === false) {
+        toast.error(response.data.message || 'The settings could not be saved');
+        return;
+      }
+
+      toast.success('Device settings saved');
+      const value = itemFrom(response);
+      if (value) setSettings((prev: any) => ({ ...prev, ...value }));
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'The settings could not be saved');
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
+
+  /**
+   * Put this code and employee on the branch's other terminals.
+   *
+   * ⚠️ THE FACE IS NOT COPIED. Each terminal still enrols the person itself;
+   * what travels is the code and the name, so a punch from any device lands on
+   * the same employee.
+   */
+  const copyMapping = async (mapping: any) => {
+    if (!mappingDevice) return;
+
+    const others = rows.filter((device) => Number(device.id) !== Number(mappingDevice.id)).map((device) => Number(device.id));
+
+    if (!others.length) {
+      toast.info('No other device is registered yet');
+      return;
+    }
+
+    try {
+      const response = await httpService.post(`${API_HRMS_ATTENDANCE_MAPPING_COPY_URL}${mapping.id}`, {
+        device_ids: others,
+      });
+
+      if (response?.data?.success === false) {
+        toast.error(response.data.message || 'The code could not be copied');
+        return;
+      }
+
+      toast.success(response?.data?.message || 'Copied');
+      await loadMappings(mappingDevice.id);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'The code could not be copied');
     }
   };
 
@@ -365,15 +492,22 @@ const AttendanceDevices = ({ user }: any) => {
     }
   };
 
-  const queueCommand = async (action: 'sync_clock' | 'pull' | 'check') => {
-    if (!punchDevice) return;
+  const queueCommand = async (
+    action: 'sync_clock' | 'pull' | 'check' | 'delete_user',
+    deviceEmployeeCode?: string,
+  ) => {
+    // Either panel can raise a command: the punch panel, or the employee list
+    // when a face is being taken off the terminal.
+    const device = punchDevice ?? mappingDevice;
+    if (!device) return;
 
     setCommandSaving(action);
     try {
-      const response = await httpService.post(`${API_HRMS_ATTENDANCE_DEVICE_COMMAND_URL}${punchDevice.id}/command`, {
+      const response = await httpService.post(`${API_HRMS_ATTENDANCE_DEVICE_COMMAND_URL}${device.id}/command`, {
         action,
         date_from: action === 'pull' ? punchFrom : undefined,
         date_to: action === 'pull' ? punchTo : undefined,
+        device_employee_code: action === 'delete_user' ? deviceEmployeeCode : undefined,
       });
 
       if (response?.data?.success === false) {
@@ -386,11 +520,47 @@ const AttendanceDevices = ({ user }: any) => {
           ? 'Queued. The terminal will send its records the next time it calls in.'
           : action === 'sync_clock'
             ? 'Queued. The clock is set the next time the terminal calls in.'
-            : 'Queued. The terminal answers on its next call.',
+            : action === 'delete_user'
+              ? `Queued. Code ${deviceEmployeeCode} is removed from the terminal on its next call — the attendance already recorded stays.`
+              : 'Queued. The terminal answers on its next call.',
       );
-      await loadCommands(punchDevice.id);
+      if (punchDevice) {
+        await loadCommands(punchDevice.id);
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'The command could not be queued');
+    } finally {
+      setCommandSaving('');
+    }
+  };
+
+  /**
+   * Rewrite the day rows for the chosen dates from the punches on file.
+   *
+   * ⚠️ NOTHING IS ASKED OF THE DEVICE. The evidence is already in hand; this
+   * only makes the stored days agree with it again -- the way back from a late
+   * mapping, an offline week, or a rule that turned out wrong.
+   */
+  const rebuildDays = async () => {
+    if (!punchDevice) return;
+
+    setCommandSaving('rebuild');
+    try {
+      const response = await httpService.post(API_HRMS_ATTENDANCE_PUNCHES_REBUILD_URL, {
+        date_from: punchFrom,
+        date_to: punchTo,
+        device_id: punchDevice.id,
+      });
+
+      if (response?.data?.success === false) {
+        toast.error(response.data.message || 'The days could not be rebuilt');
+        return;
+      }
+
+      toast.success(response?.data?.message || 'Days rebuilt');
+      await loadPunches(punchDevice.id);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'The days could not be rebuilt');
     } finally {
       setCommandSaving('');
     }
@@ -461,6 +631,14 @@ const AttendanceDevices = ({ user }: any) => {
             <span className={row.last_seen_at ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400'}>
               {formatDateTime(row.last_seen_at)}
             </span>
+            {row.is_offline ? (
+              <div
+                className="text-xs font-semibold text-danger"
+                title="The terminal has not called in for more than 15 minutes"
+              >
+                {row.minutes_since_seen === null ? 'Never called in' : `Offline ${row.minutes_since_seen}m`}
+              </div>
+            ) : null}
             {skew ? (
               <div className="text-xs font-semibold text-danger" title="The device clock does not agree with the server">
                 Clock {skew}
@@ -538,6 +716,119 @@ const AttendanceDevices = ({ user }: any) => {
       <HelmetTitle title="Attendance Devices" />
       {loading && <Loader />}
 
+      <div className="mb-3 flex gap-1 border-b border-[rgb(var(--c-border))]">
+        {[
+          { key: 'devices', label: 'Devices' },
+          { key: 'settings', label: 'Device Settings' },
+        ].map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => setTab(item.key as 'devices' | 'settings')}
+            className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold ${
+              tab === item.key
+                ? 'border-primary text-primary'
+                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'settings' && (
+        <div className="border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
+          <h3 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">Device Settings</h3>
+          <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+            These apply to the branch chosen above. Leave the branch on “All Branches” to set them for the whole
+            company; a branch with no answer of its own follows the company.
+          </p>
+
+          {settingsLoading ? (
+            <Loader />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="border border-[rgb(var(--c-border))] p-3">
+                  <DropdownCommon
+                    id="auto_approve"
+                    name="auto_approve"
+                    label="Auto-approve device punches"
+                    value={settings.auto_approve ? '1' : '0'}
+                    data={[
+                      { id: '1', name: 'Yes — approve as they land' },
+                      { id: '0', name: 'No — wait for an admin' },
+                    ]}
+                    onChange={(event: any) =>
+                      setSettings((prev: any) => ({ ...prev, auto_approve: event.target.value === '1' }))
+                    }
+                    className="font-medium"
+                  />
+                  <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    On: a punch is approved the moment the terminal sends it, carrying its real status (present /
+                    late / half day). Off: every device row waits in Manual Attendance for an admin, as it does now.
+                  </p>
+                </div>
+
+                <div className="border border-[rgb(var(--c-border))] p-3">
+                  <InputElement
+                    id="retention_days"
+                    name="retention_days"
+                    label="Keep punches for (days)"
+                    type="number"
+                    value={String(settings.retention_days ?? 0)}
+                    onChange={(event: any) =>
+                      setSettings((prev: any) => ({ ...prev, retention_days: event.target.value }))
+                    }
+                    className="w-full md:w-40"
+                  />
+                  <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    0 = keep every punch forever. The attendance rows are never deleted — only the raw log expires,
+                    in a nightly job. A punch log is the evidence behind a day’s pay; set this only when the branch
+                    has decided how long it is worth keeping.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <ButtonLoading
+                  onClick={saveSettings}
+                  buttonLoading={settingsSaving}
+                  disabled={settingsSaving}
+                  label="Save Settings"
+                  icon={<FiSave />}
+                  className="px-5"
+                />
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="border border-[rgb(var(--c-border))] p-3">
+                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    Enrollment from the server
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Not built, on purpose. Faces are enrolled on the terminal itself, so no face template or photo
+                    ever reaches this server — the position the pilot was planned around. Pushing templates from
+                    here would change that, and the law on biometric data.
+                  </p>
+                </div>
+                <div className="border border-[rgb(var(--c-border))] p-3">
+                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    The same employee on several terminals
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    A code and its employee can be copied to the branch’s other devices from the employee list
+                    (Copy on each row). Each terminal still has to enrol the face itself — templates are never moved
+                    between devices through this server.
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      <div className={tab === 'devices' ? '' : 'hidden'}>
       <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
         <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
           <div>
@@ -728,11 +1019,27 @@ const AttendanceDevices = ({ user }: any) => {
               onClick={addMapping}
               buttonLoading={mappingSaving}
               disabled={mappingSaving}
-              label="Map"
-              icon={<FiUserPlus />}
+              label={editingMapping ? 'Update' : 'Map'}
+              icon={editingMapping ? <FiSave /> : <FiUserPlus />}
               className="px-4"
             />
+            {editingMapping && (
+              <Button
+                type="button"
+                onClick={cancelEditMapping}
+                className="inline-flex items-center justify-center bg-slate-500 px-4 text-sm font-medium text-white hover:bg-slate-600"
+              >
+                Cancel
+              </Button>
+            )}
           </div>
+
+          {editingMapping && (
+            <p className="mb-2 text-xs font-medium text-warning">
+              Editing code <span className="font-mono">{editingMapping.device_employee_code}</span> — the punches it
+              already sent will move to the employee chosen above, and their days will be rebuilt.
+            </p>
+          )}
 
           {mappingLoading && <Loader />}
 
@@ -747,13 +1054,41 @@ const AttendanceDevices = ({ user }: any) => {
                 headerClass: 'text-center',
                 cellClass: 'text-center',
                 render: (row: any) => (
-                  <button
-                    type="button"
-                    onClick={() => removeMapping(row)}
-                    className="inline-flex items-center rounded bg-danger px-3 py-1 text-xs font-semibold text-white hover:opacity-90"
-                  >
-                    Remove
-                  </button>
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => startEditMapping(row)}
+                      className="inline-flex items-center rounded bg-slate-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-slate-600"
+                      title="Correct this mapping — code or employee"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => copyMapping(row)}
+                      className="inline-flex items-center rounded bg-primary px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90"
+                      title="Copy this code and employee to the branch's other devices — each still enrols the face itself"
+                    >
+                      Copy
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeMapping(row)}
+                      className="inline-flex items-center rounded bg-danger px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90"
+                      title="Remove the mapping in the software; the device keeps the face"
+                    >
+                      Unmap
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => queueCommand('delete_user', row.device_employee_code)}
+                      disabled={commandSaving === 'delete_user'}
+                      className="inline-flex items-center rounded bg-slate-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-slate-600 disabled:opacity-50"
+                      title="Delete the face from the terminal itself — attendance already recorded stays"
+                    >
+                      Delete on Device
+                    </button>
+                  </div>
                 ),
               },
             ]}
@@ -815,6 +1150,14 @@ const AttendanceDevices = ({ user }: any) => {
               disabled={commandSaving === 'pull'}
               label="Pull Punches"
               icon={<FiDownload />}
+              className="px-4"
+            />
+            <ButtonLoading
+              onClick={rebuildDays}
+              buttonLoading={commandSaving === 'rebuild'}
+              disabled={commandSaving === 'rebuild'}
+              label="Rebuild Days"
+              icon={<FiRefreshCcw />}
               className="px-4"
             />
           </div>
@@ -902,6 +1245,7 @@ const AttendanceDevices = ({ user }: any) => {
           </span>
         </div>
         <Table columns={columns} data={rows} perPage={20} noDataMessage="No attendance device is registered yet" />
+      </div>
       </div>
     </div>
   );

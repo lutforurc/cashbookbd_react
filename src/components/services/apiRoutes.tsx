@@ -947,8 +947,12 @@ export const API_HRMS_ATTENDANCE_DEVICE_COMMANDS_URL = `${API_BASE_URL}/hrms/att
 export const API_HRMS_ATTENDANCE_DEVICE_COMMAND_URL = `${API_BASE_URL}/hrms/attendance/devices/`;
 export const API_HRMS_ATTENDANCE_MAPPING_URL = `${API_BASE_URL}/hrms/attendance/devices/`;
 export const API_HRMS_ATTENDANCE_MAPPING_DELETE_URL = `${API_BASE_URL}/hrms/attendance/devices/map/delete/`;
+export const API_HRMS_ATTENDANCE_MAPPING_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/devices/map/update/`;
+export const API_HRMS_ATTENDANCE_MAPPING_COPY_URL = `${API_BASE_URL}/hrms/attendance/devices/map/copy/`;
+export const API_HRMS_ATTENDANCE_DEVICE_SETTINGS_URL = `${API_BASE_URL}/hrms/attendance/devices/settings`;
 export const API_HRMS_ATTENDANCE_UNMATCHED_URL = `${API_BASE_URL}/hrms/attendance/unmatched-punches`;
 export const API_HRMS_ATTENDANCE_UNMATCHED_ASSIGN_URL = `${API_BASE_URL}/hrms/attendance/unmatched-punches/assign`;
+export const API_HRMS_ATTENDANCE_PUNCHES_REBUILD_URL = `${API_BASE_URL}/hrms/attendance/punches/rebuild`;
 
 
 // Real Estate Area url

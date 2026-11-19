@@ -4212,7 +4212,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'hrm.attendance.setup.view') && (
+                          {hasPermission(permissions, 'hrm.attendance.device.manage') && (
                             <li style={subSlot('hrm', 'hrms_attendance_devices')}>
                               <NavLink
                                 to={routes.hrms_attendance_devices}
