@@ -224,6 +224,7 @@ const AttendanceEntries = ({ user }: any) => {
   // this one is a thing about to be written, not a report window.
   const [rangeTo, setRangeTo] = useState('');
   const [rangeConfirm, setRangeConfirm] = useState(false);
+  const [rangeApproveConfirm, setRangeApproveConfirm] = useState(false);
   const manualAttendanceEdit = (location.state as any)?.manualAttendanceEdit;
   const displayEntries = entries.map((row: any) => {
     const pendingRow = pendingRows[attendanceRowKey(row)];
@@ -604,6 +605,156 @@ const AttendanceEntries = ({ user }: any) => {
       toast.error(error || 'Range fill failed');
     } finally {
       setBulkLoading(false);
+    }
+  };
+
+  // A range can hold a month of entries, so the approvals go out in small
+  // groups instead of all at once -- the same per-entry endpoint, paced.
+  const approveEntryRows = async (rows: any[]) => {
+    const pickMessage = (value: any) => {
+      if (typeof value === 'string') return value;
+      const errors = value?.errors ? Object.values(value.errors).flat().join(' ') : '';
+      return value?.message || value?.msg || value?.error?.message || errors || '';
+    };
+
+    let approved = 0;
+    let failed = 0;
+    let message = '';
+    for (let index = 0; index < rows.length; index += 10) {
+      const results = await Promise.allSettled(
+        rows.slice(index, index + 10).map((row: any) =>
+          dispatch(
+            approveAttendanceEntry({
+              id: row.id,
+              approval_status: 'approved',
+              remarks: 'Bulk approved from attendance list',
+            }),
+          ).unwrap(),
+        ),
+      );
+      results.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          approved += 1;
+          if (!message) message = pickMessage(result.value);
+        } else {
+          failed += 1;
+          if (!message) message = String(result.reason ?? '');
+        }
+      });
+    }
+    return { approved, failed, message };
+  };
+
+  // Every day of the range, one day at a time. The daily load is the path this
+  // screen has always used, so the range cannot depend on the list endpoint
+  // reading two dates at once.
+  const rangeDays = (from?: string, to?: string) => {
+    const start = dateFromString(from);
+    const end = dateFromString(to);
+    const days: string[] = [];
+    if (!start || !end || end < start) return days;
+
+    const cursor = new Date(start);
+    while (cursor <= end && days.length < 31) {
+      days.push(dateToString(cursor));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return days;
+  };
+
+  // One click over the whole range: read the days the Fill Range button wrote
+  // and approve what came back still pending.
+  const handleRangeApprove = async () => {
+    if (!form.attendance_date || !rangeTo) {
+      toast.error('Select the first and the last day of the range');
+      return;
+    }
+    if (rangeTo < form.attendance_date) {
+      toast.error('The last day cannot be before the first');
+      return;
+    }
+
+    const days = rangeDays(form.attendance_date, rangeTo);
+    if (days.length === 0) {
+      toast.error('Select the first and the last day of the range');
+      return;
+    }
+    if (days.length > 31) {
+      toast.error('The range can cover at most 31 days');
+      return;
+    }
+
+    setBulkApproveLoading(true);
+    try {
+      const pendingResult = await commitPendingRows();
+      if (pendingResult.failed > 0) {
+        toast.error(`Pending attendance save failed. Failed: ${pendingResult.failed}`);
+        return;
+      }
+
+      const loadDayEntries = (day: string) =>
+        dispatch(fetchAttendanceEntries({
+          branch_id: form.branch_id,
+          employment_type: form.employment_type,
+          ...attendanceShiftFilterParams(form.shift_id, shifts),
+          date_from: day,
+          date_to: day,
+        })).unwrap();
+      const pendingOnes = (rows: any) =>
+        (Array.isArray(rows) ? rows : []).filter(
+          (row: any) => row?.id && !row?.is_leave_day && row?.approval_status !== 'approved',
+        );
+
+      const approvableEntries: any[] = [];
+      for (const day of days) {
+        approvableEntries.push(...pendingOnes(await loadDayEntries(day)));
+      }
+
+      if (approvableEntries.length === 0) {
+        toast.info('No pending attendance found in this range');
+        setRangeApproveConfirm(false);
+        return;
+      }
+
+      const outcome = await approveEntryRows(approvableEntries);
+
+      // The HTTP code only says the request arrived. Reading the days back is
+      // what says whether the entries turned approved.
+      const touchedDays = Array.from(
+        new Set(approvableEntries.map((row: any) => String(row.attendance_date || '').slice(0, 10))),
+      ).filter((day) => days.includes(day));
+      let stillPending = 0;
+      for (const day of touchedDays) {
+        stillPending += pendingOnes(await loadDayEntries(day)).length;
+      }
+      const approvedCount = Math.max(0, approvableEntries.length - stillPending);
+
+      setRangeApproveConfirm(false);
+
+      const reloadParams = {
+        branch_id: form.branch_id,
+        employment_type: form.employment_type,
+        ...attendanceShiftFilterParams(form.shift_id, shifts),
+        date_from: form.attendance_date,
+        date_to: rangeTo,
+      };
+      setFilters((prev: any) => ({ ...prev, ...reloadParams }));
+      loadEntries(reloadParams);
+
+      const savedText = pendingResult.saved ? ` Saved: ${pendingResult.saved}.` : '';
+      if (approvedCount > 0) {
+        toast.success(
+          `Range approval completed.${savedText} Approved: ${approvedCount}${stillPending ? `, Still pending: ${stillPending}` : ''}`,
+        );
+      } else {
+        toast.error(
+          outcome.message || `The server accepted ${approvableEntries.length} requests but none of the entries turned approved`,
+        );
+      }
+    } catch (error: any) {
+      toast.error(error || 'Range approval failed');
+    } finally {
+      setBulkApproveLoading(false);
     }
   };
 
@@ -996,13 +1147,22 @@ const AttendanceEntries = ({ user }: any) => {
             setCurrentDate={(date) => setRangeTo(dateToString(date))}
             className="w-full"
           />
-          <div className="flex items-end">
+          <div className="flex flex-wrap items-end gap-2">
             <ButtonLoading
               type="button"
               onClick={() => setRangeConfirm(true)}
               buttonLoading={bulkLoading}
               label="Fill Range"
               className=""
+              icon={<FiCheck className="mr-2" />}
+            />
+            <ButtonLoading
+              type="button"
+              onClick={() => setRangeApproveConfirm(true)}
+              buttonLoading={bulkApproveLoading}
+              disabled={bulkApproveLoading || !rangeTo}
+              label="Approve Range"
+              className="bg-emerald-600 hover:bg-emerald-700"
               icon={<FiCheck className="mr-2" />}
             />
           </div>
@@ -1127,6 +1287,30 @@ const AttendanceEntries = ({ user }: any) => {
         onCancel={() => setRangeConfirm(false)}
         onConfirm={handleRangeSubmit}
         className="bg-blue-600"
+      />
+
+      {/* The same days as the fill above, approved as they stand: pending
+          entries in the range, and nothing already approved is touched. */}
+      <ConfirmModal
+        show={rangeApproveConfirm}
+        title="Confirm Range Approval"
+        message={
+          <>
+            Approve every pending attendance entry from
+            <span className="mt-1 block font-bold">
+              {chartDate(form.attendance_date)} to {chartDate(rangeTo)} — {rangeDayCount(form.attendance_date, rangeTo)} days
+            </span>
+            <span className="mt-1 block">
+              Entries already approved are left as they are. Rejected entries in the range will be approved too.
+            </span>
+          </>
+        }
+        loading={bulkApproveLoading}
+        cancelLabel="Cancel"
+        confirmLabel="Approve Range"
+        onCancel={() => setRangeApproveConfirm(false)}
+        onConfirm={handleRangeApprove}
+        className="bg-emerald-600 hover:bg-emerald-700"
       />
 
       <ConfirmModal
