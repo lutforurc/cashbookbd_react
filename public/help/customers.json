@@ -22,7 +22,7 @@
     "intro": "নতুন গ্রাহক বা সরবরাহকারীর তথ্য, guarantor, nominee ও portal login এই ফর্মে লেখা হয়। Edit স্ক্রিনে একই ঘর, শুধু কিছু ঘর লক থাকে।",
     "sections": [
       { "heading": "ঘরগুলো", "menu": "Customers → Add Customer / Edit Customer", "steps": ["Select Area, Select Type ও Handle By Employee বাছুন।", "Name, Name (Bangla), Relation, Relation's Name ও Mother's Name লিখুন।", "Sex, Date of Birth, Occupation, Contact Person, Contact Number, National ID ও Mobile Number দিন।", "Present Address লিখুন; Same as Present চালু করলে Permanent Address একই হবে।", "Ledger Page, Opening Balance ও Customer Number দিন।", "Portal login দিতে Access Customer Login = Yes করে Portal Password দিন; Photo যোগ করুন।"] },
-      { "heading": "Guarantor ও Nominee", "steps": ["Guarantor Details-এ Name, Father Name, Mobile, National ID ও Address দিয়ে Add Guarantor করুন।", "Nominee Details-এ Name, Relation, Share Percentage, Priority Order, Guardian ও Status দিয়ে Add Nominee করুন।", "শেষে Save/Update (Ctrl + U) চাপুন।"] },
+      { "heading": "Guarantor ও Nominee", "steps": ["Guarantor Details-এ Name, Father Name, Mobile, National ID ও Address দিয়ে Add Guarantor করুন।", "Nominee Details-এ Name, Relation, Share Percentage, Priority Order, Guardian ও Status দিয়ে Add Nominee করুন।", "শেষে Save (Ctrl + S) চাপুন; পুরোনো গ্রাহক বদলাতে Edit স্ক্রিনে Update (Ctrl + U) চাপুন।"] },
       { "heading": "সতর্কতা", "warning": "একই মোবাইল নম্বর আগে থাকলে Confirm করে তবেই সেভ হবে। Opening Balance একবার দেওয়ার পর বদলানো যায় না; nominee-দের share মোট ১০০% হওয়া উচিত।" }
     ]
   },

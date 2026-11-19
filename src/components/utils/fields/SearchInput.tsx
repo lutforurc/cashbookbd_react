@@ -20,6 +20,11 @@ interface SearchObject {
    * Left off, every existing caller keeps the plain "Search...".
    */
   placeholder?: string;
+  /**
+   * Run the screen's search on Enter, the same as its Search button does.
+   * Left off, Enter does nothing in the box, as before.
+   */
+  onEnter?: () => void;
 }
 
 const SearchInput: React.FC<SearchObject> = ({
@@ -29,6 +34,7 @@ const SearchInput: React.FC<SearchObject> = ({
   label,
   id,
   placeholder,
+  onEnter,
 }) => {
   /**
    * ⚠️ `w-50` is a default width, not a width.
@@ -60,6 +66,15 @@ const SearchInput: React.FC<SearchObject> = ({
       placeholder={placeholder || 'Search...'}
       value={search}
       onChange={(e) => setSearchValue(e.target.value)} // Call the passed function
+      onKeyDown={
+        onEnter
+          ? (e) => {
+              if (e.key !== 'Enter') return;
+              e.preventDefault();
+              onEnter();
+            }
+          : undefined
+      }
     />
   );
 

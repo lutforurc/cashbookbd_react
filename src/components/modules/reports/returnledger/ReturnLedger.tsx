@@ -581,7 +581,12 @@ const ReturnLedger = ({ user, mode }: { user: any; mode: ReturnMode }) => {
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
               Search
             </label>
-            <SearchInput search={search} setSearchValue={setSearchValue} className="w-full" />
+            <SearchInput
+              search={search}
+              setSearchValue={setSearchValue}
+              className="w-full"
+              onEnter={load}
+            />
           </div>
 
           <div className="order-5 grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 min-[1180px]:col-span-2">

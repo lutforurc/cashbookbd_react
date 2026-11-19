@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FieldArray, useFormik, FormikProvider } from 'formik';
@@ -21,6 +21,7 @@ import PhotoInput from '../../utils/fields/PhotoInput';
 import httpService from '../../services/httpService';
 import { API_CUSTOMER_MOBILE_CHECK_URL } from '../../services/apiRoutes';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
+import useCtrlS from '../../utils/hooks/useCtrlS';
 
 type DuplicateWarning = {
   mobile: string;
@@ -436,6 +437,41 @@ const AddCustomerSupplier = () => {
       error: '',
     });
   };
+
+  /**
+   * Ctrl+S is the Save button. The button's own handler is reused -- the same
+   * validation, the same duplicate-mobile check, the same reset afterwards --
+   * so nothing is written by a second path.
+   *
+   * ⚠️ THE DIALOG AND AN IN-FLIGHT SAVE BOTH CALL IT OFF. While the duplicate
+   * warning is open the next step belongs to that dialog; a shortcut that
+   * submitted behind it would ask the question twice. A held key repeats
+   * keydown before `buttonLoading` has reached a render, so the ref is set
+   * straight away and released when Formik's submission settles.
+   *
+   * ⚠️ READ THROUGH A REF. Formik hands out a new `handleSubmit` on every
+   * render, so binding it directly would tear down and rebuild the listener on
+   * each character typed into a field.
+   */
+  const savingRef = useRef(false);
+
+  const submitForShortcut = () => {
+    if (savingRef.current || buttonLoading || duplicateWarning) return;
+
+    savingRef.current = true;
+    Promise.resolve(formik.handleSubmit()).finally(() => {
+      savingRef.current = false;
+    });
+  };
+
+  const submitRef = useRef(submitForShortcut);
+  useEffect(() => {
+    submitRef.current = submitForShortcut;
+  });
+
+  // One identity for the whole life of the screen, so the listener is bound
+  // once. It reads the newest handler through the ref above.
+  useCtrlS(useCallback(() => submitRef.current(), []));
 
   const selectedArea = formattedAreaData.find(
     (opt: any) => opt.value === formik.values.area_id?.toString(),

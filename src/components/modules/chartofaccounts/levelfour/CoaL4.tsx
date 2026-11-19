@@ -279,7 +279,7 @@ const CoaL4 = () => {
                         search={search}
                         setSearchValue={setSearchValue}
                         className="text-nowrap"
-                       
+                        onEnter={handleSearchButton}
                     />
                     <ButtonLoading
                         onClick={handleSearchButton}
