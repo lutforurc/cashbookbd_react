@@ -4743,6 +4743,9 @@ class ReportsController extends Controller
         $branchId    = $request->filled('branch_id') ? (int) $request->branch_id : null;
         $categoryId  = $request->filled('category_id') ? (int) $request->category_id : null;
         $brandId     = $request->filled('brand_id') ? (int) $request->brand_id : null;
+        // The Product box on the screen: one product out of everything the
+        // Brand / Group / Category boxes let through.
+        $productId   = $request->filled('product_id') ? (int) $request->product_id : null;
         $productName = $request->filled('product_name') ? trim((string) $request->product_name) : null;
         $user = Auth::user();
 
@@ -4813,6 +4816,9 @@ class ReportsController extends Controller
         if (!is_null($categoryId)) {
             $openingStock->where('product_items.category_id', $categoryId);
         }
+        if (!is_null($productId)) {
+            $openingStock->where('inventory_details.product_id', $productId);
+        }
         if (!is_null($productName)) {
             $openingStock->where('product_items.name', 'LIKE', "%{$productName}%");
         }
@@ -4873,6 +4879,9 @@ class ReportsController extends Controller
         }
         if (!is_null($categoryId)) {
             $stockRangeDetails->where('product_items.category_id', $categoryId);
+        }
+        if (!is_null($productId)) {
+            $stockRangeDetails->where('inventory_details.product_id', $productId);
         }
         if (!is_null($productName)) {
             $stockRangeDetails->where('product_items.name', 'LIKE', "%{$productName}%");
@@ -5639,6 +5648,10 @@ class ReportsController extends Controller
         $branchId  = $user->branch_id;
         $userId    = $user->id;
 
+        // The Product box on Stock Details: `pno` is the product id the
+        // closing-stock rows were built from (see closingStock()).
+        $productId = $request->filled('product_id') ? (int) $request->product_id : null;
+
         if (!$companyId || !$branchId || !$userId) {
             return response()->json([
                 'message' => 'Authenticated company, branch, and user context are required'
@@ -5661,6 +5674,7 @@ class ReportsController extends Controller
             ->where('company_id', $companyId)
             ->where('branch_id', $branchId)
             ->where('user_id', $userId)
+            ->when(!is_null($productId), fn($q) => $q->where('pno', $productId))
             ->get();
 
         $tables = $rows->map(function ($pcs) {

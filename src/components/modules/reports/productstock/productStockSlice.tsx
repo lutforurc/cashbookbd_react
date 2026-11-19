@@ -7,6 +7,7 @@ interface ledgerParam {
   brandId: number | null;
   categoryId: number;
   groupId?: number | string | null;
+  productId?: number | string | null;
   search?: string;
   startDate: string;
   endDate: string;
@@ -25,10 +26,10 @@ interface ledgerParam {
  */
 let latestTicket = 0;
 
-export const getProductStock = ({ branchId, brandId, categoryId, groupId, search, startDate, endDate }: ledgerParam) => (dispatch: any) => {
+export const getProductStock = ({ branchId, brandId, categoryId, groupId, productId, search, startDate, endDate }: ledgerParam) => (dispatch: any) => {
   const ticket = ++latestTicket;
   dispatch({ type: PRODUCT_STOCK_DATA_LIST_PENDING });
-  httpService.post(API_REPORT_PRODUCT_STOCK_URL, { branch_id: branchId, brand_id: brandId, category_id: categoryId, group_id: groupId || null, product_name: search, startdate: startDate, enddate: endDate })
+  httpService.post(API_REPORT_PRODUCT_STOCK_URL, { branch_id: branchId, brand_id: brandId, category_id: categoryId, group_id: groupId || null, product_id: productId || null, product_name: search, startdate: startDate, enddate: endDate })
     .then((res) => {
       // A newer request is already in flight; this answer is stale.
       if (ticket !== latestTicket) return;

@@ -790,6 +790,7 @@ Closing Stock:
   - `enddate`
   - `start_date`
   - `end_date`
+  - `product_id` (optional; one product only)
 - Send both old and new date keys to match the web implementation.
 
 Stock Details:
@@ -805,6 +806,7 @@ Product Stock:
   - `branch_id`
   - `brand_id`
   - `category_id`
+  - `product_id` (optional; one product only)
   - `product_name`
   - `startdate`
   - `enddate`

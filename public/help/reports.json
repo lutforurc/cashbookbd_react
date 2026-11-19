@@ -331,7 +331,7 @@
   "closing-stock": {
     "title": "ক্লোজিং স্টক",
     "module": "Reports",
-    "updated": "06/11/2026",
+    "updated": "19/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "নির্বাচিত তারিখে প্রতিটি পণ্যের হাতে থাকা পরিমাণ, দর ও মোট মূল্য ব্র্যান্ড, গ্রুপ ও ক্যাটাগরি ধরে দেখা যায়।",
@@ -340,8 +340,8 @@
         "heading": "রিপোর্ট দেখা",
         "menu": "Reports → Closing Stock",
         "steps": [
-          "Select Branch বাছুন।",
-          "Brand, Group ও Category দিয়ে ফল ছোট করুন; Search-এ পণ্যের নাম বা কোড লিখুন।",
+          "Branch এখন নিজের শাখা থেকেই আসে; আলাদা করে বাছতে হয় না।",
+          "Brand, Group, Category ও Product দিয়ে ফল ছোট করুন; Search-এ পণ্যের নাম বা কোড লিখুন।",
           "Start Date ও End Date দিন, Apply চাপুন।"
         ]
       },
@@ -359,7 +359,7 @@
   "product-stock": {
     "title": "পণ্যের স্টক",
     "module": "Reports",
-    "updated": "06/11/2026",
+    "updated": "19/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "প্রতিটি পণ্যের খোলা স্টক, ভেতরে আসা, বাইরে যাওয়া ও শেষের ব্যালেন্স একসাথে দেখা যায়।",
@@ -368,7 +368,7 @@
         "heading": "রিপোর্ট দেখা",
         "menu": "Reports → Product Stock",
         "steps": [
-          "Branch, Brand, Group, Category বাছুন বা খালি রাখুন।",
+          "Branch নিজের শাখা থেকেই আসে; Brand, Group, Category ও Product বাছুন বা খালি রাখুন।",
           "Search-এ পণ্যের নাম বা কোড লিখুন।",
           "Start Date ও End Date দিন, Apply চাপুন।"
         ]

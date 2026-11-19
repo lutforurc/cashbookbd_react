@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
+import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
@@ -104,6 +104,28 @@ const buildCategoryWiseRows = (rows: any[]) => {
 };
 
 /**
+ * Does a row belong to the product the Product box picked?
+ *
+ * ⚠️ THE BOX IS A STRICT NARROWING, NOT A HINT: one picked product answers with
+ * that product's rows and nothing else. The id decides whenever the row carries
+ * one -- it is what the box holds and what the server filters by. A row from a
+ * server a patch behind carries no id, so the picked option's own label (the
+ * product name) is the fallback there, which keeps a selection from answering
+ * with the whole list.
+ */
+const matchesProduct = (row: any, productId: string, productLabel: string) => {
+  if (!productId) return true;
+
+  const id = row?.product_id ?? row?.productId ?? row?.item_id;
+  if (id !== null && id !== undefined && String(id) !== '') {
+    return String(id) === String(productId);
+  }
+
+  const label = String(productLabel ?? '').trim();
+  return !!label && String(row?.product_name ?? '').trim() === label;
+};
+
+/**
  * The Product Stock toolbar is one wrapping flex row, so a control is never
  * squeezed into a track narrower than it -- it takes the next line instead. The
  * basis decides how many share a line: a whole one per line on a phone, two
@@ -117,11 +139,16 @@ const buildCategoryWiseRows = (rows: any[]) => {
 const FILTER_CELL =
   'min-w-0 grow basis-full min-[360px]:basis-[calc(50%-0.375rem)] min-[360px]:max-w-[280px] sm:basis-[calc(33.333%-0.5rem)] lg:basis-[190px]';
 
-/** Branch leads the row, so it is allowed a little more room than the rest. */
-const BRANCH_CELL = 'min-w-0 grow basis-full sm:basis-[240px] lg:max-w-[340px] lg:basis-[260px]';
+/** The search box is the smaller of the two: it is a hint, not a narrowing. */
+const SEARCH_CELL = 'min-w-0 grow basis-full sm:basis-[180px] lg:max-w-[260px]';
 
-/** The search box takes the spare room on its line (grow-[2]) and fills it. */
-const SEARCH_CELL = 'min-w-0 grow-[2] basis-full sm:basis-[220px] lg:max-w-[560px]';
+/**
+ * The Product box is the wider one. It carries a whole "CODE - NAME" and is
+ * read as a selection, so it gets more room on every line than the Search box
+ * beside it.
+ */
+const PRODUCT_CELL =
+  'min-w-0 grow basis-full min-[360px]:basis-[calc(50%-0.375rem)] min-[360px]:max-w-[320px] sm:basis-[calc(33.333%-0.5rem)] sm:max-w-[360px] lg:basis-[300px] lg:max-w-[440px]';
 
 /** Rows and Font stay as narrow as their boxes: they are settings, not filters. */
 const COMPACT_CELL = 'shrink-0';
@@ -150,8 +177,12 @@ const ProductStockNormal = ({ user }: any) => {
   const [search, setSearchValue] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
 
-  const [branchId, setBranchId] = useState<number | string | null>(null);
+  const [branchId, setBranchId] = useState<number | string | null>(authUser?.branch_id ?? null);
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
+  // The one product this report may be narrowed to. Empty means every product
+  // the Category box lets through.
+  const [productId, setProductId] = useState<string>('');
+  const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   // Same Group box as Stock Details / ProductStock, from the same branch switch.
   const needProductGroup = isBranchSettingOn(settings, "need_product_group");
   const productGroupData = useSelector((state: any) => state.productGroup);
@@ -161,6 +192,13 @@ const ProductStockNormal = ({ user }: any) => {
   const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
+  /**
+   * The Product the rows on screen were asked for -- read when the answer is
+   * drawn, not when the box changes. Picking a different product and not
+   * pressing Apply must leave the table alone; filtering the old answer by the
+   * new id would blank it and read as "this product has no stock".
+   */
+  const appliedProduct = useRef<{ id: string; label: string }>({ id: '', label: '' });
   const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(12);
   const [brandId, setBrandId] = useState<number | string | null>(null);
@@ -300,16 +338,18 @@ const ProductStockNormal = ({ user }: any) => {
   // ✅ stock data -> convert to category-wise rows
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {
-      const grouped = buildCategoryWiseRows(stock.data);
-      setTableData(grouped);
+      // The Product box narrows whatever the load returned, so a selection can
+      // never answer with the whole list -- see matchesProduct. It reads the
+      // product this answer was ASKED for, held in the ref.
+      const { id, label } = appliedProduct.current;
+      const visible = id
+        ? stock.data.filter((row: any) => matchesProduct(row, id, label))
+        : stock.data;
+      setTableData(buildCategoryWiseRows(visible));
     } else if (!stock.isLoading) {
       setTableData([]);
     }
   }, [stock]);
-
-  const handleBranchChange = (e: any) => {
-    setBranchId(e.target.value);
-  };
 
   const handleCategoryChange = (selectedOption: any) => {
     if (selectedOption) {
@@ -317,6 +357,15 @@ const ProductStockNormal = ({ user }: any) => {
     } else {
       setCategoryId(null);
     }
+  };
+
+  /**
+   * The product box: the id is what the report is filtered by, the option is
+   * kept so the picked "CODE - NAME" stays in the box between renders.
+   */
+  const handleProductChange = (selectedOption: any) => {
+    setProductId(selectedOption?.value != null ? String(selectedOption.value) : '');
+    setSelectedProductOption(selectedOption || null);
   };
 
   const handleStartDate = (e: any) => {
@@ -341,6 +390,10 @@ const ProductStockNormal = ({ user }: any) => {
 
     setButtonLoading(true);
     setFilterOpen(false);
+    appliedProduct.current = {
+      id: productId || '',
+      label: selectedProductOption?.label || '',
+    };
     const startD = dayjs(from).format('YYYY-MM-DD');
     const endD = dayjs(to).format('YYYY-MM-DD');
 
@@ -349,6 +402,7 @@ const ProductStockNormal = ({ user }: any) => {
         branchId,
         brandId,
         categoryId,
+        productId: productId || null,
         groupId: needProductGroup ? groupId || null : null,
         search,
         startDate: startD,
@@ -375,6 +429,8 @@ const ProductStockNormal = ({ user }: any) => {
     setPerPage(20);
     setBrandId(null);
     setCategoryId(null);
+    setProductId('');
+    setSelectedProductOption(null);
     setGroupId('');
     setStartDate(defaultTransactionDate);
     setEndDate(defaultTransactionDate);
@@ -607,7 +663,7 @@ const ProductStockNormal = ({ user }: any) => {
                 }
               >
                 {/* One wrapping flex row for every control, in reading order:
-                    Branch, Brand, Group, Category, Search, the two dates, then
+                    Brand, Group, Category, Product, Search, the two dates, then
                     Rows, Font and the Apply/Reset/Print group. Nothing is
                     forced onto a fixed column count, so no control is squeezed
                     and no track is left empty -- see the cell classes above. */}
@@ -630,17 +686,6 @@ const ProductStockNormal = ({ user }: any) => {
                       />
                     </div>
                   )}
-
-                  <div className={BRANCH_CELL}>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch</label>
-                    {branchDdlData.isLoading == true ? <Loader /> : ''}
-                    <BranchDropdown
- onChange={handleBranchChange}
- value={branchId == null ? '' : String(branchId)}
- className="w-full font-medium text-sm pl-1.5 pt-2 pb-2 "
- branchDdl={dropdownData}
-                    />
-                  </div>
 
                   {/* ⚠️ THE THREE GATES READ `loaded`, NOT `isLoading`. A
                       slice's isLoading starts false, so the render before its
@@ -695,6 +740,19 @@ const ProductStockNormal = ({ user }: any) => {
                     ) : (
                       <FieldLoading />
                     )}
+                  </div>
+
+                  {/* Product, immediately right of Category: the last and the
+                      narrowest filter -- one product out of everything the
+                      Category box let through. Wider than the Search box
+                      beside it, which is only a hint. */}
+                  <div className={PRODUCT_CELL}>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Product</label>
+                    <ProductDropdown
+                      onSelect={handleProductChange}
+                      className="w-full font-medium text-sm"
+                      value={selectedProductOption}
+                    />
                   </div>
 
                   {/* The box, immediately left of Start Date.

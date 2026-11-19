@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
 import InputDatePicker from '../../../utils/fields/DatePicker';
-import BranchDropdown from '../../../utils/utils-functions/BranchDropdown';
+import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Loader from '../../../../common/Loader';
 import { useDispatch, useSelector } from 'react-redux';
@@ -51,6 +51,28 @@ const toNumber = (value: any) => {
 /** Has the report actually sent a value for this id? 0 is a value, "" is not. */
 const hasId = (value: any) =>
   value !== null && value !== undefined && String(value) !== '';
+
+/**
+ * Does a row belong to the product the Product box picked?
+ *
+ * ⚠️ THE BOX IS A STRICT NARROWING, NOT A HINT: one picked product answers with
+ * that product's rows and nothing else. The id decides whenever the row carries
+ * one -- it is what the box holds and what the server filters by. A row from a
+ * server a patch behind carries no id, so the picked option's own label (the
+ * product name) is the fallback there, which keeps a selection from answering
+ * with the whole list.
+ */
+const matchesProduct = (row: any, productId: string, productLabel: string) => {
+  if (!productId) return true;
+
+  const id = row?.product_id ?? row?.productId ?? row?.item_id;
+  if (id !== null && id !== undefined && String(id) !== '') {
+    return String(id) === String(productId);
+  }
+
+  const label = String(productLabel ?? '').trim();
+  return !!label && String(row?.product_name ?? '').trim() === label;
+};
 
 const brandLabelOf = (row: any) =>
   String(row?.brand_name ?? '').trim() || 'Unknown Brand';
@@ -264,11 +286,16 @@ const buildBrandGroupCategoryRows = (rows: any[]) => {
 const FILTER_CELL =
   'min-w-0 grow basis-full min-[360px]:basis-[calc(50%-0.375rem)] min-[360px]:max-w-[280px] sm:basis-[calc(33.333%-0.5rem)] lg:basis-[190px]';
 
-/** Branch leads the row, so it is allowed a little more room than the rest. */
-const BRANCH_CELL = 'min-w-0 grow basis-full sm:basis-[240px] lg:max-w-[340px] lg:basis-[260px]';
+/** The search box is the smaller of the two: it is a hint, not a narrowing. */
+const SEARCH_CELL = 'min-w-0 grow basis-full sm:basis-[180px] lg:max-w-[260px]';
 
-/** The search box takes the spare room on its line (grow-[2]) and fills it. */
-const SEARCH_CELL = 'min-w-0 grow-[2] basis-full sm:basis-[220px] lg:max-w-[560px]';
+/**
+ * The Product box is the wider one. It carries a whole "CODE - NAME" and is
+ * read as a selection, so it gets more room on every line than the Search box
+ * beside it.
+ */
+const PRODUCT_CELL =
+  'min-w-0 grow basis-full min-[360px]:basis-[calc(50%-0.375rem)] min-[360px]:max-w-[320px] sm:basis-[calc(33.333%-0.5rem)] sm:max-w-[360px] lg:basis-[300px] lg:max-w-[440px]';
 
 /** Rows and Font stay as narrow as their boxes: they are settings, not filters. */
 const COMPACT_CELL = 'shrink-0';
@@ -299,6 +326,10 @@ const ProductStock = ({ user }: any) => {
 
   const [branchId, setBranchId] = useState<number | string | ''>(authUser?.branch_id || '');
   const [categoryId, setCategoryId] = useState<number | string | null>(null);
+  // The one product this report may be narrowed to. Empty means every product
+  // the Brand/Group/Category boxes let through.
+  const [productId, setProductId] = useState<string>('');
+  const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   // Stock Details' Group box, verbatim: same switch, same dropdown, same
   // "All Groups" first entry.
   const needProductGroup = isBranchSettingOn(settings, "need_product_group");
@@ -310,6 +341,13 @@ const ProductStock = ({ user }: any) => {
   const [brandId, setBrandId] = useState<string | null>(''); // null হতে পারবে
 
   const printRef = useRef<HTMLDivElement>(null);
+  /**
+   * The Product the rows on screen were asked for -- read when the answer is
+   * drawn, not when the box changes. Picking a different product and not
+   * pressing Apply must leave the table alone; filtering the old answer by the
+   * new id would blank it and read as "this product has no stock".
+   */
+  const appliedProduct = useRef<{ id: string; label: string }>({ id: '', label: '' });
   const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(11);
 
@@ -337,8 +375,14 @@ const ProductStock = ({ user }: any) => {
 
   useEffect(() => {
     if (!stock.isLoading && Array.isArray(stock?.data)) {
-      const grouped = buildBrandGroupCategoryRows(stock.data);
-      setTableData(grouped);
+      // The Product box narrows whatever the load returned, so a selection can
+      // never answer with the whole list -- see matchesProduct. It reads the
+      // product this answer was ASKED for, held in the ref.
+      const { id, label } = appliedProduct.current;
+      const visible = id
+        ? stock.data.filter((row: any) => matchesProduct(row, id, label))
+        : stock.data;
+      setTableData(buildBrandGroupCategoryRows(visible));
     } else if (!stock.isLoading) {
       setTableData([]);
     }
@@ -358,17 +402,13 @@ const ProductStock = ({ user }: any) => {
       if (authUser?.branch_id) {
         setBranchId(authUser.branch_id);
       } else {
-        // The dropdown has no "All Branch" option, so an empty value would
-        // still render the first branch while sending no branch filter at all.
+        // ⚠️ There is no Branch box on this screen any more, so the report
+        // follows the login's own branch -- and, for a login that has none, the
+        // branch the protected DDL reports as current.
         setBranchId((prev) => prev || branchDdlData.protectedData.data[0]?.id || '');
       }
     }
   }, [branchDdlData?.protectedData, authUser?.branch_id]);
-
-  const handleBranchChange = (e: any) => {
-    const val = e.target ? e.target.value : e;
-    setBranchId(val);
-  };
 
   const handleBrandChange = (selectedOption: any) => {
     setBrandId(selectedOption?.value ?? null); // "" এর বদলে null
@@ -376,6 +416,15 @@ const ProductStock = ({ user }: any) => {
 
   const handleCategoryChange = (selectedOption: any) => {
     setCategoryId(selectedOption?.value ?? null);
+  };
+
+  /**
+   * The product box: the id is what the report is filtered by, the option is
+   * kept so the picked "CODE - NAME" stays in the box between renders.
+   */
+  const handleProductChange = (selectedOption: any) => {
+    setProductId(selectedOption?.value != null ? String(selectedOption.value) : '');
+    setSelectedProductOption(selectedOption || null);
   };
 
   const handleStartDate = (date: Date | null) => setStartDate(date);
@@ -498,6 +547,11 @@ const ProductStock = ({ user }: any) => {
     setButtonLoading(true);
     setFilterOpen(false);
 
+    appliedProduct.current = {
+      id: productId || '',
+      label: selectedProductOption?.label || '',
+    };
+
     const startD = dayjs(from).format('YYYY-MM-DD');
     const endD = dayjs(to).format('YYYY-MM-DD');
 
@@ -506,6 +560,7 @@ const ProductStock = ({ user }: any) => {
       branchId,
       brandId,           // এখন null হলে null-ই যাবে
       categoryId,
+      productId,
       search,
       startDate: startD,
       endDate: endD,
@@ -516,6 +571,7 @@ const ProductStock = ({ user }: any) => {
         branchId: branchId || null,
         brandId: brandId,           // null পাঠালে ব্যাকএন্ডে সব ব্র্যান্ড আসবে (আশা করা যায়)
         categoryId,
+        productId: productId || null,
         groupId: needProductGroup ? groupId || null : null,
         search: search || undefined,
         startDate: startD,
@@ -541,6 +597,8 @@ const ProductStock = ({ user }: any) => {
     setBranchId(authUser?.branch_id || '');
     setBrandId('');
     setCategoryId('');
+    setProductId('');
+    setSelectedProductOption(null);
     setGroupId('');
     setSearchValue('');
     setPerPage(35);
@@ -756,7 +814,7 @@ const ProductStock = ({ user }: any) => {
                 }
               >
                 {/* One wrapping flex row for every control, in reading order:
-                    Branch, Brand, Group, Category, Search, the two dates, then
+                    Brand, Group, Category, Product, Search, the two dates, then
                     Rows, Font and the Apply/Reset/Print group. Nothing is
                     forced onto a fixed column count, so no control is squeezed
                     and no track is left empty -- see the cell classes above. */}
@@ -777,21 +835,6 @@ const ProductStock = ({ user }: any) => {
                       />
                     </div>
                   )}
-
-                  <div className={BRANCH_CELL}>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Branch</label>
-                    {branchDdlData.isLoading ? (
-                      <Loader />
-                    ) : (
-                      <BranchDropdown
-                        defaultValue={authUser?.branch_id}
-                        value={String(branchId)}
-                        onChange={handleBranchChange}
-                        className="w-full text-sm p-2 border "
-                        branchDdl={dropdownData}
-                      />
-                    )}
-                  </div>
 
                   {/* ⚠️ THE THREE GATES READ `loaded`, NOT `isLoading`. A
                       slice's isLoading starts false, so the render before its
@@ -849,6 +892,19 @@ const ProductStock = ({ user }: any) => {
                     ) : (
                       <FieldLoading />
                     )}
+                  </div>
+
+                  {/* Product, immediately right of Category: the last and the
+                      narrowest filter -- one product out of everything the
+                      three boxes above it let through. Wider than the Search
+                      box beside it, which is only a hint. */}
+                  <div className={PRODUCT_CELL}>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Product</label>
+                    <ProductDropdown
+                      onSelect={handleProductChange}
+                      className="w-full text-sm"
+                      value={selectedProductOption}
+                    />
                   </div>
 
                   {/* The box, immediately left of Start Date.

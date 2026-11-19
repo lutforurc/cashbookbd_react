@@ -190,8 +190,8 @@ Paths are relative to `<host>/api`. Names match the sidebar.
 | Collection Sheet | POST | `somity-report/collection-sheet` | `branch_id`, `somity_id`, `month_year`, `type_id` *(1=opening)* | `MM/yyyy` | **raw** array · **verify separator, see below** |
 | Monthly Report | POST | `somity-report/monthly-report/data` | `branch_id`, `startdate`, `enddate` | `dd/MM/yyyy` | **raw** object keyed by date · **not concurrency-safe** |
 | Datewise Cash Total | GET | `reports/date-wise-total-data` | `branch_id`, `start_date`, `end_date` | `yyyy-MM-dd` | **wrapped** |
-| Product Stock | POST | `reports/product-stock` | `branch_id`, `brand_id`, `category_id`, `product_name`, `startdate`, `enddate` | `yyyy-MM-dd` | **wrapped** — opening/stock_in/stock_out/balance |
-| Stock Details | POST | `reports/closing-stock` | `branch_id`, `end_date` *(also accepts `enddate`/`endDate`)* | `yyyy-MM-dd` | **wrapped** object **grouped by brand** · writes closing stock as a side effect |
+| Product Stock | POST | `reports/product-stock` | `branch_id`, `brand_id`, `category_id`, `group_id`, `product_id`, `product_name`, `startdate`, `enddate` | `yyyy-MM-dd` | **wrapped** — opening/stock_in/stock_out/balance |
+| Stock Details | POST | `reports/closing-stock` | `branch_id`, `end_date` *(also accepts `enddate`/`endDate`)*, `product_id` | `yyyy-MM-dd` | **wrapped** object **grouped by brand** · writes closing stock as a side effect |
 | IMEI Stock | GET | `reports/stock-imei-data` | `branch_id`, `item_id` *(no dates)* | — | **wrapped** — **object keyed `"1"`,`"2"`… but `[]` when empty** |
 | Cat-wise In/Out | POST | `reports/category-wise-in-out` | `branch_id`, **`reportType`** *(1=purchase, else sales)*, `category_id`, `startdate`, `enddate` | `yyyy-MM-dd` | **wrapped** |
 | Purchase Ledger | GET | `reports/purchase/ledger` | `branch_id`, `ledger_id`, `item_id`, `startdate`, `enddate`, `search`, `delay=1` | `yyyy-MM-dd` | **wrapped** |

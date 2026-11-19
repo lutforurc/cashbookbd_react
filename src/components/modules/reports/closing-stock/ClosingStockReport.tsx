@@ -5,12 +5,11 @@ import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
 import { FiArrowRight, FiCheckSquare, FiRotateCcw } from "react-icons/fi";
 
-import Loader from "../../../../common/Loader";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
 import InputDatePicker from "../../../utils/fields/DatePicker";
 import SearchInput from "../../../utils/fields/SearchInput";
-import BranchDropdown from "../../../utils/utils-functions/BranchDropdown";
+import ProductDropdown from "../../../utils/utils-functions/ProductDropdown";
 import CategoryDropdown from "../../../utils/utils-functions/CategoryDropdown";
 import FieldLoading from "../../../utils/components/FieldLoading";
 import PrintFontInput from '../../../utils/fields/PrintFontInput';
@@ -104,6 +103,28 @@ const rowTotal = (row: StockRow) => {
 };
 
 /**
+ * Does a row belong to the product the Product box picked?
+ *
+ * ⚠️ THE BOX IS A STRICT NARROWING, NOT A HINT: one picked product answers with
+ * that product's rows and nothing else. The id decides whenever the row carries
+ * one. The closing-stock answer is a stocktake of every product on the branch
+ * and may arrive without ids, so the picked option's own label (the product
+ * name) is the fallback -- without it a selection would answer with the whole
+ * branch, which is the misreading the box exists to prevent.
+ */
+const matchesProduct = (row: StockRow, productId: string, productLabel: string) => {
+  if (!productId) return true;
+
+  const id = row?.product_id ?? row?.productId ?? row?.item_id;
+  if (id !== null && id !== undefined && String(id) !== "") {
+    return String(id) === String(productId);
+  }
+
+  const label = String(productLabel ?? "").trim();
+  return !!label && rowProduct(row).trim() === label;
+};
+
+/**
  * A heading's path, drawn as `A → B → C`. The same component, word for word, as
  * Product Stock's `HeadingPath` -- and the same ten lines again on the paper.
  *
@@ -187,10 +208,16 @@ const ClosingStockReport = ({ user }: any) => {
   const productGroupData = useSelector((state: any) => state.productGroup);
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
-  const [branchId, setBranchId] = useState<number | string | null>(null);
+  const [branchId, setBranchId] = useState<number | string | null>(
+    authUser?.branch_id ?? settings?.data?.branch?.id ?? null,
+  );
   const [brandId, setBrandId] = useState<string>("");
   const [categoryId, setCategoryId] = useState<string>("");
   const [groupId, setGroupId] = useState<string>("");
+  // The one product the stocktake may be narrowed to. Empty means every product
+  // the Brand/Group/Category boxes let through.
+  const [productId, setProductId] = useState<string>("");
+  const [selectedProductOption, setSelectedProductOption] = useState<any>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [defaultTransactionDate, setDefaultTransactionDate] = useState<Date | null>(null);
@@ -207,6 +234,17 @@ const ClosingStockReport = ({ user }: any) => {
    */
   const [search, setSearch] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
+
+  /**
+   * The Product the rows on screen were asked for -- the same pair as the
+   * search box, and for the same reason: picking a different product without
+   * pressing Apply must leave the table alone. Filtering the loaded answer by
+   * the new id would blank it and read as "this product has no stock".
+   */
+  const [appliedProduct, setAppliedProduct] = useState<{ id: string; label: string }>({
+    id: "",
+    label: "",
+  });
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -278,15 +316,23 @@ const ClosingStockReport = ({ user }: any) => {
    * still agree on what the one Search box means.
    */
   const visibleRows = useMemo(() => {
-    const needle = appliedSearch.trim().toLowerCase();
-    if (!needle) return rows;
+    // The Product box narrows first, and strictly: everything below -- the
+    // category/group totals, the Grand Total, the paper -- then counts only the
+    // picked product's lines. It reads the APPLIED product, so choosing another
+    // one changes nothing until Apply asks for it.
+    const narrowed = appliedProduct.id
+      ? rows.filter((row) => matchesProduct(row, appliedProduct.id, appliedProduct.label))
+      : rows;
 
-    return rows.filter(
+    const needle = appliedSearch.trim().toLowerCase();
+    if (!needle) return narrowed;
+
+    return narrowed.filter(
       (row) =>
         rowProduct(row).toLowerCase().includes(needle) ||
         rowCode(row).toLowerCase().includes(needle),
     );
-  }, [rows, appliedSearch]);
+  }, [rows, appliedSearch, appliedProduct]);
 
   /**
    * The lines the table is drawn from, in the order they are drawn.
@@ -465,8 +511,15 @@ const ClosingStockReport = ({ user }: any) => {
     // A second Apply while the first is still out is dropped, not queued.
     if (busy.current) return;
 
-    if (!branchId) {
-      toast.error("Branch select korun");
+    /**
+     * ⚠️ There is no Branch box on this screen any more, so the stocktake is
+     * the login's own branch -- or the one the settings call reports as the
+     * current branch, for a login that is not tied to one.
+     */
+    const effectiveBranchId = branchId ?? settings?.data?.branch?.id ?? null;
+
+    if (!effectiveBranchId) {
+      toast.error("Branch পাওয়া যায়নি");
       return;
     }
     if (!startDate || !endDate) {
@@ -489,6 +542,7 @@ const ClosingStockReport = ({ user }: any) => {
      * this is the same rule, not a new one.
      */
     setAppliedSearch(search);
+    setAppliedProduct({ id: productId, label: selectedProductOption?.label || "" });
 
     // This request's ticket. Only the newest ticket is allowed to write.
     const seq = ++loadSeq.current;
@@ -498,7 +552,7 @@ const ClosingStockReport = ({ user }: any) => {
 
     try {
       const response = await httpService.post(API_REPORT_CLOSING_STOCK_URL, {
-        branch_id: branchId,
+        branch_id: effectiveBranchId,
         startdate: startD,
         enddate: endD,
         start_date: startD,
@@ -506,6 +560,7 @@ const ClosingStockReport = ({ user }: any) => {
         brand_id: brandId || null,
         category_id: categoryId || null,
         group_id: needProductGroup ? groupId || null : null,
+        product_id: productId || null,
       });
 
       if (seq !== loadSeq.current) return;
@@ -549,10 +604,22 @@ const ClosingStockReport = ({ user }: any) => {
     setFontSize(12);
     setBrandId("");
     setCategoryId("");
+    setProductId("");
+    setSelectedProductOption(null);
     setGroupId("");
     setSearch("");
     setAppliedSearch("");
+    setAppliedProduct({ id: "", label: "" });
     if (authUser?.branch_id) setBranchId(authUser.branch_id);
+  };
+
+  /**
+   * The product box: the id is what the stocktake is filtered by, the option is
+   * kept so the picked "CODE - NAME" stays in the box between renders.
+   */
+  const handleProductChange = (selectedOption: any) => {
+    setProductId(selectedOption?.value != null ? String(selectedOption.value) : "");
+    setSelectedProductOption(selectedOption || null);
   };
 
   /**
@@ -693,17 +760,6 @@ const ClosingStockReport = ({ user }: any) => {
 
       <div className="py-3">
         <div className="flex flex-wrap items-end gap-3">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
-            {branchDdlData.isLoading ? <Loader /> : null}
-            <BranchDropdown
-              onChange={(e: any) => setBranchId(e.target.value)}
-              value={branchId == null ? "" : String(branchId)}
-              className="w-full font-medium text-sm p-2 h-10 min-w-[260px]"
-              branchDdl={dropdownData}
-            />
-          </div>
-
           {/* ⚠️ THE THREE GATES READ `loaded`, NOT `isLoading`. A slice's
               isLoading starts false, so the render before its thunk's pending
               action lands is indistinguishable from a finished fetch -- the box
@@ -761,6 +817,19 @@ const ClosingStockReport = ({ user }: any) => {
             )}
           </div>
 
+          {/* Product, immediately right of Category: the last and the narrowest
+              filter -- one product out of everything the three boxes above it
+              let through. Wider than the Search box, because it carries a whole
+              "CODE - NAME" and is read as a choice, not a hint. */}
+          <div className="min-w-[340px]">
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Product</label>
+            <ProductDropdown
+              onSelect={handleProductChange}
+              className="w-full text-sm"
+              value={selectedProductOption}
+            />
+          </div>
+
           {/* The box, immediately left of Start Date.
               ⚠️ No button beside it: the report is already loaded here, so a
               button only repeated what the box's own Enter key does -- and the
@@ -768,19 +837,19 @@ const ClosingStockReport = ({ user }: any) => {
               and got the whole stocktake back. The needle is the name *or* the
               code, which is what the row prints ("CODE - NAME") and therefore
               what a reader has in hand when they come looking. */}
-          {/* ⚠️ `flex-1 min-w-50`, not `min-w-max`: this row is a wrapping flex
-              row, so the box grows into whatever room is left on its line --
-              all of it when it wraps, which is the mobile case. `min-w-max`
-              held the wrapper at the box's own width, so the space the removed
-              button used to occupy stayed empty. */}
-          <div className="flex min-w-50 flex-1 items-end gap-2" onKeyDown={handleSearchKeyDown}>
+          {/* ⚠️ `flex-1`, not `min-w-max`: this row is a wrapping flex row, so
+              the box grows into whatever room is left on its line -- all of it
+              when it wraps, which is the mobile case. It is deliberately the
+              SMALLER of the two boxes beside Product: Search is the hint, the
+              Product selection is the narrowing, so the room goes to Product. */}
+          <div className="flex min-w-[160px] max-w-[260px] flex-1 items-end gap-2" onKeyDown={handleSearchKeyDown}>
             <SearchInput
               id="stockDetailsSearch"
               label="Search"
               placeholder="Search product name or code..."
               search={search}
               setSearchValue={setSearch}
-              className="w-full min-w-50 font-medium text-sm"
+              className="w-full min-w-[160px] font-medium text-sm"
             />
           </div>
 
