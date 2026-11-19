@@ -220,77 +220,83 @@ const BusinessSummary = () => {
       <HelmetTitle title="Business Summary" />
 
       <div className="py-3">
-        <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-[minmax(240px,1.2fr)_minmax(170px,0.8fr)_minmax(170px,0.8fr)]">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Select Branch <span className="text-red-500">*</span>
-            </label>
-            {branchDdlData?.isLoading ? <Loader /> : null}
-            <BranchDropdown
-              branchDdl={branches}
-              value={branchId}
-              onChange={(event: React.ChangeEvent<HTMLSelectElement>) => setBranchId(event.target.value)}
-              className="h-10 w-full p-2 text-sm font-medium"
-            />
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="grid min-w-[320px] flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-[minmax(240px,1.2fr)_minmax(170px,0.8fr)_minmax(170px,0.8fr)]">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Select Branch <span className="text-red-500">*</span>
+              </label>
+              {branchDdlData?.isLoading ? <Loader /> : null}
+              <BranchDropdown
+                branchDdl={branches}
+                value={branchId}
+                onChange={(event: React.ChangeEvent<HTMLSelectElement>) => setBranchId(event.target.value)}
+                className="h-10 w-full p-2 text-sm font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Month *</label>
+              <InputDatePicker
+                selectedDate={startMonth}
+                setSelectedDate={setStartMonth}
+                setCurrentDate={setStartMonth}
+                month
+                className="w-full text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Month *</label>
+              <InputDatePicker
+                selectedDate={endMonth}
+                setSelectedDate={setEndMonth}
+                setCurrentDate={setEndMonth}
+                month
+                className="w-full text-sm"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Month *</label>
-            <InputDatePicker
-              selectedDate={startMonth}
-              setSelectedDate={setStartMonth}
-              setCurrentDate={setStartMonth}
-              month
-              className="w-full text-sm"
+          {/* The actions share the filters' row, the way the trial balances and
+              Product Profit Loss lay theirs out -- a second row of buttons was
+              the one difference between these sibling screens. Below `sm` the
+              row wraps and each action keeps its full width. */}
+          <div className="flex w-full flex-wrap items-end justify-end gap-2 sm:w-auto sm:flex-nowrap">
+            <ButtonLoading
+              onClick={runReport}
+              buttonLoading={loading}
+              label="Apply"
+              icon={<FiCheckSquare />}
+              className="w-full px-6 sm:w-auto"
             />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Month *</label>
-            <InputDatePicker
-              selectedDate={endMonth}
-              setSelectedDate={setEndMonth}
-              setCurrentDate={setEndMonth}
-              month
-              className="w-full text-sm"
+            <PrintRowsInput
+              id="businessSummaryRowsPerPage"
+              name="businessSummaryRowsPerPage"
+              label=""
+              value={rowsPerPage.toString()}
+              onChange={handleRowsPerPageChange}
+              type="text"
+              className="w-full! text-center text-sm font-medium sm:w-20!"
             />
+            <PrintFontInput
+              id="businessSummaryFontSize"
+              name="businessSummaryFontSize"
+              label=""
+              value={fontSize.toString()}
+              onChange={handleFontSizeChange}
+              type="text"
+              className="w-full! text-center text-sm font-medium sm:w-20!"
+            />
+            <Button type="button" onClick={handlePrint} disabled={!hasReport} variant="default"
+              className="inline-flex w-full items-center justify-center gap-2 px-5 text-center text-sm font-medium focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
+              <FaPrint /> Print
+            </Button>
+            <Button type="button" onClick={() => navigate('/dashboard')} variant="default"
+              className="inline-flex w-full items-center justify-center gap-2 px-5 text-center text-sm font-medium focus:outline-none sm:w-auto">
+              <FaHouse /> Home
+            </Button>
           </div>
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap sm:justify-end">
-          <ButtonLoading
-            onClick={runReport}
-            buttonLoading={loading}
-            label="Apply"
-            icon={<FiCheckSquare />}
-            className="w-full px-6 sm:w-auto"
-          />
-          <PrintRowsInput
-            id="businessSummaryRowsPerPage"
-            name="businessSummaryRowsPerPage"
-            label=""
-            value={rowsPerPage.toString()}
-            onChange={handleRowsPerPageChange}
-            type="text"
-            className="w-full! text-center text-sm font-medium sm:w-20!"
-          />
-          <PrintFontInput
-            id="businessSummaryFontSize"
-            name="businessSummaryFontSize"
-            label=""
-            value={fontSize.toString()}
-            onChange={handleFontSizeChange}
-            type="text"
-            className="w-full! text-center text-sm font-medium sm:w-20!"
-          />
-          <Button type="button" onClick={handlePrint} disabled={!hasReport} variant="default"
-            className="inline-flex w-full items-center justify-center gap-2 px-5 text-center text-sm font-medium focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
-            <FaPrint /> Print
-          </Button>
-          <Button type="button" onClick={() => navigate('/dashboard')} variant="default"
-            className="col-span-2 inline-flex w-full items-center justify-center gap-2 px-5 text-center text-sm font-medium focus:outline-none sm:col-span-1 sm:w-auto">
-            <FaHouse /> Home
-          </Button>
         </div>
       </div>
 
