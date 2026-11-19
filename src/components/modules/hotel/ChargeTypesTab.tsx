@@ -187,7 +187,7 @@ const ChargeTypesTab = () => {
           // room and no night, so the same night could be billed twice.
           <span
             className="text-xs text-gray-500 dark:text-gray-400"
-            title="Room rent goes on through “Bill the nights”, never by hand — otherwise a night could be charged twice."
+            title="Room rent goes on through “Generate Bill”, never by hand — otherwise a night could be charged twice."
           >
             billed by the nights
           </span>

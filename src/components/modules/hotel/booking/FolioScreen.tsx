@@ -1132,7 +1132,7 @@ const FolioScreen = () => {
             accounts.
           </strong>{' '}
           Everything written from now on raises its voucher as it is saved. Pressing{' '}
-          <em>Bill the nights</em> also posts any bill line still behind; a receipt taken before
+          <em>Generate Bill</em> also posts any bill line still behind; a receipt taken before
           this was wired up stays as it is, because nothing here knows what happened to that cash.
         </p>
       ) : null}
@@ -1350,9 +1350,7 @@ const FolioScreen = () => {
             buttonLoading={saving}
             label={
               folio.unbilled_nights
-                ? `Bill ${folio.unbilled_nights} ${
-                    folio.unbilled_nights === 1 ? 'night' : 'nights'
-                  }`
+                ? 'Generate Bill'
                 : 'Bill Generated'
             }
             variant={folio.unbilled_nights ? 'primary' : 'default'}
@@ -1737,7 +1735,7 @@ const FolioScreen = () => {
                   unit_rate: Number(charge.unit_rate) ? charge.unit_rate : (suggested ?? 0),
                 });
               }}
-              description="Room rent goes on through Bill the nights."
+              description="Room rent goes on through Generate Bill."
             />
             <div className="md:col-span-2">
               <InputElement
@@ -2062,7 +2060,7 @@ const FolioScreen = () => {
         noDataMessage={
           booking?.booking_type === 'walk_in'
             ? 'Nothing on the bill yet. Press Add a charge to put what was sold on it.'
-            : 'Nothing on the bill yet. Press Bill the nights to put the rooms on it.'
+            : 'Nothing on the bill yet. Press Generate Bill to put the rooms on it.'
         }
       />
 
