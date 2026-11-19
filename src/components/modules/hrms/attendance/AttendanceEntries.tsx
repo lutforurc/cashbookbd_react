@@ -921,7 +921,14 @@ const AttendanceEntries = ({ user }: any) => {
        * figure is disputed.
        */
       render: (row: any) => {
-        const source = String(row.attendance_source || 'manual');
+        const source = String(row.attendance_source || '').trim();
+
+        // A row the list invented (an employee with no entry that day) has no
+        // source at all; calling it "Manual" was a lie the column told.
+        if (!source) {
+          return <span className="text-slate-400">—</span>;
+        }
+
         const label =
           source === 'biometric'
             ? 'Face'
