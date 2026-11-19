@@ -43,14 +43,15 @@
 
 `hrm_attendance_devices`-এ যোগ হয়েছে: `comm_key`, `firmware`, `last_seen_at`।
 
-চালানোর দুই পথ (একই ফল):
+চালানোর তিন পথ (সবই একই ফল):
 
 ```bash
 php artisan migrate                      # নতুন ইনস্টল
-php artisan patch:attendance-devices     # ক্লায়েন্টের পুরনো ডেটাবেস
+php artisan patch:attendance-devices     # শুধু এই স্কিমা
+php artisan patch:add-unit-type          # ক্লায়েন্টের স্বাভাবিক ডিপ্লয় — এটাও চলে
 ```
 
-দুটোই idempotent — দুবার চালালে ক্ষতি নেই।
+তিনটিই idempotent — দুবার চালালে ক্ষতি নেই।
 
 ---
 
