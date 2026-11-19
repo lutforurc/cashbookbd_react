@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  FiActivity,
+  FiClock,
+  FiDownload,
   FiEdit2,
   FiPlus,
   FiRefreshCcw,
@@ -24,7 +27,10 @@ import httpService from '../../../services/httpService';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import {
   API_HRMS_ATTENDANCE_DEVICES_URL,
+  API_HRMS_ATTENDANCE_DEVICE_COMMANDS_URL,
+  API_HRMS_ATTENDANCE_DEVICE_COMMAND_URL,
   API_HRMS_ATTENDANCE_DEVICE_EMPLOYEES_URL,
+  API_HRMS_ATTENDANCE_DEVICE_PUNCHES_URL,
   API_HRMS_ATTENDANCE_DEVICE_STATUS_URL,
   API_HRMS_ATTENDANCE_DEVICE_STORE_URL,
   API_HRMS_ATTENDANCE_DEVICE_UPDATE_URL,
@@ -76,6 +82,27 @@ const listFrom = (response: any) => {
 
 const itemFrom = (response: any) => response?.data?.data?.data ?? response?.data?.data ?? null;
 
+/**
+ * How far the terminal's clock has drifted, in words.
+ *
+ * ⚠️ MEASURED ON THE LAST RECORD IT SENT: the device stamps the punch, we stamp
+ * when it arrived. Two minutes apart is a healthy push and says nothing; hours
+ * mean every attendance time from that terminal is wrong by that much, and no
+ * amount of correcting rows will fix tomorrow.
+ */
+const clockSkewLabel = (seconds?: number | null) => {
+  if (seconds === null || seconds === undefined || Number.isNaN(Number(seconds))) return '';
+  const abs = Math.abs(Number(seconds));
+  if (abs < 120) return '';
+
+  const value =
+    abs >= 3600
+      ? `${Math.floor(abs / 3600)}h ${Math.round((abs % 3600) / 60)}m`
+      : `${Math.round(abs / 60)}m`;
+
+  return Number(seconds) > 0 ? `${value} behind` : `${value} ahead`;
+};
+
 const formatDateTime = (value?: string | null) => {
   if (!value) return 'Never';
   const date = new Date(String(value).replace(' ', 'T'));
@@ -112,6 +139,24 @@ const AttendanceDevices = ({ user }: any) => {
   const [mappingCode, setMappingCode] = useState('');
   const [mappingEmployee, setMappingEmployee] = useState<any>(null);
   const [mappingSaving, setMappingSaving] = useState(false);
+
+  /**
+   * The punch panel: the raw records the terminal sent, and what has been asked
+   * of it. This is the screen for the morning after a device was installed --
+   * device time beside received time is the only way to tell a wrong clock from
+   * a lost record from a code nobody owns.
+   */
+  const [punchDevice, setPunchDevice] = useState<any>(null);
+  const [punches, setPunches] = useState<any[]>([]);
+  const [punchLoading, setPunchLoading] = useState(false);
+  const [punchFrom, setPunchFrom] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    return date.toISOString().slice(0, 10);
+  });
+  const [punchTo, setPunchTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [commands, setCommands] = useState<any[]>([]);
+  const [commandSaving, setCommandSaving] = useState('');
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -286,6 +331,71 @@ const AttendanceDevices = ({ user }: any) => {
     }
   };
 
+  // ----------------------------------------------------------- punch panel
+
+  const openPunches = async (device: any) => {
+    setPunchDevice(device);
+    setPunches([]);
+    setCommands([]);
+    await Promise.all([loadPunches(device.id), loadCommands(device.id)]);
+  };
+
+  const loadPunches = async (deviceId: number | string) => {
+    setPunchLoading(true);
+    try {
+      const response = await httpService.get(`${API_HRMS_ATTENDANCE_DEVICE_PUNCHES_URL}${deviceId}/punches`, {
+        params: { date_from: punchFrom, date_to: punchTo },
+      });
+      setPunches(listFrom(response));
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Could not load the punches');
+    } finally {
+      setPunchLoading(false);
+    }
+  };
+
+  const loadCommands = async (deviceId: number | string) => {
+    try {
+      const response = await httpService.get(`${API_HRMS_ATTENDANCE_DEVICE_COMMANDS_URL}${deviceId}/commands`);
+      setCommands(listFrom(response));
+    } catch {
+      // A site a patch behind has no command queue; the panel still shows
+      // punches, and the two buttons will say what happened on their own.
+      setCommands([]);
+    }
+  };
+
+  const queueCommand = async (action: 'sync_clock' | 'pull' | 'check') => {
+    if (!punchDevice) return;
+
+    setCommandSaving(action);
+    try {
+      const response = await httpService.post(`${API_HRMS_ATTENDANCE_DEVICE_COMMAND_URL}${punchDevice.id}/command`, {
+        action,
+        date_from: action === 'pull' ? punchFrom : undefined,
+        date_to: action === 'pull' ? punchTo : undefined,
+      });
+
+      if (response?.data?.success === false) {
+        toast.error(response.data.message || 'The command could not be queued');
+        return;
+      }
+
+      toast.success(
+        action === 'pull'
+          ? 'Queued. The terminal will send its records the next time it calls in.'
+          : action === 'sync_clock'
+            ? 'Queued. The clock is set the next time the terminal calls in.'
+            : 'Queued. The terminal answers on its next call.',
+      );
+      await loadCommands(punchDevice.id);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'The command could not be queued');
+    } finally {
+      setCommandSaving('');
+    }
+  };
+
   const summary = useMemo(
     () => [
       { label: 'Devices', value: rows.length },
@@ -343,11 +453,22 @@ const AttendanceDevices = ({ user }: any) => {
     {
       key: 'last_seen_at',
       header: 'Last Contact',
-      render: (row: any) => (
-        <span className={row.last_seen_at ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400'}>
-          {formatDateTime(row.last_seen_at)}
-        </span>
-      ),
+      render: (row: any) => {
+        const skew = clockSkewLabel(row.clock_skew_seconds);
+
+        return (
+          <div>
+            <span className={row.last_seen_at ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400'}>
+              {formatDateTime(row.last_seen_at)}
+            </span>
+            {skew ? (
+              <div className="text-xs font-semibold text-danger" title="The device clock does not agree with the server">
+                Clock {skew}
+              </div>
+            ) : null}
+          </div>
+        );
+      },
     },
     {
       key: 'status',
@@ -373,6 +494,14 @@ const AttendanceDevices = ({ user }: any) => {
       cellClass: 'text-center',
       render: (row: any) => (
         <div className="flex items-center justify-center gap-1">
+          <button
+            type="button"
+            onClick={() => openPunches(row)}
+            title="Punches and commands"
+            className="inline-flex h-8 w-8 items-center justify-center rounded bg-slate-500 text-white hover:bg-slate-400"
+          >
+            <FiActivity size={14} />
+          </button>
           <button
             type="button"
             onClick={() => startEdit(row)}
@@ -632,6 +761,136 @@ const AttendanceDevices = ({ user }: any) => {
             perPage={20}
             noDataMessage="Nobody is mapped on this device yet"
           />
+        </div>
+      )}
+
+      {punchDevice && (
+        <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
+              Punches — {punchDevice.device_name}
+            </h3>
+            <button type="button" onClick={() => setPunchDevice(null)} className="text-slate-500 hover:text-slate-700">
+              <FiX />
+            </button>
+          </div>
+
+          <div className="mb-3 flex flex-wrap items-end gap-2">
+            <InputElement
+              id="punch_from"
+              name="punch_from"
+              label="From"
+              type="date"
+              value={punchFrom}
+              onChange={(event: any) => setPunchFrom(event.target.value)}
+              className="w-full md:w-44"
+            />
+            <InputElement
+              id="punch_to"
+              name="punch_to"
+              label="To"
+              type="date"
+              value={punchTo}
+              onChange={(event: any) => setPunchTo(event.target.value)}
+              className="w-full md:w-44"
+            />
+            <Button
+              type="button"
+              onClick={() => loadPunches(punchDevice.id)}
+              className="inline-flex items-center justify-center bg-slate-700 px-4 text-sm font-medium text-white hover:bg-slate-600"
+            >
+              <FiRefreshCcw className="mr-2" /> Load
+            </Button>
+            <ButtonLoading
+              onClick={() => queueCommand('sync_clock')}
+              buttonLoading={commandSaving === 'sync_clock'}
+              disabled={commandSaving === 'sync_clock'}
+              label="Sync Clock"
+              icon={<FiClock />}
+              className="px-4"
+            />
+            <ButtonLoading
+              onClick={() => queueCommand('pull')}
+              buttonLoading={commandSaving === 'pull'}
+              disabled={commandSaving === 'pull'}
+              label="Pull Punches"
+              icon={<FiDownload />}
+              className="px-4"
+            />
+          </div>
+
+          <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+            The terminal cannot be reached directly — a command waits here until it next calls in, then takes effect.
+            Pull Punches asks it to re-send the records it is holding for the dates above.
+          </p>
+
+          {punchLoading && <Loader />}
+
+          <Table
+            columns={[
+              {
+                key: 'serial_no',
+                header: 'Sl. No.',
+                headerClass: 'text-center',
+                cellClass: 'text-center',
+                render: (_row: any, index: number) => index + 1,
+              },
+              { key: 'device_employee_code', header: 'Device Code' },
+              {
+                key: 'employee_name',
+                header: 'Employee',
+                render: (row: any) => row.employee_name || <span className="text-danger">Unmatched</span>,
+              },
+              { key: 'punch_at', header: 'Device Time', render: (row: any) => formatDateTime(row.punch_at) },
+              { key: 'received_at', header: 'Received', render: (row: any) => formatDateTime(row.received_at) },
+              { key: 'verify_mode', header: 'Verify', headerClass: 'text-center', cellClass: 'text-center' },
+            ]}
+            data={punches}
+            perPage={20}
+            noDataMessage="No punches from this device in that range"
+          />
+
+          <div className="mt-3">
+            <div className="mb-1 text-sm font-semibold text-slate-700 dark:text-slate-200">Command History</div>
+            <Table
+              columns={[
+                {
+                  key: 'action',
+                  header: 'Command',
+                  render: (row: any) => (
+                    <div>
+                      <div className="font-semibold">{row.action}</div>
+                      <div className="font-mono text-xs text-slate-500 dark:text-slate-400">{row.command}</div>
+                    </div>
+                  ),
+                },
+                {
+                  key: 'status',
+                  header: 'Status',
+                  render: (row: any) => (
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        row.status === 'done'
+                          ? 'bg-success/10 text-success'
+                          : row.status === 'failed'
+                            ? 'bg-danger/10 text-danger'
+                            : row.status === 'sent'
+                              ? 'bg-warning/10 text-warning'
+                              : 'bg-slate-500/10 text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      {row.status}
+                    </span>
+                  ),
+                },
+                { key: 'sent_at', header: 'Sent', render: (row: any) => formatDateTime(row.sent_at) },
+                { key: 'acked_at', header: 'Answered', render: (row: any) => formatDateTime(row.acked_at) },
+              ]}
+              data={commands}
+              perPage={5}
+              noDataMessage="Nothing has been asked of this device yet"
+            />
+          </div>
         </div>
       )}
 

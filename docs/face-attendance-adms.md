@@ -97,12 +97,27 @@ php artisan patch:add-unit-type          # ক্লায়েন্টের 
 | POST | `/api/hrms/attendance/devices/update/{id}` | Sanctum |
 | POST | `/api/hrms/attendance/devices/status/{id}` | Sanctum |
 | GET | `/api/hrms/attendance/devices/{id}/employees` | Sanctum |
+| GET | `/api/hrms/attendance/devices/{id}/punches` | Sanctum |
+| GET | `/api/hrms/attendance/devices/{id}/commands` | Sanctum |
+| POST | `/api/hrms/attendance/devices/{id}/command` | Sanctum |
 | POST | `/api/hrms/attendance/devices/{id}/map` | Sanctum |
 | POST | `/api/hrms/attendance/devices/map/delete/{id}` | Sanctum |
 | GET | `/api/hrms/attendance/unmatched-punches` | Sanctum |
 | POST | `/api/hrms/attendance/unmatched-punches/assign` | Sanctum |
 
 ADMS route-এ throttle `240/মিনিট`।
+
+### কমান্ড (getrequest / devicecmd)
+
+ডিভাইসে সরাসরি ঢোকা যায় না — কমান্ড `hrm_attendance_device_commands`-এ জমা থাকে, ডিভাইস পরের বার `getrequest` করলে `C:<id>:<command>` আকারে পায়, আর `devicecmd`-এ `ID=..&Return=0&CMD=..` দিয়ে উত্তর দেয়।
+
+| কাজ | কমান্ড |
+|---|---|
+| ঘড়ি সিঙ্ক | `DATA UPDATE TIME` |
+| পুরনো পাঞ্চ টানা | `DATA QUERY ATTLOG StartTime=YYYY-MM-DD 00:00:00\tEndTime=YYYY-MM-DD 23:59:59` |
+| সংযোগ পরীক্ষা | `CHECK` |
+
+পাঁচ মিনিটে উত্তর না এলে কমান্ডটা আবার পাঠানো হয়; স্ক্রিনের Command History-তে sent/done/failed দেখা যায়।
 
 ---
 
@@ -122,9 +137,37 @@ printf '1001\t2026-11-19 09:10:00\t0\t15\r\n1001\t2026-11-19 20:40:00\t1\t15\r\n
 
 ---
 
-## ৭. যা এখনো করা হয়নি
+## ৭. ইনস্টলেশনের দিনের চেকলিস্ট
+
+ব্রাঞ্চে যাওয়ার আগে / ডিভাইস বসানোর আগে:
+
+1. **পাবলিক ঠিকানা পৌঁছায় কি না** — ল্যাপটপ থেকে (অফিসের নেট দিয়ে, ভেতরের Wi-Fi নয়):
+
+   ```bash
+   curl -i "https://<client-domain>/api/iclock/ping?SN=TEST-123"
+   ```
+
+   - `HTTP/1.1 403` + `UNREGISTERED` → **ঠিক আছে**: সার্ভার পর্যন্ত পৌঁছাচ্ছে, শুধু serial নিবন্ধিত নয়।
+   - `404` → রুট ক্যাশ পুরনো: সার্ভারে `php artisan route:clear` চালান।
+   - `timeout` / TLS error → DNS, ফায়ারওয়াল বা সার্টিফিকেট ঠিক করুন — ডিভাইসও এখানেই আটকাবে।
+
+2. **HTTPS সার্টিফিকেট বৈধ** — `curl -v` করে দেখুন। বেশিরভাগ ফার্মওয়্যার self-signed সার্টিফিকেট নেয় না।
+
+3. **সার্ভারের সময়** — `date` মিলছে কি না দেখুন (`Asia/Dhaka`); ডিভাইসের সময় এর সাথেই মেলানো হবে।
+
+4. **ডিভাইসের ফার্মওয়্যার ADMS চালায়** — `Menu → Comm → Cloud Server / ADMS` আছে কি না দেখুন।
+
+5. **Serial নম্বর লিখে রাখুন** (Menu → About) — তারপর Devices স্ক্রিনে নিবন্ধন করুন।
+
+6. **প্রথম যোগাযোগ** — নিবন্ধনের পর ডিভাইসের স্ক্রিনে "Connect Success" বা তালিকায় Last Contact সময় দেখা উচিত (RequestDelay ~১০ সেকেন্ড)।
+
+7. **একটা পাঞ্চ দিয়ে পরীক্ষা** — একজন মুখ দেখান, তারপর Devices → Punches-এ সেই রেকর্ড ও Manual Attendance-এ দিনের সারি দেখা উচিত।
+
+---
+
+## ৮. যা এখনো করা হয়নি
 
 - **রাতের শিফট**: পাঞ্চ পঞ্জিকার তারিখ ধরে হিসাব হয়; মধ্যরাত পেরোনো শিফটে পরের দিনের পাঞ্চ আগের দিনে টানার নিয়ম এখনো নেই।
-- **ঘড়ি মেলানো / দূর থেকে কমান্ড**: `/iclock/getrequest` এখন শুধু `OK` ফেরায়; ADMS কমান্ড (সময় সিঙ্ক, কর্মচারী মুছে ফেলা) পরে যোগ করতে হবে।
+- **কর্মচারী মোছার কমান্ড**: `DELETE USER` প্রেরণ এখনো যোগ করা হয়নি (হাতে করা যাবে)।
 - **অনুমতি কার্যকর**: HRMS route-এ permission enforcement এখনো চালু নয় — বায়োমেট্রিক ব্যবস্থাপনার আগে এটি ঠিক করা দরকার।
 - **একাধিক ডিভাইসে একই কর্মচারী**: প্রতি ডিভাইসে আলাদা enrollment ধরা হয়েছে; template সার্ভারের মধ্য দিয়ে যাবে না।
