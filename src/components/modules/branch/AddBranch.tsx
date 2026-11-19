@@ -27,6 +27,7 @@ import { toast } from 'react-toastify';
 import {
   API_BRANCH_CLEAR_OPENING_URL,
   API_BRANCH_CLEAR_TRANSACTION_URL,
+  API_HRMS_ATTENDANCE_DEVICE_SETTINGS_URL,
   API_REMOTE_URL,
 } from '../../services/apiRoutes';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
@@ -702,6 +703,13 @@ const AddBranch = () => {
     hasPermission(settings?.data?.permissions || [], permission),
   );
 
+  /**
+   * The face terminals step is for whoever administers them -- the same key the
+   * API asks for, so the step never appears to somebody whose save would be
+   * refused.
+   */
+  const canManageTerminals = hasPermission(settings?.data?.permissions || [], 'hrm.attendance.device.manage');
+
   // Built rather than fixed, so the step numbering and the "of N" count stay
   // right for everyone who does not see the extra one.
   const steps = [
@@ -715,6 +723,7 @@ const AddBranch = () => {
     'Real Estate Setup',
     'Hotel Setup',
     'Feature Controls',
+    ...(canManageTerminals ? ['Face Attendance'] : []),
     ...(isPlatformOwner ? ['SaaS Setup'] : []),
   ];
 
@@ -1250,6 +1259,85 @@ const AddBranch = () => {
 
   const [formData, setFormData] = useState<branchItem>(initialBranch);
 
+  /**
+   * The face terminals' two choices, kept apart from the branch payload: they
+   * live in hrm_attendance_settings and are saved by their own endpoint, one
+   * request per branch, not as part of the branch form.
+   */
+  const [attendanceDevice, setAttendanceDevice] = useState<any>({ auto_approve: false, retention_days: 0 });
+  const [attendanceDeviceLoading, setAttendanceDeviceLoading] = useState(false);
+  const [attendanceDeviceSaving, setAttendanceDeviceSaving] = useState(false);
+
+  /** Read this branch's terminal choices when the step is opened. */
+  const faceAttendanceStep = stepIndex('Face Attendance');
+
+  useEffect(() => {
+    if (currentStep !== faceAttendanceStep) return;
+
+    const branchId = formData?.id;
+    if (!branchId) return;
+
+    let cancelled = false;
+    setAttendanceDeviceLoading(true);
+
+    httpService
+      .get(API_HRMS_ATTENDANCE_DEVICE_SETTINGS_URL, { params: { branch_id: branchId } })
+      .then((response) => {
+        const value = response?.data?.data?.data;
+        if (!cancelled && value) setAttendanceDevice(value);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error('Could not load the face terminal settings');
+      })
+      .finally(() => {
+        if (!cancelled) setAttendanceDeviceLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentStep, faceAttendanceStep, formData?.id]);
+
+  /**
+   * Save the two terminal choices.
+   *
+   * ⚠️ ITS OWN REQUEST, NOT THE BRANCH FORM'S. These live in
+   * hrm_attendance_settings; folding them into the branch payload would mean a
+   * branch save that silently rewrote a permission-gated setting for a caller
+   * who may not hold it.
+   */
+  const saveAttendanceDeviceSettings = async () => {
+    const branchId = formData?.id;
+
+    if (!branchId) {
+      toast.error('Save the branch first, then set its terminal options');
+      return;
+    }
+
+    setAttendanceDeviceSaving(true);
+
+    try {
+      const response = await httpService.post(API_HRMS_ATTENDANCE_DEVICE_SETTINGS_URL, {
+        branch_id: branchId,
+        auto_approve: attendanceDevice.auto_approve ? 1 : 0,
+        retention_days: Number(attendanceDevice.retention_days || 0),
+      });
+
+      if (response?.data?.success === false) {
+        toast.error(response.data.message || 'The terminal settings could not be saved');
+        return;
+      }
+
+      toast.success('Face terminal settings saved');
+      const value = response?.data?.data?.data;
+      if (value) setAttendanceDevice((prev: any) => ({ ...prev, ...value }));
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'The terminal settings could not be saved');
+    } finally {
+      setAttendanceDeviceSaving(false);
+    }
+  };
+
   // Stationery that already carries the letterhead: nothing here draws one, so
   // the heading choice and its image have nothing to say.
   const usesPreprintedPad = formData?.pad_print_mode === 'preprinted';
@@ -1575,6 +1663,8 @@ const AddBranch = () => {
                     {currentStep === stepIndex('Hotel Setup') &&
                       'When the day turns over at this property, for a branch that is a hotel.'}
                     {currentStep === stepIndex('Feature Controls') && 'Operational controls, sharing options, and SMS preferences.'}
+                    {currentStep === faceAttendanceStep &&
+                      'Face terminals: whether their punches are approved as they land, and how long the raw punch log is kept.'}
                     {currentStep === SAAS_STEP &&
                       'Platform settings. Only this account sees them.'}
                   </p>
@@ -3517,6 +3607,95 @@ const AddBranch = () => {
                       Only a branch that is a hotel uses these. Every other branch
                       can leave them alone.
                     </p>
+                  </>
+                )}
+
+                {currentStep === faceAttendanceStep && (
+                  <>
+                    {!formData?.id ? (
+                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                        Save the branch first. The terminal options are kept per branch, so there is nothing to set
+                        until this one exists.
+                      </p>
+                    ) : attendanceDeviceLoading ? (
+                      <Loader />
+                    ) : (
+                      <>
+                        <p className="mb-3 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                          These apply to this branch’s face terminals — the ones registered under
+                          HRM → Attendance → Attendance Devices. A branch left unset follows the company, and a
+                          company left unset approves nothing automatically and keeps every punch.
+                        </p>
+
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                          <div className="rounded border border-[rgb(var(--c-border))] p-3">
+                            <DropdownCommon
+                              id="device_auto_approve"
+                              name="device_auto_approve"
+                              label="Auto-approve terminal punches"
+                              value={attendanceDevice.auto_approve ? '1' : '0'}
+                              data={[
+                                { id: '1', name: 'Yes — approve as they land' },
+                                { id: '0', name: 'No — wait for an admin' },
+                              ]}
+                              onChange={(event: any) =>
+                                setAttendanceDevice((prev: any) => ({
+                                  ...prev,
+                                  auto_approve: event.target.value === '1',
+                                }))
+                              }
+                              className="font-medium"
+                            />
+                            <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                              On: a punch is approved the moment the terminal sends it, carrying its real status
+                              (present / late / half day). Off: every device row waits in Manual Attendance for an
+                              admin, as it always has.
+                            </p>
+                          </div>
+
+                          <div className="rounded border border-[rgb(var(--c-border))] p-3">
+                            <InputElement
+                              id="device_retention_days"
+                              name="device_retention_days"
+                              label="Keep raw punches for (days)"
+                              type="number"
+                              value={String(attendanceDevice.retention_days ?? 0)}
+                              onChange={(event: any) =>
+                                setAttendanceDevice((prev: any) => ({
+                                  ...prev,
+                                  retention_days: event.target.value,
+                                }))
+                              }
+                              className="w-full md:w-40"
+                            />
+                            <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                              0 keeps every punch forever. A number deletes older <b>raw punches</b> in a nightly job —
+                              the attendance rows built from them are never touched. The punch log is the evidence
+                              behind a day’s pay, so set this only when the branch has decided how long it is worth
+                              keeping.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-3">
+                          <ButtonLoading
+                            type="button"
+                            onClick={saveAttendanceDeviceSettings}
+                            buttonLoading={attendanceDeviceSaving}
+                            disabled={attendanceDeviceSaving}
+                            label="Save Terminal Settings"
+                            icon={<FiSave />}
+                            className="px-5"
+                          />
+                        </div>
+
+                        <p className="mt-3 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                          ⚠️ Enrollment stays on the terminal: no face template or photo reaches this server. The same
+                          employee can be put on several terminals by copying the mapping in Attendance Devices —
+                          the face is still enrolled on each device itself.
+                        </p>
+                      </>
+                    )}
                   </>
                 )}
 
