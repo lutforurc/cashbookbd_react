@@ -117,6 +117,15 @@ ADMS "PUSH"-এ ডিভাইস একটা টেক্সট লাইন 
 
 ⚠️ কিছু পুরনো ফার্মওয়্যার শুধু HTTP পাঠায়। কেনার/বসানোর আগে দেখে নিন।
 
+### push 3.x ফার্মওয়্যার (যেমন SenseFace 7B, PushVersion `Ver 3.1.x`)
+
+- Server Address-এ শুধু হোস্ট/IP দিন (যেমন `192.168.0.106`), পথ নয়। ডিভাইস নিজেই `/iclock/cdata` জুড়ে দেয়, তাই সার্ভার `/iclock/*` (রুট) আর `/api/iclock/*` দুই জায়গাতেই উত্তর দেয়।
+- ডিভাইস ক্রম: `GET cdata` → `POST registry` → `push` → প্রতি ~৫ সেকেন্ডে `getrequest`।
+- পাঞ্চ আসে `table=rtlog` হয়ে (`time=…\tpin=…`), ATTLOG নয়। `pin=0` হলো দরজা/অ্যালার্মের ঘটনা, বাদ পড়ে।
+- জমে থাকা রেকর্ড আসে `table=tabledata&tablename=X&count=N`। উত্তর অবশ্যই `X=N`, শুধু `OK` দিলে ডিভাইস একই রেকর্ড বারবার পাঠায় আর পেছনের পাঞ্চ আটকে যায় (মুখের ছবি `biophoto` গ্রহণ করা হয়, রাখা হয় না)।
+- **Pull Punches** এই ফার্মওয়্যারে `DATA QUERY tablename=transaction,fielddesc=*,filter=*` পাঠায়, উত্তর আসে `/iclock/querydata`-তে। কোন ফর্ম যাবে তা ঠিক হয় ডিভাইসের `firmware` ঘর থেকে, যা registry-র সময় লেখা হয়। ack-এ `Return=27` মানে ২৭টা রেকর্ড, ত্রুটি নয়।
+- ⚠️ সার্ভারে PHP-র temp ফোল্ডার লেখার যোগ্য হতে হবে। না হলে বড় POST (ছবি, ~৫০ KB) ফেলে দেয়, উত্তরে HTML warning মেশে, আর queue আটকে যায়।
+
 কোন সার্ভারে যাচ্ছে তা দেখতে ডিভাইসের **Menu → Comm → Cloud Server**-এর লগ, আর সার্ভারে `storage/logs/laravel.log`-এ `ADMS attendance received` লাইন।
 
 ---
