@@ -42,6 +42,7 @@ import {
 import formatDate, { formatBdShortDate, formatDateUsdToBd, formatDayMonthYear } from '../../../utils/utils-functions/formatDate';
 import MoveRoomDialog from './MoveRoomDialog';
 import GuestProfileDrawer, { GuestKey } from './GuestProfileDrawer';
+import BookingDetailsDialog from './BookingDetailsDialog';
 
 /**
  * Bookings -- the list, and the doors out of it.
@@ -576,6 +577,11 @@ const BookingsScreen = ({ user }: any) => {
 
   /** The guest whose history is open -- see GuestProfileDrawer. */
   const [profileOf, setProfileOf] = useState<GuestKey | null>(null);
+
+  /** The booking whose details are open -- see BookingDetailsDialog. */
+  const [detailsOf, setDetailsOf] = useState<any>(null);
+  // Stable, because the dialog's Escape listener is keyed on it.
+  const closeDetails = useCallback(() => setDetailsOf(null), []);
   const [noShowReason, setNoShowReason] = useState('');
   const [keeping, setKeeping] = useState(true);
   const [noShowRefund, setNoShowRefund] = useState('');
@@ -817,7 +823,16 @@ const BookingsScreen = ({ user }: any) => {
         header: 'Booking',
         render: (row: any) => (
           <div>
-            <div className="font-medium text-black dark:text-white">{row.booking_no}</div>
+            {/* The number opens the booking in full -- rooms, halls, bill and
+                payments -- without leaving the list or opening the edit form. */}
+            <button
+              type="button"
+              onClick={() => setDetailsOf(row)}
+              className="font-medium text-black hover:text-primary hover:underline dark:text-white dark:hover:text-secondary"
+              title="Booking details"
+            >
+              {row.booking_no}
+            </button>
             {/* The name opens the guest's history where there is a number to
                 find them by -- every stay, what they paid, whether they ever
                 did not come. A booking with no mobile has nothing to look up. */}
@@ -1487,6 +1502,17 @@ const BookingsScreen = ({ user }: any) => {
       <MoveRoomDialog booking={moving} onClose={() => setMoving(null)} onMoved={load} />
 
       <GuestProfileDrawer guest={profileOf} branchId={branchId} onClose={() => setProfileOf(null)} />
+
+      {/* Opened from the booking number. The bill button is there only where
+          the row itself offers Bill -- a cancelled or expired booking has none. */}
+      <BookingDetailsDialog
+        booking={detailsOf}
+        statusLook={detailsOf ? STATUS_LOOK[detailsOf.status] : undefined}
+        onOpenBill={
+          detailsOf && !DEAD_STATUSES.includes(detailsOf.status) ? openBill : undefined
+        }
+        onClose={closeDetails}
+      />
 
       {/* The no-show dialog. The same shape as Cancel and deliberately not the
           same dialog: the sentence at the top says a different thing, and the
