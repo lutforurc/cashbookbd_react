@@ -828,7 +828,9 @@ const BookingsScreen = ({ user }: any) => {
             <button
               type="button"
               onClick={() => setDetailsOf(row)}
-              className="font-medium text-black hover:text-primary hover:underline dark:text-white dark:hover:text-secondary"
+              // Drawn as a link at rest, not only on hover: a number in plain
+              // black did not look like something that could be pressed.
+              className="cursor-pointer font-medium text-primary underline underline-offset-2 hover:text-primary/80 dark:text-secondary dark:hover:text-secondary/80"
               title="Booking details"
             >
               {row.booking_no}
