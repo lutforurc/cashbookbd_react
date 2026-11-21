@@ -70,6 +70,21 @@ import {
   tillList,
 } from './bookingSlice';
 
+/** Where this computer remembers the bill's letter size. */
+const BILL_FONT_SIZE_KEY = 'hotel.folio.billFontSize';
+
+/**
+ * Letter sizes offered for the printed bill. Inside the 7–24 the print
+ * designer itself accepts, so a size picked here is one the paper can carry.
+ */
+const BILL_FONT_SIZE_OPTIONS = [
+  { id: '', name: 'Font: as designed' },
+  ...[9, 10, 11, 12, 13, 14, 15, 16, 18, 20].map((size) => ({
+    id: String(size),
+    name: `Font: ${size}px`,
+  })),
+];
+
 /**
  * Parties a bill can be moved to.
  *
@@ -487,6 +502,34 @@ const FolioScreen = () => {
   const [fetchingPaper, setFetchingPaper] = useState(false);
   const paperRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * The letter size the bill and its money receipts print in, or '' for the
+   * size each paper's layout already carries.
+   *
+   * Remembered on this computer, because it follows the printer on the desk
+   * rather than the guest: a counter with a small thermal-ish printer wants it
+   * bigger every time, and choosing it again for every bill is how it gets
+   * forgotten. Not saved to the layout -- the designer still owns that, and one
+   * desk's preference should not change every other desk's paper.
+   */
+  const [billFontSize, setBillFontSize] = useState<string>(() => {
+    try {
+      return window.localStorage.getItem(BILL_FONT_SIZE_KEY) ?? '';
+    } catch {
+      return '';
+    }
+  });
+
+  const chooseBillFontSize = (value: string) => {
+    setBillFontSize(value);
+    try {
+      if (value) window.localStorage.setItem(BILL_FONT_SIZE_KEY, value);
+      else window.localStorage.removeItem(BILL_FONT_SIZE_KEY);
+    } catch {
+      // A browser that will not store it still prints in the size chosen now.
+    }
+  };
+
   const sendToPrinter = useReactToPrint({
     contentRef: paperRef,
     documentTitle: paper?.title ?? 'Hotel',
@@ -526,9 +569,15 @@ const FolioScreen = () => {
         return;
       }
 
-      const layout = payload.layout
+      const designed = payload.layout
         ? normalizeTemplate(payload.layout, docType)
         : defaultTemplate(docType);
+
+      // The size picked beside Print Bill, over the layout's own -- for the
+      // bill and for the money receipts printed from the payments table alike,
+      // so the two papers a guest is handed match.
+      const chosenSize = Number(billFontSize);
+      const layout = chosenSize ? { ...designed, fontSize: chosenSize } : designed;
 
       setPaper({
         // ⚠️ A walk-in sale is billed on the hotel's own bill, and its stay
@@ -902,7 +951,10 @@ const FolioScreen = () => {
     // shift bill), and a memo built before the folio arrived kept a printPaper
     // that saw none -- harmless for a receipt today, wrong the day this row
     // prints a paper that asks.
-    [id, folio],
+    //
+    // ⚠️ And `billFontSize`: the receipt prints in the size chosen beside Print
+    // Bill, and a memo kept from before the choice would print in the old one.
+    [id, folio, billFontSize],
   );
 
   const billNights = async () => {
@@ -1475,6 +1527,19 @@ const FolioScreen = () => {
           icon={<FiPrinter size={16} />}
           disabled={!folio.lines?.length}
         />
+        {/* The letter size the bill and the money receipts go out in. Beside
+            the button, because it is chosen at the moment of printing, and
+            remembered on this computer so it is chosen once per printer rather
+            than once per bill. */}
+        <div className="w-40" title="Font size of the printed bill and money receipts">
+          <DropdownCommon
+            id="bill_font_size"
+            name="bill_font_size"
+            data={BILL_FONT_SIZE_OPTIONS}
+            value={billFontSize}
+            onChange={(e: any) => chooseBillFontSize(e.target.value)}
+          />
+        </div>
         {/* The way out, from the screen where the money was settled.
 
             ⚠️ Only on a checked-in stay. It is a link rather than the act
