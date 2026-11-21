@@ -13,6 +13,8 @@ import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputElement from '../../../utils/fields/InputElement';
 import InputTimePicker from '../../../utils/fields/InputTimePicker';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
+import SideDrawer from '../../../utils/components/SideDrawer';
+import { FIELD_LABEL } from '../../../../theme/fieldStyles';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
@@ -35,7 +37,7 @@ const iconButtonClass = 'inline-flex h-8! w-8 items-center justify-center rounde
 const iconSuccessClass = 'inline-flex h-8! w-8 items-center justify-center rounded-md bg-success text-white transition hover:bg-success/90';
 const iconDangerClass = 'inline-flex h-8! w-8 items-center justify-center rounded-md bg-danger text-white transition hover:bg-danger/90';
 const iconNeutralClass = 'inline-flex h-8! w-8 items-center justify-center rounded-md bg-meta-3 text-white transition hover:bg-meta-3/90';
-const sectionLabelClass = 'mb-1 block text-sm font-medium text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]';
+const sectionLabelClass = `${FIELD_LABEL} text-sm`;
 
 const dateFromString = (value?: string | null) => {
   if (!value) return null;
@@ -225,6 +227,10 @@ const AttendanceEntries = ({ user }: any) => {
   const [rangeTo, setRangeTo] = useState('');
   const [rangeConfirm, setRangeConfirm] = useState(false);
   const [rangeApproveConfirm, setRangeApproveConfirm] = useState(false);
+  // The entry form and the range fill live in side drawers; the page itself is
+  // the filter and the list.
+  const [entryOpen, setEntryOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const manualAttendanceEdit = (location.state as any)?.manualAttendanceEdit;
   const displayEntries = entries.map((row: any) => {
     const pendingRow = pendingRows[attendanceRowKey(row)];
@@ -276,6 +282,7 @@ const AttendanceEntries = ({ user }: any) => {
       in_time: timeOnly(manualAttendanceEdit.in_time),
       out_time: timeOnly(manualAttendanceEdit.out_time),
     });
+    setEntryOpen(true);
   }, [dispatch, manualAttendanceEdit]);
 
   useEffect(() => {
@@ -459,6 +466,7 @@ const AttendanceEntries = ({ user }: any) => {
     setFilters((prev: any) => ({ ...prev, ...params }));
     setBulkLoadedKey(bulkLoadKey());
     loadEntries(params);
+    setEntryOpen(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -994,6 +1002,8 @@ const AttendanceEntries = ({ user }: any) => {
                     in_time: timeOnly(row.in_time),
                     out_time: timeOnly(row.out_time),
                   });
+                  setAdvancedOpen(false);
+                  setEntryOpen(true);
                 }}
                 className={`${iconButtonClass} disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-700 dark:disabled:text-slate-400`}
               >
@@ -1051,19 +1061,9 @@ const AttendanceEntries = ({ user }: any) => {
 
       {attendance.loading && <Loader />}
 
-      <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
-        <div className="flex items-center gap-3 border-b border-[rgb(var(--c-border))] px-4 py-2.5 sm:px-6">
-          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
-            <FiEdit2 className="h-5 w-5" />
-          </span>
-          <div>
-            <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Attendance Entry</h3>
-            <p className="text-xs text-bodydark2">Single or bulk daily attendance</p>
-          </div>
-        </div>
-        <div className="p-3 sm:p-4">
+      <SideDrawer open={entryOpen} onClose={() => setEntryOpen(false)} title="Attendance Entry">
         <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div>
             <label className={sectionLabelClass}>Employee</label>
             <EmployeeDropdownSearch
@@ -1090,7 +1090,7 @@ const AttendanceEntries = ({ user }: any) => {
  branchDdl={branches}
  value={form.branch_id?.toString() ?? ''}
  onChange={handleChange(setForm)}
- className="w-full font-medium text-sm p-1.5"
+ className="w-full"
             />
           </div>
           <DropdownCommon id="shift_id" name="shift_id" label="Shift" value={form.shift_id?.toString()} data={[{ id: '', name: 'Select Shift' }, ...shifts]} onChange={handleShiftChange} className="" />
@@ -1156,11 +1156,15 @@ const AttendanceEntries = ({ user }: any) => {
             icon={<FiSearch className="mr-2" />}
           />
         </div>
+        </form>
+      </SideDrawer>
 
-        {/* A whole range in one go, under the day's own buttons: one day is
-            still the flow above, and this only adds a second way to say how
-            far the same entry should reach. */}
-        <div className="mt-3 grid grid-cols-1 gap-2 border-t border-[rgb(var(--c-border))] pt-3 md:grid-cols-4">
+      {/* A whole range in one go. It writes the same entry the Attendance
+          Entry drawer holds (type, shift, times, status), so those settings
+          come from there; this only says how far that entry should reach. */}
+      <SideDrawer open={advancedOpen} onClose={() => setAdvancedOpen(false)} title="Advanced">
+        <h3 className="mb-2 text-base font-semibold">Fill Date Range</h3>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {/* The same date the day above runs on -- one value in two boxes, so
               the sheet on screen and the first day of the fill cannot differ. */}
           <InputDatePicker
@@ -1181,10 +1185,15 @@ const AttendanceEntries = ({ user }: any) => {
             setCurrentDate={(date) => setRangeTo(dateToString(date))}
             className="w-full"
           />
-          <div className="flex flex-wrap items-end gap-2">
+          <div className="flex flex-wrap items-end gap-2 sm:col-span-2">
+            {/* The confirm box (z-50) cannot show over the drawer, so the
+                drawer steps aside before it asks. */}
             <ButtonLoading
               type="button"
-              onClick={() => setRangeConfirm(true)}
+              onClick={() => {
+                setAdvancedOpen(false);
+                setRangeConfirm(true);
+              }}
               buttonLoading={bulkLoading}
               label="Fill Range"
               className=""
@@ -1192,7 +1201,10 @@ const AttendanceEntries = ({ user }: any) => {
             />
             <ButtonLoading
               type="button"
-              onClick={() => setRangeApproveConfirm(true)}
+              onClick={() => {
+                setAdvancedOpen(false);
+                setRangeApproveConfirm(true);
+              }}
               buttonLoading={bulkApproveLoading}
               disabled={bulkApproveLoading || !rangeTo}
               label="Approve Range"
@@ -1200,14 +1212,13 @@ const AttendanceEntries = ({ user }: any) => {
               icon={<FiCheck className="mr-2" />}
             />
           </div>
-          <p className="self-end pb-2 text-xs text-bodydark2">
+          <p className="text-xs text-bodydark2 sm:col-span-2">
             Every day from the first to the last, at most 31 days and never past today. Holidays are written as
-            holidays, and a day that already has an entry keeps it.
+            holidays, and a day that already has an entry keeps it. Employee type, shift, times and status come
+            from the Attendance Entry drawer.
           </p>
         </div>
-        </form>
-        </div>
-      </div>
+      </SideDrawer>
 
       <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
         <div className="flex items-center gap-3 border-b border-[rgb(var(--c-border))] px-4 py-2.5 sm:px-6">
@@ -1247,7 +1258,7 @@ const AttendanceEntries = ({ user }: any) => {
  branchDdl={branches}
  value={filters.branch_id?.toString() ?? ''}
  onChange={handleChange(setFilters)}
- className="w-full font-medium text-sm p-1.5"
+ className="w-full"
           />
         </div>
         <div className="flex flex-wrap items-end gap-2 xl:flex-nowrap">
@@ -1291,9 +1302,31 @@ const AttendanceEntries = ({ user }: any) => {
             </span>
             <h3 className="text-base font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Attendance List</h3>
           </div>
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-            {displayEntries.length} entries
-          </span>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              {displayEntries.length} entries
+            </span>
+            <ButtonLoading
+              type="button"
+              onClick={() => {
+                setEntryOpen(false);
+                setAdvancedOpen(true);
+              }}
+              label="Advanced"
+              className=""
+              icon={<FiCheck className="mr-2" />}
+            />
+            <ButtonLoading
+              type="button"
+              onClick={() => {
+                setAdvancedOpen(false);
+                setEntryOpen(true);
+              }}
+              label="+ Attendance Entry"
+              className=""
+              icon={<FiEdit2 className="mr-2" />}
+            />
+          </div>
         </div>
         <Table columns={columns} data={displayEntries} />
       </div>

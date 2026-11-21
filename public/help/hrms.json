@@ -173,7 +173,7 @@
   "employee-form": {
     "title": "কর্মচারীর তথ্য",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "21/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একজন কর্মচারীর ব্যক্তিগত তথ্য, বেতনের খাত এবং হাজিরার নিয়ম এই ফর্মে লেখা হয়। বেতন শিট এই তথ্য ধরেই তৈরি হয়।",
@@ -190,18 +190,17 @@
         "heading": "ফর্ম পূরণ",
         "menu": "HRM → Employee → Employee",
         "steps": [
-          "Name, Father's Name, National ID, Mobile Number, Present ও Permanent Address দিন।",
-          "Date of Birth, Joining Date ও Qualification লিখুন।",
-          "Basic Salary, House Rent, Medical Allowance, Others Allowance, Loan Deduction ও Others Deduction দিন।",
-          "Select Designation ও Select Branch বাছুন; Gender, Is Payable?, Attendance Type ও Attendance Policy দিন।",
-          "Default Shift, Overtime Eligible, Show in Manual Attendance, Daily Wage, OT Rate ও Standard Work Minutes ঠিক করুন।",
-          "Salary Sheet Serial Number ও Status দিয়ে Save চাপুন।"
+          "ফর্মটি তিন ধাপে — উপরের ধাপের বোতাম চেপে যেকোনো ধাপে যাওয়া যায়, নিচে Back ও Next।",
+          "১. Personal Information: Name, Father's Name, National ID, Date of Birth, Gender, Mobile Number, Present ও Permanent Address এবং Qualification।",
+          "২. Employment & Attendance: Joining Date, Select Designation, Select Branch, Status, Attendance Type, Attendance Policy, Default Shift, Show in Manual Attendance, Overtime Eligible, Standard Work Minutes ও Device Code।",
+          "৩. Salary & Payroll: Is Payable?, Basic Salary, House Rent, Medical ও Others Allowance, Daily Wage, OT Rate, Loan ও Others Deduction এবং Salary Sheet Serial Number।",
+          "শেষ ধাপে Save চাপুন। কোনো জরুরি ঘর ফাঁকা থাকলে ফর্ম নিজেই সেই ধাপে ফিরে যায়।"
         ]
       },
       {
         "heading": "যা মনে রাখবেন",
         "steps": [
-          "Edit স্ক্রিনে Gender ঘরটির নাম Select Sex; বদল শেষে Update চাপুন।",
+          "Edit স্ক্রিনে Gender ঘরটির নাম Select Sex। Update বোতাম সব ধাপেই থাকে, তাই এক ঘর বদলে সরাসরি Update চাপা যায়; তালিকায় ফিরতে Employee List।",
           "বেতনের অঙ্কে ভুল থাকলে পরের মাসের Salary Generate ভুল হবে।"
         ],
         "warning": "Attendance Type ভুল দিলে কর্মচারী হাজিরার হিসাবে ভুলভাবে পড়বে — Monthly, Daily Labour ও Shift Based-এর নিয়ম আলাদা।"
@@ -435,7 +434,7 @@
   "manual-attendance": {
     "title": "হাতের হাজিরা",
     "module": "HRM",
-    "updated": "11/11/2026",
+    "updated": "21/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক দিনের হাজিরা হাতে লেখা হয় — একজন কর্মচারীর জন্য একবারে, অথবা অনেকের জন্য একসাথে।",
@@ -445,6 +444,7 @@
         "heading": "একজনের হাজিরা",
         "menu": "HRM → Attendance → Manual Attendance",
         "steps": [
+          "Attendance List-এর উপরে + Attendance Entry চাপুন — ডান পাশে একটি প্যানেল খোলে। তালিকার Edit চাপলেও এই প্যানেলেই সারিটি খোলে।",
           "Employee বাছুন, Branch, Shift ও Attendance Type ঠিক করুন।",
           "Date, In Time, Out Time, Status ও Remarks দিন।",
           "Save Single চাপুন। আগের সারি খুললে বাটন Update Single হয়।"
@@ -453,7 +453,8 @@
       {
         "heading": "অনেকের হাজিরা",
         "steps": [
-          "Fill From ও Fill To দিন, Fill Range চাপুন।",
+          "Bulk Entry ও Load বাটন Attendance Entry প্যানেলে আছে। Load চাপলে প্যানেল বন্ধ হয়ে তালিকা দেখায়।",
+          "একটানা কয়েক দিনের জন্য তালিকার উপরে Advanced চাপুন। Fill From ও Fill To দিন, Fill Range চাপুন। Attendance Type, Shift, সময় ও Status আসে Attendance Entry প্যানেল থেকে।",
           "সর্বোচ্চ ৩১ দিন এবং আজকের পরে নয়। ছুটির দিন ছুটি হিসেবে লেখে, আগের এন্ট্রি অপরিবর্তিত থাকে।",
           "Bulk Entry, Bulk Approve ও Bulk Clear দিয়ে তালিকা সামলান।"
         ]

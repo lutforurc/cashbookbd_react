@@ -201,7 +201,8 @@ const EmployeeDropdownSearch: React.FC<DropdownProps> = ({
         )}
         getOptionValue={(option) => option.value}
         placeholder={placeholder || 'Select an account'}
-        styles={withFieldHeight(customStyles)}
+        // The menu is portaled to <body>; above SideDrawer (z-10000) or it opens behind it.
+        styles={{ ...withFieldHeight(customStyles), menuPortal: (base: any) => ({ ...base, zIndex: 99999 }) }}
         defaultValue={defaultValue}
         value={value}
         menuPortalTarget={document.body} // Fix Dropdown Render Issue

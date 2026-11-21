@@ -33,6 +33,8 @@ const Toasts = () => (
     draggable
     pauseOnHover
     theme={useIsDarkMode() ? 'dark' : 'light'}
+    // Above SideDrawer (z-10000), which itself sits over the sidebar/top bar (9999).
+    style={{ zIndex: 100000 }}
   />
 );
 

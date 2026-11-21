@@ -15,6 +15,10 @@ import { fetchEmployeeById, fetchEmployeeSettings, updateEmployee } from './empl
 import { fetchAttendancePolicies, fetchAttendanceShifts } from '../attendance/attendanceSlice';
 import dayjs from 'dayjs';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { StepCard, StepFooter, StepNav, stepClass } from '../../../utils/components/FormSteps';
+import { FIELD_LABEL } from '../../../../theme/fieldStyles';
+
+const EMPLOYEE_STEPS = ['Personal Information', 'Employment & Attendance', 'Salary & Payroll'];
 
 const employmentTypes = [
   { id: 'monthly', name: 'Monthly Employee' },
@@ -93,6 +97,7 @@ const EmployeeEdit = ({ user }: any) => {
   const [sex, setSex] = useState<any[]>([]);
   const [isSelected, setIsSelected] = useState<number | string>('');
   const [saveLoading, setSaveLoading] = useState(false);
+  const [step, setStep] = useState(0);
 
   const [formData, setFormData] = useState<any>(EmployeeFormModel.create());
   const shifts = Array.isArray(attendance?.shifts) ? attendance.shifts : [];
@@ -236,306 +241,303 @@ const EmployeeEdit = ({ user }: any) => {
         <Loader />
       )}
       <div className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <InputElement
-            id="name"
-            placeholder='Enter employee name'
-            label="Name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-          />
-
-          <InputElement
-            id="father_name"
-            placeholder="Enter father's name"
-            label="Father's Name"
-            name="father_name"
-            value={formData.father_name}
-            onChange={handleChange}
-          />
-
-          <InputElement
-            id="nid"
-            placeholder='Enter NID'
-            label="National ID"
-            name="nid"
-            value={formData.nid}
-            onChange={handleChange}
-          />
-
-          <InputElement
-            placeholder='Enter present address'
-            id="present_address"
-            label="Present Address"
-            name="present_address"
-            value={formData.present_address}
-            onChange={handleChange}
-            className="md:col-span-2 lg:col-span-2"
-          />
-
-          <InputElement
-            id="permanent_address"
-            placeholder='Enter permanent address'
-            label="Permanent Address"
-            name="permanent_address"
-            value={formData.permanent_address}
-            onChange={handleChange}
-            className="md:col-span-2 lg:col-span-2"
-          />
-
-          <InputElement
-            placeholder='Enter mobile number'
-            id="mobile"
-            label="Mobile Number"
-            name="mobile"
-            value={formData.mobile}
-            onChange={handleChange}
-          />
-
-          <div>
-            <label>Date of Birth</label>
-            <InputDatePicker
- placeholder="Date of Birth"
- setCurrentDate={handleEndDate}
- className="font-medium text-sm w-full "
- selectedDate={endDate}
- setSelectedDate={setEndDate}
+        <StepNav steps={EMPLOYEE_STEPS} current={step} onSelect={setStep} />
+        <StepCard title={EMPLOYEE_STEPS[step]}>
+        <div className={stepClass(0, step)}>
+            <InputElement
+              id="name"
+              placeholder='Enter employee name'
+              label="Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
             />
-          </div>
-
-          <div>
-            <label>Joining Date</label>
-            <InputDatePicker
- placeholder="Joining Date"
- setCurrentDate={handleStartDate}
- className="font-medium text-sm w-full "
- selectedDate={startDate}
- setSelectedDate={setStartDate}
+            <InputElement
+              id="father_name"
+              placeholder="Enter father's name"
+              label="Father's Name"
+              name="father_name"
+              value={formData.father_name}
+              onChange={handleChange}
             />
-          </div>
-          <InputElement
-            placeholder='Enter Qualification'
-            id="qualification"
-            label="Qualification"
-            name="qualification"
-            value={formData.qualification}
-            onChange={handleChange}
-          />
-
-          <InputElement
-            placeholder='Enter basic salary'
-            id="basic_salary"
-            label="Basic Salary"
-            name="basic_salary"
-            value={formData.basic_salary}
-            onChange={handleChange}
-          />
-
-          <InputElement
-            placeholder='Enter house rent'
-            id="house_rent"
-            label="House Rent"
-            name="house_rent"
-            value={formData.house_rent}
-            onChange={handleChange}
-          />
-
-          <InputElement
-            placeholder='Enter medical allowance'
-            id="medical"
-            label="Medical Allowance"
-            name="medical"
-            value={formData.medical}
-            onChange={handleChange}
-          />
-
-          <InputElement
-            placeholder='Enter others allowance'
-            id="others_allowance"
-            label="Others Allowance"
-            name="others_allowance"
-            value={formData.others_allowance}
-            onChange={handleChange}
-          />
-
-          <InputElement
-            placeholder='Enter loan deduction'
-            id="loan_deduction"
-            label="Loan Deduction"
-            name="loan_deduction"
-            value={formData.loan_deduction}
-            onChange={handleChange}
-          />
-
-          <InputElement
-            placeholder='Enter others deduction'
-            id="others_deduction"
-            label="Others Deduction"
-            name="others_deduction"
-            value={formData.others_deduction}
-            onChange={handleChange}
-          />
-       
-          <DropdownCommon
- id="designation"
- name="designation"
- label="Select Designation"
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData.designation?.toString() ?? ''}
- data={designation}
-          />
-
-          <div>
-            <label>Select Branch</label>
-            <div className="w-full">
-              {branchDdlData.isLoading === true ? <Loader /> : null}
-              <BranchDropdown
-                id="branch"
-                name="branch"
-                defaultValue={isSelected}
-                onChange={handleBranchChange}
-                className="w-full font-medium text-sm p-1.5"
-                branchDdl={dropdownData}
+            <InputElement
+              id="nid"
+              placeholder='Enter NID'
+              label="National ID"
+              name="nid"
+              value={formData.nid}
+              onChange={handleChange}
+            />
+            <div>
+              <label className={FIELD_LABEL}>Date of Birth</label>
+              <InputDatePicker
+   placeholder="Date of Birth"
+   setCurrentDate={handleEndDate}
+   className="font-medium text-sm w-full "
+   selectedDate={endDate}
+   setSelectedDate={setEndDate}
               />
             </div>
-          </div>
-
-          <DropdownCommon
- id="sex"
- name="sex"
- label="Select Sex"
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData.sex?.toString() ?? ''}
- data={sex}
-          />
-
-          <DropdownCommon
- id="salary_payable"
- name="salary_payable"
- label="Is Payable?"
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData.salary_payable?.toString() ?? ''}
- data={isPayable}
-          />
-          <DropdownCommon
- id="employment_type"
- name="employment_type"
- label="Attendance Type"
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData.employment_type}
- data={employmentTypes}
-          />
-          <DropdownCommon
- id="attendance_policy_id"
- name="attendance_policy_id"
- label="Attendance Policy"
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData.attendance_policy_id?.toString() ?? ''}
- data={[{ id: '', name: 'Select Policy' }, ...policies]}
-          />
-          <DropdownCommon
- id="default_shift_id"
- name="default_shift_id"
- label="Default Shift"
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData.default_shift_id?.toString() ?? ''}
- data={[{ id: '', name: 'Select Shift' }, ...shifts]}
-          />
-          <DropdownCommon
- id="overtime_eligible"
- name="overtime_eligible"
- label="Overtime Eligible"
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData.overtime_eligible?.toString() ?? '0'}
- data={yesNo}
-          />
-          <DropdownCommon
- id="manual_attendance"
- name="manual_attendance"
- label="Show in Manual Attendance"
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData.manual_attendance?.toString() ?? '1'}
- data={yesNo}
-          />
-          <InputElement
-            id="daily_wage"
-            label="Daily Wage"
-            name="daily_wage"
-            type="number"
-            value={formData.daily_wage}
-            onChange={handleChange}
-          />
-          <InputElement
-            id="ot_rate"
-            label="OT Rate"
-            name="ot_rate"
-            type="number"
-            value={formData.ot_rate}
-            onChange={handleChange}
-          />
-          <InputElement
-            id="standard_work_minutes"
-            label="Standard Work Minutes"
-            name="standard_work_minutes"
-            type="number"
-            value={formData.standard_work_minutes}
-            onChange={handleChange}
-          />
-          <DropdownCommon
- id="status"
- name="status"
- label="Status"
- onChange={handleOnSelectChange}
- className="bg-transparent"
- value={formData.status?.toString() ?? ''}
- data={status}
-          />
-          
-          <InputElement
-            id="employee_serial"
-            label="Salary Sheet Serial Number"
-            name="employee_serial"
-            value={formData.employee_serial}
-            onChange={handleChange}
-          />
-          <InputElement
-            id="device_employee_code"
-            label="Device Code (face terminal)"
-            name="device_employee_code"
-            value={formData.device_employee_code}
-            onChange={handleChange}
-            placeholder="The id enrolled on the terminal"
-          />
-
+            <DropdownCommon
+   id="sex"
+   name="sex"
+   label="Select Sex"
+   onChange={handleOnSelectChange}
+   className="bg-transparent"
+   value={formData.sex?.toString() ?? ''}
+   data={sex}
+            />
+            <InputElement
+              placeholder='Enter mobile number'
+              id="mobile"
+              label="Mobile Number"
+              name="mobile"
+              value={formData.mobile}
+              onChange={handleChange}
+            />
+            <InputElement
+              placeholder='Enter present address'
+              id="present_address"
+              label="Present Address"
+              name="present_address"
+              value={formData.present_address}
+              onChange={handleChange}
+              />
+            <InputElement
+              id="permanent_address"
+              placeholder='Enter permanent address'
+              label="Permanent Address"
+              name="permanent_address"
+              value={formData.permanent_address}
+              onChange={handleChange}
+              />
+            <InputElement
+              placeholder='Enter Qualification'
+              id="qualification"
+              label="Qualification"
+              name="qualification"
+              value={formData.qualification}
+              onChange={handleChange}
+            />
+        </div>
+        <div className={stepClass(1, step)}>
+            <div>
+              <label className={FIELD_LABEL}>Joining Date</label>
+              <InputDatePicker
+   placeholder="Joining Date"
+   setCurrentDate={handleStartDate}
+   className="font-medium text-sm w-full "
+   selectedDate={startDate}
+   setSelectedDate={setStartDate}
+              />
+            </div>
+            <DropdownCommon
+   id="designation"
+   name="designation"
+   label="Select Designation"
+   onChange={handleOnSelectChange}
+   className="bg-transparent"
+   value={formData.designation?.toString() ?? ''}
+   data={designation}
+            />
+            <div>
+              <label className={FIELD_LABEL}>Select Branch</label>
+              <div className="w-full">
+                {branchDdlData.isLoading === true ? <Loader /> : null}
+                <BranchDropdown
+                  id="branch"
+                  name="branch"
+                  defaultValue={isSelected}
+                  onChange={handleBranchChange}
+                  className="w-full font-medium text-sm p-1.5"
+                  branchDdl={dropdownData}
+                />
+              </div>
+            </div>
+            <DropdownCommon
+   id="status"
+   name="status"
+   label="Status"
+   onChange={handleOnSelectChange}
+   className="bg-transparent"
+   value={formData.status?.toString() ?? ''}
+   data={status}
+            />
+            <DropdownCommon
+   id="employment_type"
+   name="employment_type"
+   label="Attendance Type"
+   onChange={handleOnSelectChange}
+   className="bg-transparent"
+   value={formData.employment_type}
+   data={employmentTypes}
+            />
+            <DropdownCommon
+   id="attendance_policy_id"
+   name="attendance_policy_id"
+   label="Attendance Policy"
+   onChange={handleOnSelectChange}
+   className="bg-transparent"
+   value={formData.attendance_policy_id?.toString() ?? ''}
+   data={[{ id: '', name: 'Select Policy' }, ...policies]}
+            />
+            <DropdownCommon
+   id="default_shift_id"
+   name="default_shift_id"
+   label="Default Shift"
+   onChange={handleOnSelectChange}
+   className="bg-transparent"
+   value={formData.default_shift_id?.toString() ?? ''}
+   data={[{ id: '', name: 'Select Shift' }, ...shifts]}
+            />
+            <DropdownCommon
+   id="manual_attendance"
+   name="manual_attendance"
+   label="Show in Manual Attendance"
+   onChange={handleOnSelectChange}
+   className="bg-transparent"
+   value={formData.manual_attendance?.toString() ?? '1'}
+   data={yesNo}
+            />
+            <DropdownCommon
+   id="overtime_eligible"
+   name="overtime_eligible"
+   label="Overtime Eligible"
+   onChange={handleOnSelectChange}
+   className="bg-transparent"
+   value={formData.overtime_eligible?.toString() ?? '0'}
+   data={yesNo}
+            />
+            <InputElement
+              id="standard_work_minutes"
+              label="Standard Work Minutes"
+              name="standard_work_minutes"
+              type="number"
+              value={formData.standard_work_minutes}
+              onChange={handleChange}
+            />
+            <InputElement
+              id="device_employee_code"
+              label="Device Code (face terminal)"
+              name="device_employee_code"
+              value={formData.device_employee_code}
+              onChange={handleChange}
+              placeholder="The id enrolled on the terminal"
+            />
+        </div>
+        <div className={stepClass(2, step)}>
+            <DropdownCommon
+   id="salary_payable"
+   name="salary_payable"
+   label="Is Payable?"
+   onChange={handleOnSelectChange}
+   className="bg-transparent"
+   value={formData.salary_payable?.toString() ?? ''}
+   data={isPayable}
+            />
+            <InputElement
+              placeholder='Enter basic salary'
+              id="basic_salary"
+              label="Basic Salary"
+              name="basic_salary"
+              value={formData.basic_salary}
+              onChange={handleChange}
+            />
+            <InputElement
+              placeholder='Enter house rent'
+              id="house_rent"
+              label="House Rent"
+              name="house_rent"
+              value={formData.house_rent}
+              onChange={handleChange}
+            />
+            <InputElement
+              placeholder='Enter medical allowance'
+              id="medical"
+              label="Medical Allowance"
+              name="medical"
+              value={formData.medical}
+              onChange={handleChange}
+            />
+            <InputElement
+              placeholder='Enter others allowance'
+              id="others_allowance"
+              label="Others Allowance"
+              name="others_allowance"
+              value={formData.others_allowance}
+              onChange={handleChange}
+            />
+            <InputElement
+              id="daily_wage"
+              label="Daily Wage"
+              name="daily_wage"
+              type="number"
+              value={formData.daily_wage}
+              onChange={handleChange}
+            />
+            <InputElement
+              id="ot_rate"
+              label="OT Rate"
+              name="ot_rate"
+              type="number"
+              value={formData.ot_rate}
+              onChange={handleChange}
+            />
+            <InputElement
+              placeholder='Enter loan deduction'
+              id="loan_deduction"
+              label="Loan Deduction"
+              name="loan_deduction"
+              value={formData.loan_deduction}
+              onChange={handleChange}
+            />
+            <InputElement
+              placeholder='Enter others deduction'
+              id="others_deduction"
+              label="Others Deduction"
+              name="others_deduction"
+              value={formData.others_deduction}
+              onChange={handleChange}
+            />
+            <InputElement
+              id="employee_serial"
+              label="Salary Sheet Serial Number"
+              name="employee_serial"
+              value={formData.employee_serial}
+              onChange={handleChange}
+            />
         </div>
         {/* শুধু Save button → Update */}
-        <div className="flex justify-end gap-2 mt-4">
-          <ButtonLoading
-            type='button'
-            onClick={handleUpdate}
-            buttonLoading={saveLoading}
-            disabled={saveLoading}
-            label="Update"
-            className="whitespace-nowrap text-center mr-0"
-            icon={<FiSave className="text-lg ml-2 mr-2" />}
-          />
-          <ButtonLoading
-            onClick={() => navigate('/hrms/employees')}
-            buttonLoading={false}
-            label="Back"
-            className="whitespace-nowrap text-center mr-0"
-            icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
-          />
-        </div>
+        {/* Update stays on every step: changing one field should not mean
+            clicking through the other two. The list link is "Employee List"
+            so it is not mistaken for the step Back. */}
+        <StepFooter
+          steps={EMPLOYEE_STEPS}
+          current={step}
+          onChange={setStep}
+          finish={null}
+          extra={
+            <>
+              <ButtonLoading
+                onClick={() => navigate('/hrms/employees')}
+                buttonLoading={false}
+                label="Employee List"
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+              />
+              <ButtonLoading
+                type='button'
+                onClick={handleUpdate}
+                buttonLoading={saveLoading}
+                disabled={saveLoading}
+                label="Update"
+                className="whitespace-nowrap text-center mr-0"
+                icon={<FiSave className="text-lg ml-2 mr-2" />}
+              />
+            </>
+          }
+        />
+        </StepCard>
       </div>
     </>
   );
