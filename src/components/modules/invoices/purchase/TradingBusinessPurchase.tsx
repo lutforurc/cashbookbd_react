@@ -1468,7 +1468,7 @@ const TradingBusinessPurchase = () => {
                 placeholder={'Payment Amount'}
                 label={'Payment Amount'}
                 disabled={Number(formData.account) === 17}
-                className={'py-1'}
+                className={'py-1 text-right'}
                 onChange={handleOnChange}
                 onKeyDown={(e) => handleInputKeyDown(e, 'notes')} // Pass the next field's ID
               />
