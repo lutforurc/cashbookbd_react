@@ -830,7 +830,7 @@ const BookingsScreen = ({ user }: any) => {
               onClick={() => setDetailsOf(row)}
               // Drawn as a link at rest, not only on hover: a number in plain
               // black did not look like something that could be pressed.
-              className="cursor-pointer font-medium text-primary underline underline-offset-2 hover:text-primary/80 dark:text-secondary dark:hover:text-secondary/80"
+              className="block cursor-pointer text-left font-medium text-primary underline underline-offset-2 hover:text-primary/80 dark:text-secondary dark:hover:text-secondary/80"
               title="Booking details"
             >
               {row.booking_no}
@@ -844,13 +844,13 @@ const BookingsScreen = ({ user }: any) => {
                 onClick={() =>
                   setProfileOf({ mobile: row.booker_mobile, name: row.booker_name })
                 }
-                className="text-xs text-gray-500 hover:text-primary hover:underline dark:text-gray-400 dark:hover:text-secondary"
+                className="block text-left text-xs text-gray-800 hover:text-primary hover:underline dark:text-gray-100 dark:hover:text-secondary"
                 title="Every stay this guest has had here"
               >
                 {row.booker_name}
               </button>
             ) : (
-              <div className="text-xs text-gray-500 dark:text-gray-400">{row.booker_name}</div>
+              <div className="text-xs text-gray-800 dark:text-gray-100">{row.booker_name}</div>
             )}
           </div>
         ),
