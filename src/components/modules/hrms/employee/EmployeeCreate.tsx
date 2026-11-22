@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import { FiHome, FiSave } from 'react-icons/fi';
+import { FiList, FiSave } from 'react-icons/fi';
+import routes from '../../../services/appRoutes';
 import { toast } from 'react-toastify';
 import InputElement from '../../../utils/fields/InputElement';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
@@ -531,11 +532,11 @@ const EmployeeCreate = ({ user }: any) => {
           onChange={setStep}
           extra={
             <ButtonLoading
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate(routes.hrms_employee_list)}
               buttonLoading={false}
-              label="Home"
+              label="Employee List"
               className="whitespace-nowrap text-center mr-0"
-              icon={<FiHome className="text-lg ml-2 mr-2" />}
+              icon={<FiList className="text-lg ml-2 mr-2" />}
             />
           }
           finish={

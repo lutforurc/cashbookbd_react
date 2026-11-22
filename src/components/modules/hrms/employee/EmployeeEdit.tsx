@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
-import { FiSave, FiArrowLeft } from 'react-icons/fi';
+import { FiSave, FiList } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import InputElement from '../../../utils/fields/InputElement';
 import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
@@ -523,7 +523,7 @@ const EmployeeEdit = ({ user }: any) => {
                 buttonLoading={false}
                 label="Employee List"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+                  icon={<FiList className="text-lg ml-2 mr-2" />}
               />
               <ButtonLoading
                 type='button'
