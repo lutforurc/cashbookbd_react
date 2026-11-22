@@ -427,6 +427,32 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
   }
+
+  /*
+   * Tailwind v4 dropped the pointer cursor from buttons. One rule here instead
+   * of a cursor-pointer on every button: anything clickable shows the hand,
+   * a disabled one says so. In the base layer, so a utility class still wins.
+   */
+  button,
+  a[href],
+  [role='button'],
+  [role='tab'],
+  select,
+  summary,
+  label[for],
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='file'],
+  ::file-selector-button {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled='true'],
+  select:disabled,
+  input:disabled {
+    cursor: not-allowed;
+  }
 }
 
 /* @layer components {
