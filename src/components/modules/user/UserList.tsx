@@ -292,11 +292,17 @@ const UserList = () => {
       key: 'role',
       header: 'Role',
       render: (row: any) => {
-        const roleName = getPrimaryRoleName(row);
-        if (!roleName) return <span>-</span>;
+        // Every role the user holds; the primary alone hid a second role.
+        const all = extractRoleNames(row?.roles);
+        const names = all.length > 0 ? all : [getPrimaryRoleName(row)].filter(Boolean);
+        if (names.length === 0) return <span>-</span>;
         return (
-          <span className="inline-flex items-center rounded-md border border-[rgb(var(--c-border))] bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-100">
-            {roleName}
+          <span className="inline-flex flex-wrap gap-1">
+            {names.map((roleName) => (
+              <span key={roleName} className="inline-flex items-center rounded-md border border-[rgb(var(--c-border))] bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                {roleName}
+              </span>
+            ))}
           </span>
         );
       },

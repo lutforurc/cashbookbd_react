@@ -187,7 +187,7 @@
     "intro": "কোম্পানির সব ব্যবহারকারী, তাদের শাখা, পদ ও চালু/বন্ধ অবস্থা।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ all.user.view permission থাকলে।"] },
-      { "heading": "তালিকা", "menu": "Users → User List", "steps": ["Search দিয়ে নাম, ইমেইল বা মোবাইল খুঁজুন; All companies দিয়ে সব কোম্পানি দেখুন।", "Sl. No., User Name, Company, Working Branch, Email, Mobile ও Role দেখা যায়।", "সুইচ দিয়ে চালু/বন্ধ, Edit user দিয়ে বদল, Generate temporary password দিয়ে সাময়িক পাসওয়ার্ড দিন।"] },
+      { "heading": "তালিকা", "menu": "Users → User List", "steps": ["Search দিয়ে নাম, ইমেইল বা মোবাইল খুঁজুন; All companies দিয়ে সব কোম্পানি দেখুন।", "Sl. No., User Name, Company, Working Branch, Email, Mobile ও Role দেখা যায়। একাধিক রোল থাকলে Role ঘরে সবগুলোই দেখায়।", "সুইচ দিয়ে চালু/বন্ধ, Edit user দিয়ে বদল, Generate temporary password দিয়ে সাময়িক পাসওয়ার্ড দিন।"] },
       { "heading": "সতর্কতা", "warning": "নিজের অ্যাকাউন্ট বন্ধ করা যায় না। বন্ধ করলে ব্যবহারকারী ঢুকতে পারবে না, কিন্তু তার তথ্য মোছে না।" }
     ]
   },
