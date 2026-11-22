@@ -293,29 +293,63 @@
   "attendance-setup": {
     "title": "হাজিরার সেটআপ",
     "module": "HRM",
-    "updated": "11/11/2026",
+    "updated": "22/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "হাজিরার পেছনের নিয়ম এখানে ঠিক করা হয় — শিফট, পলিসি, রোস্টার, সাপ্তাহিক ছুটি, ছুটির দিন ও ছুটির ধরন।",
+    "intro": "হাজিরার পেছনের নিয়ম এখানে ঠিক করা হয় — শিফট, পলিসি, রোস্টার, সাপ্তাহিক ছুটি, ছুটির দিন, ছুটির ধরন, আর ওভারটাইম ও বেতন কাটার নিয়ম।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.setup.view permission থাকলে।"] },
       {
         "heading": "ট্যাবগুলো",
         "menu": "HRM → Attendance → Setup",
         "steps": [
-          "Shift — Shift Name, Code, Start Time, End Time, Grace Minutes, Half Day Minutes, Early Out Minutes ও Night Shift দিয়ে Save করুন।",
+          "Shift — Shift Name, Code, Start Time, End Time, Grace Minutes, Half Day Minutes, Early Out Minutes, Night Shift, After-midnight Cut-off ও Break Start/End দিয়ে Save করুন।",
           "Policy — Policy Name, Employee Type, Branch, Default Shift, Standard/Minimum/Half Day/Grace/Early Out Minutes, Overtime, OT After Minutes, Late ও Early Out Deduction Count দিন।",
           "Roster — Employee, Branch, Shift, Duty Date, Status ও Remarks দিয়ে সারি যোগ করুন; Load Roster দিয়ে ভরাও যায়।",
           "Weekly Holiday — Branch, Day, Enabled ও Effective From/To দিন।",
           "Holiday — Holiday Date, Holiday Name, Holiday Type, Paid, Optional ও Remarks দিন।",
-          "Leave Type — Leave Type, Code, Yearly Quota, Sort Order, Paid, Allow Half Day, Allow Backdated ও Attachment দিন।"
+          "Leave Type — Leave Type, Code, Yearly Quota, Sort Order, Paid, Allow Half Day, Allow Backdated ও Attachment দিন।",
+          "OT & Pay Rules — শাখা বেছে ওভারটাইম কীভাবে গোনা ও গোল হবে, ছুটির দিনের কাজ ও রেট, আর দেরি/অনুপস্থিতিতে বেতন কাটা হবে কিনা ঠিক করে Save Rules চাপুন।"
+        ]
+      },
+      {
+        "heading": "ওভারটাইম ও বেতনের নিয়ম",
+        "menu": "HRM → Attendance → Setup → OT & Pay Rules",
+        "steps": [
+          "Overtime Counted — \"Worked time minus shift length\" দিলে মোট কাজের সময় থেকে শিফটের সময় বাদ দিয়ে ওভারটাইম; \"Only after shift end\" দিলে শুধু শিফট শেষের পরের সময়।",
+          "Early Arrival is Overtime — No দিলে শিফট শুরুর আগে এলে সেই সময় ওভারটাইম হয় না।",
+          "Overtime Rounding ও Round Up After — Whole hour আর 30 দিলে ৫:৪০-এ গেলে ১ ঘণ্টা, ৫:২৫-এ গেলে ০। Exactly at Threshold-এ Round up দিলে ঠিক ৩০ মিনিটও ১ ঘণ্টা।",
+          "Holiday Work is All Overtime — Yes দিলে শুক্রবার বা ছুটির তালিকার দিনে যত সময় কাজ, সবটাই ওভারটাইম; Holiday OT Rate (x) দিয়ে রেট গুণ হয় (যেমন 1.5 বা 2)।",
+          "Deduct Pay for Late / Early Out — No দিলে দেরি বা আগে যাওয়া শুধু রিপোর্টে দেখায়, বেতন কাটে না।",
+          "Deduct Pay for Absence — No দিলে অনুপস্থিত দিনও বেতনে ধরা হয়; রিপোর্টে অনুপস্থিত হিসেবেই দেখায়।",
+          "কর্মচারীর প্রোফাইলে Overtime Eligible ও OT Rate না থাকলে কোনো ওভারটাইম হয় না।"
+        ]
+      },
+      {
+        "heading": "মাঝরাতের পরের পাঞ্চ",
+        "menu": "HRM → Attendance → Setup → Shift",
+        "steps": [
+          "After-midnight Cut-off-এ মিনিট দিলে শিফট শুরুর এত মিনিট আগের পাঞ্চ আগের দিনের বের হওয়া ধরা হয়।",
+          "08:00 শিফটে 60 দিলে রাত ১টার পাঞ্চ আগের দিনের বের হওয়া (ওভারটাইমও আগের দিনের), সকাল ৭:৫০-এর পাঞ্চ আজকের ঢোকা।",
+          "ঘরটা খালি রাখলে নিয়মটা বন্ধ — মাঝরাতের পরের পাঞ্চ ক্যালেন্ডারের দিনেই থাকে।"
+        ]
+      },
+      {
+        "heading": "দুপুরের বিরতি (লাঞ্চ)",
+        "menu": "HRM → Attendance → Setup → Shift",
+        "steps": [
+          "Break Start ও Break End দিন, যেমন 13:00 ও 14:00।",
+          "কর্মী বিরতির যতটুকু সময় উপস্থিত ছিল, শুধু ততটুকু কাজের সময় থেকে বাদ যায়। ১২টায় চলে গেলে কিছুই কাটে না।",
+          "৮টা–৫টা শিফটে ১ ঘণ্টা বিরতি দিলে শুক্রবার পুরো দিন কাজ করলে ওভারটাইম ৮ ঘণ্টা হয়, ৯ নয়।",
+          "খালি রাখলে কিছুই বাদ যায় না — আগের মতো।"
         ]
       },
       {
         "heading": "যা মনে রাখবেন",
         "steps": [
           "প্রতিটি ট্যাবে Save ও Reset আছে; সারি বদলালে Save বাটন Update হয়ে যায়।",
-          "Policy-র Standard Work Minutes ও Grace Minutes ঠিক না থাকলে দেরি ও আধা দিনের হিসাব ভুল হবে।"
+          "Policy-র Standard Work Minutes ও Grace Minutes ঠিক না থাকলে দেরি ও আধা দিনের হিসাব ভুল হবে।",
+          "নিয়ম বদলালে আগের দিনগুলো নিজে থেকে বদলায় না; ফেস ডিভাইসের দিন বদলাতে Devices স্ক্রিনের Rebuild Days চালান।"
         ],
         "warning": "Holiday-তে Paid বন্ধ থাকলে ওই দিনের বেতন কাটবে। ছুটির ধরন ও Paid একবার মিলিয়ে নিন।"
       }

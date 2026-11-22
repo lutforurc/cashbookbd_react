@@ -21,6 +21,7 @@ import {
   API_ATTENDANCE_LEAVE_TYPE_UPDATE_URL,
   API_ATTENDANCE_MONTHLY_SUMMARY_URL,
   API_ATTENDANCE_POLICY_LIST_URL,
+  API_ATTENDANCE_RULES_URL,
   API_ATTENDANCE_POLICY_STORE_URL,
   API_ATTENDANCE_POLICY_UPDATE_URL,
   API_ATTENDANCE_SHIFT_ROSTER_LIST_URL,
@@ -92,6 +93,33 @@ export const saveAttendancePolicy = createAsyncThunk<any, any, { rejectValue: st
       return response.data;
     } catch (error: any) {
       return rejectWithValue(rejectMessage(error, 'Failed to save attendance policy'));
+    }
+  },
+);
+
+// Overtime and pay rules: one object per branch, read and saved whole by the
+// Rules tab. Not kept in the store -- only that tab ever reads it.
+export const fetchAttendanceRules = createAsyncThunk<any, any | undefined, { rejectValue: string }>(
+  'attendance/fetchAttendanceRules',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const response = await httpService.get(API_ATTENDANCE_RULES_URL, { params });
+      // foundData() nests it: { data: { data: {...rules}, transaction_date } }.
+      return response?.data?.data?.data ?? response?.data?.data ?? {};
+    } catch (error: any) {
+      return rejectWithValue(rejectMessage(error, 'Failed to fetch attendance rules'));
+    }
+  },
+);
+
+export const saveAttendanceRules = createAsyncThunk<any, any, { rejectValue: string }>(
+  'attendance/saveAttendanceRules',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await httpService.post(API_ATTENDANCE_RULES_URL, payload);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(rejectMessage(error, 'Failed to save attendance rules'));
     }
   },
 );

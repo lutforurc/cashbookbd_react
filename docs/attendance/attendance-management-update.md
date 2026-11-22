@@ -265,3 +265,27 @@ Recommended implementation order:
 5. Create security guard shift roster table
 6. Update Manual Attendance screen to auto-load policy/shift/roster
 7. Update monthly attendance summary and salary integrationattendance-management-update.md
+
+### 29.12 OT & Pay Rules (built 2026-11-22)
+
+Per-branch rows in `hrm_attendance_settings` (key/value, branch row beats company row). **Every default is the old behaviour**, so a tenant that never opens the tab is paid as before.
+
+| key | values | default |
+|---|---|---|
+| `ot_basis` | `total` (worked - shift length) / `after_shift_end` | `total` |
+| `ot_count_early_arrival` | 1 / 0 | 1 |
+| `ot_rounding` | `minute` / `half_hour` / `hour` | `minute` |
+| `ot_round_threshold` | minutes of a part unit that round up (0-59) | 30 |
+| `ot_round_at_threshold` | `up` / `down` | `up` |
+| `ot_holiday_all` | 1 = every minute on a weekly/calendar holiday is OT | 0 |
+| `ot_holiday_multiplier` | rate multiplier on those days | 1 |
+| `pay_late_deduction` | 0 = late/early-out never costs days | 1 |
+| `pay_absent_deduction` | 0 = absent days stay counted but are paid | 1 |
+
+Shift column `hrm_attendance_shifts.night_cutoff_minutes` (NULL = off): on a day shift a punch earlier than start minus this is the previous day's exit.
+
+Code: `AttendanceTimesCalculator` (OT, `roundOvertime()`), `AttendancePunchProcessor::attendanceDateFor()` (cut-off), the two monthly sums in `SalaryController::attendanceSummariesForSalary()` and `AttendanceManagementController` (deductions), `AttendanceCalendar::isHoliday()`. API `GET/POST /api/hrms/attendance/rules`. Schema: `php artisan patch:attendance-devices` or `database/sql/2026_11_22_attendance_overtime_rules.sql`.
+
+A pending (unapproved) day now carries its overtime: approval only flips the status, so it used to stay 0 for good. Payroll still pays OT only on present/late/early_out days.
+
+Shift columns `break_start` / `break_end` (TIME, NULL = none): only the overlap of the worked span with the break is taken off `work_minutes`, and the break length comes off the shift-length yardstick too (so `total` basis is unchanged by lunch). Leaving before the break loses nothing.

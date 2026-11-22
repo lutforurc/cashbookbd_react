@@ -906,6 +906,7 @@ export const API_ATTENDANCE_SHIFT_LIST_URL = `${API_BASE_URL}/hrms/attendance/sh
 export const API_ATTENDANCE_SHIFT_STORE_URL = `${API_BASE_URL}/hrms/attendance/shifts/store`;
 export const API_ATTENDANCE_SHIFT_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/shifts/update`;
 export const API_ATTENDANCE_POLICY_LIST_URL = `${API_BASE_URL}/hrms/attendance/policies`;
+export const API_ATTENDANCE_RULES_URL = `${API_BASE_URL}/hrms/attendance/rules`;
 export const API_ATTENDANCE_POLICY_STORE_URL = `${API_BASE_URL}/hrms/attendance/policies/store`;
 export const API_ATTENDANCE_POLICY_UPDATE_URL = `${API_BASE_URL}/hrms/attendance/policies/update`;
 export const API_ATTENDANCE_SHIFT_ROSTER_LIST_URL = `${API_BASE_URL}/hrms/attendance/shift-rosters`;

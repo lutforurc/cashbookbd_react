@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiCalendar, FiCheck, FiClock, FiEdit2, FiRefreshCcw, FiSave, FiShield, FiUserCheck } from 'react-icons/fi';
+import { FiCalendar, FiCheck, FiClock, FiDollarSign, FiEdit2, FiRefreshCcw, FiSave, FiShield, FiUserCheck } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
@@ -16,11 +16,13 @@ import Table from '../../../utils/others/Table';
 import {
   fetchAttendanceShifts,
   fetchAttendancePolicies,
+  fetchAttendanceRules,
   fetchShiftRosters,
   fetchHolidays,
   fetchLeaveTypes,
   fetchWeeklyHolidays,
   saveAttendancePolicy,
+  saveAttendanceRules,
   saveAttendanceShift,
   saveShiftRoster,
   saveHoliday,
@@ -36,6 +38,7 @@ const tabs = [
   { key: 'weekly', label: 'Weekly Holiday', icon: FiCheck },
   { key: 'holiday', label: 'Holiday', icon: FiCalendar },
   { key: 'leave', label: 'Leave Type', icon: FiCalendar },
+  { key: 'rules', label: 'OT & Pay Rules', icon: FiDollarSign },
 ];
 
 const dayOptions = [
@@ -108,8 +111,42 @@ const initialShift = {
   late_deduction_after_count: '3',
   early_out_deduction_after_count: '3',
   is_night_shift: '0',
+  night_cutoff_minutes: '',
+  break_start: '',
+  break_end: '',
   status: '1',
 };
+
+// Every default is what the system did before these rules existed, so a branch
+// that never opens the tab is paid exactly as before.
+const initialRules = {
+  branch_id: '',
+  ot_basis: 'total',
+  ot_count_early_arrival: '1',
+  ot_rounding: 'minute',
+  ot_round_threshold: '30',
+  ot_round_at_threshold: 'up',
+  ot_holiday_all: '0',
+  ot_holiday_multiplier: '1',
+  pay_late_deduction: '1',
+  pay_absent_deduction: '1',
+};
+
+const otBasisOptions = [
+  { id: 'total', name: 'Worked time minus shift length' },
+  { id: 'after_shift_end', name: 'Only after shift end' },
+];
+
+const roundingOptions = [
+  { id: 'minute', name: 'Exact minutes' },
+  { id: 'half_hour', name: 'Half hour' },
+  { id: 'hour', name: 'Whole hour' },
+];
+
+const roundAtOptions = [
+  { id: 'up', name: 'Round up' },
+  { id: 'down', name: 'Round down' },
+];
 
 const initialWeekly = {
   id: '',
@@ -190,6 +227,7 @@ const AttendanceSetup = ({ user }: any) => {
   const [weeklyForm, setWeeklyForm] = useState<any>(initialWeekly);
   const [holidayForm, setHolidayForm] = useState<any>(initialHoliday);
   const [leaveTypeForm, setLeaveTypeForm] = useState<any>(initialLeaveType);
+  const [rulesForm, setRulesForm] = useState<any>(initialRules);
 
   const branches = branchDdlData?.protectedData?.data || [];
   const branchDropdownData = [{ id: '', name: 'All Branch' }, ...branches];
@@ -230,6 +268,24 @@ const AttendanceSetup = ({ user }: any) => {
 
     if (tabKey === 'leave') {
       dispatch(fetchLeaveTypes());
+      return;
+    }
+
+    if (tabKey === 'rules') {
+      loadRules(rulesForm.branch_id);
+    }
+  };
+
+  const loadRules = async (branchId: any) => {
+    try {
+      const data = await dispatch(fetchAttendanceRules(branchId ? { branch_id: branchId } : {})).unwrap();
+      const next: any = { ...initialRules, branch_id: branchId || '' };
+      Object.keys(initialRules).forEach((key) => {
+        if (key !== 'branch_id' && data?.[key] !== undefined && data?.[key] !== null) next[key] = String(data[key]);
+      });
+      setRulesForm(next);
+    } catch (error: any) {
+      toast.error(error || 'Failed to load rules');
     }
   };
 
@@ -281,6 +337,10 @@ const AttendanceSetup = ({ user }: any) => {
           if (activeTab === 'holiday') {
             dispatch(fetchHolidays(nextValue ? { branch_id: nextValue } : {}));
           }
+
+          if (activeTab === 'rules') {
+            loadRules(nextValue);
+          }
         }}
         className="h-9 w-full font-medium text-sm p-1.5"
         branchDdl={branchDropdownData}
@@ -318,7 +378,7 @@ const AttendanceSetup = ({ user }: any) => {
       key: 'action',
       header: 'Action',
       render: (row: any) => (
-        <Button type="button" onClick={() => setShiftForm({ ...initialShift, ...row })} className={iconButtonClass}>
+        <Button type="button" onClick={() => setShiftForm({ ...initialShift, ...row, break_start: String(row.break_start || '').slice(0, 5), break_end: String(row.break_end || '').slice(0, 5) })} className={iconButtonClass}>
           <FiEdit2 />
         </Button>
       ),
@@ -467,7 +527,16 @@ const AttendanceSetup = ({ user }: any) => {
             <InputElement name="half_day_minutes" label="Half Day Minutes" type="number" value={shiftForm.half_day_minutes} onChange={handleChange(setShiftForm)} />
             <InputElement name="early_out_minutes" label="Early Out Minutes" type="number" value={shiftForm.early_out_minutes} onChange={handleChange(setShiftForm)} />
             <DropdownCommon id="is_night_shift" name="is_night_shift" label="Night Shift" value={shiftForm.is_night_shift?.toString()} data={yesNo} onChange={handleChange(setShiftForm)} className="" />
+            <InputElement name="night_cutoff_minutes" label="After-midnight Cut-off (min)" type="number" placeholder="Off" value={shiftForm.night_cutoff_minutes ?? ''} onChange={handleChange(setShiftForm)} />
+            <InputTimePicker name="break_start" label="Break Start (lunch)" value={shiftForm.break_start ?? ''} onChange={handleChange(setShiftForm)} />
+            <InputTimePicker name="break_end" label="Break End" value={shiftForm.break_end ?? ''} onChange={handleChange(setShiftForm)} />
           </div>
+          <p className="mb-3 text-xs text-slate-500">
+            After-midnight cut-off: শিফট শুরুর এত মিনিট আগের পাঞ্চ আগের দিনের বের হওয়া ধরা হবে। 08:00 শিফটে 60 দিলে রাত ১টার
+            পাঞ্চ আগের দিনের, সকাল ৭:৫০ আজকের ঢোকা। খালি রাখলে বন্ধ।
+            <br />
+            Break Start/End: বিরতির যতটুকু সময় কর্মী উপস্থিত ছিল, শুধু ততটুকু কাজের সময় থেকে বাদ যায় — ১২টায় চলে গেলে কিছুই কাটে না। খালি রাখলে কিছু বাদ যায় না।
+          </p>
           {renderActions(Boolean(shiftForm.id), () => setShiftForm(initialShift))}
         </form>
       )}
@@ -608,6 +677,40 @@ const AttendanceSetup = ({ user }: any) => {
             <InputElement name="remarks" label="Remarks" value={holidayForm.remarks || ''} onChange={handleChange(setHolidayForm)} />
           </div>
           {renderActions(Boolean(holidayForm.id), () => setHolidayForm(initialHoliday))}
+        </form>
+      )}
+
+      {activeTab === 'rules' && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            saveAndRefresh(saveAttendanceRules, rulesForm, () => undefined, 'Attendance rules saved successfully');
+          }}
+        >
+          <div className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-4">
+            {branchField('branch_id', rulesForm.branch_id, handleChange(setRulesForm))}
+            <DropdownCommon id="ot_basis" name="ot_basis" label="Overtime Counted" value={rulesForm.ot_basis} data={otBasisOptions} onChange={handleChange(setRulesForm)} className="" />
+            <DropdownCommon id="ot_count_early_arrival" name="ot_count_early_arrival" label="Early Arrival is Overtime" value={rulesForm.ot_count_early_arrival} data={yesNo} onChange={handleChange(setRulesForm)} className="" />
+            <DropdownCommon id="ot_rounding" name="ot_rounding" label="Overtime Rounding" value={rulesForm.ot_rounding} data={roundingOptions} onChange={handleChange(setRulesForm)} className="" />
+            <InputElement name="ot_round_threshold" label="Round Up After (minutes)" type="number" value={rulesForm.ot_round_threshold} onChange={handleChange(setRulesForm)} />
+            <DropdownCommon id="ot_round_at_threshold" name="ot_round_at_threshold" label="Exactly at Threshold" value={rulesForm.ot_round_at_threshold} data={roundAtOptions} onChange={handleChange(setRulesForm)} className="" />
+            <DropdownCommon id="ot_holiday_all" name="ot_holiday_all" label="Holiday Work is All Overtime" value={rulesForm.ot_holiday_all} data={yesNo} onChange={handleChange(setRulesForm)} className="" />
+            <InputElement name="ot_holiday_multiplier" label="Holiday OT Rate (x)" type="number" value={rulesForm.ot_holiday_multiplier} onChange={handleChange(setRulesForm)} />
+            <DropdownCommon id="pay_late_deduction" name="pay_late_deduction" label="Deduct Pay for Late / Early Out" value={rulesForm.pay_late_deduction} data={yesNo} onChange={handleChange(setRulesForm)} className="" />
+            <DropdownCommon id="pay_absent_deduction" name="pay_absent_deduction" label="Deduct Pay for Absence" value={rulesForm.pay_absent_deduction} data={yesNo} onChange={handleChange(setRulesForm)} className="" />
+          </div>
+          <ul className="mb-3 list-disc pl-5 text-xs text-slate-500">
+            <li>উদাহরণ: শিফট ৫টায় শেষ, Only after shift end + Whole hour + 30 দিলে ৫:৪০-এ গেলে ১ ঘণ্টা, ৫:২৫-এ গেলে ০।</li>
+            <li>ছুটির দিনে (সাপ্তাহিক বা তালিকার) কাজ করলে পুরো সময়টাই ওভারটাইম, রেট গুণ করে।</li>
+            <li>নতুন নিয়ম পরের সেভ বা পাঞ্চ থেকে খাটে। পুরোনো দিন বদলাতে Devices স্ক্রিনের Rebuild Days।</li>
+          </ul>
+          <ButtonLoading
+            type="submit"
+            buttonLoading={buttonLoading}
+            label="Save Rules"
+            className={`${commandButtonClass} whitespace-nowrap`}
+            icon={<FiSave className="mr-2" />}
+          />
         </form>
       )}
 
