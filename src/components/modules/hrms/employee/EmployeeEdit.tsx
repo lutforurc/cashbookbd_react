@@ -243,7 +243,7 @@ const EmployeeEdit = ({ user }: any) => {
       <div className="p-4">
         <StepNav steps={EMPLOYEE_STEPS} current={step} onSelect={setStep} />
         <StepCard title={EMPLOYEE_STEPS[step]}>
-        <div className={stepClass(0, step)}>
+          <div className={stepClass(0, step)}>
             <InputElement
               id="name"
               placeholder='Enter employee name'
@@ -271,21 +271,21 @@ const EmployeeEdit = ({ user }: any) => {
             <div>
               <label className={FIELD_LABEL}>Date of Birth</label>
               <InputDatePicker
-   placeholder="Date of Birth"
-   setCurrentDate={handleEndDate}
-   className="font-medium text-sm w-full "
-   selectedDate={endDate}
-   setSelectedDate={setEndDate}
+                placeholder="Date of Birth"
+                setCurrentDate={handleEndDate}
+                className="font-medium text-sm w-full "
+                selectedDate={endDate}
+                setSelectedDate={setEndDate}
               />
             </div>
             <DropdownCommon
-   id="sex"
-   name="sex"
-   label="Select Sex"
-   onChange={handleOnSelectChange}
-   className="bg-transparent"
-   value={formData.sex?.toString() ?? ''}
-   data={sex}
+              id="sex"
+              name="sex"
+              label="Select Sex"
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.sex?.toString() ?? ''}
+              data={sex}
             />
             <InputElement
               placeholder='Enter mobile number'
@@ -302,7 +302,7 @@ const EmployeeEdit = ({ user }: any) => {
               name="present_address"
               value={formData.present_address}
               onChange={handleChange}
-              />
+            />
             <InputElement
               id="permanent_address"
               placeholder='Enter permanent address'
@@ -310,7 +310,7 @@ const EmployeeEdit = ({ user }: any) => {
               name="permanent_address"
               value={formData.permanent_address}
               onChange={handleChange}
-              />
+            />
             <InputElement
               placeholder='Enter Qualification'
               id="qualification"
@@ -319,26 +319,26 @@ const EmployeeEdit = ({ user }: any) => {
               value={formData.qualification}
               onChange={handleChange}
             />
-        </div>
-        <div className={stepClass(1, step)}>
+          </div>
+          <div className={stepClass(1, step)}>
             <div>
               <label className={FIELD_LABEL}>Joining Date</label>
               <InputDatePicker
-   placeholder="Joining Date"
-   setCurrentDate={handleStartDate}
-   className="font-medium text-sm w-full "
-   selectedDate={startDate}
-   setSelectedDate={setStartDate}
+                placeholder="Joining Date"
+                setCurrentDate={handleStartDate}
+                className="font-medium text-sm w-full "
+                selectedDate={startDate}
+                setSelectedDate={setStartDate}
               />
             </div>
             <DropdownCommon
-   id="designation"
-   name="designation"
-   label="Select Designation"
-   onChange={handleOnSelectChange}
-   className="bg-transparent"
-   value={formData.designation?.toString() ?? ''}
-   data={designation}
+              id="designation"
+              name="designation"
+              label="Select Designation"
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.designation?.toString() ?? ''}
+              data={designation}
             />
             <div>
               <label className={FIELD_LABEL}>Select Branch</label>
@@ -355,58 +355,58 @@ const EmployeeEdit = ({ user }: any) => {
               </div>
             </div>
             <DropdownCommon
-   id="status"
-   name="status"
-   label="Status"
-   onChange={handleOnSelectChange}
-   className="bg-transparent"
-   value={formData.status?.toString() ?? ''}
-   data={status}
+              id="status"
+              name="status"
+              label="Status"
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.status?.toString() ?? ''}
+              data={status}
             />
             <DropdownCommon
-   id="employment_type"
-   name="employment_type"
-   label="Attendance Type"
-   onChange={handleOnSelectChange}
-   className="bg-transparent"
-   value={formData.employment_type}
-   data={employmentTypes}
+              id="employment_type"
+              name="employment_type"
+              label="Attendance Type"
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.employment_type}
+              data={employmentTypes}
             />
             <DropdownCommon
-   id="attendance_policy_id"
-   name="attendance_policy_id"
-   label="Attendance Policy"
-   onChange={handleOnSelectChange}
-   className="bg-transparent"
-   value={formData.attendance_policy_id?.toString() ?? ''}
-   data={[{ id: '', name: 'Select Policy' }, ...policies]}
+              id="attendance_policy_id"
+              name="attendance_policy_id"
+              label="Attendance Policy"
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.attendance_policy_id?.toString() ?? ''}
+              data={[{ id: '', name: 'Select Policy' }, ...policies]}
             />
             <DropdownCommon
-   id="default_shift_id"
-   name="default_shift_id"
-   label="Default Shift"
-   onChange={handleOnSelectChange}
-   className="bg-transparent"
-   value={formData.default_shift_id?.toString() ?? ''}
-   data={[{ id: '', name: 'Select Shift' }, ...shifts]}
+              id="default_shift_id"
+              name="default_shift_id"
+              label="Default Shift"
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.default_shift_id?.toString() ?? ''}
+              data={[{ id: '', name: 'Select Shift' }, ...shifts]}
             />
             <DropdownCommon
-   id="manual_attendance"
-   name="manual_attendance"
-   label="Show in Manual Attendance"
-   onChange={handleOnSelectChange}
-   className="bg-transparent"
-   value={formData.manual_attendance?.toString() ?? '1'}
-   data={yesNo}
+              id="manual_attendance"
+              name="manual_attendance"
+              label="Show in Manual Attendance"
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.manual_attendance?.toString() ?? '1'}
+              data={yesNo}
             />
             <DropdownCommon
-   id="overtime_eligible"
-   name="overtime_eligible"
-   label="Overtime Eligible"
-   onChange={handleOnSelectChange}
-   className="bg-transparent"
-   value={formData.overtime_eligible?.toString() ?? '0'}
-   data={yesNo}
+              id="overtime_eligible"
+              name="overtime_eligible"
+              label="Overtime Eligible"
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.overtime_eligible?.toString() ?? '0'}
+              data={yesNo}
             />
             <InputElement
               id="standard_work_minutes"
@@ -424,16 +424,16 @@ const EmployeeEdit = ({ user }: any) => {
               onChange={handleChange}
               placeholder="The id enrolled on the terminal"
             />
-        </div>
-        <div className={stepClass(2, step)}>
+          </div>
+          <div className={stepClass(2, step)}>
             <DropdownCommon
-   id="salary_payable"
-   name="salary_payable"
-   label="Is Payable?"
-   onChange={handleOnSelectChange}
-   className="bg-transparent"
-   value={formData.salary_payable?.toString() ?? ''}
-   data={isPayable}
+              id="salary_payable"
+              name="salary_payable"
+              label="Is Payable?"
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.salary_payable?.toString() ?? ''}
+              data={isPayable}
             />
             <InputElement
               placeholder='Enter basic salary'
@@ -506,37 +506,37 @@ const EmployeeEdit = ({ user }: any) => {
               value={formData.employee_serial}
               onChange={handleChange}
             />
-        </div>
-        {/* শুধু Save button → Update */}
-        {/* Update stays on every step: changing one field should not mean
+          </div>
+          {/* শুধু Save button → Update */}
+          {/* Update stays on every step: changing one field should not mean
             clicking through the other two. The list link is "Employee List"
             so it is not mistaken for the step Back. */}
-        <StepFooter
-          steps={EMPLOYEE_STEPS}
-          current={step}
-          onChange={setStep}
-          finish={null}
-          extra={
-            <>
-              <ButtonLoading
-                onClick={() => navigate('/hrms/employees')}
-                buttonLoading={false}
-                label="Employee List"
-                className="whitespace-nowrap text-center mr-0"
-                  icon={<FiList className="text-lg ml-2 mr-2" />}
-              />
-              <ButtonLoading
-                type='button'
-                onClick={handleUpdate}
-                buttonLoading={saveLoading}
-                disabled={saveLoading}
-                label="Update"
-                className="whitespace-nowrap text-center mr-0"
-                icon={<FiSave className="text-lg ml-2 mr-2" />}
-              />
-            </>
-          }
-        />
+          <StepFooter
+            steps={EMPLOYEE_STEPS}
+            current={step}
+            onChange={setStep}
+            finish={null}
+            extra={
+              <>
+                <ButtonLoading
+                  onClick={() => navigate('/hrms/employees')}
+                  buttonLoading={false}
+                  label="Employee List"
+                  className="whitespace-nowrap text-center mr-0"
+                  icon={<FiList className="text-lg mr-2" />}
+                />
+                <ButtonLoading
+                  type='button'
+                  onClick={handleUpdate}
+                  buttonLoading={saveLoading}
+                  disabled={saveLoading}
+                  label="Update"
+                  className="whitespace-nowrap text-center mr-0"
+                  icon={<FiSave className="text-lg ml-2 mr-2" />}
+                />
+              </>
+            }
+          />
         </StepCard>
       </div>
     </>

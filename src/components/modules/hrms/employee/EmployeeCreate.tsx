@@ -536,7 +536,7 @@ const EmployeeCreate = ({ user }: any) => {
               buttonLoading={false}
               label="Employee List"
               className="whitespace-nowrap text-center mr-0"
-              icon={<FiList className="text-lg ml-2 mr-2" />}
+              icon={<FiList className="text-lg mr-2" />}
             />
           }
           finish={
