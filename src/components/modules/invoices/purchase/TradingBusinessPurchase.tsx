@@ -66,6 +66,7 @@ import TrackedProductField from '../../product-tracking/TrackedProductField';
 import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import { useNavigate } from 'react-router-dom';
 import { branchLabel } from '../../../utils/userFeatureSettings';
+import { getServiceList } from '../../settings/settingsSlice';
 interface Product {
   id: number;
   product: number;
@@ -99,6 +100,19 @@ const normalizeSuggestionItems = (items: any) =>
       .filter((item: string, index: number, arr: string[]) => item && arr.indexOf(item) === index)
     : [];
 
+/**
+ * What a voucher posted to one chart-of-accounts row, read off its ledger
+ * details -- either side, as on the Elegant screen. Carriage in is coa4 197,
+ * or 198 on an older chart.
+ */
+const findCoaAmount = (items: any[], ...targets: number[]) => {
+  for (const target of targets) {
+    const found = items.find((item) => Number(item?.coa4_id) === target);
+    if (found) return Number(found.debit) || Number(found.credit) || 0;
+  }
+  return 0;
+};
+
 const TradingBusinessPurchase = () => {
   const navigate = useNavigate();
   const warehouse = useSelector((s: any) => s.activeWarehouse);
@@ -111,6 +125,9 @@ const TradingBusinessPurchase = () => {
   const isTilesBranch = Boolean(currentBranch?.is_tiles_and_sanitary);
   const fieldLabel = (key: string, fallback: string) =>
     branchLabel(settings, key, fallback);
+  // The name a chart-of-accounts row carries on this branch's setup.
+  const serviceList = (id: number, list: any[] = []) =>
+    list.find((item) => item.id === id)?.name || '';
   const dispatch = useDispatch<any>();
   const [buttonLoading, setButtonLoading] = useState(false);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
@@ -148,6 +165,9 @@ const TradingBusinessPurchase = () => {
   useEffect(() => {
     dispatch(userCurrentBranch());
     dispatch(getDdlWarehouse());
+    // Names the three charge boxes after the chart-of-accounts rows they post
+    // to, as the Elegant (tiles) purchase screen does.
+    dispatch(getServiceList());
     setPermissions(settings.data.permissions);
   }, []);
 
@@ -157,6 +177,12 @@ const TradingBusinessPurchase = () => {
     accountName: string;
     paymentAmt: string;
     discountAmt: string | number;
+    // The three charges the Elegant purchase screen carries, posted by the
+    // same TransactionService: Carrying Inward (coa4 197), TDS / VAT (41) and
+    // Service Charge (42). Each is part of what the supplier is owed.
+    carryingInwardAmt: string;
+    tdsAmount: string;
+    serviceCharge: string;
     purchaseOrderNumber: string;
     purchaseOrderText: string;
     invoice_no: string;
@@ -188,6 +214,9 @@ const TradingBusinessPurchase = () => {
     accountName: '',
     paymentAmt: '',
     discountAmt: '',
+    carryingInwardAmt: '',
+    tdsAmount: '',
+    serviceCharge: '',
     purchaseOrderNumber: '',
     purchaseOrderText: '',
     invoice_no: '',
@@ -718,6 +747,11 @@ const TradingBusinessPurchase = () => {
           }
         }
   
+        const trxDetails =
+          purchase?.data?.transaction?.acc_transaction_master?.flatMap(
+            (trxMaster: any) => trxMaster.acc_transaction_details ?? [],
+          ) ?? [];
+
         // Update formData using previous state to maintain integrity
         const updatedFormData = {
           ...formData,
@@ -730,6 +764,11 @@ const TradingBusinessPurchase = () => {
           invoice_date: purchase.data.transaction.purchase_master?.invoice_date || '',
           paymentAmt: purchase.data.transaction.purchase_master.netpayment.toString() || '',
           discountAmt: parseFloat(purchase.data.transaction.purchase_master.discount) || 0,
+          // An invoice saved before these boxes existed has no such line and
+          // opens at nought.
+          carryingInwardAmt: findCoaAmount(trxDetails, 197, 198) || '',
+          tdsAmount: findCoaAmount(trxDetails, 41) || '',
+          serviceCharge: findCoaAmount(trxDetails, 42) || '',
           notes: purchase.data.transaction.purchase_master.notes || '',
           // On the voucher itself, not on the purchase master: the edit query
           // returns the row whole, so they ride along. Absent on a database the
@@ -864,7 +903,7 @@ const TradingBusinessPurchase = () => {
       }));
     }
 
-    handleInputKeyDown(e, 'paymentAmt');
+    handleInputKeyDown(e, 'serviceCharge');
   };
 
   /**
@@ -983,6 +1022,9 @@ const TradingBusinessPurchase = () => {
             ...prevFormData,
             paymentAmt: '',
             discountAmt: '',
+            carryingInwardAmt: '',
+            tdsAmount: '',
+            serviceCharge: '',
             notes: '',
             invoice_no: '',
             invoice_date: '',
@@ -1142,8 +1184,12 @@ const TradingBusinessPurchase = () => {
       return acc + qty * price;
     }, 0);
     const discount = parseFloat(formData.discountAmt?.toString() || '0') || 0;
+    const charges =
+      (parseFloat(formData.carryingInwardAmt?.toString() || '0') || 0) +
+      (parseFloat(formData.tdsAmount?.toString() || '0') || 0) +
+      (parseFloat(formData.serviceCharge?.toString() || '0') || 0);
     const isCashSupplier = Number(formData.account) === 17;
-    const cashPaymentAmt = Math.max(0, total - discount).toFixed(0);
+    const cashPaymentAmt = Math.max(0, total + charges - discount).toFixed(0);
     const existingNetPayment =
       purchase.data.transaction?.purchase_master?.netpayment?.toString() || '0';
 
@@ -1169,6 +1215,9 @@ const TradingBusinessPurchase = () => {
   }, [
     formData.account,
     formData.discountAmt,
+    formData.carryingInwardAmt,
+    formData.tdsAmount,
+    formData.serviceCharge,
     formData.mtmId,
     formData.paymentAmt,
     formData.products,
@@ -1366,17 +1415,39 @@ const TradingBusinessPurchase = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {/* Named by the account each posts to, as on the Elegant screen. */}
               <InputElement
-                id="paymentAmt"
-                value={formData.paymentAmt}
-                name="paymentAmt"
+                id="serviceCharge"
+                value={formData.serviceCharge ?? ''}
+                name="serviceCharge"
                 type="number"
-                placeholder={'Payment Amount'}
-                label={'Payment Amount'}
-                disabled={Number(formData.account) === 17}
-                className={'py-1'}
+                placeholder={serviceList(42, settings?.serviceList) || 'Service Charge'}
+                label={serviceList(42, settings?.serviceList) || 'Service Charge'}
+                className={'py-1 text-right'}
                 onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')} // Pass the next field's ID
+                onKeyDown={(e) => handleInputKeyDown(e, 'carryingInwardAmt')}
+              />
+              <InputElement
+                id="carryingInwardAmt"
+                value={formData.carryingInwardAmt ?? ''}
+                name="carryingInwardAmt"
+                type="number"
+                placeholder={serviceList(197, settings?.serviceList) || 'Carrying Inward'}
+                label={serviceList(197, settings?.serviceList) || 'Carrying Inward'}
+                className={'py-1 text-right'}
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'tdsAmount')}
+              />
+              <InputElement
+                id="tdsAmount"
+                value={formData.tdsAmount ?? ''}
+                name="tdsAmount"
+                type="number"
+                placeholder={serviceList(41, settings?.serviceList) || 'TDS / VAT'}
+                label={serviceList(41, settings?.serviceList) || 'TDS / VAT'}
+                className={'py-1 text-right'}
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'discountAmt')}
               />
               <InputElement
                 id="discountAmt"
@@ -1387,7 +1458,19 @@ const TradingBusinessPurchase = () => {
                 label={'Discount Amount'}
                 className={'py-1 text-right'}
                 onChange={handleOnChange}
-                onKeyDown={(e) => handleInputKeyDown(e, 'notes')} // Dynamically pass the next element's ID
+                onKeyDown={(e) => handleInputKeyDown(e, 'paymentAmt')} // Dynamically pass the next element's ID
+              />
+              <InputElement
+                id="paymentAmt"
+                value={formData.paymentAmt}
+                name="paymentAmt"
+                type="number"
+                placeholder={'Payment Amount'}
+                label={'Payment Amount'}
+                disabled={Number(formData.account) === 17}
+                className={'py-1'}
+                onChange={handleOnChange}
+                onKeyDown={(e) => handleInputKeyDown(e, 'notes')} // Pass the next field's ID
               />
               <InputElement
                 id="notes"
@@ -1412,7 +1495,12 @@ const TradingBusinessPurchase = () => {
                 <SalesBalanceSummary
                   kind="purchase"
                   previousBalance={previousBalance}
-                  billAmount={totalAmount}
+                  billAmount={
+                    totalAmount +
+                    (Number(formData.carryingInwardAmt) || 0) +
+                    (Number(formData.tdsAmount) || 0) +
+                    (Number(formData.serviceCharge) || 0)
+                  }
                   discount={Number(formData.discountAmt) || 0}
                   received={Number(formData.paymentAmt) || 0}
                 />
