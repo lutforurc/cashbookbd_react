@@ -103,7 +103,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ due.list permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখার ধাপ",
-        "menu": "Reports → Due List",
+        "menu": "Reports → Ledger & Due → Due List",
         "steps": [
           "Select Branch থেকে শাখা বাছুন।",
           "Client Type থেকে গ্রাহকের ধরন বাছুন, দরকার না হলে খালি রাখুন।",
@@ -135,7 +135,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ ledger.customer permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখার ধাপ",
-        "menu": "Reports → Ledger",
+        "menu": "Reports → Ledger & Due → Ledger",
         "steps": [
           "Select Branch থেকে শাখা বাছুন।",
           "Select Ledger থেকে যে খাতের লেজার দেখবেন সেটি বাছুন।",
@@ -164,7 +164,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট দেখার ধাপ",
-        "menu": "Reports → Sales Ledger",
+        "menu": "Reports → Purchase & Sales → Sales Ledger",
         "steps": [
           "Select Branch থেকে শাখা বাছুন।",
           "Select Account থেকে গ্রাহক বাছুন, অথবা সব গ্রাহকের জন্য খালি রাখুন।",
@@ -193,7 +193,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট দেখার ধাপ",
-        "menu": "Reports → Purchase Ledger",
+        "menu": "Reports → Purchase & Sales → Purchase Ledger",
         "steps": [
           "Select Branch থেকে শাখা বাছুন।",
           "Select Account থেকে সরবরাহকারী বাছুন, অথবা সব সরবরাহকারীর জন্য খালি রাখুন।",
@@ -223,7 +223,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["Sales Return Ledger মেনু দেখা যায় শুধু Roles-এ sales.return.ledger permission থাকলে।", "Purchase Return Ledger মেনু দেখা যায় শুধু Roles-এ purchase.return.ledger permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখার ধাপ",
-        "menu": "Reports → Sales Return Ledger অথবা Purchase Return Ledger",
+        "menu": "Reports → Purchase & Sales → Sales Return অথবা Purchase Return",
         "steps": [
           "Select Branch থেকে শাখা বাছুন।",
           "Select Account থেকে গ্রাহক বা সরবরাহকারী বাছুন, অথবা খালি রাখুন।",
@@ -252,7 +252,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "Reports → Ageing",
+        "menu": "Reports → Ledger & Due → Ageing",
         "steps": [
           "Which way থেকে Customers owe us বা We owe suppliers বাছুন।",
           "As on তারিখ দিন।",
@@ -280,7 +280,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "Reports → Bank Information",
+        "menu": "Reports → Cash & Bank → Bank Information",
         "steps": [
           "Select Branch ও Report Type (Bank Balance বা Bank Loan) বাছুন।",
           "Start Date ও End Date দিন, Apply চাপুন।"
@@ -308,7 +308,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ daily.accounts.book permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "Reports → Daily Account Book",
+        "menu": "Reports → Cash & Bank → Daily Account Book",
         "steps": [
           "Select Branch, Start Date ও End Date দিন।",
           "Cash Account বাছুন, নাহলে Every cash account রাখুন।",
@@ -338,7 +338,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "Reports → Closing Stock",
+        "menu": "Reports → Stock → Stock Details",
         "steps": [
           "Branch এখন নিজের শাখা থেকেই আসে; আলাদা করে বাছতে হয় না।",
           "Brand, Group, Category ও Product দিয়ে ফল ছোট করুন; Search-এ পণ্যের নাম বা কোড লিখুন।",
@@ -367,7 +367,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "Reports → Product Stock",
+        "menu": "Reports → Stock → Product Stock",
         "steps": [
           "Branch নিজের শাখা থেকেই আসে; Brand, Group, Category ও Product বাছুন বা খালি রাখুন।",
           "ফিল্টারগুলো সমান প্রস্থে পুরো প্রস্থ জুড়ে সাজানো। ফিল্টার মেনু চালু থাকলে আগে ফিল্টার আইকনে চাপুন।",
@@ -396,7 +396,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "Reports → Voucher Register",
+        "menu": "Reports → Cash & Bank → Voucher Register",
         "steps": [
           "Select Branch, Voucher Type, Start Date ও End Date বাছুন।",
           "Apply চাপুন।"
@@ -449,7 +449,7 @@
     "video": "",
     "intro": "কোন তারিখের মধ্যে কে কোন ভাউচার, গ্রাহক বা পণ্য বদলেছেন — তৈরি, সম্পাদনা, মোছা বা অনুমোদন — তার তালিকা।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Audit Trail", "steps": ["From ও To দিন।", "Who, What (Created/Edited/Deleted/Approved/Approval removed) ও Where (Vouchers/Customers/Products) বাছুন।", "Voucher / Customer / Product ঘরে নির্দিষ্টটি খুঁজুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "VR Settings → Audit → Audit Trail", "steps": ["From ও To দিন।", "Who, What (Created/Edited/Deleted/Approved/Approval removed) ও Where (Vouchers/Customers/Products) বাছুন।", "Voucher / Customer / Product ঘরে নির্দিষ্টটি খুঁজুন।"] },
       { "heading": "ফল পড়া", "steps": ["When, Who, What, Voucher / Customer / Product ও What changed দেখা যায়।", "কোনো সারিতে শুধু কে ও কখন থাকে — সেটি ভাউচার থেকে পাওয়া, ইতিহাসে নয়।"] },
       { "heading": "যা মনে রাখবেন", "warning": "পুরনো কিছু বদল এই তালিকায় না-ও থাকতে পারে; ভাউচার থেকে পাওয়া সারিগুলো আলাদা করে চেনা যায়।" }
     ]
@@ -518,7 +518,7 @@
     "intro": "হিসাব ধরে ক্যাশ ও ব্যাংকে কত টাকা এসেছে ও গেছে, সাথে ব্যাংকভিত্তিক আলাদা তালিকা।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ cash.bank.summery permission থাকলে।"] },
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Cash & Bank Received Payment", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Cash & Bank → Cash & Bank Summary", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Account Name, Cash Details (Received/Payment) ও Bank Details (Received/Payment) দেখা যায়।", "নিচে Total ও Balance সারি।", "Bank-wise Details-এ প্রতিটি ব্যাংকের Received, Payment ও Balance থাকে।", "Print কাগজ বের করে; Reset বাছাই মুছে দেয়।"] },
       { "heading": "সতর্কতা", "warning": "শুরুর তারিখ শেষের তারিখের পরে দিলে রিপোর্ট আসবে না।" }
     ]
@@ -531,7 +531,7 @@
     "video": "",
     "intro": "ক্যাশের পাশে ব্যাংক কলাম রেখে ভাউচারের প্রতিটি হেড আলাদা সারিতে, নিজের টাকাসহ — শুরুতে Balance B/D, শেষে দুই কলামের ব্যালেন্স।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Cash & Bank Book", "steps": ["Select Branch, Start Date ও End Date দিন।", "Bank Account বাছুন, নাহলে Every bank account রাখুন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Cash & Bank → Cash & Bank Book", "steps": ["Select Branch, Start Date ও End Date দিন।", "Bank Account বাছুন, নাহলে Every bank account রাখুন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Date, Voucher#, Description, Receive (Cash/Bank) ও Payment (Cash/Bank) দেখা যায়।", "এক ভাউচারে কয়েকটি হেড থাকলে প্রতিটি হেড আলাদা সারিতে নিজের টাকাসহ আসে, ভাউচার নম্বর প্রতি সারিতে থাকে (যেমন Room Rent 1,000 ও VAT Payable 150)। ক্যাশ থেকে ব্যাংকে টাকা নেওয়া (Contra) এক সারিতেই থাকে।","নিচে Balance C/D ও Total সারি।", "Print কাগজ বের করে।"] },
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ bankbook.view permission থাকলে।"] },
       { "heading": "সতর্কতা", "warning": "ডেবিট ও ক্রেডিট মিলছে না বলে লাল বার্তা এলে হিসাব থেকে কাজ করবেন না — আগে পার্থক্যটি ঠিক করুন।" }
@@ -546,7 +546,7 @@
     "intro": "নির্বাচিত সময়ে কোন ক্যাটাগরির কোন পণ্য কত পরিমাণে ঢুকল বা বের হলো, তা দেখা যায়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ product.in.out.catwise permission থাকলে।"] },
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Category Wise In/Out", "steps": ["Branch, Category, Report Type ও Start/End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Stock → Cat-wise In/Out", "steps": ["Branch, Category, Report Type ও Start/End Date দিন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Product Name, Brand Name / Manufacturer ও Quantity (এককসহ) দেখা যায়।", "নিচে Grand Total।", "Rows ও Font ঠিক করে Print চাপুন।"] },
       { "heading": "সতর্কতা", "warning": "Report Type না বাছলে কোন দিকের (আসা না যাওয়া) হিসাব দেখাবে তা নিশ্চিত নয়।" }
     ]
@@ -559,7 +559,7 @@
     "video": "",
     "intro": "প্রকল্পের কর্মকর্তা বা এলাকা ধরে কত সদস্য সংযুক্ত এবং কত টাকা আদায় হয়েছে, তা দেখা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Connected Member", "steps": ["Select Project, Start Date ও End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Ledger & Due → Connected Member", "steps": ["Select Project, Start Date ও End Date দিন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Area, Pay Member, GT Member, Collection, DP (Coll), DP + Coll, Salary, Outstanding ও Overview দেখা যায়।", "+ / − চাপলে দলের ভিতরের সারি খোলে।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "প্রকল্প ভুল বাছলে অন্য প্রকল্পের সদস্য দেখাবে।" }
     ]
@@ -573,7 +573,7 @@
     "intro": "প্রতিটি বিক্রির লাইন গ্রাহক → ব্র্যান্ড → গ্রুপ → ক্যাটাগরি → পণ্য ধরে সাজিয়ে দেখানো হয়, শেষে মোট।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ customer.sales.report permission থাকলে।"] },
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Customer Sales", "steps": ["Branch ও Customer বাছুন।", "Brand, Group, Category ও Product দিয়ে ছোট করুন।", "From Date ও To Date দিয়ে Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Purchase & Sales → Customer Sales", "steps": ["Branch ও Customer বাছুন।", "Brand, Group, Category ও Product দিয়ে ছোট করুন।", "From Date ও To Date দিয়ে Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Brand, Group, Category, Product, Qty, Rate ও Amount দেখা যায়।", "প্রতিটি ইনভয়েসের শুরুতে Invoice, Date ও Memo No. থাকে।", "নিচে Grand Total।"] },
       { "heading": "সতর্কতা", "warning": "গ্রাহক না বাছলে সব গ্রাহকের বিক্রি আসবে; ভুল তারিখে অঙ্ক বদলাবে।" }
     ]
@@ -586,7 +586,7 @@
     "video": "",
     "intro": "প্রতিটি পোস্টিং তারিখের ডেবিট, ক্রেডিট এবং ক্রমবর্ধমান মোট ও ব্যালেন্স দেখা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Date Wise Total", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Cash & Bank → Datewise Cash Total", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Vr Date, Debit, Credit, Cum. Debit, Cum. Credit ও Balance দেখা যায়।", "শুরুতে Opening ও শেষে Range Total সারি থাকে।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "Cum. Debit ও Cum. Credit আগের দিনগুলোর সাথে যোগ হয় — তারিখের শুরু ঠিক না হলে সংখ্যা বদলাবে।" }
     ]
@@ -600,7 +600,7 @@
     "intro": "কোন বিক্রির ইনভয়েস কতটা ডেলিভারি হয়েছে এবং কত বাকি, তা দেখা যায়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ delivery.report.view permission থাকলে।"] },
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Delivery", "steps": ["From ও To দিন।", "Status (Complete/Partial/Not delivered) ও Invoices (Delivery invoices/All invoices) বাছুন।", "Search চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Purchase & Sales → Delivery Report", "steps": ["From ও To দিন।", "Status (Complete/Partial/Not delivered) ও Invoices (Delivery invoices/All invoices) বাছুন।", "Search চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Invoice No, Date, Customer, Ordered, Delivered, Pending ও Status দেখা যায়।", "উপরে Complete, Partial ও Not delivered সংখ্যা থাকে; নিচে Total।", "Print ও Reset আছে।"] },
       { "heading": "সতর্কতা", "warning": "All invoices বাছলে যেগুলোর ডেলিভারি শুরুই হয়নি সেগুলোও আসবে।" }
     ]
@@ -614,7 +614,7 @@
     "intro": "যে কিস্তিগুলো বাকি বা শীঘ্রই বাকি হবে, তার তালিকা এবং প্রতিটির বাকি অঙ্ক। Employee Wise Installment একই তালিকা একজন ফিল্ড অফিসার ধরে দেখায়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["Due Installments মেনু দেখা যায় শুধু Roles-এ installment.due.view permission থাকলে।", "Employee Installments মেনু দেখা যায় শুধু Roles-এ installment.employee.view permission থাকলে।"] },
-      { "heading": "তালিকা দেখা", "menu": "Reports → Due Installments / Employee Wise Installments", "steps": ["Select Branch, Start Date ও End Date দিন।", "Select Status ও Soon (Days) দিয়ে ছোট করুন।", "Employee Wise-এ Select Field Officer বাছুন।", "Show All চালু করলে সব কিস্তি দেখাবে।"] },
+      { "heading": "তালিকা দেখা", "menu": "Reports → Installment & Somity → Due Installments / Employee Installments", "steps": ["Select Branch, Start Date ও End Date দিন।", "Select Status ও Soon (Days) দিয়ে ছোট করুন।", "Employee Wise-এ Select Field Officer বাছুন।", "Show All চালু করলে সব কিস্তি দেখাবে।"] },
       { "heading": "ফল পড়া", "steps": ["Customer Name, Inst No, Due Date, Inst. Amount / Due Amount, Rcv Amount, Status ও Action দেখা যায়।", "Action-এর Receive দিয়ে আদায়ের স্ক্রিনে যাওয়া যায়।", "নিচে Total due amount।"] },
       { "heading": "সতর্কতা", "warning": "Soon (Days) বাড়ালে আরও কিস্তি তালিকায় আসবে; Status ভুল বাছলে বাকি কিস্তি বাদ পড়তে পারে।" }
     ]
@@ -640,7 +640,7 @@
     "video": "",
     "intro": "নির্বাচিত তারিখে প্রতিটি গুদামে কোন পণ্য কত আছে, তা দেখা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Godown Stock", "steps": ["Select Branch ও End Date দিন।", "Select Warehouse বাছুন, নাহলে All Warehouse রাখুন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Stock → Godown Stock", "steps": ["Select Branch ও End Date দিন।", "Select Warehouse বাছুন, নাহলে All Warehouse রাখুন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Warehouse, Product, Unit ও Stock (Qty) দেখা যায়।", "ঋণাত্মক স্টক লাল রঙে দেখায়।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "ঋণাত্মক স্টক মানে ওই গুদামে বাইরে যাওয়া বেশি দেখানো হয়েছে — এন্ট্রি মিলিয়ে দেখুন।" }
     ]
@@ -653,7 +653,7 @@
     "video": "",
     "intro": "Operating Cost ও Purchase Cost মাস ধরে পাশাপাশি দেখায়, প্রতিটি লাইনের মোটসহ।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Group Report", "steps": ["Select Branch, Select Report Group (All group/Operating Cost/Purchase Cost), Start Date ও End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Ledger & Due → Group Report", "steps": ["Select Branch, Select Report Group (All group/Operating Cost/Purchase Cost), Start Date ও End Date দিন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Operating Cost-এ প্রতি মাসে Payment ও Bill, শেষে Line Total থাকে।", "Purchase Cost-এ প্রতি মাসে Qty ও Amount থাকে।", "নিচে Grand Total; Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "Branch, Report Group ও তারিখ — তিনটে না দিলে রিপোর্ট আসবে না।" }
     ]
@@ -667,7 +667,7 @@
     "intro": "Group Report যে দলগুলো যোগ করে, সেই দলে কোন কোন হিসাব থাকবে তা এখানে ঠিক করা হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ group.report.setup permission থাকলে।"] },
-      { "heading": "সেটআপ", "menu": "Reports → Group Report → Setup", "steps": ["Select Group থেকে দল বাছুন।", "Select Group Item থেকে হিসাব বাছুন, Add চাপুন।", "তালিকায় Group Item ও Action দেখা যায়; ভুল হলে সরান।"] },
+      { "heading": "সেটআপ", "menu": "Admin → Settings → Add Group Report", "steps": ["Select Group থেকে দল বাছুন।", "Select Group Item থেকে হিসাব বাছুন, Add চাপুন।", "তালিকায় Group Item ও Action দেখা যায়; ভুল হলে সরান।"] },
       { "heading": "সতর্কতা", "warning": "এখানে হিসাব না দিলে Group Report-এ ওই দলের অঙ্ক শূন্য থাকবে।" }
     ]
   },
@@ -694,7 +694,7 @@
     "intro": "একটি পণ্যের প্রতিদিনের In, Out, Damage, Over ও Balance দেখা যায়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ product.in.out.datewise permission থাকলে।"] },
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → In/Out → Date Wise", "steps": ["Select Branch ও Select Item / Product বাছুন।", "Start Date ও End Date দিন।", "OK চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Stock → Date-wise In/Out", "steps": ["Select Branch ও Select Item / Product বাছুন।", "Start Date ও End Date দিন।", "OK চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Date, In Qty, Out Qty, Damage, Over ও Balance দেখা যায়।", "Print কাগজ বের করে; Home ড্যাশবোর্ডে ফেরে।"] },
       { "heading": "সতর্কতা", "warning": "পণ্য না বাছলে রিপোর্ট আসবে না; ভুল তারিখে Balance বদলাবে।" }
     ]
@@ -707,7 +707,7 @@
     "video": "",
     "intro": "শ্রমিকের কাজের চার্জ কত এসেছে ও কত দেওয়া হয়েছে, শাখা ও লেবার ধরে দেখা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Labour Ledger", "steps": ["Select Branch, Select Account ও Select Labour বাছুন।", "Start Date ও End Date দিন, Run চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Ledger & Due → Labour Ledger", "steps": ["Select Branch, Select Account ও Select Labour বাছুন।", "Start Date ও End Date দিন, Run চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["VR No, Date, Description, Qty, Rate ও Total দেখা যায়।", "প্রতি দলে Total ও প্রতি শাখায় Grand Total থাকে।"] },
       { "heading": "সতর্কতা", "warning": "লেবার না বাছলে সব লেবারের হিসাব আসবে; তারিখ ভুলে অঙ্ক বদলাবে।" }
     ]
@@ -721,7 +721,7 @@
     "intro": "একজন গ্রাহক বা সরবরাহকারীর প্রতিটি ভাউচারে কোন পণ্য কত পরিমাণে ও কোন দামে ছিল, সাথে চলমান ব্যালেন্স — এক কাগজে।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ ledger.details permission থাকলে।"] },
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Ledger with Product", "steps": ["Select Branch ও Select Ledger বাছুন।", "Transaction Type, Select Product, Start Date ও End Date দিন।", "Search-এ Vr / Order / Vehicle No. / Rate লিখে ছোট করুন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Ledger & Due → Ledger Details", "steps": ["Select Branch ও Select Ledger বাছুন।", "Transaction Type, Select Product, Start Date ও End Date দিন।", "Search-এ Vr / Order / Vehicle No. / Rate লিখে ছোট করুন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Vr No. & Date, Description, Vehicle No, Pur./Sal. Qty, Rate, Pur./Sal. Total, Inv. Amt, Debit, Credit ও Balance দেখা যায়।", "Description-এ ভাউচার কীসের তা থাকে, যেমন Sales (DORB) বা Purchase (Rice Bran); টাকা Cash না Bank দিয়ে গেল তা এখানে লেখা হয় না।", "Inv. Amt-এ শুধু ইনভয়েসের নগদ অংশ থাকে: Cash Purchase হলে মাইনাস (-), Cash Sales হলে প্লাস (+)।", "নিচে Opening, Qty, Amt, Inv. Amt, Debit, Credit ও Closing মোট থাকে; Inv. Amt মোট = সব নগদের যোগফল (যেমন -52,000 + 32,000 = -20,000)।", "নিচের Debit ও Credit হলো টেবিলের Debit ও Credit কলামের যোগফল; ইনভয়েসের টাকা এতে নেই, তা Pur. Amt / Sal. Amt-এ থাকে।", "Closing = Opening + Sal. Amt − Pur. Amt − Inv. Amt + Debit − Credit।", "এক রসিদে কয়েকজন পার্টি থাকলে প্রত্যেকের সারিতে শুধু তার নিজের অংশ দেখায়।", "Print ও Excel আছে; Rows ও Font ঠিক করা যায়।"] },
       { "heading": "সতর্কতা", "warning": "Branch ও গ্রাহক/সরবাপরাহকারী না বাছলে রিপোর্ট আসবে না।" }
     ]
@@ -735,7 +735,7 @@
     "intro": "প্রতিটি ভাউচারের ডেবিট ও ক্রেডিট পাশাপাশি রেখে পার্থক্য দেখা যায়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ mitch.match permission থাকলে।"] },
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Mitch Match", "steps": ["Select Branch বাছুন।", "Run চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "VR Settings → Audit → Mismatch", "steps": ["Select Branch বাছুন।", "Run চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Vr No., Debit (Tk), Credit (Tk) ও Difference দেখা যায়।", "Difference শূন্য হওয়া উচিত।"] },
       { "heading": "সতর্কতা", "warning": "Difference শূন্য না হলে ওই ভাউচারটি খুলে ঠিক করুন।" }
     ]
@@ -775,7 +775,7 @@
     "intro": "একটি পণ্যের খোলা স্টক, ক্রয়, ফেরত, বিক্রি, product in/out ও শেষ স্টক একসাথে দেখা যায়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ product.in.out permission থাকলে।"] },
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Product Ledger", "steps": ["Select Branch ও Select Item / Product বাছুন।", "Start Date ও End Date দিন, Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Stock → Product In Out", "steps": ["Select Branch ও Select Item / Product বাছুন।", "Start Date ও End Date দিন, Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Invoice No., Vr. Date, Opening, Purchase, Sales Return, Sales, Purchase Return, Product In, Product Out ও Stock কলাম থাকে।", "Rows ও Font ঠিক করে Print চাপুন।"] },
       { "heading": "সতর্কতা", "warning": "পণ্য না বাছলে রিপোর্ট আসবে না।" }
     ]
@@ -856,7 +856,7 @@
     "video": "",
     "intro": "কে বিক্রির সুপারিশ করেছেন এবং তার কত বিল হলো, তা দেখা যায়; প্রতিটি রেফারারের নিচে বিলগুলো খোলা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Sales Referrer", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন; Referrers তালিকা দেখায়।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Purchase & Sales → Referer", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন; Referrers তালিকা দেখায়।"] },
       { "heading": "ফল পড়া", "steps": ["Referrer, Mobile, Bills, Bill Value ও Discount দেখা যায়; নিচে Total।", "রেফারারে চাপলে Date, Voucher#, Customer, Bill Value ও Discount সারি খোলে।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "শাখা না বাছলে রিপোর্ট আসবে না।" }
     ]
@@ -883,7 +883,7 @@
     "intro": "শাখায় কোন পণ্যের কোন IMEI নম্বরগুলো এখনো স্টকে আছে, তার তালিকা।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ imei.stock permission থাকলে।"] },
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Stock → IMEI", "steps": ["Select Branch ও Select Product বাছুন।", "Go চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Stock → IMEI Stock", "steps": ["Select Branch ও Select Product বাছুন।", "Go চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["স্টকে থাকা IMEI নম্বরগুলো ক্রমিক তালিকায় দেখা যায়।", "Print কাগজ বের করে; Home ড্যাশবোর্ডে ফেরে।"] },
       { "heading": "সতর্কতা", "warning": "পণ্য না বাছলে সব IMEI আসবে; শাখা ভুল হলে অন্য শাখার তালিকা দেখাবে।" }
     ]
@@ -897,7 +897,7 @@
     "intro": "নির্বাচিত সরবরাহকারীর এক মাসের টাইলস ক্রয়ের শিট — মাপ, কমিশন ও প্রতি sft/pcs দামসহ।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ tiles.purchase.report permission থাকলে।"] },
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Tiles Purchase", "steps": ["Supplier ও Month বাছুন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Purchase & Sales → Tiles Purchase", "steps": ["Supplier ও Month বাছুন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Code, Size, Box, Company Measurement, SFT, Rate, Without Measurement, Monthly/Quarterly/Offer-এর SFT ও Total, Invoice, Actual Price/SFT ও /pcs দেখা যায়।", "প্রতিটি ইনভয়েসের উপরে Invoice No, Month ও Invoice Date থাকে; নিচে Total।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "এই স্ক্রিনে উপরে ডেমো ডেটার কথা লেখা থাকে — আসল হিসাবের জন্য ক্লায়েন্টের তথ্য দিয়ে যাচাই করুন।" }
     ]

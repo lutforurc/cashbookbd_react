@@ -8,7 +8,7 @@
     "sections": [
       {
         "heading": "ধাপ ১: গ্রুপ হেড তৈরি",
-        "menu": "Customers → CoA L3 → New COA L3",
+        "menu": "Customer & Supplier → Chart of Accounts → CoA L3 → New COA L3",
         "steps": [
           "নিচের গ্রুপগুলো আগে থেকে থাকলে আবার বানানোর দরকার নেই।"
         ],
@@ -25,7 +25,7 @@
       },
       {
         "heading": "ধাপ ২: চারটি অ্যাকাউন্ট হেড তৈরি",
-        "menu": "Customers → Accounts Head List → New Head Entry",
+        "menu": "Customer & Supplier → Chart of Accounts → Accounts Head List → New Head Entry",
         "steps": [
           "প্রতিটি হেডের জন্য Accounts Group Head, Reporting To ও Accounts Head Name পূরণ করে SAVE চাপুন।",
           "Accounts Group Head ঘরে কমপক্ষে ৩ অক্ষর লিখলে তালিকা আসবে।",

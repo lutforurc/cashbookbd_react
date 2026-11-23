@@ -114,47 +114,11 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'report_branch_stock', title: "Branch Stock" },
   ],
   'reports': [
-    { id: 'reports/cashbook', title: "Cash Book" },
-    { id: 'reports/cash-book-two-column', title: "Cash & Bank Book" },
-    { id: 'reports/daily-account-book', title: "Daily Account Book" },
-    { id: 'reports/voucher-register', title: "Voucher Register" },
-    { id: 'reports/sales-referrer', title: "Referer" },
-    { id: 'report_bankbook', title: "Bank Book" },
-    { id: 'ageing_report', title: "Ageing" },
-    { id: 'audit_trail', title: "Audit Trail" },
-    { id: 'cash_bank_received_payment', title: "Cash &amp; Bank Summary" },
-    { id: 'bank_information', title: "Bank Information" },
-    { id: 'connected_member', title: "Connected Member" },
-    { id: 'reports/due-installments', title: "Due Installments" },
-    { id: 'reports/employee-installment', title: "Employee Installments" },
-    { id: 'reports/ledger', title: "Ledger" },
-    { id: 'customer_supplier_statement', title: "Ledger Details" },
-    { id: 'product_ledger_data', title: "Product In Out" },
-    { id: 'report_date_wise_in_out', title: "Date-wise In\/Out" },
-    { id: 'reports/labour/ledger', title: "Labour Ledger" },
-    { id: 'reports/due-list', title: "Due List" },
-    { id: 'somity_collection_sheet', title: "Collection Sheet" },
-    { id: 'somity_monthly_report', title: "Monthly Report" },
-    { id: 'reports/date-wise-total-data', title: "Datewise Cash Total" },
-    { id: 'reports/product/stock', title: "Product Stock" },
-    { id: 'somity_stock_details', title: "Stock Details" },
-    { id: 'report_imei_stock', title: "IMEI Stock" },
-    { id: 'report_godown_stock', title: "Godown Stock" },
-    { id: 'reports/cat-wise/in-out', title: "Cat-wise In\/Out" },
-    { id: 'reports/purchase-ledger', title: "Purchase Ledger" },
-    { id: 'reports/tiles-purchase', title: "Tiles Purchase" },
-    { id: 'reports/sales-ledger', title: "Sales Ledger" },
-    // Declared in this order so the two returns sit under the Sales Ledger they
-    // are read beside, not at the foot of the menu.
-    { id: 'reports/purchase-return-ledger', title: "Purchase Return" },
-    { id: 'reports/sales-return-ledger', title: "Sales Return" },
-    { id: 'reports/delivery', title: "Delivery Report" },
-    // Customer Sales is declared here so Arrange Menu lists it like every other
-    // report -- hide/show and reorder. Its route, label and `sales.ledger`
-    // permission are untouched; hiding it only hides the sidebar link.
-    { id: 'report_customer_sales', title: "Customer Sales" },
-    { id: 'reports/group-report', title: "Group Report" },
-    { id: 'reports/mitch-match', title: "Mismatch" },
+    { id: 'reports/cashbook', title: "Cash & Bank" },
+    { id: 'reports/due-installments', title: "Installment & Somity" },
+    { id: 'reports/ledger', title: "Ledger & Due" },
+    { id: 'reports/product/stock', title: "Stock" },
+    { id: 'reports/purchase-ledger', title: "Purchase & Sales" },
   ],
   // The financial statements, in the order the owner reads them: the product
   // reports first, then the dated statements, the trial balances, and the
@@ -230,62 +194,24 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'hotel_setup', title: "Rooms & Seats Setup" },
   ],
   'products': [
-    { id: 'brand/brand-list', title: "Brand List" },
-    { id: 'category/category-list', title: "Category List" },
-    { id: 'product-group/product-group-list', title: "Product Group" },
-    { id: 'pack-size/pack-size-list', title: "Pack Size" },
-    { id: 'product/product-list', title: "Product List" },
-    { id: 'product_statement', title: "Product Statement" },
-    { id: 'product_opening_import', title: "Opening Import" },
-    { id: 'product_low_stock', title: "Low Stock" },
-    { id: 'product_negative_stock', title: "Negative Stock" },
-    { id: 'product_slow_moving', title: "Slow Moving" },
-    { id: 'product_warehouse_difference', title: "Warehouse Difference" },
-    { id: 'product_unit_list', title: "Product Unit" },
+    { id: 'category/category-list', title: "Classification" },
+    { id: 'product/product-list', title: "Products" },
+    { id: 'product_low_stock', title: "Stock Alerts" },
   ],
   'admin': [
-    { id: 'company_list', title: "Company Settings" },
-    { id: 'branch/branch-list', title: "Branch Settings" },
-    { id: 'print_template_designer', title: "Challan Layout" },
-    { id: 'software_info', title: "Software Information" },
-    { id: 'menu_arrangement', title: "Arrange Menu" },
-    { id: 'user_list', title: "User List" },
-    { id: 'online_users', title: "Online Users" },
-    { id: 'user_login_log', title: "Login History" },
-    { id: 'company_user_list', title: "Company User" },
-    { id: 'reseller_admin', title: "Resellers" },
-    { id: 'admin_notifications', title: "Admin Notifications" },
-    { id: 'admin_in_app_messages', title: "In-App Messages" },
-    { id: 'business_types', title: "Business Types" },
-    { id: 'inventory_systems', title: "Inventory Systems" },
-    { id: 'tutorial_videos', title: "Tutorial Videos" },
-    { id: 'website_templates', title: "Website Templates" },
-    { id: 'highlight_rules', title: "Highlight Rules" },
-    { id: 'roles', title: "Roles" },
-    { id: 'add_role', title: "Add Roles" },
-    { id: 'add_permission', title: "Add Permission" },
-    { id: 'admin/dayclose', title: "Day Close" },
-    { id: 'group_report_setup', title: "Add Group Report" },
+    { id: 'company_list', title: "Company & Branch" },
+    { id: 'menu_arrangement', title: "Settings" },
+    { id: 'user_list', title: "Users" },
+    { id: 'reseller_admin', title: "Platform" },
+    { id: 'roles', title: "Roles & Permissions" },
+    { id: 'admin/dayclose', title: "Daily Control" },
     { id: 'order/order-list', title: "Orders" },
-    { id: 'order_with_transaction', title: "Order With Transaction" },
-    { id: 'orders/avg-price', title: "Average Price" },
-    { id: 'approval_center', title: "Approval Center" },
-    { id: 'admin/voucher-approval', title: "Voucher Approval" },
-    { id: 'admin/remove-approval', title: "Approval Remove" },
-    { id: 'admin/voucher/type-change', title: "Change Voucher Type" },
-    { id: 'admin/image-upload', title: "Voucher Upload" },
-    { id: 'admin/bulk-upload', title: "Bulk Upload" },
-    { id: 'sms_send', title: "SMS Logs" },
-    { id: 'sms_template_list', title: "SMS Templates" },
+    { id: 'admin/image-upload', title: "Uploads" },
+    { id: 'sms_send', title: "SMS" },
   ],
   'vr_settings': [
-    { id: 'vr-settings/voucher-delete', title: "Voucher Delete" },
-    { id: 'vr-settings/installment-delete', title: "Installment Delete" },
-    { id: 'admin_change_date', title: "Voucher Date Change" },
-    { id: 'recyclebin', title: "Recycle Bin" },
-    { id: 'voucher_history', title: "History" },
-    { id: 'voucher_activity', title: "Log Changes" },
-    { id: 'report_mismatch', title: "Report Mismatch" },
+    { id: 'admin_change_date', title: "Corrections" },
+    { id: 'voucher_history', title: "Audit" },
   ],
   'hrm': [
     { id: 'hrms/employees', title: "Employees" },
@@ -300,12 +226,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'customer-supplier': [
     { id: 'customer-supplier/list', title: "Customers" },
-    { id: 'customer_opening_import', title: "Opening Import" },
-    { id: 'coal1/coal1-list', title: "CoA L1" },
-    { id: 'coal2/coal2-list', title: "CoA L2" },
-    { id: 'coal3/coal3-list', title: "CoA L3" },
-    { id: 'coal4/coal4-list', title: "CoA L4" },
-    { id: 'coal4/opening-balance', title: "Bank Opening" },
+    { id: 'coal1/coal1-list', title: "Chart of Accounts" },
   ],
   'al-charts': [
     { id: 'item/item-chart', title: "Comparison" },
@@ -362,7 +283,8 @@ import {
 } from 'react-icons/fi';
 import { FaBluetooth, FaRegStar } from 'react-icons/fa6';
 import { hasPermission } from '../utils/permissionChecker';
-import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, inTabGroup, tabsFor } from '../modules/hrms/HrmRouteTabs';
+import { inTabGroup, tabsFor } from '../utils/others/RouteTabs';
+import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, DAILY_CONTROL_TABS, ORDER_TABS, UPLOAD_TABS, COMPANY_BRANCH_TABS, USER_TABS, ROLE_TABS, ADMIN_SETTINGS_TABS, PLATFORM_TABS, SMS_TABS, PRODUCT_TABS, CLASSIFICATION_TABS, STOCK_ALERT_TABS, VR_CORRECTION_TABS, VR_AUDIT_TABS, PARTY_TABS, COA_TABS, REPORT_CASH_BANK_TABS, REPORT_LEDGER_TABS, REPORT_SALES_TABS, REPORT_STOCK_TABS, REPORT_INSTALLMENT_TABS } from '../services/tabGroups';
 import { branchFormVariant, branchInvoiceVariant, separateEntriesShown, unifiedEntryShown } from '../utils/userFeatureSettings';
 import { useSelector } from 'react-redux';
 import './Sidebar.css';
@@ -1595,396 +1517,56 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
                             </li>
                           ))}
-                          {hasPermission(permissions, 'cashbook.view') && (
+                          {tabsFor(REPORT_CASH_BANK_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('reports', 'reports/cashbook')}>
                               <NavLink
-                                to="/reports/cashbook"
-                                className={subMenuLinkClass}
+                                to={tabsFor(REPORT_CASH_BANK_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_CASH_BANK_TABS, pathname) })}
                               >
-                                Cash Book
+                                Cash & Bank
                               </NavLink>
                             </li>
                           )}
-
-                          {/* Directly under the cash book it is a second view
-                              of: same money, a bank column beside the cash
-                              one. Its own key, bankbook.view. */}
-                          {hasPermission(permissions, 'bankbook.view') && (
-                            <li style={subSlot('reports', 'reports/cash-book-two-column')}>
-                              <NavLink
-                                to={routes.report_cashbook_two_column}
-                                className={subMenuLinkClass}
-                              >
-                                Cash &amp; Bank Book
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'daily.accounts.book') && (
-                            <li style={subSlot('reports', 'reports/daily-account-book')}>
-                              <NavLink
-                                to={routes.report_daily_account_book}
-                                className={subMenuLinkClass}
-                              >
-                                Daily Accounts Book
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'voucher.register') && (
-                            <li style={subSlot('reports', 'reports/voucher-register')}>
-                              <NavLink
-                                to={routes.report_voucher_register}
-                                className={subMenuLinkClass}
-                              >
-                                Voucher Register
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'sales.referrer') && (
-                            <li style={subSlot('reports', 'reports/sales-referrer')}>
-                              <NavLink
-                                to={routes.report_referrer}
-                                className={subMenuLinkClass}
-                              >
-                                Referer
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'bank.book') && (
-                            <li style={subSlot('reports', 'report_bankbook')}>
-                              <NavLink
-                                to={routes.report_bankbook}
-                                className={subMenuLinkClass}
-                              >
-                                Bank Book
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'ageing.report.view') && (
-                            <li style={subSlot('reports', 'ageing_report')}>
-                              <NavLink
-                                to={routes.ageing_report}
-                                className={subMenuLinkClass}
-                              >
-                                Ageing
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'audit.trail.view') && (
-                            <li style={subSlot('reports', 'audit_trail')}>
-                              <NavLink
-                                to={routes.audit_trail}
-                                className={subMenuLinkClass}
-                              >
-                                Audit Trail
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'cash.bank.summery') && (
-                            <li style={subSlot('reports', 'cash_bank_received_payment')}>
-                              <NavLink
-                                to={routes.cash_bank_received_payment}
-                                className={subMenuLinkClass}
-                              >
-                                Cash &amp; Bank Summary
-                              </NavLink>
-                            </li>
-                          )}
-
-
-                          {hasPermission(permissions, 'bank.information') && (
-                            <li style={subSlot('reports', 'bank_information')}>
-                              <NavLink
-                                to={routes.bank_information}
-                                className={subMenuLinkClass}
-                              >
-                                Bank Information
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'connected.member.view') && (
-                            <li style={subSlot('reports', 'connected_member')}>
-                              <NavLink
-                                to={routes.connected_member}
-                                className={subMenuLinkClass}
-                              >
-                                Connected Member
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'installment.due.view') && currentBranch?.business_type_id == 4 && (
+                          {tabsFor(REPORT_INSTALLMENT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('reports', 'reports/due-installments')}>
                               <NavLink
-                                to="/reports/due-installments"
-                                className={subMenuLinkClass}
+                                to={tabsFor(REPORT_INSTALLMENT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_INSTALLMENT_TABS, pathname) })}
                               >
-                                Due Installments
+                                Installment & Somity
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'installment.employee.view') && currentBranch?.business_type_id == 4 && (
-                            <li style={subSlot('reports', 'reports/employee-installment')}>
+                          {tabsFor(REPORT_LEDGER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
+                            <li style={subSlot('reports', 'reports/ledger')}>
                               <NavLink
-                                to="/reports/employee-installment"
-                                className={subMenuLinkClass}
+                                to={tabsFor(REPORT_LEDGER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_LEDGER_TABS, pathname) })}
                               >
-                                Employee Installments
+                                Ledger & Due
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'ledger.customer') && (
-                              <li style={subSlot('reports', 'reports/ledger')}>
-                                <NavLink
-                                  to="/reports/ledger"
-                                  className={subMenuLinkClass}
-                                >
-                                  Ledger
-                                </NavLink>
-                              </li>
-                            )}
-                          {/* Product Statement and Product Receivable / Payable
-                              moved out to the Product Tracking menu, next to the
-                              settings screen that decides what they report on. */}
-                          {hasPermission(permissions, 'ledger.details') && (
-                            <li style={subSlot('reports', 'customer_supplier_statement')}>
-                              <NavLink
-                                to={routes.customer_supplier_statement}
-                                className={subMenuLinkClass}
-                              >
-                                Ledger Details
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.in.out') && (
-                            <li style={subSlot('reports', 'product_ledger_data')}>
-                              <NavLink
-                                to={routes.product_ledger_data}
-                                className={subMenuLinkClass}
-                              >
-                                Product In Out
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.in.out.datewise') && (
-                            <li style={subSlot('reports', 'report_date_wise_in_out')}>
-                              <NavLink
-                                to={routes.report_date_wise_in_out}
-                                className={subMenuLinkClass}
-                              >
-                                Date-wise In/Out
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'ledger.labour') && (
-                            <li style={subSlot('reports', 'reports/labour/ledger')}>
-                              <NavLink
-                                to="/reports/labour/ledger"
-                                className={subMenuLinkClass}
-                              >
-                                Labour Ledger
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'due.list') && (
-                            <li style={subSlot('reports', 'reports/due-list')}>
-                              <NavLink
-                                to="/reports/due-list"
-                                className={subMenuLinkClass}
-                              >
-                                Due List
-                              </NavLink>
-                            </li>
-                          )}
-                          {(hasPermission(permissions, 'collection.sheet')) && (
-                            <li style={subSlot('reports', 'somity_collection_sheet')}>
-                              <NavLink
-                                to={routes.somity_collection_sheet}
-                                className={subMenuLinkClass}
-                              >
-                                Collection Sheet
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'monthly.report') && (
-                            <li style={subSlot('reports', 'somity_monthly_report')}>
-                              <NavLink
-                                to={routes.somity_monthly_report}
-                                className={subMenuLinkClass}
-                              >
-                                Monthly Report
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'date.wise.total') && (
-                            <li style={subSlot('reports', 'reports/date-wise-total-data')}>
-                              <NavLink
-                                to="/reports/date-wise-total-data"
-                                className={subMenuLinkClass}
-                              >
-                                Datewise Cash Total
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.stock.view') && (
+                          {tabsFor(REPORT_STOCK_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('reports', 'reports/product/stock')}>
                               <NavLink
-                                to="/reports/product/stock"
-                                className={subMenuLinkClass}
+                                to={tabsFor(REPORT_STOCK_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_STOCK_TABS, pathname) })}
                               >
-                                Product Stock
+                                Stock
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'product.stock.details') && (
-                            <li style={subSlot('reports', 'somity_stock_details')}>
-                              <NavLink
-                                to={routes.somity_stock_details}
-                                className={subMenuLinkClass}
-                              >
-                                Stock Details
-                              </NavLink>
-                            </li>
-                          )}
-                          {/* The two branch transfer reports moved to the
-                              Branch Transfer menu, beside the forms they read. */}
-                          {hasPermission(permissions, 'imei.stock') && (
-                            <li style={subSlot('reports', 'report_imei_stock')}>
-                              <NavLink
-                                to={routes.report_imei_stock}
-                                className={subMenuLinkClass}
-                              >
-                                IMEI Stock
-                              </NavLink>
-                            </li>
-                          )}
-                          {/* Godown Stock */}
-                          {hasPermission(permissions, 'godown.stock') && (
-                            <li style={subSlot('reports', 'report_godown_stock')}>
-                              <NavLink
-                                to={routes.report_godown_stock}
-                                className={subMenuLinkClass}
-                              >
-                                Godown Stock
-                              </NavLink>
-                            </li>
-                          )}
-                          {/* product.in.out */}
-                          {hasPermission(permissions, 'product.in.out.catwise') && (
-                            <li style={subSlot('reports', 'reports/cat-wise/in-out')}>
-                              <NavLink
-                                to="/reports/cat-wise/in-out"
-                                className={subMenuLinkClass}
-                              >
-                                Cat-wise In/Out
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'purchase.ledger') && (
+                          {tabsFor(REPORT_SALES_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('reports', 'reports/purchase-ledger')}>
                               <NavLink
-                                to="/reports/purchase-ledger"
-                                className={subMenuLinkClass}
+                                to={tabsFor(REPORT_SALES_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_SALES_TABS, pathname) })}
                               >
-                                Purchase Ledger
+                                Purchase & Sales
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'tiles.purchase.report') && (
-                            <li style={subSlot('reports', 'reports/tiles-purchase')}>
-                              <NavLink
-                                to={routes.report_tiles_purchase}
-                                className={subMenuLinkClass}
-                              >
-                                Tiles Purchase
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'sales.ledger') && (
-                            <li style={subSlot('reports', 'reports/sales-ledger')}>
-                              <NavLink
-                                to="/reports/sales-ledger"
-                                className={subMenuLinkClass}
-                              >
-                                Sales Ledger
-                              </NavLink>
-                            </li>
-                          )}
-                          {/* The two return ledgers, under the ledger they are
-                              read against and gated by its permission — the
-                              same book the other way round, so a role that may
-                              open a ledger may open its returns. */}
-                          {hasPermission(permissions, 'purchase.return.ledger') && (
-                            <li style={subSlot('reports', 'reports/purchase-return-ledger')}>
-                              <NavLink
-                                to="/reports/purchase-return-ledger"
-                                className={subMenuLinkClass}
-                              >
-                                Purchase Return
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'sales.return.ledger') && (
-                            <li style={subSlot('reports', 'reports/sales-return-ledger')}>
-                              <NavLink
-                                to="/reports/sales-return-ledger"
-                                className={subMenuLinkClass}
-                              >
-                                Sales Return
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'delivery.report.view') && (
-                            <li style={subSlot('reports', 'reports/delivery')}>
-                              <NavLink
-                                to={routes.report_delivery}
-                                className={subMenuLinkClass}
-                              >
-                                Delivery Report
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'customer.sales.report') && (
-                            <li style={subSlot('reports', 'report_customer_sales')}>
-                              <NavLink
-                                to="/reports/customer-sales"
-                                className={subMenuLinkClass}
-                              >
-                                Customer Sales
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'group.report') && (
-                            <li style={subSlot('reports', 'reports/group-report')}>
-                              <NavLink
-                                to="/reports/group-report"
-                                end
-                                className={subMenuLinkClass}
-                              >
-                                Group Report
-                              </NavLink>
-                            </li>
-                          )}
-
-                          {hasPermission(permissions, 'mitch.match') && (
-                            <li style={subSlot('reports', 'reports/mitch-match')}>
-                              <NavLink
-                                to="/reports/mitch-match"
-                                className={subMenuLinkClass}
-                              >
-                                Mismatch
-                              </NavLink>
-                            </li>
-                          )}
-
                         </ul>
                       </div>
                     </React.Fragment>
@@ -3232,124 +2814,34 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
                             </li>
                           ))}
-                          {hasPermission(permissions, 'brand.list') && (
-                            <li style={subSlot('products', 'brand/brand-list')}>
-                              <NavLink
-                                to="/brand/brand-list"
-                                className={subMenuLinkClass}
-                              >
-                                Brand List
-                              </NavLink>
-                            </li>
-                          )}
 
-                          {hasPermission(permissions, 'category.view') && (
+                          {tabsFor(CLASSIFICATION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('products', 'category/category-list')}>
                               <NavLink
-                                to="/category/category-list"
-                                className={subMenuLinkClass}
+                                to={tabsFor(CLASSIFICATION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(CLASSIFICATION_TABS, pathname) })}
                               >
-                                Category List
+                                Classification
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'product_group.view') && (
-                            <li style={subSlot('products', 'product-group/product-group-list')}>
-                              <NavLink
-                                to="/product-group/product-group-list"
-                                className={subMenuLinkClass}
-                              >
-                                Product Group
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'package.size.view') && (
-                            <li style={subSlot('products', 'pack-size/pack-size-list')}>
-                              <NavLink
-                                to="/pack-size/pack-size-list"
-                                className={subMenuLinkClass}
-                              >
-                                Pack Size
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'products.view') && (
+                          {tabsFor(PRODUCT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('products', 'product/product-list')}>
                               <NavLink
-                                to="/product/product-list"
-                                className={subMenuLinkClass}
+                                to={tabsFor(PRODUCT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(PRODUCT_TABS, pathname) })}
                               >
-                                Product List
+                                Products
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'product.statement.view') && (
-                            <li style={subSlot('products', 'product_statement')}>
-                              <NavLink
-                                to={routes.product_statement}
-                                className={subMenuLinkClass}
-                              >
-                                Product Statement
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.opening.edit') && (
-                            <li style={subSlot('products', 'product_opening_import')}>
-                              <NavLink
-                                to={routes.product_opening_import}
-                                className={subMenuLinkClass}
-                              >
-                                Opening Import
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'low.stock') && (
+                          {tabsFor(STOCK_ALERT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('products', 'product_low_stock')}>
                               <NavLink
-                                to={routes.product_low_stock}
-                                className={subMenuLinkClass}
+                                to={tabsFor(STOCK_ALERT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(STOCK_ALERT_TABS, pathname) })}
                               >
-                                Low Stock
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'negative.stock') && (
-                            <li style={subSlot('products', 'product_negative_stock')}>
-                              <NavLink
-                                to={routes.product_negative_stock}
-                                className={subMenuLinkClass}
-                              >
-                                Negative Stock
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'slow.moving') && (
-                            <li style={subSlot('products', 'product_slow_moving')}>
-                              <NavLink
-                                to={routes.product_slow_moving}
-                                className={subMenuLinkClass}
-                              >
-                                Slow Moving
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'warehouse.difference') && (
-                            <li style={subSlot('products', 'product_warehouse_difference')}>
-                              <NavLink
-                                to={routes.product_warehouse_difference}
-                                className={subMenuLinkClass}
-                              >
-                                Warehouse Difference
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.unit') && (
-                            <li style={subSlot('products', 'product_unit_list')}>
-                              <NavLink
-                                to={routes.product_unit_list}
-                                className={subMenuLinkClass}
-                              >
-                                Product Unit
+                                Stock Alerts
                               </NavLink>
                             </li>
                           )}
@@ -3490,379 +2982,107 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           ))}
 
-                          {hasPermission(permissions, 'company.view') && (
+                          {tabsFor(COMPANY_BRANCH_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'company_list')}>
                               <NavLink
-                                to={routes.company_list}
-                                className={subMenuLinkClass}
+                                to={tabsFor(COMPANY_BRANCH_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(COMPANY_BRANCH_TABS, pathname) })}
                               >
-                                Company Settings
+                                Company & Branch
                               </NavLink>
                             </li>
                           )}
 
-                          {hasPermission(permissions, 'branch.view') && (
-                            <li style={subSlot('admin', 'branch/branch-list')}>
+                          {tabsFor(ADMIN_SETTINGS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
+                            <li style={subSlot('admin', 'menu_arrangement')}>
                               <NavLink
-                                to="/branch/branch-list"
-                                className={subMenuLinkClass}
+                                to={tabsFor(ADMIN_SETTINGS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(ADMIN_SETTINGS_TABS, pathname) })}
                               >
-                                Branch Settings
+                                Settings
                               </NavLink>
                             </li>
                           )}
-                          {/* Where a branch lays out its own printed papers --
-                              the delivery challan and the sales order, and
-                              whatever is added beside them. On branch.view, the
-                              same as the branch screens it belongs with: a
-                              layout is a branch setting, like its pad heading
-                              and its paper size.
 
-                              One entry, and the paper is chosen at the top of
-                              the screen. There was briefly a second entry for
-                              the order's layout; it was taken away because this
-                              screen already offers both, and two menu rows
-                              leading to one screen is a menu that has to be read
-                              twice.
-
-                              The order's route still exists -- the switcher
-                              navigates to it, so the address bar never names one
-                              paper while the screen edits the other. It is
-                              simply not reached from here. */}
-                          {hasPermission(permissions, 'print.template.view') && (
-                            <li style={subSlot('admin', 'print_template_designer')}>
-                              <NavLink
-                                to={routes.print_template_designer}
-                                className={subMenuLinkClass}
-                              >
-                                Template Designer
-                              </NavLink>
-                            </li>
-                          )}
-                          {/* Product Tracking moved out to its own menu, with the
-                              two reports that read what is configured here. */}
-                          {hasPermission(permissions, 'software.information') && (
-                            <li style={subSlot('admin', 'software_info')}>
-                              <NavLink
-                                to={routes.software_info}
-                                className={subMenuLinkClass}
-                              >
-                                Software Information
-                              </NavLink>
-                            </li>
-                          )}
-                          {/* Its own key, menu.arrangement (2026-11-11), seeded
-                              onto every role by the patch. */}
-                          {hasPermission(permissions, 'menu.arrangement') && (
-                          <li style={subSlot('admin', 'menu_arrangement')}>
-                            <NavLink
-                              to={routes.menu_arrangement}
-                              className={subMenuLinkClass}
-                            >
-                              Arrange Menu
-                            </NavLink>
-                          </li>
-                          )}
-
-                          {hasPermission(permissions, 'all.user.view') && (
+                          {tabsFor(USER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'user_list')}>
                               <NavLink
-                                to={routes.user_list}
-                                className={subMenuLinkClass}
+                                to={tabsFor(USER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(USER_TABS, pathname) })}
                               >
-                                User List
+                                Users
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'online.users') && (
-                            <li style={subSlot('admin', 'online_users')}>
+                          {tabsFor(PLATFORM_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
+                            <li style={subSlot('admin', 'reseller_admin')}>
                               <NavLink
-                                to={routes.online_users}
-                                className={subMenuLinkClass}
+                                to={tabsFor(PLATFORM_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(PLATFORM_TABS, pathname) })}
                               >
-                                Online Users
+                                Platform
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'user.login.log') && (
-                            <li style={subSlot('admin', 'user_login_log')}>
-                              <NavLink
-                                to={routes.user_login_log}
-                                className={subMenuLinkClass}
-                              >
-                                Login History
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'company.user') && (
-                            <li style={subSlot('admin', 'company_user_list')}>
-                              <NavLink
-                                to={routes.company_user_list}
-                                className={subMenuLinkClass}
-                              >
-                                Company User
-                              </NavLink>
-                            </li>
-                          )}
-                          {(hasPermission(permissions, 'reseller.view')) && (
-                              <li style={subSlot('admin', 'reseller_admin')}>
-                                <NavLink
-                                  to={routes.reseller_admin}
-                                  className={subMenuLinkClass}
-                                >
-                                  Resellers
-                                </NavLink>
-                              </li>
-                            )}
-                          {hasPermission(permissions, 'admin.notifications.view') && (
-                              <li style={subSlot('admin', 'admin_notifications')}>
-                                <NavLink
-                                  to={routes.admin_notifications}
-                                  className={subMenuLinkClass}
-                                >
-                                  Admin Notifications
-                                </NavLink>
-                              </li>
-                            )}
-                          {hasPermission(permissions, 'admin.in.app.messages.view') && (
-                              <li style={subSlot('admin', 'admin_in_app_messages')}>
-                                <NavLink
-                                  to={routes.admin_in_app_messages}
-                                  className={subMenuLinkClass}
-                                >
-                                  In-App Messages
-                                </NavLink>
-                              </li>
-                            )}
-                          {(hasPermission(permissions, 'business.create')) && (
-                              <li style={subSlot('admin', 'business_types')}>
-                                <NavLink
-                                  to={routes.business_types}
-                                  className={subMenuLinkClass}
-                                >
-                                  Business Types
-                                </NavLink>
-                              </li>
-                            )}
-                          {(hasPermission(permissions, 'inventory.systems.view')) && (
-                              <li style={subSlot('admin', 'inventory_systems')}>
-                                <NavLink
-                                  to={routes.inventory_systems}
-                                  className={subMenuLinkClass}
-                                >
-                                  Inventory Systems
-                                </NavLink>
-                              </li>
-                            )}
-                          {hasPermission(permissions, 'tutorial.videos.manage') && (
-                              <li style={subSlot('admin', 'tutorial_videos')}>
-                                <NavLink
-                                  to={routes.tutorial_videos}
-                                  className={subMenuLinkClass}
-                                >
-                                  Tutorial Videos
-                                </NavLink>
-                              </li>
-                            )}
-                          {/* The master website templates the platform offers to
-                              every company.
-                              
-                              ⚠️ Gated on the SERVER'S platform-admin verdict,
-                              not on permissions: these routes are behind
-                              platform.admin, so a permission check here would
-                              show the menu to a tenant user who holds
-                              reseller.view and then refuse every call. The
-                              verdict comes from the same predicate the
-                              middleware uses, so the two cannot disagree. */}
-                          {isPlatformAdmin && hasPermission(permissions, 'website.templates.manage') && (
-                            <li style={subSlot('admin', 'website_templates')}>
-                              <NavLink
-                                to={routes.website_templates}
-                                className={subMenuLinkClass}
-                              >
-                                Website Templates
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'highlight.rules') && (
-                            <li style={subSlot('admin', 'highlight_rules')}>
-                              <NavLink
-                                to={routes.highlight_rules}
-                                className={subMenuLinkClass}
-                              >
-                                Highlight Rules
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'roles.view') && (
+                          {tabsFor(ROLE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'roles')}>
                               <NavLink
-                                to={routes.roles}
-                                className={subMenuLinkClass}
+                                to={tabsFor(ROLE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(ROLE_TABS, pathname) })}
                               >
-                                Roles
+                                Roles & Permissions
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'roles.create') && (
-                            <li style={subSlot('admin', 'add_role')}>
-                              <NavLink
-                                to={routes.add_role}
-                                className={subMenuLinkClass}
-                              >
-                                Add Roles
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'permission.create') && (
-                            <li style={subSlot('admin', 'add_permission')}>
-                              <NavLink
-                                to={routes.add_permission}
-                                className={subMenuLinkClass}
-                              >
-                                Add Permission
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'dayclose.create') && (
+                          {tabsFor(DAILY_CONTROL_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'admin/dayclose')}>
                               <NavLink
-                                to="/admin/dayclose"
-                                className={subMenuLinkClass}
+                                to={tabsFor(DAILY_CONTROL_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(DAILY_CONTROL_TABS, pathname) })}
                               >
-                                Day Close
+                                Daily Control
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'group.report.setup') && (
-                            <li style={subSlot('admin', 'group_report_setup')}>
-                              <NavLink
-                                to={routes.group_report_setup}
-                                className={subMenuLinkClass}
-                              >
-                                Add Group Report
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'order.view') && (
+                          {tabsFor(ORDER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'order/order-list')}>
                               <NavLink
-                                to="/order/order-list"
-                                className={subMenuLinkClass}
+                                to={tabsFor(ORDER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(ORDER_TABS, pathname) })}
                               >
                                 Orders
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'order.transaction.view') && (
-                            <li style={subSlot('admin', 'order_with_transaction')}>
-                              <NavLink
-                                to={routes.order_with_transaction}
-                                className={subMenuLinkClass}
-                              >
-                                Order With Transaction
-                              </NavLink>
-                            </li>
-                          )}
                           {/* order.avg.price */}
-                          {hasPermission(permissions, 'order.avg.price') && (
-                            <li style={subSlot('admin', 'orders/avg-price')}>
-                              <NavLink
-                                to="/orders/avg-price"
-                                className={subMenuLinkClass}
-                              >
-                                Average Price
-                              </NavLink>
-                            </li>
-                          )}
                           {/* voucher.approval */}
-                          {(hasPermission(permissions, 'approval.center')) && (
-                            <li style={subSlot('admin', 'approval_center')}>
-                              <NavLink
-                                to={routes.approval_center}
-                                className={subMenuLinkClass}
-                              >
-                                Approval Center
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'voucher.approval') && (
-                            <li style={subSlot('admin', 'admin/voucher-approval')}>
-                              <NavLink
-                                to="/admin/voucher-approval"
-                                className={subMenuLinkClass}
-                              >
-                                Voucher Approval
-                              </NavLink>
-                            </li>
-                          )}
                           {/* remove.approval */}
-                          {hasPermission(permissions, 'remove.approval') && (
-                            <li style={subSlot('admin', 'admin/remove-approval')}>
-                              <NavLink
-                                to="/admin/remove-approval"
-                                className={subMenuLinkClass}
-                              >
-                                Approval Remove
-                              </NavLink>
-                            </li>
-                          )}
 
-                          {hasPermission(permissions, 'change.vourcher.type') && (
-                            <li style={subSlot('admin', 'admin/voucher/type-change')}>
-                              <NavLink
-                                to="/admin/voucher/type-change"
-                                className={subMenuLinkClass}
-                              >
-                                Change Voucher Type
-                              </NavLink>
-                            </li>
-                          )}
 
                           {/* voucher.photo.upload */}
-                          {hasPermission(permissions, 'voucher.photo.upload') && (
+                          {tabsFor(UPLOAD_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'admin/image-upload')}>
                               <NavLink
-                                to="/admin/image-upload"
-                                className={subMenuLinkClass}
+                                to={tabsFor(UPLOAD_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(UPLOAD_TABS, pathname) })}
                               >
-                                Voucher Upload
+                                Uploads
                               </NavLink>
                             </li>
                           )}
                           {/* bulk.photo.upload */}
-                          {hasPermission(permissions, 'bulk.photo.upload') && (
-                            <li style={subSlot('admin', 'admin/bulk-upload')}>
-                              <NavLink
-                                to="/admin/bulk-upload"
-                                className={subMenuLinkClass}
-                              >
-                                Bulk Upload
-                              </NavLink>
-                            </li>
-                          )}
 
-                          {hasPermission(permissions, 'sms.logs') && (
+                          {tabsFor(SMS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'sms_send')}>
                               <NavLink
-                                to={routes.sms_send}
-                                className={subMenuLinkClass}
+                                to={tabsFor(SMS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(SMS_TABS, pathname) })}
                               >
-                                SMS Logs
+                                SMS
                               </NavLink>
                             </li>
                           )}
 
-                          {hasPermission(permissions, 'sms.templates') && (
-                            <li style={subSlot('admin', 'sms_template_list')}>
-                              <NavLink
-                                to={routes.sms_template_list}
-                                className={subMenuLinkClass}
-                              >
-                                SMS Templates
-                              </NavLink>
-                            </li>
-                          )}
 
 
 
@@ -3923,77 +3143,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
                             </li>
                           ))}
-                          {hasPermission(permissions, 'voucher.delete') && (
-                            <li style={subSlot('vr_settings', 'vr-settings/voucher-delete')}>
-                              <NavLink
-                                to="/vr-settings/voucher-delete"
-                                className={subMenuLinkClass}
-                              >
-                                Voucher Delete
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'installment.delete') && (
-                            <li style={subSlot('vr_settings', 'vr-settings/installment-delete')}>
-                              <NavLink
-                                to="/vr-settings/installment-delete"
-                                className={subMenuLinkClass}
-                              >
-                                Installment Delete
-                              </NavLink>
-                            </li>
-                          )}
 
-                          {hasPermission(permissions, 'voucher.date.change') && (
+                          {tabsFor(VR_CORRECTION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('vr_settings', 'admin_change_date')}>
                               <NavLink
-                                to={routes.admin_change_date}
-                                className={subMenuLinkClass}
+                                to={tabsFor(VR_CORRECTION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(VR_CORRECTION_TABS, pathname) })}
                               >
-                                Voucher Date Change
+                                Corrections
                               </NavLink>
                             </li>
                           )}
 
-                          {hasPermission(permissions, 'voucher.recycle') && (
-                            <li style={subSlot('vr_settings', 'recyclebin')}>
-                              <NavLink
-                                to={routes.recyclebin}
-                                className={subMenuLinkClass}
-                              >
-                                Recycle Bin
-                              </NavLink>
-                            </li>
-                          )}
 
-                          {hasPermission(permissions, 'voucher.history') && (
+                          {tabsFor(VR_AUDIT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('vr_settings', 'voucher_history')}>
                               <NavLink
-                                to={routes.voucher_history}
-                                className={subMenuLinkClass}
+                                to={tabsFor(VR_AUDIT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(VR_AUDIT_TABS, pathname) })}
                               >
-                                History
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'log.changes') && (
-                            <li style={subSlot('vr_settings', 'voucher_activity')}>
-                              <NavLink
-                                to={routes.voucher_activity}
-                                className={subMenuLinkClass}
-                              >
-
-                                Log Changes
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'mitmatch.report') && (
-                            <li style={subSlot('vr_settings', 'report_mismatch')}>
-                              <NavLink
-                                to={routes.report_mismatch}
-                                className={subMenuLinkClass}
-                              >
-                                Report Mismatch
+                                Audit
                               </NavLink>
                             </li>
                           )}
@@ -4061,80 +3230,80 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {tabsFor(DESIGNATION_TABS, permissions).length > 0 && (
+                          {tabsFor(DESIGNATION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_designation_list')}>
                               <NavLink
-                                to={tabsFor(DESIGNATION_TABS, permissions)[0].path}
+                                to={tabsFor(DESIGNATION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(DESIGNATION_TABS, pathname) })}
                               >
                                 Designations
                               </NavLink>
                             </li>
                           )}
-                          {tabsFor(ATTENDANCE_TABS, permissions).length > 0 && (
+                          {tabsFor(ATTENDANCE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_attendance_entries')}>
                               <NavLink
-                                to={tabsFor(ATTENDANCE_TABS, permissions)[0].path}
+                                to={tabsFor(ATTENDANCE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_TABS, pathname) })}
                               >
                                 Attendance
                               </NavLink>
                             </li>
                           )}
-                          {tabsFor(ATTENDANCE_REPORT_TABS, permissions).length > 0 && (
+                          {tabsFor(ATTENDANCE_REPORT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_attendance_report')}>
                               <NavLink
-                                to={tabsFor(ATTENDANCE_REPORT_TABS, permissions)[0].path}
+                                to={tabsFor(ATTENDANCE_REPORT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_REPORT_TABS, pathname) })}
                               >
                                 Attendance Reports
                               </NavLink>
                             </li>
                           )}
-                          {tabsFor(ATTENDANCE_SETTINGS_TABS, permissions).length > 0 && (
+                          {tabsFor(ATTENDANCE_SETTINGS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_attendance_setup')}>
                               <NavLink
-                                to={tabsFor(ATTENDANCE_SETTINGS_TABS, permissions)[0].path}
+                                to={tabsFor(ATTENDANCE_SETTINGS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_SETTINGS_TABS, pathname) })}
                               >
                                 Attendance Settings
                               </NavLink>
                             </li>
                           )}
-                          {tabsFor(SALARY_SETUP_TABS, permissions).length > 0 && (
+                          {tabsFor(SALARY_SETUP_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_salary_component_list')}>
                               <NavLink
-                                to={tabsFor(SALARY_SETUP_TABS, permissions)[0].path}
+                                to={tabsFor(SALARY_SETUP_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_SETUP_TABS, pathname) })}
                               >
                                 Salary Setup
                               </NavLink>
                             </li>
                           )}
-                          {tabsFor(SALARY_GENERATE_TABS, permissions).length > 0 && (
+                          {tabsFor(SALARY_GENERATE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms/salary/salary-generate')}>
                               <NavLink
-                                to={tabsFor(SALARY_GENERATE_TABS, permissions)[0].path}
+                                to={tabsFor(SALARY_GENERATE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_GENERATE_TABS, pathname) })}
                               >
                                 Salary & Bonus Generate
                               </NavLink>
                             </li>
                           )}
-                          {tabsFor(LOAN_TABS, permissions).length > 0 && (
+                          {tabsFor(LOAN_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'employee_loan_balance')}>
                               <NavLink
-                                to={tabsFor(LOAN_TABS, permissions)[0].path}
+                                to={tabsFor(LOAN_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(LOAN_TABS, pathname) })}
                               >
                                 Loan
                               </NavLink>
                             </li>
                           )}
-                          {tabsFor(SALARY_REPORT_TABS, permissions).length > 0 && (
+                          {tabsFor(SALARY_REPORT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms/salary-sheet')}>
                               <NavLink
-                                to={tabsFor(SALARY_REPORT_TABS, permissions)[0].path}
+                                to={tabsFor(SALARY_REPORT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_REPORT_TABS, pathname) })}
                               >
                                 Salary Reports
@@ -4199,83 +3368,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
                             </li>
                           ))}
-                            {hasPermission(permissions, 'cs.view') && (
-                              <li style={subSlot('customer-supplier', 'customer-supplier/list')}>
-                                <NavLink
-                                  to="/customer-supplier/list"
-                                  className={subMenuLinkClass}
-                                >
-                                  Customer & Supplier
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'coa.l4.view') && (
-                              <li style={subSlot('customer-supplier', 'coal4/coal4-list')}>
-                                <NavLink
-                                  to="/coal4/coal4-list"
-                                  className={subMenuLinkClass}
-                                >
-                                  Accounts Head List
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'party.opening.edit') && (
-                              <li style={subSlot('customer-supplier', 'customer_opening_import')}>
-                                <NavLink
-                                  to={routes.customer_opening_import}
-                                  className={subMenuLinkClass}
-                                >
-                                  Opening Import
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'coa.l1.view') && (
-                              <li style={subSlot('customer-supplier', 'coal1/coal1-list')}>
-                                <NavLink
-                                  to="/coal1/coal1-list"
-                                  className={subMenuLinkClass}
-                                >
-                                  CoA L1
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'coa.l2.view') && (
-                              <li style={subSlot('customer-supplier', 'coal2/coal2-list')}>
-                                <NavLink
-                                  to="/coal2/coal2-list"
-                                  className={subMenuLinkClass}
-                                >
-                                  CoA L2
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'coa.l3.view') && (
-                              <li style={subSlot('customer-supplier', 'coal3/coal3-list')}>
-                                <NavLink
-                                  to="/coal3/coal3-list"
-                                  className={subMenuLinkClass}
-                                >
-                                  CoA L3
-                                </NavLink>
-                              </li>
-                            )}
-                            
-                            {/* Opening balances for cash, the banks and mobile
-                                banking. Kept off the CoA L4 list itself, where
-                                most rows are expense and sales heads that open
-                                at nothing -- and behind its own permission,
-                                since opening an account with a figure writes a
-                                journal voucher while reading the chart does not. */}
-                            {hasPermission(permissions, 'bank.opening.view') && (
-                              <li style={subSlot('customer-supplier', 'coal4/opening-balance')}>
-                                <NavLink
-                                  to="/coal4/opening-balance"
-                                  className={subMenuLinkClass}
-                                >
-                                  Bank Opening
-                                </NavLink>
-                              </li>
-                            )}
+                          {tabsFor(PARTY_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
+                            <li style={subSlot('customer-supplier', 'customer-supplier/list')}>
+                              <NavLink
+                                to={tabsFor(PARTY_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(PARTY_TABS, pathname) })}
+                              >
+                                Customers
+                              </NavLink>
+                            </li>
+                          )}
+                          {tabsFor(COA_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
+                            <li style={subSlot('customer-supplier', 'coal1/coal1-list')}>
+                              <NavLink
+                                to={tabsFor(COA_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(COA_TABS, pathname) })}
+                              >
+                                Chart of Accounts
+                              </NavLink>
+                            </li>
+                          )}
                           </ul>
                         </div>
                       </React.Fragment>

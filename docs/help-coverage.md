@@ -33,63 +33,63 @@
 | year_closing | Accounts → Year Closing | `/accounts/year-closing` | `year-closing` | done |
 | account_deletion_admin | Admin → Account Deletions | `/admin/account-deletions` | `account-deletions` | done |
 | account_deletion_admin_detail | Admin → Account Deletions → Review | `/admin/account-deletions/:id` | `account-deletion-detail` | done |
-| bulk_upload | Admin → Bulk Voucher Upload | `/admin/bulk-upload` | `voucher-images` | done |
-| business_types | Admin → Business Types | `/admin/business-types` | `admin-business-types` | done |
-| day_close | Admin → Day Close | `/admin/dayclose` | `admin-dayclose` | done |
-| highlight_rules | Admin → Highlight Rules | `/admin/highlight-rules` | `highlight-rules` | done |
-| image_upload | Admin → Upload Voucher Image | `/admin/image-upload` | `voucher-images` | done |
-| admin_in_app_messages | Admin → In-App Messages | `/admin/in-app-messages` | `admin-inapp-list` | done |
+| bulk_upload | Admin → Uploads → Bulk Upload | `/admin/bulk-upload` | `voucher-images` | done |
+| business_types | Admin → Platform → Business Types | `/admin/business-types` | `admin-business-types` | done |
+| day_close | Admin → Daily Control → Day Close | `/admin/dayclose` | `admin-dayclose` | done |
+| highlight_rules | Admin → Settings → Highlight Rules | `/admin/highlight-rules` | `highlight-rules` | done |
+| image_upload | Admin → Uploads → Voucher Upload | `/admin/image-upload` | `voucher-images` | done |
+| admin_in_app_messages | Admin → Platform → In-App Messages | `/admin/in-app-messages` | `admin-inapp-list` | done |
 | admin_in_app_message_create | Admin → In-App Messages → New Campaign | `/admin/in-app-messages/create` | `admin-inapp-form` | done |
 | admin_in_app_message_edit | Admin → In-App Messages → Edit | `/admin/in-app-messages/edit/:id` | `admin-inapp-form` | done |
 | installment_list | Admin → Installments | `/admin/installment-details` | `admin-installments` | done |
-| inventory_systems | Admin → Inventory Systems | `/admin/inventory-systems` | `admin-inventory-systems` | done |
+| inventory_systems | Admin → Platform → Inventory Systems | `/admin/inventory-systems` | `admin-inventory-systems` | done |
 | day_jump | Admin → Jump Date | `/admin/jumpdate` | `admin-jumpdate` | done |
-| admin_notifications | Admin → Admin Notifications | `/admin/notifications` | `admin-notifications` | done |
-| admin_remove_approval | Admin → Remove Voucher Approval | `/admin/remove-approval` | `admin-remove-approval` | done |
-| reseller_admin | Admin → Reseller Admin | `/admin/resellers` | `admin-resellers` | done |
-| tutorial_videos | Admin → Tutorial Videos | `/admin/tutorial-videos` | `admin-tutorial-videos` | done |
+| admin_notifications | Admin → Platform → Admin Notifications | `/admin/notifications` | `admin-notifications` | done |
+| admin_remove_approval | Admin → Daily Control → Approval Remove | `/admin/remove-approval` | `admin-remove-approval` | done |
+| reseller_admin | Admin → Platform → Resellers | `/admin/resellers` | `admin-resellers` | done |
+| tutorial_videos | Admin → Platform → Tutorial Videos | `/admin/tutorial-videos` | `admin-tutorial-videos` | done |
 | unit_payment_list | Admin → Cheque / Receive Register | `/admin/unit-payment-list` | `admin-unit-payments` | done |
 | unit_payment_edit | Admin → Cheque / Receive Register → Edit | `/admin/unit-payment/edit/:id` | `admin-unit-payment-form` | done |
 | unit_payment_entry | Admin → Cheque / Receive Register → Add New | `/admin/unit-payment/entry` | `admin-unit-payment-form` | done |
-| admin_voucher_approval | Admin → Voucher Approval | `/admin/voucher-approval` | `admin-voucher-approval` | done |
-| admin_change_date | Admin → Voucher Change Date | `/admin/voucher/date-change` | `admin-voucher-date` | done |
-| admin_change_voucher_type | Admin → Change Voucher Type | `/admin/voucher/type-change` | `admin-voucher-type` | done |
-| website_templates | Admin → Website Templates | `/admin/website-templates` | `admin-website-templates` | done |
+| admin_voucher_approval | Admin → Daily Control → Voucher Approval | `/admin/voucher-approval` | `admin-voucher-approval` | done |
+| admin_change_date | VR Settings → Corrections → Voucher Date Change | `/admin/voucher/date-change` | `admin-voucher-date` | done |
+| admin_change_voucher_type | Admin → Daily Control → Change Voucher Type | `/admin/voucher/type-change` | `admin-voucher-type` | done |
+| website_templates | Admin → Platform → Website Templates | `/admin/website-templates` | `admin-website-templates` | done |
 | website_template_editor | Admin → Website Templates → Edit | `/admin/website-templates/:id` | `admin-website-template-editor` | done |
-| approval_center | Approval Center | `/approval-center` | `approval-center` | done |
+| approval_center | Admin → Daily Control → Approval Center | `/approval-center` | `approval-center` | done |
 | approval_center_audit | Approval Center → Audit History | `/approval-center/audit` | `approval-audit` | done |
 | asset_setup | Assets → Categories | `/asset/setup` | `asset-category` | done |
 | branch_add | Setup → Branch List → Add Branch | `/branch/add-branch` | `branch-form` | done |
 | branch_edit | Setup → Branch List → Edit | `/branch/branch-edit/:id` | `branch-form` | done |
-| branch_list | Setup → Branch List | `/branch/branch-list` | `branch-list` | done |
+| branch_list | Admin → Company & Branch → Branch Settings | `/branch/branch-list` | `branch-list` | done |
 | brand_create | Products → Brand → New Brand | `/brand/brand-create` | `product-brand` | done |
-| brand_list | Products → Brand | `/brand/brand-list` | `product-brand` | done |
+| brand_list | Products → Classification → Brand | `/brand/brand-list` | `product-brand` | done |
 | calendar | — | `/calendar` | — | skipped: internal demo page |
-| category_list | Products → Category | `/category/category-list` | `product-category` | done |
+| category_list | Products → Classification → Category | `/category/category-list` | `product-category` | done |
 | category_create | Products → Category → New Category | `/category/create` | `product-category` | done |
 | category_edit | Products → Category → Edit | `/category/edit` | `product-category` | done |
 | change_password | Profile → Change Password | `/change-password` | `change-password` | done |
-| coal1_list | Accounts → Chart of Accounts L1 | `/coal1/coal1-list` | `coa-l1` | done |
-| coal2_list | Accounts → Chart of Accounts L2 | `/coal2/coal2-list` | `coa-l2` | done |
+| coal1_list | Customer & Supplier → Chart of Accounts → CoA L1 | `/coal1/coal1-list` | `coa-l1` | done |
+| coal2_list | Customer & Supplier → Chart of Accounts → CoA L2 | `/coal2/coal2-list` | `coa-l2` | done |
 | coal3_add | Accounts → Chart of Accounts L3 → New COA L3 | `/coal3/add-coal3` | `coa-l3-form` | done |
-| coal3_list | Accounts → Chart of Accounts L3 | `/coal3/coal3-list` | `coa-l3` | done |
+| coal3_list | Customer & Supplier → Chart of Accounts → CoA L3 | `/coal3/coal3-list` | `coa-l3` | done |
 | coal3_edit | Accounts → Chart of Accounts L3 → Edit | `/coal3/edit-coal3/:id` | `coa-l3-form` | done |
 | coal4_add | Accounts → Accounts Head List → New Head Entry | `/coal4/add-coal4` | `coa-l4-form` | done |
-| coal4_list | Accounts → Accounts Head List | `/coal4/coal4-list` | `coa-l4` | done |
+| coal4_list | Customer & Supplier → Chart of Accounts → Accounts Head List | `/coal4/coal4-list` | `coa-l4` | done |
 | coal4_edit | Accounts → Accounts Head List → Edit | `/coal4/edit-coal4/:id` | `coa-l4-form` | done |
-| account_opening_balance | Accounts → Account Opening Balance | `/coal4/opening-balance` | `account-opening-balance` | done |
+| account_opening_balance | Customer & Supplier → Chart of Accounts → Bank Opening | `/coal4/opening-balance` | `account-opening-balance` | done |
 | company_scheme_receipts | Reports → Company Scheme Receipts | `/company-scheme/receipts` | `scheme-receipts` | done |
 | company_scheme_receivable | Reports → Company Scheme Receivable | `/company-scheme/receivable` | `scheme-receivable` | done |
 | company_edit | Setup → Company List → Edit | `/company/company-edit/:id` | `company-edit` | done |
-| company_list | Setup → Company List | `/company/company-list` | `company-list` | done |
+| company_list | Admin → Company & Branch → Company Settings | `/company/company-list` | `company-list` | done |
 | customer Home | — | `/customer` | — | skipped: customer portal layout, no content of its own |
 | customer_dashboard | Customer → Dashboard | `/customer-dashboard` | `customer-dashboard` | done |
 | supplier_customer_add | Customers → Add Customer | `/customer-supplier/create` | `customer-supplier-form` | done |
 | supplier_customer_edit | Customers → Edit Customer | `/customer-supplier/edit/:id` | `customer-supplier-form` | done |
-| supplier_customer_list | Customers → Customer & Supplier | `/customer-supplier/list` | `customer-supplier-list` | done |
+| supplier_customer_list | Customer & Supplier → Customers → Customers | `/customer-supplier/list` | `customer-supplier-list` | done |
 | customer Change Password | Customer portal → Change Password | `/customer/change-password` | — | skipped: customer portal page outside the signed-in Help layout |
 | customer Login | — | `/customer/login` | — | skipped: customer portal login page |
-| customer_opening_import | Customers → Opening Import | `/customer/opening-import` | `customer-opening-import` | done |
+| customer_opening_import | Customer & Supplier → Customers → Opening Import | `/customer/opening-import` | `customer-opening-import` | done |
 | dashboard | Dashboard | `/dashboard` | `dashboard` | done |
 | delivery_dashboard | Dashboard → Delivery System | `/delivery/dashboard` | `delivery-dashboard` | done |
 | forgot_password | — | `/forgot-password` | — | skipped: password reset |
@@ -196,25 +196,25 @@
 | login | — | `/login` | — | skipped: login page |
 | my_devices | Users → My Devices | `/my-devices` | `my-devices` | done |
 | my_tasks | Users → My Tasks | `/my-tasks` | `my-tasks` | done |
-| order_list | Orders → Order List | `/order/order-list` | `order-list` | done |
+| order_list | Admin → Orders → Orders | `/order/order-list` | `order-list` | done |
 | order_add | Orders → New Order | `/orders/add-order` | `order-form` | done |
-| order_avg_price | Orders → Average Price | `/orders/avg-price` | `avg-price` | done |
+| order_avg_price | Admin → Orders → Average Price | `/orders/avg-price` | `avg-price` | done |
 | order_edit | Orders → Edit | `/orders/edit/:id` | `order-form` | done |
-| order_with_transaction | Orders → Order With Transaction | `/orders/with-transaction` | `order-transactions` | done |
-| pack_size_list | Products → Pack Size | `/pack-size/pack-size-list` | `product-pack-size` | done |
-| product_group_list | Products → Product Group | `/product-group/product-group-list` | `product-group` | done |
+| order_with_transaction | Admin → Orders → Order With Transaction | `/orders/with-transaction` | `order-transactions` | done |
+| pack_size_list | Products → Classification → Pack Size | `/pack-size/pack-size-list` | `product-pack-size` | done |
+| product_group_list | Products → Classification → Product Group | `/product-group/product-group-list` | `product-group` | done |
 | product_unit_create | Products → Unit → New Unit | `/product-unit/unit-create` | `product-unit` | done |
 | product_unit_edit | Products → Unit → Edit | `/product-unit/unit-edit/:id` | `product-unit` | done |
-| product_unit_list | Products → Unit | `/product-unit/unit-list` | `product-unit` | done |
+| product_unit_list | Products → Classification → Product Unit | `/product-unit/unit-list` | `product-unit` | done |
 | product_create | Products → Product List → New | `/product/add-product` | `product-form` | done |
 | product_edit | Products → Product List → Edit | `/product/edit/:id` | `product-form` | done |
-| product_low_stock | Products → Low Stock | `/product/low-stock` | `product-low-stock` | done |
-| product_negative_stock | Products → Negative Stock | `/product/negative-stock` | `product-stock-alerts` | done |
-| product_opening_import | Products → Opening Import | `/product/opening-import` | `product-opening-import` | done |
-| product_list | Products → Product List | `/product/product-list` | `product-list` | done |
-| product_statement | Products → Product Statement | `/product/product-statement` | `product-statement` | done |
-| product_slow_moving | Products → Slow Moving | `/product/slow-moving` | `product-stock-alerts` | done |
-| product_warehouse_difference | Products → Warehouse Difference | `/product/warehouse-difference` | `product-stock-alerts` | done |
+| product_low_stock | Products → Stock Alerts → Low Stock | `/product/low-stock` | `product-low-stock` | done |
+| product_negative_stock | Products → Stock Alerts → Negative Stock | `/product/negative-stock` | `product-stock-alerts` | done |
+| product_opening_import | Products → Products → Opening Import | `/product/opening-import` | `product-opening-import` | done |
+| product_list | Products → Products → Product List | `/product/product-list` | `product-list` | done |
+| product_statement | Products → Products → Product Statement | `/product/product-statement` | `product-statement` | done |
+| product_slow_moving | Products → Stock Alerts → Slow Moving | `/product/slow-moving` | `product-stock-alerts` | done |
+| product_warehouse_difference | Products → Stock Alerts → Warehouse Difference | `/product/warehouse-difference` | `product-stock-alerts` | done |
 | profile | Profile | `/profile` | `profile` | done |
 | real_estate_area_add | Real Estate → Area → New Location | `/real-estate/add-area` | `realestate-area` | done |
 | real_estate_add_floor_unit_edit | Real Estate → Unit → Edit Unit | `/real-estate/add-floor-unit/:id` | `realestate-unit-form` | done |
@@ -243,79 +243,79 @@
 | real_estate_floor_unit_list | Real Estate → Unit → Unit List | `/real-estate/unit/list` | `realestate-unit-list` | done |
 | public_register | — | `/register` | — | skipped: public registration |
 | public_register_otp | — | `/register/otp` | — | skipped: public registration |
-| ageing_report | Reports → Ageing | `/reports/ageing` | `ageing` | done |
-| audit_trail | Reports → Audit Trail | `/reports/audit-trail` | `audit-trail` | done |
+| ageing_report | Reports → Ledger & Due → Ageing | `/reports/ageing` | `ageing` | done |
+| audit_trail | VR Settings → Audit → Audit Trail | `/reports/audit-trail` | `audit-trail` | done |
 | balance_sheet | Reports → Balance Sheet | `/reports/balance-sheet` | `balance-sheet` | done |
-| bank_information | Reports → Bank Information | `/reports/bank-information` | `bank-information` | done |
-| report_bankbook | Reports → Bank Book | `/reports/bankbook` | `bank-book` | done |
+| bank_information | Reports → Cash & Bank → Bank Information | `/reports/bank-information` | `bank-information` | done |
+| report_bankbook | Reports → Cash & Bank → Bank Book | `/reports/bankbook` | `bank-book` | done |
 | report_branch_receive | Reports → Branch Receive | `/reports/branch-receive` | `branch-movement-report` | done |
 | report_branch_receive_list | Reports → Branch Receive List | `/reports/branch-receive-list` | `branch-voucher-lists` | done |
 | report_branch_stock | Reports → Branch Stock | `/reports/branch-stock` | `branch-stock-report` | done |
 | report_branch_transfer | Reports → Branch Transfer | `/reports/branch-transfer` | `branch-movement-report` | done |
 | report_branch_transfer_list | Reports → Branch Transfer List | `/reports/branch-transfer-list` | `branch-voucher-lists` | done |
 | business_summary | Reports → Business Summary | `/reports/business-summary` | `business-summary` | done |
-| cash_bank_received_payment | Reports → Cash & Bank Received Payment | `/reports/cash-bank-received-payment` | `cash-bank-received-payment` | done |
-| report_cashbook_two_column | Reports → Cash Book (Two Column) | `/reports/cash-book-two-column` | `cash-book-two-column` | done |
+| cash_bank_received_payment | Reports → Cash & Bank → Cash & Bank Summary | `/reports/cash-bank-received-payment` | `cash-bank-received-payment` | done |
+| report_cashbook_two_column | Reports → Cash & Bank → Cash & Bank Book | `/reports/cash-book-two-column` | `cash-book-two-column` | done |
 | cash_flow_statement | Reports → Cash Flow | `/reports/cash-flow-statement` | `cash-flow` | done |
-| report_cashbook | Reports → Cash Book | `/reports/cashbook` | `cash-book` | done |
-| cat_wise_in_out | Reports → Category Wise In/Out | `/reports/cat-wise/in-out` | `cat-wise-in-out` | done |
-| report_closing_stock | Reports → Closing Stock | `/reports/closing-stock` | `closing-stock` | done |
-| connected_member | Reports → Connected Member | `/reports/connected-member` | `connected-member` | done |
-| report_customer_sales | Reports → Customer Sales | `/reports/customer-sales` | `customer-sales-report` | done |
-| report_daily_account_book | Reports → Daily Account Book | `/reports/daily-account-book` | `daily-account-book` | done |
-| report_date_wise_total | Reports → Date Wise Total | `/reports/date-wise-total-data` | `date-wise-total` | done |
-| report_delivery | Reports → Delivery | `/reports/delivery` | `delivery-report` | done |
-| due_installment_list | Reports → Due Installments | `/reports/due-installments` | `due-installments` | done |
-| report_due_list | Reports → Due List | `/reports/due-list` | `due-list` | done |
-| employee_wise_installment | Reports → Employee Wise Installments | `/reports/employee-installment` | `due-installments` | done |
+| report_cashbook | Reports → Cash & Bank → Cash Book | `/reports/cashbook` | `cash-book` | done |
+| cat_wise_in_out | Reports → Stock → Cat-wise In/Out | `/reports/cat-wise/in-out` | `cat-wise-in-out` | done |
+| report_closing_stock | Reports → Stock → Stock Details | `/reports/closing-stock` | `closing-stock` | done |
+| connected_member | Reports → Ledger & Due → Connected Member | `/reports/connected-member` | `connected-member` | done |
+| report_customer_sales | Reports → Purchase & Sales → Customer Sales | `/reports/customer-sales` | `customer-sales-report` | done |
+| report_daily_account_book | Reports → Cash & Bank → Daily Account Book | `/reports/daily-account-book` | `daily-account-book` | done |
+| report_date_wise_total | Reports → Cash & Bank → Datewise Cash Total | `/reports/date-wise-total-data` | `date-wise-total` | done |
+| report_delivery | Reports → Purchase & Sales → Delivery Report | `/reports/delivery` | `delivery-report` | done |
+| due_installment_list | Reports → Installment & Somity → Due Installments | `/reports/due-installments` | `due-installments` | done |
+| report_due_list | Reports → Ledger & Due → Due List | `/reports/due-list` | `due-list` | done |
+| employee_wise_installment | Reports → Installment & Somity → Employee Installments | `/reports/employee-installment` | `due-installments` | done |
 | expense_report | Reports → Expense Report | `/reports/expense-report` | `expense-report` | done |
 | general_ledger | Reports → General Ledger | `/reports/general-ledger` | `general-ledger` | done |
-| report_godown_stock | Reports → Godown Stock | `/reports/godown-stock` | `godown-stock` | done |
-| group_report | Reports → Group Report | `/reports/group-report` | `group-report` | done |
-| group_report_setup | Reports → Group Report → Setup | `/reports/group-report/setup` | `group-report-setup` | done |
+| report_godown_stock | Reports → Stock → Godown Stock | `/reports/godown-stock` | `godown-stock` | done |
+| group_report | Reports → Ledger & Due → Group Report | `/reports/group-report` | `group-report` | done |
+| group_report_setup | Admin → Settings → Add Group Report | `/reports/group-report/setup` | `group-report-setup` | done |
 | hrm_mismatch_payment | Reports → HRM Mismatch Payment | `/reports/hrm-mismatch-payment` | `hrm-mismatch-payment` | done |
-| report_date_wise_in_out | Reports → In/Out → Date Wise | `/reports/in-out/date-wise` | `date-wise-in-out` | done |
-| report_labour_ledger | Reports → Labour Ledger | `/reports/labour/ledger` | `labour-ledger` | done |
-| report_ledger | Reports → Ledger | `/reports/ledger` | `ledger-report` | done |
-| customer_supplier_statement | Reports → Ledger with Product | `/reports/ledger-with-product` | `ledger-with-product` | done |
-| mitch_match | Reports → Mitch Match | `/reports/mitch-match` | `mitch-match` | done |
+| report_date_wise_in_out | Reports → Stock → Date-wise In/Out | `/reports/in-out/date-wise` | `date-wise-in-out` | done |
+| report_labour_ledger | Reports → Ledger & Due → Labour Ledger | `/reports/labour/ledger` | `labour-ledger` | done |
+| report_ledger | Reports → Ledger & Due → Ledger | `/reports/ledger` | `ledger-report` | done |
+| customer_supplier_statement | Reports → Ledger & Due → Ledger Details | `/reports/ledger-with-product` | `ledger-with-product` | done |
+| mitch_match | VR Settings → Audit → Mismatch | `/reports/mitch-match` | `mitch-match` | done |
 | monthly_statement | Reports → Monthly Statement | `/reports/monthly-statement` | `monthly-statement` | done |
 | product_financial_statement | Reports → Product Financial Statement | `/reports/product-financial-statement` | `product-financial-statement` | done |
-| product_ledger_data | Reports → Product Ledger | `/reports/product-ledger-data` | `product-ledger-data` | done |
+| product_ledger_data | Reports → Stock → Product In Out | `/reports/product-ledger-data` | `product-ledger-data` | done |
 | product_profit_loss | Reports → Product Profit/Loss | `/reports/product-profit-loss` | `product-profit-loss` | done |
 | product_profit_summary | Reports → Product Profit Summary | `/reports/product-profit-summary` | `product-profit-summary` | done |
 | product_tracking_summary | Reports → Product Receivable/Payable | `/reports/product-receivable-payable` | `product-receivable-payable` | done |
-| report_product_stock | Reports → Product Stock | `/reports/product/stock` | `product-stock` | done |
+| report_product_stock | Reports → Stock → Product Stock | `/reports/product/stock` | `product-stock` | done |
 | profit_loss | Reports → Profit & Loss | `/reports/profit-loss` | `profit-loss` | done |
 | profit_loss_date_wise | Reports → Profit & Loss (Date Wise) | `/reports/profit-loss-date-wise` | `profit-loss-date-wise` | done |
-| purchase_ledger | Reports → Purchase Ledger | `/reports/purchase-ledger` | `purchase-ledger` | done |
-| purchase_return_ledger | Reports → Purchase Return Ledger | `/reports/purchase-return-ledger` | `return-ledger` | done |
-| sales_ledger | Reports → Sales Ledger | `/reports/sales-ledger` | `sales-ledger` | done |
-| report_referrer | Reports → Sales Referrer | `/reports/sales-referrer` | `sales-referrer` | done |
-| sales_return_ledger | Reports → Sales Return Ledger | `/reports/sales-return-ledger` | `return-ledger` | done |
+| purchase_ledger | Reports → Purchase & Sales → Purchase Ledger | `/reports/purchase-ledger` | `purchase-ledger` | done |
+| purchase_return_ledger | Reports → Purchase & Sales → Purchase Return | `/reports/purchase-return-ledger` | `return-ledger` | done |
+| sales_ledger | Reports → Purchase & Sales → Sales Ledger | `/reports/sales-ledger` | `sales-ledger` | done |
+| report_referrer | Reports → Purchase & Sales → Referer | `/reports/sales-referrer` | `sales-referrer` | done |
+| sales_return_ledger | Reports → Purchase & Sales → Sales Return | `/reports/sales-return-ledger` | `return-ledger` | done |
 | report_sales_summary | Reports → Sales Summary | `/reports/sales-summary` | `sales-summary` | done |
-| report_imei_stock | Reports → Stock → IMEI | `/reports/stock-imei` | `imei-stock` | done |
-| report_tiles_purchase | Reports → Tiles Purchase | `/reports/tiles-purchase` | `tiles-purchase-report` | done |
+| report_imei_stock | Reports → Stock → IMEI Stock | `/reports/stock-imei` | `imei-stock` | done |
+| report_tiles_purchase | Reports → Purchase & Sales → Tiles Purchase | `/reports/tiles-purchase` | `tiles-purchase-report` | done |
 | trial_balance | Reports → Trial Balance | `/reports/trialbalance` | `trial-balance` | done |
 | trial_balance_level3 | Reports → Trial Balance (Level 3) | `/reports/trialbalance-level3` | `trial-balance` | done |
 | trial_balance_level4 | Reports → Trial Balance (Level 4) | `/reports/trialbalance-level4` | `trial-balance` | done |
-| report_voucher_register | Reports → Voucher Register | `/reports/voucher-register` | `voucher-register` | done |
+| report_voucher_register | Reports → Cash & Bank → Voucher Register | `/reports/voucher-register` | `voucher-register` | done |
 | requisition_comparison | Requisition → Comparison | `/requisition/comparison` | `requisition-analysis` | done |
 | requisition_create | Requisition → New Requisition | `/requisition/create` | `requisition-form` | done |
 | requisition | Requisition → Requisition List | `/requisitions` | `requisition-list` | done |
 | reseller_dashboard | Reseller → Dashboard | `/reseller/dashboard` | `reseller-dashboard` | done |
-| print_template_designer | Settings → Delivery Challan Layout | `/settings/challan-layout` | `print-layout` | done |
-| menu_arrangement | Settings → Arrange Menu | `/settings/menu-arrangement` | `menu-arrangement` | done |
-| order_template_designer | Settings → Order Layout | `/settings/order-layout` | `print-layout` | done |
+| print_template_designer | Admin → Company & Branch → Challan Layout | `/settings/challan-layout` | `print-layout` | done |
+| menu_arrangement | Admin → Settings → Arrange Menu | `/settings/menu-arrangement` | `menu-arrangement` | done |
+| order_template_designer | Admin → Company & Branch → Challan Layout (Order paper) | `/settings/order-layout` | `print-layout` | done |
 | product_tracking_settings | Settings → Product Tracking | `/settings/product-tracking` | `product-tracking-settings` | done |
-| software_info | Settings → Software Information | `/settings/software-info` | `software-info` | done |
-| sms_send | SMS → SMS Logs | `/sms/send` | `sms-log` | done |
-| sms_template_list | SMS → Templates | `/sms/templates` | `sms-template-list` | done |
+| software_info | Admin → Company & Branch → Software Information | `/settings/software-info` | `software-info` | done |
+| sms_send | Admin → SMS → SMS Logs | `/sms/send` | `sms-log` | done |
+| sms_template_list | Admin → SMS → SMS Templates | `/sms/templates` | `sms-template-list` | done |
 | sms_template_create | SMS → Templates → New Template | `/sms/templates/create` | `sms-template-form` | done |
 | sms_template_edit | SMS → Templates → Edit | `/sms/templates/edit/:id` | `sms-template-form` | done |
-| somity_collection_sheet | Reports → Collection Sheet | `/somity-report/collection-sheet` | `somity-collection-sheet` | done |
-| somity_monthly_report | Reports → Monthly Report | `/somity-report/monthly-report` | `somity-monthly-report` | done |
-| somity_stock_details | Somity Report → Stock Details | `/somity-report/stock-details` | `closing-stock` | done |
+| somity_collection_sheet | Reports → Installment & Somity → Collection Sheet | `/somity-report/collection-sheet` | `somity-collection-sheet` | done |
+| somity_monthly_report | Reports → Installment & Somity → Monthly Report | `/somity-report/monthly-report` | `somity-monthly-report` | done |
+| somity_stock_details | Reports → Stock → Stock Details | `/somity-report/stock-details` | `closing-stock` | done |
 | subscription_admin | Subscription → Subscription Admin | `/subscription/admin` | `subscription-admin` | done |
 | subscription_plan_list | Subscription → Subscription Admin → Plan List | `/subscription/admin/plans` | `subscription-plans` | done |
 | subscription_plan_edit | Subscription → Plans → Edit | `/subscription/admin/plans/edit/:id` | `subscription-plan-form` | done |
@@ -327,21 +327,21 @@
 | switch_branch | Switch Branch | `/switch-branch` | `switch-branch` | done |
 | alert | — | `/ui/alerts` | — | skipped: template demo page with no business content |
 | buttons | — | `/ui/buttons` | — | skipped: template demo page with no business content |
-| add_permission | Users → Roles → Add Permission | `/user-management/create-permission` | `add-permission` | done |
-| add_role | Users → Roles → Add Role | `/user-management/create-role` | `add-role` | done |
-| roles | Users → Roles | `/user-management/roles` | `roles` | done |
+| add_permission | Admin → Roles & Permissions → Add Permission | `/user-management/create-permission` | `add-permission` | done |
+| add_role | Admin → Roles & Permissions → Add Roles | `/user-management/create-role` | `add-role` | done |
+| roles | Admin → Roles & Permissions → Roles | `/user-management/roles` | `roles` | done |
 | user_add | Users → Add User | `/user/add-user` | `user-form` | done |
-| company_user_list | Users → Company Users | `/user/company-users` | `company-users` | done |
-| user_login_log | Users → Login History | `/user/login-log` | `login-log` | done |
-| online_users | Users → Online Users | `/user/online-users` | `online-users` | done |
+| company_user_list | Admin → Users → Company User | `/user/company-users` | `company-users` | done |
+| user_login_log | Admin → Users → Login History | `/user/login-log` | `login-log` | done |
+| online_users | Admin → Users → Online Users | `/user/online-users` | `online-users` | done |
 | user_edit | Users → Edit User | `/user/user-edit/:id` | `user-form` | done |
-| user_list | Users → User List | `/user/user-list` | `user-list` | done |
-| installment_delete | Voucher Settings → Installment Delete | `/vr-settings/installment-delete` | `installment-delete` | done |
-| recyclebin | Voucher Settings → Recycle Bin | `/vr-settings/recyclebin` | `recycle-bin` | done |
-| report_mismatch | Voucher Settings → Report Mismatch | `/vr-settings/report-mismatch` | `report-mismatch` | done |
-| voucher_activity | Voucher Settings → Log Changes | `/vr-settings/voucher-activity` | `voucher-activity` | done |
-| voucher_delete | Voucher Settings → Voucher Delete | `/vr-settings/voucher-delete` | `voucher-delete` | done |
-| voucher_history | Voucher Settings → Log History | `/vr-settings/voucher-history` | `voucher-history` | done |
+| user_list | Admin → Users → User List | `/user/user-list` | `user-list` | done |
+| installment_delete | VR Settings → Corrections → Installment Delete | `/vr-settings/installment-delete` | `installment-delete` | done |
+| recyclebin | VR Settings → Corrections → Recycle Bin | `/vr-settings/recyclebin` | `recycle-bin` | done |
+| report_mismatch | VR Settings → Audit → Report Mismatch | `/vr-settings/report-mismatch` | `report-mismatch` | done |
+| voucher_activity | VR Settings → Audit → Log Changes | `/vr-settings/voucher-activity` | `voucher-activity` | done |
+| voucher_delete | VR Settings → Corrections → Voucher Delete | `/vr-settings/voucher-delete` | `voucher-delete` | done |
+| voucher_history | VR Settings → Audit → History | `/vr-settings/voucher-history` | `voucher-history` | done |
 | hello-bangladesh | — | `hello-bangladesh` | — | skipped: test route |
 | no-access | — | `no-access` | — | skipped: access-denied page |
 

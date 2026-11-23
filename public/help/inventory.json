@@ -120,7 +120,7 @@
     "video": "",
     "intro": "কোম্পানির সব শাখা, তাদের যোগাযোগ ও চালু/বন্ধ অবস্থা।",
     "sections": [
-      { "heading": "তালিকা", "menu": "Setup → Branch List", "steps": ["Sl. No., Branch Name, Contact Person, Business Type, Contact Number ও status দেখা যায়।", "Add Branch দিয়ে নতুন শাখা; Edit ও on/off সুইচ দিয়ে পুরনো শাখা সামলান।"] },
+      { "heading": "তালিকা", "menu": "Admin → Company & Branch → Branch Settings", "steps": ["Sl. No., Branch Name, Contact Person, Business Type, Contact Number ও status দেখা যায়।", "Add Branch দিয়ে নতুন শাখা; Edit ও on/off সুইচ দিয়ে পুরনো শাখা সামলান।"] },
       { "heading": "সতর্কতা", "warning": "শাখা বন্ধ করলে তার লেনদেন মোছে না, শুধু নতুন কাজ বন্ধ হয়। শাখা মোছার ব্যবস্থা এখানে নেই।" }
     ]
   }

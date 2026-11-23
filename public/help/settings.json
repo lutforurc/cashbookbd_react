@@ -8,7 +8,7 @@
     "intro": "চালান, অর্ডার, হোটেল রিসিভ ও বিলের কাগজে কোন অংশ কোথায় বসবে তা সাজানো হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ print.template.view permission থাকলে।"] },
-      { "heading": "নকশা সাজানো", "menu": "Settings → Delivery Challan Layout / Order Layout", "steps": ["Branch, Paper, Start from, Text size ও Rows per page বাছুন।", "Parts of the paper থেকে অংশ যোগ করুন; বাঁ প্যানেলে সেটিংস, মাঝে ব্যান্ড, ডানে What it will look like দেখুন।", "Left margin, Right margin, Print sideways, Half page ও Print the page foot ঠিক করুন।", "Name of this layout লিখে Save; Test Print দিয়ে পরীক্ষা করুন।"] },
+      { "heading": "নকশা সাজানো", "menu": "Admin → Company & Branch → Challan Layout", "steps": ["Branch, Paper, Start from, Text size ও Rows per page বাছুন।", "Parts of the paper থেকে অংশ যোগ করুন; বাঁ প্যানেলে সেটিংস, মাঝে ব্যান্ড, ডানে What it will look like দেখুন।", "Left margin, Right margin, Print sideways, Half page ও Print the page foot ঠিক করুন।", "Name of this layout লিখে Save; Test Print দিয়ে পরীক্ষা করুন।"] },
       { "heading": "সতর্কতা", "warning": "শুধু 'prints' চিহ্নিত নকশাই প্রিন্টারে যায়। কিছু না থাকলে built-in নকশা ছাপে। উপরে-নিচের মার্জিন সব রিপোর্টের জন্য এক — আলাদা করতে Blank Space অংশ বসান।" }
     ]
   },
@@ -21,7 +21,7 @@
     "intro": "নিজের সাইডবারে মেনু ও তার ভেতরের লিংকের ক্রম, দেখানো-লুকানো ঠিক করা হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ menu.arrangement permission থাকলে।"] },
-      { "heading": "সাজানো", "menu": "Settings → Arrange Menu", "steps": ["Main menu-তে Drag বা Move up / Move down দিয়ে মেনু সাজান।", "Show/Hide দিয়ে যা ব্যবহার করেন না তা লুকান।", "Divider name / Divider / Line দিয়ে ভাগ; Right প্যানেলে Inside {menu} সাজান।"] },
+      { "heading": "সাজানো", "menu": "Admin → Settings → Arrange Menu", "steps": ["Main menu-তে Drag বা Move up / Move down দিয়ে মেনু সাজান।", "Show/Hide দিয়ে যা ব্যবহার করেন না তা লুকান।", "Divider name / Divider / Line দিয়ে ভাগ; Right প্যানেলে Inside {menu} সাজান।"] },
       { "heading": "সতর্কতা", "warning": "এটি শুধু আপনার নিজের মেনু — অন্য ব্যবহারকারীর মেনু বদলায় না। Reset দিয়ে আগের অবস্থায় ফেরানো যায়।" }
     ]
   },
@@ -34,7 +34,7 @@
     "intro": "সব রিপোর্টের নিচে যে সফটওয়্যার কোম্পানির নাম ও মোবাইল ছাপে তা ঠিক করা হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ software.information permission থাকলে।"] },
-      { "heading": "তথ্য", "menu": "Settings → Software Information", "steps": ["Software Company Name ও Mobile Number লিখুন।", "Email, Website ও Address (ঐচ্ছিক) দিন।", "Update চাপুন।"] },
+      { "heading": "তথ্য", "menu": "Admin → Company & Branch → Software Information", "steps": ["Software Company Name ও Mobile Number লিখুন।", "Email, Website ও Address (ঐচ্ছিক) দিন।", "Update চাপুন।"] },
       { "heading": "সতর্কতা", "warning": "এখানে দেওয়া নাম-মোবাইল সব রিপোর্টে যাবে; ছাপার আগে বানান মিলিয়ে নিন।" }
     ]
   },
@@ -58,7 +58,7 @@
     "video": "",
     "intro": "একটি ভাউচার ও তার লেনদেন Recycle Bin-এ পাঠানো হয়।",
     "sections": [
-      { "heading": "মোছা", "menu": "Voucher Settings → Voucher Delete", "steps": ["Enter Voucher Number ঘরে নম্বর লিখুন।", "Delete Voucher চাপুন; Confirm Deletion-এ সায় দিন।", "Home দিয়ে ফিরুন।"] },
+      { "heading": "মোছা", "menu": "VR Settings → Corrections → Voucher Delete", "steps": ["Enter Voucher Number ঘরে নম্বর লিখুন।", "Delete Voucher চাপুন; Confirm Deletion-এ সায় দিন।", "Home দিয়ে ফিরুন।"] },
       { "heading": "যে ভাউচার এখান থেকে মোছা যায় না", "steps": ["Production batch-এর নিজের ভাউচার: Production স্ক্রিন থেকে batch-টি Reverse করুন।", "যে খরচের ভাউচার থেকে কোনো posted batch-এ খরচ বণ্টন করা হয়েছে: আগে সেই batch Reverse করুন, তারপর ভাউচারটি মুছুন।"] },
       { "heading": "সতর্কতা", "warning": "ভাউচার Recycle Bin-এ যায়, সাথে সাথে চিরতরে মোছে না। ইতিমধ্যে মোছা ভাউচার হলে আলাদা জানালা আসে — Continue করলে আবার মোছা হবে।" }
     ]
@@ -71,7 +71,7 @@
     "video": "",
     "intro": "একটি ভাউচারের কিস্তি পরিকল্পনা মুছে ফেলা হয়।",
     "sections": [
-      { "heading": "মোছা", "menu": "Voucher Settings → Installment Delete", "steps": ["Enter Voucher Number দিন।", "Delete Installment চাপুন; Confirm Deletion-এ Confirm করুন।", "Home দিয়ে ফিরুন।"] },
+      { "heading": "মোছা", "menu": "VR Settings → Corrections → Installment Delete", "steps": ["Enter Voucher Number দিন।", "Delete Installment চাপুন; Confirm Deletion-এ Confirm করুন।", "Home দিয়ে ফিরুন।"] },
       { "heading": "সতর্কতা", "warning": "কিস্তি মুছলে ওই বিক্রয়ের কিস্তি-ভিত্তিক রিপোর্ট ও ডিউ তালিকা বদলে যাবে; ভাউচার নিজে মুছে যায় না।" }
     ]
   },
@@ -83,7 +83,7 @@
     "video": "",
     "intro": "মোছা ভাউচার দেখা, ফিরিয়ে আনা বা চিরতরে মুছে ফেলার জায়গা।",
     "sections": [
-      { "heading": "তালিকা", "menu": "Voucher Settings → Recycle Bin", "steps": ["Search দিয়ে Voucher No, নাম বা তারিখ খুঁজুন।", "Sl. No., Voucher No, Voucher Date, Name, Deleted At, Deleted By, Debit, Credit ও Action দেখা যায়।", "Name-এ বিক্রির ভাউচার Sales (পার্টি) আর কেনার ভাউচার Purchase (পার্টি) হিসেবে দেখায়।", "প্রিন্ট প্রিভিউ দেখুন, Restore দিয়ে ফেরান, Remove দিয়ে চিরতরে মুছুন।"] },
+      { "heading": "তালিকা", "menu": "VR Settings → Corrections → Recycle Bin", "steps": ["Search দিয়ে Voucher No, নাম বা তারিখ খুঁজুন।", "Sl. No., Voucher No, Voucher Date, Name, Deleted At, Deleted By, Debit, Credit ও Action দেখা যায়।", "Name-এ বিক্রির ভাউচার Sales (পার্টি) আর কেনার ভাউচার Purchase (পার্টি) হিসেবে দেখায়।", "প্রিন্ট প্রিভিউ দেখুন, Restore দিয়ে ফেরান, Remove দিয়ে চিরতরে মুছুন।"] },
       { "heading": "সতর্কতা", "warning": "Remove করলে আর ফেরানো যায় না। Restore করলে ভাউচার আগের জায়গায় ফিরে যায়, কিন্তু সংশ্লিষ্ট রিপোর্ট নতুন করে চালাতে হবে।" }
     ]
   },
@@ -95,7 +95,7 @@
     "video": "",
     "intro": "যে ভাউচারগুলো রিপোর্টে অমিল তৈরি করে — যেমন কোম্পানি ছাড়া বা ডেবিট-ক্রেডিট সমান নয় — তাদের তালিকা।",
     "sections": [
-      { "heading": "অমিল দেখা", "menu": "Voucher Settings → Report Mismatch", "steps": ["Refresh চাপুন।", "Sl. No., Type (No Company / Unbalanced), Voucher No, Voucher Date, Details, Branch, Amount ও Status দেখা যায়।", "Action-এর Fix দিয়ে তারিখ, শাখা ও অঙ্ক দেখে ঠিক করুন।"] },
+      { "heading": "অমিল দেখা", "menu": "VR Settings → Audit → Report Mismatch", "steps": ["Refresh চাপুন।", "Sl. No., Type (No Company / Unbalanced), Voucher No, Voucher Date, Details, Branch, Amount ও Status দেখা যায়।", "Action-এর Fix দিয়ে তারিখ, শাখা ও অঙ্ক দেখে ঠিক করুন।"] },
       { "heading": "সতর্কতা", "warning": "No Company মানে Profit & Loss ভাউচারটি গোনে, Balance Sheet গোনে না। Recycled ব্যাজ মানে ভাউচার রিসাইকেল বিনে।" }
     ]
   },
@@ -107,7 +107,7 @@
     "video": "",
     "intro": "একটি ভাউচার আগে কী লিখেছিল আর এখন কী লিখছে, তার তুলনা।",
     "sections": [
-      { "heading": "ইতিহাস", "menu": "Voucher Settings → Log History", "steps": ["Select Branch ও Voucher Number দিন; View History চাপুন।", "Before ও After অংশে পুরনো-নতুন অবস্থা দেখা যায়।", "What changed-এ Field, Before ও After সারি; পণ্য, ক্রয় বা এন্ট্রি না থাকলে তা-ও লেখা থাকে।"] },
+      { "heading": "ইতিহাস", "menu": "VR Settings → Audit → History", "steps": ["Select Branch ও Voucher Number দিন; View History চাপুন।", "Before ও After অংশে পুরনো-নতুন অবস্থা দেখা যায়।", "What changed-এ Field, Before ও After সারি; পণ্য, ক্রয় বা এন্ট্রি না থাকলে তা-ও লেখা থাকে।"] },
       { "heading": "সতর্কতা", "warning": "ভাউচার নম্বর না দিলে জানানো হবে। এখানে কিছু বদলানো যায় না — শুধু দেখার ইতিহাস।" }
     ]
   },
@@ -119,7 +119,7 @@
     "video": "",
     "intro": "কে, কখন, কোন ভাউচারে কী কাজ করেছে তার তালিকা।",
     "sections": [
-      { "heading": "তালিকা", "menu": "Voucher Settings → Log Changes", "steps": ["Branch বাছুন এবং পৃষ্ঠার সংখ্যা ঠিক করুন।", "Sl. No., Vr No, Vr Date, Action, Action Time, Action By, Branch ও status দেখা যায়।"] },
+      { "heading": "তালিকা", "menu": "VR Settings → Audit → Log Changes", "steps": ["Branch বাছুন এবং পৃষ্ঠার সংখ্যা ঠিক করুন।", "Sl. No., Vr No, Vr Date, Action, Action Time, Action By, Branch ও status দেখা যায়।"] },
       { "heading": "সতর্কতা", "warning": "এটি অডিট তালিকা — কোনো সারি এখান থেকে বদলানো বা মোছা যায় না।" }
     ]
   }

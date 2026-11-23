@@ -127,7 +127,7 @@
     "video": "",
     "intro": "রিপোর্টে নির্দিষ্ট শব্দ থাকা লাইন কোন রঙে বাক্সবন্দী হবে তা ঠিক করা হয়।",
     "sections": [
-      { "heading": "নিয়ম", "menu": "Admin → Highlight Rules", "steps": ["Phrase লিখুন (যেমন Not Yet Reports), Color, Priority ও Status বাছুন।", "Preview-তে Sample line দেখে Add / Update চাপুন।", "তালিকায় #, Phrase, Color, Priority, Status ও Description দেখা যায়; Edit বা Delete করুন।"] },
+      { "heading": "নিয়ম", "menu": "Admin → Settings → Highlight Rules", "steps": ["Phrase লিখুন (যেমন Not Yet Reports), Color, Priority ও Status বাছুন।", "Preview-তে Sample line দেখে Add / Update চাপুন।", "তালিকায় #, Phrase, Color, Priority, Status ও Description দেখা যায়; Edit বা Delete করুন।"] },
       { "heading": "সতর্কতা", "warning": "একই লাইনে কয়েকটি শব্দ মিললে সবচেয়ে বেশি Priority জেতে। শব্দের ছোট অংশও মিলে যায়, তাই খুব সাধারণ শব্দ দেবেন না।" }
     ]
   },
@@ -215,7 +215,7 @@
     "video": "",
     "intro": "ক্রয় ও বিক্রয় অর্ডার, তাদের লেনদেন, লিংক ও বাকি পরিমাণ দেখা যায়।",
     "sections": [
-      { "heading": "তালিকা", "menu": "Orders → Order List", "steps": ["Order Type, Order Status, Account, Product ও Order Start/End Date দিন; Apply চাপুন।", "Order for, Product / Trx. Qty, Order No./Rate/Date, Contract/Order/Remaining Qty ও Order Amount দেখা যায়।", "Linked Orders-এ ক্লিক করলে সংযুক্ত অর্ডারের তালিকা খোলে।", "Print বা New Order ব্যবহার করুন।"] },
+      { "heading": "তালিকা", "menu": "Admin → Orders → Orders", "steps": ["Order Type, Order Status, Account, Product ও Order Start/End Date দিন; Apply চাপুন।", "Order for, Product / Trx. Qty, Order No./Rate/Date, Contract/Order/Remaining Qty ও Order Amount দেখা যায়।", "Linked Orders-এ ক্লিক করলে সংযুক্ত অর্ডারের তালিকা খোলে।", "Print বা New Order ব্যবহার করুন।"] },
       { "heading": "সতর্কতা", "warning": "Remaining Qty শূন্য হলে অর্ডার শেষ; নতুন লেনদেন যোগ করলে সীমা ছাড়িয়ে যাবে না।" }
     ]
   },
@@ -227,7 +227,7 @@
     "video": "",
     "intro": "একটি পক্ষের জন্য এক বা একাধিক পণ্যের অর্ডার তৈরি বা বদলানো হয়।",
     "sections": [
-      { "heading": "অর্ডার", "menu": "Orders → New Order", "steps": ["Select Branch, Order For, Order Number, Delivery Location ও Order Date দিন।", "Select Product, Order Qty, Order Rate, Contract Order Qty ও Order Type দিন।", "একাধিক পণ্যে Add Product দিয়ে Products গ্রিডে যোগ করুন।", "Note, Transaction Account, Reference Order ও Order Status ঠিক করে Save / Update করুন।"] },
+      { "heading": "অর্ডার", "menu": "Admin → Orders → Orders → New Order", "steps": ["Select Branch, Order For, Order Number, Delivery Location ও Order Date দিন।", "Select Product, Order Qty, Order Rate, Contract Order Qty ও Order Type দিন।", "একাধিক পণ্যে Add Product দিয়ে Products গ্রিডে যোগ করুন।", "Note, Transaction Account, Reference Order ও Order Status ঠিক করে Save / Update করুন।"] },
       { "heading": "সতর্কতা", "warning": "Contract Order Qty অর্ডারের সীমা; Delivery Location ও Last Delivery Date পরে লেনদেনের সময় কাজে লাগে।" }
     ]
   },
@@ -239,7 +239,7 @@
     "video": "",
     "intro": "ক্রয় ও অন্যান্য খরচ মিলিয়ে একটি অর্ডারের পণ্যের প্রকৃত গড় দাম বের করা হয়।",
     "sections": [
-      { "heading": "হিসাব", "menu": "Orders → Average Price", "steps": ["Select Branch, Select Order ও Report Type বাছুন; Run চাপুন।", "{product} Purchase Cost-এ Total Quantity, Total Cost ও Average Per Unit দেখুন।", "Increase / Decrease ও Others Cost মিলিয়ে Net per unit দেখুন।"] },
+      { "heading": "হিসাব", "menu": "Admin → Orders → Average Price", "steps": ["Select Branch, Select Order ও Report Type বাছুন; Run চাপুন।", "{product} Purchase Cost-এ Total Quantity, Total Cost ও Average Per Unit দেখুন।", "Increase / Decrease ও Others Cost মিলিয়ে Net per unit দেখুন।"] },
       { "heading": "সতর্কতা", "warning": "অর্ডার না বাছলে কোনো ফল আসে না; খরচের খাত বাদ পড়লে গড় দাম কম দেখাবে।" }
     ]
   },
@@ -252,7 +252,7 @@
     "intro": "একটি অর্ডারের চালান, পণ্য, গাড়ি, টাকা ও বাকি একসাথে দেখা ও ছাপা হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ order.transaction.view permission থাকলে।"] },
-      { "heading": "রিপোর্ট", "menu": "Orders → Order With Transaction", "steps": ["Select Branch ও Select Order বাছুন; Apply চাপুন।", "Rows ও Font ঠিক করুন।", "SL. NO., CHAL. NO. & DATE, PRODUCT & DETAILS, VEHICLE, QUANTITY, RATE, TOTAL, DISCOUNT, RECEIVED/PAYMENT ও BALANCE দেখা যায়।", "প্রিন্ট আইকনে ছাপা হয়।"] },
+      { "heading": "রিপোর্ট", "menu": "Admin → Orders → Order With Transaction", "steps": ["Select Branch ও Select Order বাছুন; Apply চাপুন।", "Rows ও Font ঠিক করুন।", "SL. NO., CHAL. NO. & DATE, PRODUCT & DETAILS, VEHICLE, QUANTITY, RATE, TOTAL, DISCOUNT, RECEIVED/PAYMENT ও BALANCE দেখা যায়।", "প্রিন্ট আইকনে ছাপা হয়।"] },
       { "heading": "সতর্কতা", "warning": "লেনদেন না থাকলে No order transaction data found দেখায়; ভুল অর্ডার বাছলে Reset করে আবার বাছুন।" }
     ]
   },
