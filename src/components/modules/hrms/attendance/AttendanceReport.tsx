@@ -16,7 +16,8 @@ import { fetchAttendanceReport, fetchLeaveApplications } from './attendanceSlice
 import { chartDate } from '../../../utils/utils-functions/formatDate';
 import OvertimeReportMatrix from './OvertimeReportMatrix';
 import OvertimeReportPrint from './OvertimeReportPrint';
-import { Input } from '../../../utils/fields/FormControls';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
 
 const today = new Date().toISOString().slice(0, 10);
 const commandButtonClass = 'min-w-25 rounded-none bg-slate-700 px-5 text-sm font-medium text-white hover:bg-slate-600 focus:bg-slate-600';
@@ -492,27 +493,28 @@ const AttendanceReport = ({
         })}
         {reportType === 'overtime' && (
           <div className="flex items-end gap-2">
-            <Input
+            <PrintRowsInput
+              id="overtime_rows"
+              name="overtime_rows"
+              label="Rows"
               type="text"
-              inputMode="numeric"
               value={overtimeRowsPerPage}
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 if (/^\d*$/.test(e.target.value)) setOvertimeRowsPerPage(e.target.value);
               }}
-              onBlur={() => setOvertimeRowsPerPage(String(Math.max(0, Number(overtimeRowsPerPage) || 0)))}
-              title="Rows per page for print"
-              className="w-20 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-center text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:text-[rgb(var(--c-text))]"
+              className="font-medium text-sm w-16!"
             />
-            <Input
+            <PrintFontInput
+              id="overtime_font"
+              name="overtime_font"
+              label="Font"
               type="text"
-              inputMode="numeric"
               value={overtimePrintFontSize}
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 if (/^\d*$/.test(e.target.value)) setOvertimePrintFontSize(e.target.value);
               }}
               onBlur={() => setOvertimePrintFontSize(String(Math.max(6, Number(overtimePrintFontSize) || 12)))}
-              title="Font Size for print"
-              className="w-20 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-center text-sm text-[rgb(var(--c-text))] outline-none focus:border-primary dark:text-[rgb(var(--c-text))]"
+              className="font-medium text-sm w-16!"
             />
             <PrintButton
               label="Print"
