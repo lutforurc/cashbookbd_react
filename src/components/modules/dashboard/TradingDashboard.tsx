@@ -867,7 +867,7 @@ const TradingDashboard = () => {
                 key={widget.id}
                 className={
                   'min-w-0 *:h-full *:mb-0 ' +
-                  (['all-branches', 'daily-sales', 'daily-purchase', 'monthly-purchase-sales'].includes(widget.id)
+                  (['all-branches', 'inter-branch-transfers', 'daily-sales', 'daily-purchase', 'monthly-purchase-sales'].includes(widget.id)
                     ? 'col-span-full'
                     : widget.id === 'money-asleep'
                       ? // Two cards wide only where there are surely two columns

@@ -766,7 +766,7 @@ const HotelDashboard = () => {
                 key={widget.id}
                 className={
                   `min-w-0 *:h-full *:mb-0 ${
-                    widget.id === 'all-branches'
+                    ['all-branches', 'inter-branch-transfers'].includes(widget.id)
                       ? 'col-span-full'
                       : ['nights', 'room-types', 'takings', 'balance'].includes(widget.id)
                         ? 'xl:col-span-2'

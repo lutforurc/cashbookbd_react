@@ -686,11 +686,11 @@ const RealEstateDashboard = () => {
                 key={widget.id}
                 className={
                   'min-w-0 *:h-full *:mb-0 ' +
-                  widget.id === 'all-branches'
+                  (['all-branches', 'inter-branch-transfers'].includes(widget.id)
                     ? 'col-span-full'
-                    : (['projects', 'collection', 'installments', 'balance'].includes(widget.id)
-                    ? 'xl:col-span-2'
-                    : '')
+                    : ['projects', 'collection', 'installments', 'balance'].includes(widget.id)
+                      ? 'xl:col-span-2'
+                      : '')
                 }
               >
                 {content}

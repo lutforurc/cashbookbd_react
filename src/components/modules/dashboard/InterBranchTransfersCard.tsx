@@ -288,7 +288,7 @@ const InterBranchTransfersCard = ({ branchId, tick = 0, href, canAct = true, row
             isSearchable={false}
             ariaLabel="Month"
             menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
-            className="w-28"
+            className="w-40"
           />
           <CategoryDropdown
             categoryDdl={yearOptions}
@@ -298,7 +298,7 @@ const InterBranchTransfersCard = ({ branchId, tick = 0, href, canAct = true, row
             isSearchable={false}
             ariaLabel="Year"
             menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
-            className="w-20"
+            className="w-28"
           />
         </div>
       </div>
