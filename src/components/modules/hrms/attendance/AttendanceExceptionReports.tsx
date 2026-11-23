@@ -75,6 +75,7 @@ const AttendanceExceptionReports = ({ user }: any) => {
         reportTitle={activeTab.title}
         defaultStatus={activeTab.defaultStatus}
         reportType={activeTab.reportType}
+        showTitle={false}
       />
     </div>
   );

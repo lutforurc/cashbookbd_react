@@ -185,6 +185,7 @@ import HotelReceivedEntry from './components/modules/hotel/payments/HotelReceive
 import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetup';
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
+import HrmRouteTabs, { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS } from './components/modules/hrms/HrmRouteTabs';
 import AttendanceAuditHistory from './components/modules/hrms/attendance/AttendanceAuditHistory';
 import AttendanceDevices from './components/modules/hrms/attendance/AttendanceDevices';
 import UnmatchedPunches from './components/modules/hrms/attendance/UnmatchedPunches';
@@ -719,11 +720,14 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['purchase.advance.view']} loading={permissionsLoading} />}>
               <Route path={routes.purchase_advance} element={<PurchaseAdvance />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['employee.loan.ledger.view']} loading={permissionsLoading} />}>
-              <Route path={routes.employee_loan_ledger} element={<LoanLedger user={me} />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['employee.loan.balance.view']} loading={permissionsLoading} />}>
-              <Route path={routes.employee_loan_balance} element={<LoanBalance user={me} />} />
+            {/* HRM → Loan: balance and ledger as tabs. */}
+            <Route element={<HrmRouteTabs tabs={LOAN_TABS} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['employee.loan.balance.view']} loading={permissionsLoading} />}>
+                <Route path={routes.employee_loan_balance} element={<LoanBalance user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['employee.loan.ledger.view']} loading={permissionsLoading} />}>
+                <Route path={routes.employee_loan_ledger} element={<LoanLedger user={me} />} />
+              </Route>
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['labour.category.view']} loading={permissionsLoading} />}>
               <Route path={routes.labour_category} element={<LabourCategoryList />} />
@@ -1356,9 +1360,6 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['mitch.match']} loading={permissionsLoading} />}>
               <Route path={routes.mitch_match} element={<MitchMatch user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.mismatch.payment.view']} loading={permissionsLoading} />}>
-              <Route path={routes.hrm_mismatch_payment} element={<HrmMismatchPayment user={me} />} />
-            </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['group.report']} loading={permissionsLoading} />}>
               <Route path={routes.group_report} element={<GroupPurchaseSales user={me} />} />
               </Route>
@@ -1624,43 +1625,69 @@ function App() {
               <Route path={routes.hrms_employee_add} element={<EmployeeCreate user={me} />} />
               <Route path={routes.hrms_employee_list} element={<Employees user={me} />} />
               </Route>
+              {/* Designations: the two lists as tabs; their New/Edit forms stay full-page. */}
+              <Route element={<HrmRouteTabs tabs={DESIGNATION_TABS} />}>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.designation.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.hrms_designation_list} element={<HrmDesignations />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.designation.level.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.hrms_designation_level_list} element={<DesignationLevels />} />
+                </Route>
+              </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.designation.level.view']} loading={permissionsLoading} />}>
-                <Route path={routes.hrms_designation_level_list} element={<DesignationLevels />} />
                 <Route path={routes.hrms_designation_level_create} element={<AddDesignationLevel />} />
                 <Route path={routes.hrms_designation_level_edit} element={<AddDesignationLevel />} />
               </Route>
+              {/* Salary Setup: the two lists as tabs; their New/Edit forms stay full-page. */}
+              <Route element={<HrmRouteTabs tabs={SALARY_SETUP_TABS} />}>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.component.manage']} loading={permissionsLoading} />}>
+                  <Route path={routes.hrms_salary_component_list} element={<SalaryComponents />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.structure.manage']} loading={permissionsLoading} />}>
+                  <Route path={routes.hrms_salary_structure_list} element={<SalaryStructures />} />
+                </Route>
+              </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.component.manage']} loading={permissionsLoading} />}>
-                <Route path={routes.hrms_salary_component_list} element={<SalaryComponents />} />
                 <Route path={routes.hrms_salary_component_create} element={<SalaryComponentForm />} />
                 <Route path={routes.hrms_salary_component_edit} element={<SalaryComponentForm />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.structure.manage']} loading={permissionsLoading} />}>
-                <Route path={routes.hrms_salary_structure_list} element={<SalaryStructures />} />
                 <Route path={routes.hrms_salary_structure_create} element={<SalaryStructureForm />} />
                 <Route path={routes.hrms_salary_structure_edit} element={<SalaryStructureForm />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.designation.view']} loading={permissionsLoading} />}>
-                <Route path={routes.hrms_designation_list} element={<HrmDesignations />} />
                 <Route path={routes.hrms_designation_create} element={<AddHrmDesignation />} />
                 <Route path={routes.hrms_designation_edit} element={<AddHrmDesignation />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['employee.view']} loading={permissionsLoading} />}>
               <Route path="/hrms/employee/edit/:id" element={<EmployeeEdit />} />
             </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.view']} loading={permissionsLoading} />}>
-                <Route path={routes.hrms_attendance_entries} element={<AttendanceEntries user={me} />} />
+              {/* Attendance: entering attendance, leave and unmatched punches as tabs. */}
+              <Route element={<HrmRouteTabs tabs={ATTENDANCE_TABS} />}>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.hrms_attendance_entries} element={<AttendanceEntries user={me} />} />
+                  <Route path={routes.hrms_attendance_unmatched} element={<UnmatchedPunches user={me} />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.leave.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.hrms_leave_applications} element={<LeaveApplications user={me} />} />
+                </Route>
               </Route>
+              {/* Attendance Settings: setup, devices and the audit trail as tabs. */}
+              <Route element={<HrmRouteTabs tabs={ATTENDANCE_SETTINGS_TABS} />}>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.setup.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.hrms_attendance_setup} element={<AttendanceSetup user={me} />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.device.manage']} loading={permissionsLoading} />}>
+                  <Route path={routes.hrms_attendance_devices} element={<AttendanceDevices user={me} />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.audit.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.hrms_attendance_audit_history} element={<AttendanceAuditHistory user={me} />} />
+                </Route>
+              </Route>
+              {/* Attendance Reports: one page, a tab per report, each still its own route and permission. */}
+              <Route element={<HrmRouteTabs tabs={ATTENDANCE_REPORT_TABS} />}>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.report.view']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_attendance_report} element={<AttendanceReport user={me} />} />
-              </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.audit.view']} loading={permissionsLoading} />}>
-                <Route path={routes.hrms_attendance_audit_history} element={<AttendanceAuditHistory user={me} />} />
-              </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.device.manage']} loading={permissionsLoading} />}>
-                <Route path={routes.hrms_attendance_devices} element={<AttendanceDevices user={me} />} />
-              </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.view']} loading={permissionsLoading} />}>
-                <Route path={routes.hrms_attendance_unmatched} element={<UnmatchedPunches user={me} />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.overtime.report.view']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_overtime_report} element={<AttendanceReport user={me} reportTitle="Overtime Report" reportType="overtime" />} />
@@ -1683,25 +1710,33 @@ function App() {
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.monthly.view']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_attendance_monthly_report} element={<AttendanceMonthlyMatrixReport user={me} />} />
               </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.attendance.setup.view']} loading={permissionsLoading} />}>
-                <Route path={routes.hrms_attendance_setup} element={<AttendanceSetup user={me} />} />
               </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.leave.view']} loading={permissionsLoading} />}>
-              <Route path={routes.hrms_leave_applications} element={<LeaveApplications user={me} />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.generate']} loading={permissionsLoading} />}>
-              <Route path={routes.hrms_salary_generate} element={<SalarySheetGenerate user={me} />} />
+            {/* Salary & Bonus Generate as tabs; Bonus Update stays full-page. */}
+            <Route element={<HrmRouteTabs tabs={SALARY_GENERATE_TABS} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.generate']} loading={permissionsLoading} />}>
+                <Route path={routes.hrms_salary_generate} element={<SalarySheetGenerate user={me} />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['festival.bonus.generate']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_festival_bonus_generate} element={<FestivalBonusGenerate user={me} />} />
+              </Route>
+            </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['festival.bonus.generate']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_festival_bonus_update} element={<FestivalBonusUpdate user={me} />} />
               </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['festival.bonus.view']} loading={permissionsLoading} />}>
-              <Route path={routes.hrms_festival_bonus_list} element={<FestivalBonus user={me} />} />
+            {/* Salary Reports: salary sheets, bonus sheets and the mismatch check as tabs. */}
+            <Route element={<HrmRouteTabs tabs={SALARY_REPORT_TABS} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.sheet.view']} loading={permissionsLoading} />}>
+                <Route path={routes.hrms_salary_sheet_list} element={<SalarySheet user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['festival.bonus.view']} loading={permissionsLoading} />}>
+                <Route path={routes.hrms_festival_bonus_list} element={<FestivalBonus user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.mismatch.payment.view']} loading={permissionsLoading} />}>
+                <Route path={routes.hrm_mismatch_payment} element={<HrmMismatchPayment user={me} />} />
+              </Route>
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.sheet.view']} loading={permissionsLoading} />}>
               <Route path={routes.hrms_salary_sheet_update} element={<SalarySheetUpdate user={me} />} />
-              <Route path={routes.hrms_salary_sheet_list} element={<SalarySheet user={me} />} />
             </Route>
 
               {/* All Cart */}

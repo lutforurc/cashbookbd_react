@@ -289,30 +289,14 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'hrm': [
     { id: 'hrms/employees', title: "Employees" },
-    { id: 'hrms_designation_level_list', title: "Designation Levels" },
     { id: 'hrms_designation_list', title: "Designations" },
-    { id: 'hrms_attendance_entries', title: "Manual Attendance" },
-    { id: 'hrms_attendance_report', title: "Attendance Report" },
-    { id: 'hrms_attendance_audit_history', title: "Audit History" },
-    { id: 'hrms_overtime_report', title: "Overtime Report" },
-    { id: 'hrms_attendance_monthly_report', title: "Monthly Attendance" },
-    { id: 'hrms_attendance_exception_reports', title: "Attendance Alerts" },
-    { id: 'hrms_employee_attendance_report', title: "Employee Attendance" },
-    { id: 'hrms_branch_attendance_summary', title: "Branch Attendance" },
-    { id: 'hrms_holiday_calendar_report', title: "Holiday Calendar" },
-    { id: 'hrms_leave_applications', title: "Leave Applications" },
-    { id: 'hrms_attendance_setup', title: "Attendance Setup" },
-    { id: 'hrms_attendance_devices', title: "Attendance Devices" },
-    { id: 'hrms_attendance_unmatched', title: "Unmatched Punches" },
-    { id: 'hrms/salary/salary-generate', title: "Salary Generate" },
-    { id: 'hrms_salary_component_list', title: "Salary Components" },
-    { id: 'hrms_salary_structure_list', title: "Salary Structures" },
-    { id: 'hrms_festival_bonus_generate', title: "Bonus Generate" },
-    { id: 'employee_loan_balance', title: "Loan Balance" },
-    { id: 'employee_loan_ledger', title: "Loan Ledger" },
+    { id: 'hrms_attendance_entries', title: "Attendance" },
+    { id: 'hrms_attendance_report', title: "Attendance Reports" },
+    { id: 'hrms_attendance_setup', title: "Attendance Settings" },
+    { id: 'hrms/salary/salary-generate', title: "Salary & Bonus Generate" },
+    { id: 'hrms_salary_component_list', title: "Salary Setup" },
+    { id: 'employee_loan_balance', title: "Loan" },
     { id: 'hrms/salary-sheet', title: "Salary Reports" },
-    { id: 'hrm_mismatch_payment', title: "Salary Mismatch" },
-    { id: 'hrms_festival_bonus_list', title: "Bonus Reports" },
   ],
   'customer-supplier': [
     { id: 'customer-supplier/list', title: "Customers" },
@@ -378,6 +362,7 @@ import {
 } from 'react-icons/fi';
 import { FaBluetooth, FaRegStar } from 'react-icons/fa6';
 import { hasPermission } from '../utils/permissionChecker';
+import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, inTabGroup, tabsFor } from '../modules/hrms/HrmRouteTabs';
 import { branchFormVariant, branchInvoiceVariant, separateEntriesShown, unifiedEntryShown } from '../utils/userFeatureSettings';
 import { useSelector } from 'react-redux';
 import './Sidebar.css';
@@ -4076,251 +4061,83 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'hrm.designation.level.view') && (
-                            <li style={subSlot('hrm', 'hrms_designation_level_list')}>
-                              <NavLink
-                                to={routes.hrms_designation_level_list}
-                                className={subMenuLinkClass}
-                              >
-                                Designation Levels
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'hrm.designation.view') && (
+                          {tabsFor(DESIGNATION_TABS, permissions).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_designation_list')}>
                               <NavLink
-                                to={routes.hrms_designation_list}
-                                className={subMenuLinkClass}
+                                to={tabsFor(DESIGNATION_TABS, permissions)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(DESIGNATION_TABS, pathname) })}
                               >
                                 Designations
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'hrm.attendance.view') && (
+                          {tabsFor(ATTENDANCE_TABS, permissions).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_attendance_entries')}>
                               <NavLink
-                                to={routes.hrms_attendance_entries}
-                                className={subMenuLinkClass}
+                                to={tabsFor(ATTENDANCE_TABS, permissions)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_TABS, pathname) })}
                               >
-                                Manual Attendance
+                                Attendance
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'hrm.attendance.report.view') && (
+                          {tabsFor(ATTENDANCE_REPORT_TABS, permissions).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_attendance_report')}>
                               <NavLink
-                                to={routes.hrms_attendance_report}
-                                className={subMenuLinkClass}
+                                to={tabsFor(ATTENDANCE_REPORT_TABS, permissions)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_REPORT_TABS, pathname) })}
                               >
-                                Attendance Report
+                                Attendance Reports
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'hrm.attendance.audit.view') && (
-                            <li style={subSlot('hrm', 'hrms_attendance_audit_history')}>
-                              <NavLink
-                                to={routes.hrms_attendance_audit_history}
-                                className={subMenuLinkClass}
-                              >
-                                Audit History
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'hrm.overtime.report.view') && (
-                            <li style={subSlot('hrm', 'hrms_overtime_report')}>
-                              <NavLink
-                                to={routes.hrms_overtime_report}
-                                className={subMenuLinkClass}
-                              >
-                                Overtime Report
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'hrm.attendance.monthly.view') && (
-                            <li style={subSlot('hrm', 'hrms_attendance_monthly_report')}>
-                              <NavLink
-                                to={routes.hrms_attendance_monthly_report}
-                                className={subMenuLinkClass}
-                              >
-                                Monthly Attendance
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'hrm.attendance.exception.view') && (
-                            <li style={subSlot('hrm', 'hrms_attendance_exception_reports')}>
-                              <NavLink
-                                to={routes.hrms_attendance_exception_reports}
-                                className={() =>
-                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium  duration-300 ease-in-out hover:text-gray-900 dark:hover:text-white ' +
-                                  ([
-                                    routes.hrms_attendance_exception_reports,
-                                    routes.hrms_absent_report,
-                                    routes.hrms_late_report,
-                                    routes.hrms_early_out_report,
-                                  ].includes(pathname) ? 'text-gray-900 font-bold dark:text-[rgb(var(--c-text))]' : '')
-                                }
-                              >
-                                Attendance Alerts
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'hrm.attendance.employee.view') && (
-                            <li style={subSlot('hrm', 'hrms_employee_attendance_report')}>
-                              <NavLink
-                                to={routes.hrms_employee_attendance_report}
-                                className={subMenuLinkClass}
-                              >
-                                Employee Attendance
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'hrm.attendance.branch.summary.view') && (
-                            <li style={subSlot('hrm', 'hrms_branch_attendance_summary')}>
-                              <NavLink
-                                to={routes.hrms_branch_attendance_summary}
-                                className={subMenuLinkClass}
-                              >
-                                Branch Attendance
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'hrm.holiday.calendar.view') && (
-                            <li style={subSlot('hrm', 'hrms_holiday_calendar_report')}>
-                              <NavLink
-                                to={routes.hrms_holiday_calendar_report}
-                                className={subMenuLinkClass}
-                              >
-                                Holiday Calendar
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'hrm.leave.view') && (
-                            <li style={subSlot('hrm', 'hrms_leave_applications')}>
-                              <NavLink
-                                to={routes.hrms_leave_applications}
-                                className={subMenuLinkClass}
-                              >
-                                Leave Applications
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'hrm.attendance.setup.view') && (
+                          {tabsFor(ATTENDANCE_SETTINGS_TABS, permissions).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_attendance_setup')}>
                               <NavLink
-                                to={routes.hrms_attendance_setup}
-                                className={subMenuLinkClass}
+                                to={tabsFor(ATTENDANCE_SETTINGS_TABS, permissions)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_SETTINGS_TABS, pathname) })}
                               >
-                                Attendance Setup
+                                Attendance Settings
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'hrm.attendance.device.manage') && (
-                            <li style={subSlot('hrm', 'hrms_attendance_devices')}>
-                              <NavLink
-                                to={routes.hrms_attendance_devices}
-                                className={subMenuLinkClass}
-                              >
-                                Attendance Devices
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'hrm.attendance.view') && (
-                            <li style={subSlot('hrm', 'hrms_attendance_unmatched')}>
-                              <NavLink
-                                to={routes.hrms_attendance_unmatched}
-                                className={subMenuLinkClass}
-                              >
-                                Unmatched Punches
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'salary.component.manage') && (
+                          {tabsFor(SALARY_SETUP_TABS, permissions).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_salary_component_list')}>
                               <NavLink
-                                to={routes.hrms_salary_component_list}
-                                className={subMenuLinkClass}
+                                to={tabsFor(SALARY_SETUP_TABS, permissions)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_SETUP_TABS, pathname) })}
                               >
-                                Salary Components
+                                Salary Setup
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'salary.structure.manage') && (
-                            <li style={subSlot('hrm', 'hrms_salary_structure_list')}>
-                              <NavLink
-                                to={routes.hrms_salary_structure_list}
-                                className={subMenuLinkClass}
-                              >
-                                Salary Structures
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'salary.generate') && (
+                          {tabsFor(SALARY_GENERATE_TABS, permissions).length > 0 && (
                             <li style={subSlot('hrm', 'hrms/salary/salary-generate')}>
                               <NavLink
-                                to="/hrms/salary/salary-generate"
-                                className={subMenuLinkClass}
+                                to={tabsFor(SALARY_GENERATE_TABS, permissions)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_GENERATE_TABS, pathname) })}
                               >
-                                Salary Generate
+                                Salary & Bonus Generate
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'festival.bonus.generate') && (
-                            <li style={subSlot('hrm', 'hrms_festival_bonus_generate')}>
-                              <NavLink
-                                to={routes.hrms_festival_bonus_generate}
-                                className={subMenuLinkClass}
-                              >
-                                Bonus Generate
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'employee.loan.balance.view') && (
+                          {tabsFor(LOAN_TABS, permissions).length > 0 && (
                             <li style={subSlot('hrm', 'employee_loan_balance')}>
                               <NavLink
-                                to={routes.employee_loan_balance}
-                                className={subMenuLinkClass}
+                                to={tabsFor(LOAN_TABS, permissions)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(LOAN_TABS, pathname) })}
                               >
-                                Loan Balance
+                                Loan
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'employee.loan.ledger.view') && (
-                            <li style={subSlot('hrm', 'employee_loan_ledger')}>
-                              <NavLink
-                                to={routes.employee_loan_ledger}
-                                className={subMenuLinkClass}
-                              >
-                                Loan Ledger
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'salary.sheet.view') && (
+                          {tabsFor(SALARY_REPORT_TABS, permissions).length > 0 && (
                             <li style={subSlot('hrm', 'hrms/salary-sheet')}>
                               <NavLink
-                                to="/hrms/salary-sheet"
-                                className={subMenuLinkClass}
+                                to={tabsFor(SALARY_REPORT_TABS, permissions)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_REPORT_TABS, pathname) })}
                               >
                                 Salary Reports
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'hrm.mismatch.payment.view') && (
-                            <li style={subSlot('hrm', 'hrm_mismatch_payment')}>
-                              <NavLink
-                                to={routes.hrm_mismatch_payment}
-                                className={subMenuLinkClass}
-                              >
-                                Salary Mismatch
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'festival.bonus.view') && (
-                            <li style={subSlot('hrm', 'hrms_festival_bonus_list')}>
-                              <NavLink
-                                to={routes.hrms_festival_bonus_list}
-                                className={subMenuLinkClass}
-                              >
-                                Bonus Reports
                               </NavLink>
                             </li>
                           )}

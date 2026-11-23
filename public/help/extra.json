@@ -76,7 +76,7 @@
     "intro": "প্রতিটি কর্মচারীর মোট ঋণ, পরিশোধ ও বাকি — শাখা ধরে দেখা যায়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ employee.loan.balance.view permission থাকলে।"] },
-      { "heading": "তালিকা", "menu": "Accounts → Employee Loan Balance", "steps": ["Select All Branch বাছুন, Search করুন।", "#, Employee Name, Designation, Total Senction, Total Payment ও Balance দেখা যায়।", "নিচে Total Balance মোট বাকি দেখায়।"] },
+      { "heading": "তালিকা", "menu": "HRM → Loan → Loan Balance", "steps": ["Select All Branch বাছুন, Search করুন।", "#, Employee Name, Designation, Total Senction, Total Payment ও Balance দেখা যায়।", "নিচে Total Balance মোট বাকি দেখায়।"] },
       { "heading": "সতর্কতা", "warning": "এখানে ঋণ বদলানো যায় না; নতুন ঋণ বা পরিশোধ Employee Loan পাতায় লিখুন।" }
     ]
   },
@@ -88,7 +88,7 @@
     "video": "",
     "intro": "একজন কর্মচারীর ঋণের লেনদেন নির্দিষ্ট সময়ে দেখা ও ছাপা হয়।",
     "sections": [
-      { "heading": "লেজার", "menu": "Accounts → Employee Loan Ledger", "steps": ["Select Branch, Select Employee, Start Date ও End Date দিন।", "Rows ও Font ঠিক করে Run চাপুন।", "Sl. No, VR No & Date, Remarks, Received, Payment ও Voucher দেখা যায়; প্রিন্ট আইকনে ছাপে।"] },
+      { "heading": "লেজার", "menu": "HRM → Loan → Loan Ledger", "steps": ["Select Branch, Select Employee, Start Date ও End Date দিন।", "Rows ও Font ঠিক করে Run চাপুন।", "Sl. No, VR No & Date, Remarks, Received, Payment ও Voucher দেখা যায়; প্রিন্ট আইকনে ছাপে।"] },
       { "heading": "সতর্কতা", "warning": "কর্মচারী না বাছলে রিপোর্ট আসে না; তারিখের বাইরের লেনদেন বাদ পড়বে।" }
     ]
   },

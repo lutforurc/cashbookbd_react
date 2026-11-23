@@ -230,7 +230,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.designation.view permission থাকলে।"] },
       {
         "heading": "তালিকা ও নতুন পদবি",
-        "menu": "HRM → Designation",
+        "menu": "HRM → Designations → Designations",
         "steps": [
           "Search দিয়ে পদবি খুঁজুন।",
           "New Designation চাপলে ফর্ম খোলে।",
@@ -250,7 +250,7 @@
     "sections": [
       {
         "heading": "ফর্ম",
-        "menu": "HRM → Designation → New Designation",
+        "menu": "HRM → Designations → Designations → New Designation",
         "steps": [
           "Designation Level বাছুন।",
           "Designation Name, Sequence ও Description লিখুন।",
@@ -272,7 +272,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.designation.level.view permission থাকলে।"] },
       {
         "heading": "তালিকা",
-        "menu": "HRM → Designation Level",
+        "menu": "HRM → Designations → Designation Levels",
         "steps": [
           "Search দিয়ে স্তর খুঁজুন।",
           "New Level চাপলে নতুন স্তরের ফর্ম খোলে।",
@@ -292,7 +292,7 @@
     "sections": [
       {
         "heading": "ফর্ম",
-        "menu": "HRM → Designation Level → New Level",
+        "menu": "HRM → Designations → Designation Levels → New Level",
         "steps": [
           "Level Name লিখুন।",
           "Description লিখুন।",
@@ -313,7 +313,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.setup.view permission থাকলে।"] },
       {
         "heading": "ট্যাবগুলো",
-        "menu": "HRM → Attendance → Setup",
+        "menu": "HRM → Attendance Settings → Attendance Setup",
         "steps": [
           "Shift — Shift Name, Code, Start Time, End Time, Grace Minutes, Half Day Minutes, Early Out Minutes, Night Shift, After-midnight Cut-off ও Break Start/End দিয়ে Save করুন।",
           "Policy — Policy Name, Employee Type, Branch, Default Shift, Standard/Minimum/Half Day/Grace/Early Out Minutes, Overtime, OT After Minutes, Late ও Early Out Deduction Count দিন।",
@@ -326,7 +326,7 @@
       },
       {
         "heading": "ওভারটাইম ও বেতনের নিয়ম",
-        "menu": "HRM → Attendance → Setup → OT & Pay Rules",
+        "menu": "HRM → Attendance Settings → Attendance Setup → OT & Pay Rules",
         "steps": [
           "Overtime Counted — \"Worked time minus shift length\" দিলে মোট কাজের সময় থেকে শিফটের সময় বাদ দিয়ে ওভারটাইম; \"Only after shift end\" দিলে শুধু শিফট শেষের পরের সময়।",
           "Early Arrival is Overtime — No দিলে শিফট শুরুর আগে এলে সেই সময় ওভারটাইম হয় না।",
@@ -339,7 +339,7 @@
       },
       {
         "heading": "মাঝরাতের পরের পাঞ্চ",
-        "menu": "HRM → Attendance → Setup → Shift",
+        "menu": "HRM → Attendance Settings → Attendance Setup → Shift",
         "steps": [
           "After-midnight Cut-off-এ মিনিট দিলে শিফট শুরুর এত মিনিট আগের পাঞ্চ আগের দিনের বের হওয়া ধরা হয়।",
           "08:00 শিফটে 60 দিলে রাত ১টার পাঞ্চ আগের দিনের বের হওয়া (ওভারটাইমও আগের দিনের), সকাল ৭:৫০-এর পাঞ্চ আজকের ঢোকা।",
@@ -348,7 +348,7 @@
       },
       {
         "heading": "দুপুরের বিরতি (লাঞ্চ)",
-        "menu": "HRM → Attendance → Setup → Shift",
+        "menu": "HRM → Attendance Settings → Attendance Setup → Shift",
         "steps": [
           "Break Start ও Break End দিন, যেমন 13:00 ও 14:00।",
           "কর্মী বিরতির যতটুকু সময় উপস্থিত ছিল, শুধু ততটুকু কাজের সময় থেকে বাদ যায়। ১২টায় চলে গেলে কিছুই কাটে না।",
@@ -381,7 +381,7 @@
       },
       {
         "heading": "ডিভাইস নিবন্ধন",
-        "menu": "HRM → Attendance → Devices",
+        "menu": "HRM → Attendance Settings → Attendance Devices",
         "steps": [
           "Register Device চাপুন। Device Name ও Serial Number দিন — সিরিয়াল ডিভাইসের Menu → About-এ যা লেখা, হুবহু তাই।",
           "Branch বাছুন; Device Code, Local IP ও Comm Key ঐচ্ছিক।",
@@ -523,10 +523,10 @@
     "video": "",
     "intro": "একই রিপোর্টের চারটি রূপ — Daily Attendance, Absent, Late ও Early Out। তারিখের পরিসরে প্রতি কর্মচারীর প্রতিদিনের হাজিরা ও সারসংক্ষেপ দেখা যায়।",
     "sections": [
-      { "heading": "কে দেখতে পায়", "steps": ["Attendance Report মেনু দেখা যায় শুধু Roles-এ hrm.attendance.report.view permission থাকলে।", "Attendance Alerts (Absent / Late / Early Out) মেনু দেখা যায় শুধু Roles-এ hrm.attendance.exception.view permission থাকলে।"] },
+      { "heading": "কে দেখতে পায়", "steps": ["HRM → Attendance Reports একটাই মেনু; ভেতরে Daily, Monthly, Overtime, Employee, Branch, Alerts ও Holiday Calendar ট্যাব। যার যে রিপোর্টের permission আছে, শুধু সেই ট্যাবই দেখা যায় — Daily ট্যাবের জন্য hrm.attendance.report.view লাগে।", "Attendance Alerts (Absent / Late / Early Out) মেনু দেখা যায় শুধু Roles-এ hrm.attendance.exception.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "HRM → Attendance → Report / Absent / Late / Early Out",
+        "menu": "HRM → Attendance Reports → Daily / Alerts",
         "steps": [
           "From ও To দিন, Branch বাছুন।",
           "Status ও Approval দিয়ে ফল ছোট করুন।",
@@ -538,7 +538,8 @@
         "steps": [
           "উপরে Active Employee, Attendance Entry, Absent/Missing, Present, Half Day, Leave, Late, Early Out ও Approval-এর সংখ্যা দেখা যায়।",
           "Late রিপোর্টে Late Deduction Days, Early Out রিপোর্টে Early Out Deduction Days বাড়তি থাকে।",
-          "নিচের তালিকায় Date, ID, Employee, Branch, Shift, In, Out, Minutes, Status ও Approval থাকে।"
+          "নিচের তালিকায় Date, ID, Employee, Branch, Shift, In, Out, Hour, Status ও Approval থাকে।",
+          "Hour কলামে কাজের সময় ঘণ্টা-মিনিটে দেখায়, যেমন 8h 25m।"
         ],
         "warning": "Absent/Missing মানে ওই দিনের কোনো এন্ট্রি নেই — ছুটি বা ছুটির দিন আলাদা Status-এ গোনা হয়।"
       }
@@ -555,7 +556,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.overtime.report.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "HRM → Attendance → Overtime Report",
+        "menu": "HRM → Attendance Reports → Overtime",
         "steps": [
           "From, To ও Branch দিন; Status ও Approval দিয়ে ছোট করুন।",
           "Load চাপুন।"
@@ -583,7 +584,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.employee.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "HRM → Attendance → Employee Report",
+        "menu": "HRM → Attendance Reports → Employee",
         "steps": [
           "Employee বাছুন, From, To ও Branch দিন।",
           "Status দিয়ে ফল ছোট করুন, Load চাপুন।"
@@ -610,7 +611,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.branch.summary.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "HRM → Attendance → Branch Summary",
+        "menu": "HRM → Attendance Reports → Branch",
         "steps": [
           "Branch/Project, Month ও Year বাছুন।",
           "Load চাপুন।"
@@ -637,7 +638,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.holiday.calendar.view permission থাকলে।"] },
       {
         "heading": "ক্যালেন্ডার দেখা",
-        "menu": "HRM → Attendance → Holiday Calendar",
+        "menu": "HRM → Attendance Reports → Holiday Calendar",
         "steps": [
           "Month, Year ও Branch/Project বাছুন।",
           "Type থেকে Holiday বা Weekly Holiday বাছুন।",
@@ -665,7 +666,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.monthly.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "HRM → Attendance → Monthly Report",
+        "menu": "HRM → Attendance Reports → Monthly",
         "steps": [
           "Select Branch, Month ও Year বাছুন।",
           "Load চাপুন।"
@@ -722,7 +723,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.audit.view permission থাকলে।"] },
       {
         "heading": "ইতিহাস দেখা",
-        "menu": "HRM → Attendance → Audit History",
+        "menu": "HRM → Attendance Settings → Audit History",
         "steps": [
           "From, To ও Branch/Project বাছুন।",
           "Action (Submitted, Corrected, Approved, Rejected, Cleared/Cancelled) ও Employee দিয়ে ছোট করুন।",
@@ -750,7 +751,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ salary.component.manage permission থাকলে।"] },
       {
         "heading": "তালিকা",
-        "menu": "HRM → Salary → Salary Components",
+        "menu": "HRM → Salary Setup → Salary Components",
         "steps": [
           "Search দিয়ে নাম, ছোট নাম বা code খুঁজুন।",
           "প্রতিটি খাতের Name, Code, Earning/Deduction, হিসাবের ধরন, Prorate, ক্রম ও Status দেখা যায়।",
@@ -780,7 +781,7 @@
     "sections": [
       {
         "heading": "ফর্ম",
-        "menu": "HRM → Salary → Salary Components → New Pay Head",
+        "menu": "HRM → Salary Setup → Salary Components → New Pay Head",
         "steps": [
           "Pay Head Name লিখুন (যেমন Mobile Bill)।",
           "Short Name দিন — বেতন শিটে কলামের শিরোনাম হিসেবে এটাই দেখাবে।",
@@ -804,7 +805,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ salary.structure.manage permission থাকলে।"] },
       {
         "heading": "তালিকা",
-        "menu": "HRM → Salary → Salary Structures",
+        "menu": "HRM → Salary Setup → Salary Structures",
         "steps": [
           "Search দিয়ে কাঠামোর নাম বা code খুঁজুন।",
           "প্রতিটি কাঠামোর Pay Heads সংখ্যা ও Status দেখা যায়।",
@@ -830,7 +831,7 @@
     "sections": [
       {
         "heading": "ফর্ম",
-        "menu": "HRM → Salary → Salary Structures → New Structure",
+        "menu": "HRM → Salary Setup → Salary Structures → New Structure",
         "steps": [
           "Structure Name ও Code দিন। Code একবার Save হলে আর বদলায় না।",
           "বাঁ পাশের Available pay heads থেকে + চেপে খাত যোগ করুন।",
@@ -852,7 +853,7 @@
     "sections": [
       {
         "heading": "শিট তৈরি",
-        "menu": "HRM → Salary → Salary Generate",
+        "menu": "HRM → Salary & Bonus Generate → Salary Generate",
         "steps": [
           "Branch ও Designation Level বাছুন।",
           "Monthly Salary বা Overtime Salary বাছুন।",
@@ -893,7 +894,7 @@
     "sections": [
       {
         "heading": "তালিকা দেখা",
-        "menu": "HRM → Salary → Salary Sheet",
+        "menu": "HRM → Salary Reports → Salary Reports",
         "steps": [
           "Branch ও Year বাছুন, Search চাপুন।",
           "Payment Month, Employees, Gross Salary, OT Amount, Net Salary, Loan Ded., Payment Amount ও Due দেখা যায়।",
@@ -932,7 +933,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ festival.bonus.view permission থাকলে।"] },
       {
         "heading": "তালিকা দেখা",
-        "menu": "HRM → Bonus → Bonus Reports",
+        "menu": "HRM → Salary Reports → Bonus Reports",
         "steps": [
           "ফিল্টার আইকন বা Use the filter চেপে Select Branch ও Select Year বাছুন, Apply চাপুন।",
           "Bonus Title, Month, Employees, Bonus Amount, Paid ও Due দেখা যায়।"
@@ -960,7 +961,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ festival.bonus.generate permission থাকলে।"] },
       {
         "heading": "বোনাস তৈরি",
-        "menu": "HRM → Bonus → Bonus Generate",
+        "menu": "HRM → Salary & Bonus Generate → Bonus Generate",
         "steps": [
           "Bonus % of Basic, Branch ও Bonus Month দিন।",
           "Bonus Title বাছুন; Other হলে Custom Bonus Title লিখুন।",

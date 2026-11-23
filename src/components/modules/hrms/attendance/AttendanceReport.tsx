@@ -116,6 +116,12 @@ const isActiveEmployee = (row: any) => {
 };
 const branchNameFromId = (branches: any[], branchId: any) => branches.find((branch) => String(branch.id) === String(branchId))?.name || '-';
 const formatOtHours = (minutes: number | string) => (Number(minutes || 0) / 60).toFixed(2);
+// 505 -> "8h 25m"; blank or non-numeric stays "-".
+const formatWorkTime = (minutes: any) => {
+  const total = Math.round(Number(minutes));
+  if (!minutes || !Number.isFinite(total) || total <= 0) return '-';
+  return `${Math.floor(total / 60)}h ${total % 60}m`;
+};
 
 const cardTone = (label: string) => {
   const map: Record<string, { bar: string; value: string; dot: string }> = {
@@ -143,6 +149,8 @@ type AttendanceReportProps = {
   reportTitle?: string;
   defaultStatus?: string;
   reportType?: 'daily' | 'absent' | 'late' | 'early_out' | 'overtime';
+  // Off when a wrapper (Attendance Alerts) already draws the title.
+  showTitle?: boolean;
 };
 
 const AttendanceReport = ({
@@ -150,6 +158,7 @@ const AttendanceReport = ({
   reportTitle = 'Daily Attendance Report',
   defaultStatus = '',
   reportType = 'daily',
+  showTitle = true,
 }: AttendanceReportProps) => {
   const dispatch = useDispatch<any>();
   const attendance = useSelector((state: any) => state.attendance);
@@ -409,7 +418,7 @@ const AttendanceReport = ({
     { key: 'shift_name', header: 'Shift', render: (row: any) => row.shift_name || '-' },
     { key: 'in_time', header: 'In', render: (row: any) => timeOnly(row.in_time) },
     { key: 'out_time', header: 'Out', render: (row: any) => timeOnly(row.out_time) },
-    { key: 'work_minutes', header: 'Minutes', render: (row: any) => row.work_minutes || '-' },
+    { key: 'work_minutes', header: 'Hour', render: (row: any) => formatWorkTime(row.work_minutes) },
     ...(reportType === 'overtime'
       ? [
           { key: 'overtime_minutes', header: 'OT Hr.', render: (row: any) => formatOtHours(row.overtime_minutes || 0) },
@@ -422,7 +431,7 @@ const AttendanceReport = ({
 
   return (
     <div>
-      <HelmetTitle title={reportTitle} />
+      {showTitle && <HelmetTitle title={reportTitle} />}
       {(attendance.loading || employeeState.loading) && <Loader />}
 
       <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">

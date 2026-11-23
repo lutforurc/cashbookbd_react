@@ -680,7 +680,7 @@
     "intro": "একই কর্মচারীর একই মাসে একাধিকবার ঋণ কর্তন বসেছে কি না দেখায়, যাতে বাড়তিটি সরানো যায়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.mismatch.payment.view permission থাকলে।"] },
-      { "heading": "খোঁজা", "menu": "Reports → HRM Mismatch Payment", "steps": ["Select Branch, Start Date ও End Date দিন।", "Search চাপুন।"] },
+      { "heading": "খোঁজা", "menu": "HRM → Salary Reports → Salary Mismatch", "steps": ["Select Branch, Start Date ও End Date দিন।", "Search চাপুন।"] },
       { "heading": "ফল ও সংশোধন", "steps": ["Vr No., Vr Date, Employee, Month, Times, Amounts, Total Deducted ও Action দেখা যায়।", "Action-এর Clear দিয়ে বাড়তি কর্তন সরানো যায়; একটি কর্তন রাখা হবে।"] },
       { "heading": "সতর্কতা", "warning": "Clear করার আগে নিশ্চিত হোন যে একই কর্তন সত্যিই দুবার বসেছে — ভুল হলে বৈধ কর্তন মুছে যাবে।" }
     ]
