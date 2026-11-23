@@ -11,7 +11,6 @@ import {
   FaWallet,
 } from 'react-icons/fa';
 
-import HelmetTitle from '../../utils/others/HelmetTitle';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import httpService from '../../services/httpService';
 import routes from '../../services/appRoutes';
@@ -28,7 +27,6 @@ import DashboardCustomizeButton, {
 } from './dashboardCustomization';
 import {
   DashboardRangeBar,
-  businessTypeName,
   rangeCaption,
   useAutoRefresh,
   useCashBookRange,
@@ -82,12 +80,12 @@ import { CardTitle, DASHBOARD_FADE, DASHBOARD_GRID } from './dashboardKit';
  */
 const HOTEL_DASHBOARD_WIDGETS: DashboardWidget[] = [
   // Head office only -- filtered out for everyone else below.
-  { id: 'all-branches', title: 'All Branches' },
   { id: 'tonight-inhouse', title: 'In the Building' },
   { id: 'tonight-arrivals', title: 'Arriving' },
   { id: 'tonight-departures', title: 'Leaving' },
   { id: 'tonight-free', title: 'Free Tonight' },
   { id: 'tonight-notready', title: 'Not Ready' },
+  { id: 'all-branches', title: 'All Branches' },
   { id: 'performance-occupancy', title: 'Occupancy' },
   { id: 'performance-adr', title: 'ADR' },
   { id: 'performance-revpar', title: 'RevPAR' },
@@ -119,7 +117,7 @@ const dayLabel = (date: string) => {
 };
 
 const CARD =
-  'flex flex-col overflow-hidden bg-white text-[rgb(var(--c-text))] shadow-sm ring-1 ring-slate-200 transition hover:shadow-md dark:bg-gray-800 dark:text-[rgb(var(--c-text))] dark:ring-gray-700';
+  'flex flex-col overflow-hidden rounded-lg border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] text-[rgb(var(--c-text))] shadow-sm';
 
 const CARD_HEAD =
   'flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100';
@@ -151,25 +149,25 @@ const Tile = ({
   hint?: string;
 }) => (
   <div
-    className={`flex flex-col justify-between px-4 py-3 shadow-sm ring-1 transition hover:shadow-md ${
+    className={`flex min-w-0 flex-col justify-between rounded-lg border px-4 py-3 shadow-sm ${
       lead
-        ? 'bg-primary/5 ring-primary/40 dark:bg-secondary/10 dark:ring-secondary/40'
-        : 'bg-white ring-slate-200 dark:bg-gray-800 dark:ring-gray-700'
+        ? 'border-primary/40 bg-primary/5 dark:border-secondary/40 dark:bg-secondary/10'
+        : 'border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]'
     }`}
   >
     <div
-      className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-400"
+      className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300"
       title={hint}
     >
       {icon}
       <span
-        className={`truncate ${hint ? 'cursor-help decoration-dotted underline-offset-2 hover:underline' : ''}`}
+        className={hint ? 'cursor-help decoration-dotted underline-offset-2 hover:underline' : undefined}
       >
         {label}
       </span>
     </div>
     <div
-      className={`mt-1 text-2xl font-bold ${tone ?? 'text-slate-700 dark:text-slate-100'}`}
+      className={`mt-1 break-words text-2xl font-bold tabular-nums ${tone ?? 'text-[rgb(var(--c-text))]'}`}
     >
       {value}
     </div>
@@ -178,8 +176,7 @@ const Tile = ({
         room-nights" can be argued with where a bare 11% can only be believed. */}
     {working ? (
       <div
-        className="mt-0.5 truncate text-[11px] text-slate-400"
-        title={working}
+        className="mt-1 text-xs text-slate-600 dark:text-slate-300"
       >
         {working}
       </div>
@@ -354,7 +351,7 @@ const HotelDashboard = () => {
         );
       case 'tonight-inhouse':
         return (
-          (counts || tonight || rooms) &&
+          counts &&
           (isWidgetVisible('tonight-inhouse') ? (
             <Tile
               label="In the building"
@@ -367,10 +364,10 @@ const HotelDashboard = () => {
         );
       case 'tonight-arrivals':
         return (
-          (counts || tonight || rooms) &&
+          counts &&
           (isWidgetVisible('tonight-arrivals') ? (
             <Tile
-              label="Arriving"
+              label="Arrivals today"
               value={String(counts?.arrivals ?? 0)}
               working="expected at the desk today"
               icon={<FaDoorOpen className="text-[11px] text-emerald-500" />}
@@ -380,10 +377,10 @@ const HotelDashboard = () => {
         );
       case 'tonight-departures':
         return (
-          (counts || tonight || rooms) &&
+          counts &&
           (isWidgetVisible('tonight-departures') ? (
             <Tile
-              label="Leaving"
+              label="Departures today"
               value={String(counts?.departures ?? 0)}
               working="rooms to turn round today"
               icon={<FaSignOutAlt className="text-[11px] text-rose-500" />}
@@ -397,13 +394,13 @@ const HotelDashboard = () => {
           (isWidgetVisible('tonight-free') ? (
             <Tile
               label="Free tonight"
-              value={String(tonight?.free ?? 0)}
+              value={tonight ? String(tonight.free) : '—'}
               working={
                 tonight
                   ? `${tonight.sold} let${tonight.held ? `, ${tonight.held} on hold` : ''} of ${
                       run?.rooms ?? 0
                     }`
-                  : undefined
+                  : 'Tonight is unavailable for this period'
               }
             />
           ) : null)
@@ -714,32 +711,42 @@ const HotelDashboard = () => {
 
   return (
     <div>
-      <HelmetTitle title="Dashboard" />
+      <title>Hotel &amp; Motel Dashboard</title>
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
-            {businessTypeName(view.viewBranch, 'The property')}
-          </h1>
-          <p className="text-xs text-slate-400">
-            {run?.from && run?.to
-              ? rangeCaption(run.from, run.to, refreshedAt)
-              : 'Reading the property…'}
-          </p>
+      <header className="mb-4 rounded-lg border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3 px-4 py-4 sm:px-5">
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold tracking-tight text-[rgb(var(--c-text))]">
+              Hotel &amp; Motel Dashboard
+            </h1>
+            {view.viewBranchName ? (
+              <p className="mt-1 break-words text-sm font-medium text-[rgb(var(--c-text))]">
+                {view.viewBranchName}
+              </p>
+            ) : null}
+            <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+              {run?.from && run?.to
+                ? rangeCaption(run.from, run.to, refreshedAt)
+                : rangeCaption(range.from, range.to)}
+            </p>
+          </div>
+          <div className="ml-auto">
+            <DashboardCustomizeButton
+              density={density}
+              widgets={orderedWidgets}
+              isWidgetVisible={isWidgetVisible}
+              onToggleWidget={toggleWidget}
+              onMoveWidget={moveWidget}
+              onDensityChange={setDensity}
+              onReset={reset}
+              panelClassName="max-w-[calc(100vw-4rem)]"
+            />
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="border-t border-[rgb(var(--c-border))] px-4 py-3 sm:px-5">
           <DashboardRangeBar range={range} view={view} onRefresh={refresh} busy={busy} />
-          <DashboardCustomizeButton
-            density={density}
-            widgets={orderedWidgets}
-            isWidgetVisible={isWidgetVisible}
-            onToggleWidget={toggleWidget}
-            onMoveWidget={moveWidget}
-            onDensityChange={setDensity}
-            onReset={reset}
-          />
         </div>
-      </div>
+      </header>
 
       {/* ------------------------------------------------------------ */}
       {/* Tonight. The desk's band, and it comes first because at nine in
@@ -748,7 +755,7 @@ const HotelDashboard = () => {
           Every card in a row stands as tall as the tallest; the cards' own
           mb-4 is taken off. The wide cards span two columns only from xl,
           where there are surely two to span. */}
-      <div className={`${DASHBOARD_GRID} ${gap} ${DASHBOARD_FADE} ${busy ? 'opacity-60' : ''}`}>
+      <div aria-busy={busy} className={`${DASHBOARD_GRID} ${gap} ${DASHBOARD_FADE} ${busy ? 'opacity-60' : ''}`}>
         {orderedWidgets
           .filter((widget) => isWidgetVisible(widget.id))
           .map((widget) => {
@@ -758,12 +765,13 @@ const HotelDashboard = () => {
               <div
                 key={widget.id}
                 className={
-                  'min-w-0 *:h-full *:mb-0 ' +
-                  widget.id === 'all-branches'
-                    ? 'col-span-full'
-                    : (['nights', 'room-types', 'takings', 'balance'].includes(widget.id)
-                    ? 'xl:col-span-2'
-                    : '')
+                  `min-w-0 *:h-full *:mb-0 ${
+                    widget.id === 'all-branches'
+                      ? 'col-span-full'
+                      : ['nights', 'room-types', 'takings', 'balance'].includes(widget.id)
+                        ? 'xl:col-span-2'
+                        : ''
+                  }`
                 }
               >
                 {content}

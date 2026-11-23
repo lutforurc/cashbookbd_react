@@ -231,6 +231,7 @@ export const useDashboardCustomization = (
 };
 
 type DashboardCustomizeButtonProps = {
+  panelClassName?: string;
   density: DashboardDensity;
   widgets: DashboardWidget[];
   isWidgetVisible: (id: string) => boolean;
@@ -241,6 +242,7 @@ type DashboardCustomizeButtonProps = {
 };
 
 const DashboardCustomizeButton = ({
+  panelClassName = '',
   density,
   widgets,
   isWidgetVisible,
@@ -263,7 +265,7 @@ const DashboardCustomizeButton = ({
       </Button>
 
       {open ? (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-white shadow-5 dark:bg-gray-800">
+        <div className={`absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-sm border border-[rgb(var(--c-border))] bg-white shadow-5 dark:bg-gray-800 ${panelClassName}`}>
           <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
             <span className="text-sm font-bold text-slate-800 dark:text-[rgb(var(--c-text))]">
               Dashboard Widgets
