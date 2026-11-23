@@ -291,7 +291,7 @@ INSERT IGNORE INTO `hrm_salary_components`
  `include_in_gross`, `include_in_deduction_base`, `salary_sheet_types`,
  `is_taxable`, `include_in_pf`, `sort_order`, `is_system`, `status`)
 VALUES
-(@company_id, 'Basic',                'Basic',      'basic',                'earning',   'basic',     'fixed',   NULL, 'payable_days', NULL, NULL, 1, 'up_10',      1, 1, 'monthly',  0, 0, 10,  1, 1),
+(@company_id, 'Basic',                'Basic',      'basic',                'earning',   'basic',     'fixed',   NULL, 'payable_days', NULL, NULL, 1, 'up_10',      1, 1, 'monthly,overtime', 0, 0, 10,  1, 1),
 (@company_id, 'House Rent',           'House',      'house_rent',           'earning',   'allowance', 'fixed',   NULL, 'payable_days', NULL, NULL, 1, 'up_10',      1, 1, 'monthly',  0, 0, 20,  0, 1),
 (@company_id, 'Medical Allowance',    'Medical',    'medical_allowance',    'earning',   'allowance', 'fixed',   NULL, 'payable_days', NULL, NULL, 0, 'none',       1, 0, 'monthly',  0, 0, 30,  0, 1),
 (@company_id, 'Mobile Bill',          'Mobile',     'mobile_bill',          'earning',   'allowance', 'fixed',   NULL, 'payable_days', NULL, NULL, 1, 'up_10',      1, 1, 'monthly',  0, 0, 40,  0, 1),

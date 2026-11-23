@@ -894,6 +894,32 @@ export const API_SALARY_SHEET_URL = `${API_BASE_URL}/hrms/salary-sheet`;
 export const API_SALARY_SHEET_PRINT_URL = `${API_BASE_URL}/hrms/salary-sheet-print`;
 export const API_SALARY_SHEET_UPDATE_URL = `${API_BASE_URL}/hrms/salary-sheet-update`;
 export const API_SALARY_SHEET_ROW_DELETE_URL = `${API_BASE_URL}/hrms/salary-sheet-row-delete`;
+
+// Flexible salary components -- pay heads as data, not columns.
+export const API_HRMS_SALARY_COMPONENT_LIST_URL = `${API_BASE_URL}/hrms/salary/components`;
+export const API_HRMS_SALARY_COMPONENT_DDL_URL = `${API_BASE_URL}/hrms/salary/components/ddl`;
+export const API_HRMS_SALARY_COMPONENT_EDIT_URL = `${API_BASE_URL}/hrms/salary/components/edit`;
+export const API_HRMS_SALARY_COMPONENT_STORE_URL = `${API_BASE_URL}/hrms/salary/components/store`;
+export const API_HRMS_SALARY_COMPONENT_UPDATE_URL = `${API_BASE_URL}/hrms/salary/components/update`;
+export const API_HRMS_SALARY_COMPONENT_STATUS_URL = `${API_BASE_URL}/hrms/salary/components/status`;
+
+// Salary structures -- reusable templates of pay heads.
+export const API_HRMS_SALARY_STRUCTURE_LIST_URL = `${API_BASE_URL}/hrms/salary/structures`;
+export const API_HRMS_SALARY_STRUCTURE_DDL_URL = `${API_BASE_URL}/hrms/salary/structures/ddl`;
+export const API_HRMS_SALARY_STRUCTURE_EDIT_URL = `${API_BASE_URL}/hrms/salary/structures/edit`;
+export const API_HRMS_SALARY_STRUCTURE_STORE_URL = `${API_BASE_URL}/hrms/salary/structures/store`;
+export const API_HRMS_SALARY_STRUCTURE_UPDATE_URL = `${API_BASE_URL}/hrms/salary/structures/update`;
+export const API_HRMS_SALARY_STRUCTURE_STATUS_URL = `${API_BASE_URL}/hrms/salary/structures/status`;
+
+// An employee's own salary history -- append-only, effective dated.
+export const API_HRMS_SALARY_EMPLOYEE_REVISION_URL = `${API_BASE_URL}/hrms/salary/employees`;
+
+// Component payroll (Phase 2). Refused with 409 on a branch whose engine flag
+// is not 'components'.
+export const API_HRMS_SALARY_ENGINE_URL = `${API_BASE_URL}/hrms/salary/engine`;
+export const API_HRMS_SALARY_PREVIEW_URL = `${API_BASE_URL}/hrms/salary/preview`;
+export const API_HRMS_SALARY_GENERATE_V2_URL = `${API_BASE_URL}/hrms/salary/generate-v2`;
+
 export const API_FESTIVAL_BONUS_VIEW_URL = `${API_BASE_URL}/hrms/festival-bonus-view`;
 export const API_FESTIVAL_BONUS_GENERATE_URL = `${API_BASE_URL}/hrms/festival-bonus-generate`;
 export const API_FESTIVAL_BONUS_SHEET_URL = `${API_BASE_URL}/hrms/festival-bonus-sheet`;

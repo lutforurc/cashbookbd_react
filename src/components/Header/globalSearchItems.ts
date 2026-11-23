@@ -162,6 +162,8 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Attendance Devices', path: routes.hrms_attendance_devices, group: 'HRM', keywords: ['face terminal adms zkteco senseface device serial'], permissions: ['hrm.attendance.device.manage'] },
   { title: 'Unmatched Punches', path: routes.hrms_attendance_unmatched, group: 'HRM', keywords: ['punch unmatched biometric face map'], permissions: ['hrm.attendance.view'] },
   { title: 'Salary Generate', path: routes.hrms_salary_generate, group: 'HRM', permissions: ['salary.generate'] },
+  { title: 'Salary Components', path: routes.hrms_salary_component_list, group: 'HRM', keywords: ['pay head allowance mobile bill lunch bill basic'], permissions: ['salary.component.manage'] },
+  { title: 'Salary Structures', path: routes.hrms_salary_structure_list, group: 'HRM', keywords: ['template structure pay head'], permissions: ['salary.structure.manage'] },
   { title: 'Bonus Generate', path: routes.hrms_festival_bonus_generate, group: 'HRM', permissions: ['festival.bonus.generate'] },
   { title: 'Loan Balance', path: routes.employee_loan_balance, group: 'HRM', permissions: ['employee.loan.balance.view'] },
   { title: 'Loan Ledger', path: routes.employee_loan_ledger, group: 'HRM', permissions: ['employee.loan.ledger.view'] },

@@ -23,6 +23,8 @@ import {
   API_ATTENDANCE_LEAVE_APPLICATION_LIST_URL,
   API_ATTENDANCE_MONTHLY_SUMMARY_URL,
 } from "../../../services/apiRoutes";
+import { fetchPayrollEngine } from '../payroll/payrollSlice';
+import ComponentSalaryGenerate from '../payroll/ComponentSalaryGenerate';
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 
 /* ================= TYPES ================= */
@@ -318,6 +320,9 @@ const SalarySheetGenerate = ({ user }: any) => {
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
   const employeeSettings = useSelector((state: any) => state.employees);
+  // Which engine the chosen branch runs. Defaults to 'legacy' in the slice, so
+  // a failed read leaves the screen on the path that is always safe.
+  const payrollEngine = useSelector((state: any) => state.payroll?.engine ?? 'legacy');
 
   const [employees, setEmployees] = useState<SalaryRow[]>([]);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
@@ -360,6 +365,18 @@ const SalarySheetGenerate = ({ user }: any) => {
     dispatch(getDdlProtectedBranch());
     dispatch(fetchEmployeeSettings());
   }, [dispatch, user]);
+
+  /**
+   * Ask which engine this branch runs whenever the branch changes.
+   *
+   * ⚠️ A BRANCH WITH NO FLAG ANSWERS 'legacy', and everything below this line
+   * behaves exactly as it did before the component engine existed.
+   */
+  useEffect(() => {
+    if (!branchId) return;
+
+    dispatch(fetchPayrollEngine(branchId));
+  }, [dispatch, branchId]);
 
   useEffect(() => {
     if (!updateContext?.fromSalarySheet) return;
@@ -977,6 +994,44 @@ const SalarySheetGenerate = ({ user }: any) => {
   };
 
   /* ================= UI ================= */
+
+  /**
+   * A branch switched to the component engine gets the component screen.
+   *
+   * ⚠️ EVERYTHING BELOW IS THE OLD SCREEN, UNCHANGED. This early return is the
+   * entire switch: no flag, or a failed read, and the code path is exactly what
+   * shipped before -- which is what makes the rollout reversible.
+   */
+  if (payrollEngine === 'components') {
+    return (
+      <div>
+        <HelmetTitle title="Salary Generate" />
+        <ComponentSalaryGenerate
+          user={user}
+          branchId={branchId}
+          monthId={monthId}
+          monthText={monthText}
+          salarySheetType={salarySheetType}
+          branchDropdown={dropdownData}
+          designationLevels={designationLevels}
+          designationLevelOptions={designationLevelOptions}
+          onBranchChange={(value) => setBranchId(value)}
+          onMonthChange={handleOnMonthChange}
+          onSheetTypeChange={(e) => {
+            setSalarySheetType(e.target.value);
+            setEmployees([]);
+            setSearched(false);
+          }}
+          onLevelsChange={setDesignationLevels}
+          onGenerated={() => {
+            setEmployees([]);
+            setSearched(false);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
       <HelmetTitle title="Salary Generate" />

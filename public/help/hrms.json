@@ -198,10 +198,22 @@
         ]
       },
       {
+        "heading": "বেতনের খাত (Salary Revision)",
+        "steps": [
+          "Salary & Payroll ধাপে নিচে বেতনের খাতের প্যানেল আছে — এটি শুধু Edit স্ক্রিনে আসে, কারণ revision একটি তৈরি হওয়া কর্মচারীর সঙ্গে যুক্ত।",
+          "Structure বাছলে তার খাতগুলো নিচে বসে যায়; অথবা Available pay heads থেকে একটি একটি করে যোগ করুন।",
+          "Effective From শুধু মাস বাছা যায় — revision সবসময় মাসের ১ তারিখ থেকে শুরু হয়।",
+          "Monthly Gross নিজে হিসাব হয়। Save Revision চাপলে নতুন revision তৈরি হয় এবং পুরোনোটির শেষ তারিখ আগের দিন হয়ে বন্ধ হয়।",
+          "নিচে Salary history-তে কে কোন মাস থেকে কত পেয়েছে তা দেখা যায়।"
+        ],
+        "warning": "পুরোনো revision বদলানো যায় না — বেতন বাড়াতে নতুন revision দিন। এতে পুরোনো মাসের বেতন শিট অঙ্কে অপরিবর্তিত থাকে।"
+      },
+      {
         "heading": "যা মনে রাখবেন",
         "steps": [
           "Edit স্ক্রিনে Gender ঘরটির নাম Select Sex। Update বোতাম সব ধাপেই থাকে, তাই এক ঘর বদলে সরাসরি Update চাপা যায়; তালিকায় ফিরতে Employee List।",
-          "বেতনের অঙ্কে ভুল থাকলে পরের মাসের Salary Generate ভুল হবে।"
+          "বেতনের অঙ্কে ভুল থাকলে পরের মাসের Salary Generate ভুল হবে।",
+          "Salary Revision থেকে Save করলে Basic ও Others Allowance ঘর দুটিও সেই অঙ্কে ভরে যায়, যাতে পুরোনো ও নতুন হিসাব এক থাকে।"
         ],
         "warning": "Attendance Type ভুল দিলে কর্মচারী হাজিরার হিসাবে ভুলভাবে পড়বে — Monthly, Daily Labour ও Shift Based-এর নিয়ম আলাদা।"
       }
@@ -727,6 +739,109 @@
       }
     ]
   },
+  "salary-components": {
+    "title": "বেতনের খাত",
+    "module": "HRM",
+    "updated": "23/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রতিষ্ঠান নিজের বেতন-ভাতার খাত তৈরি করে — Basic, House Rent, Mobile Bill, Lunch Bill, Attendance Bonus যেটাই হোক। খাতগুলো ডাটা হিসেবে থাকে, তাই নতুন খাতের জন্য সফটওয়্যার বদলাতে হয় না।",
+    "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ salary.component.manage permission থাকলে।"] },
+      {
+        "heading": "তালিকা",
+        "menu": "HRM → Salary → Salary Components",
+        "steps": [
+          "Search দিয়ে নাম, ছোট নাম বা code খুঁজুন।",
+          "প্রতিটি খাতের Name, Code, Earning/Deduction, হিসাবের ধরন, Prorate, ক্রম ও Status দেখা যায়।",
+          "New Pay Head চাপলে নতুন খাতের ফর্ম খোলে।",
+          "Action থেকে Edit করুন, অথবা Disable/Enable দিয়ে চালু-বন্ধ করুন।"
+        ],
+        "warning": "খাত মোছা যায় না — শুধু বন্ধ করা যায়। কারণ পুরোনো বেতন শিট ও revision-এ খাতটির নাম লেখা থাকে।"
+      },
+      {
+        "heading": "হিসাবের ধরন",
+        "steps": [
+          "Fixed: নির্দিষ্ট টাকা; Prorate চালু থাকলে কর্মদিবস অনুযায়ী ভাগ হয়।",
+          "Percent of Basic/Gross: বেতনের শতাংশ হিসেবে হিসাব হয়।",
+          "Per day: বর্তমানে হিসাব হয় না — পরে চালু হবে।",
+          "System: Basic, Overtime, Loan Deduction, Attendance Deduction — এগুলোর code ও type বদলানো যায় না।"
+        ]
+      }
+    ]
+  },
+  "salary-component-form": {
+    "title": "বেতনের খাত তৈরি",
+    "module": "HRM",
+    "updated": "23/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নতুন বেতন খাত তৈরি বা বদলানো হয়।",
+    "sections": [
+      {
+        "heading": "ফর্ম",
+        "menu": "HRM → Salary → Salary Components → New Pay Head",
+        "steps": [
+          "Pay Head Name লিখুন (যেমন Mobile Bill)।",
+          "Short Name দিন — বেতন শিটে কলামের শিরোনাম হিসেবে এটাই দেখাবে।",
+          "Code দিন (যেমন mobile_bill) — ছোট হাতের ইংরেজি, সংখ্যা ও আন্ডারস্কোর। একবার Save করলে আর বদলায় না।",
+          "Type (Earning/Deduction) ও Calculation বাছুন।",
+          "Prorate, Rounding, Include in Gross ও Order ঠিক করুন।",
+          "Save চাপুন; বদলাতে Update চাপুন।"
+        ],
+        "warning": "যে code ইতিমধ্যে আছে সেটি আবার দিলে সংরক্ষণ হবে না।"
+      }
+    ]
+  },
+  "salary-structures": {
+    "title": "বেতনের কাঠামো",
+    "module": "HRM",
+    "updated": "23/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বেতনের কাঠামো হলো একটি টেমপ্লেট — কোন কোন খাত একটি বেতনে থাকবে তার তালিকা। একই কাঠামো অনেক কর্মচারী পেতে পারেন।",
+    "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ salary.structure.manage permission থাকলে।"] },
+      {
+        "heading": "তালিকা",
+        "menu": "HRM → Salary → Salary Structures",
+        "steps": [
+          "Search দিয়ে কাঠামোর নাম বা code খুঁজুন।",
+          "প্রতিটি কাঠামোর Pay Heads সংখ্যা ও Status দেখা যায়।",
+          "New Structure চাপলে নতুন কাঠামোর বিল্ডার খোলে।"
+        ]
+      },
+      {
+        "heading": "গুরুত্বপূর্ণ",
+        "steps": [
+          "কাঠামো বদলালে কারো বর্তমান বেতন বদলায় না — শুধু নতুন কর্মচারী এই কাঠামো থেকে যা পাবে তা বদলায়।",
+          "কোনো কাঠামো মোছা যায় না, শুধু বন্ধ করা যায়।"
+        ]
+      }
+    ]
+  },
+  "salary-structure-form": {
+    "title": "বেতনের কাঠামো তৈরি",
+    "module": "HRM",
+    "updated": "23/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বাঁ পাশের খাত থেকে ডান পাশে নিয়ে একটি বেতনের কাঠামো তৈরি হয়।",
+    "sections": [
+      {
+        "heading": "ফর্ম",
+        "menu": "HRM → Salary → Salary Structures → New Structure",
+        "steps": [
+          "Structure Name ও Code দিন। Code একবার Save হলে আর বদলায় না।",
+          "বাঁ পাশের Available pay heads থেকে + চেপে খাত যোগ করুন।",
+          "ডান পাশে প্রতিটি খাতের ডিফল্ট Amount, Prorate ও Required ঠিক করুন।",
+          "তীর চিহ্ন দিয়ে খাতের ক্রম বদলান — শিটে এই ক্রমেই কলাম আসবে।",
+          "Save চাপুন; বদলাতে Update চাপুন।"
+        ],
+        "warning": "একটি কাঠামোয় অন্তত একটি খাত থাকতে হবে। Basic ছাড়া কাঠামো বেতন হিসাবে সমস্যা করবে।"
+      }
+    ]
+  },
   "salary-generate": {
     "title": "বেতন তৈরি",
     "module": "HRM",
@@ -754,6 +869,16 @@
           "Action থেকে কোনো কর্মচারীকে এই শিট থেকে সরানো যায়।"
         ],
         "warning": "একই মাসের শিট দুবার Generate করলে বেতন দ্বিগুণ হবে। আগে Salary Sheet-এ মাসটি আছে কি না দেখুন।"
+      },
+      {
+        "heading": "বেতনের খাত ইঞ্জিন (নতুন)",
+        "steps": [
+          "Branch-টি নতুন বেতন-খাত ইঞ্জিনে চালু থাকলে এই স্ক্রিন কিছুটা বদলায়: প্রতিটি খাতের (Basic, House Rent, Mobile Bill...) আলাদা কলাম আসে।",
+          "সব অঙ্ক সার্ভার হিসাব করে — স্ক্রিন শুধু Loan, Other Deduction এবং বাদ দেওয়া কর্মচারী পাঠায়।",
+          "Loan Ded. ও Other Ded. ঘরে টাইপ করলে নিচের Net Total সঙ্গে সঙ্গে বদলায়।",
+          "Action থেকে কোনো কর্মচারীকে এই শিট থেকে সরানো যায়; নিশ্চিত করার পর Generate চাপুন।"
+        ],
+        "warning": "Branch নতুন ইঞ্জিনে চালু না থাকলে আগের মতোই সব কিছু চলে — কোনো পরিবর্তন নেই।"
       }
     ]
   },
@@ -783,6 +908,14 @@
           "Payment Month-এ চাপলে বেতন শিট ছাপা হয়।"
         ],
         "warning": "শিটে Payment হয়ে গেলে পরে দিন বা অঙ্ক বদলাবেন না — পরিশোধের হিসাব মিলবে না।"
+      },
+      {
+        "heading": "বেতনের খাত ইঞ্জিনে তৈরি শিট",
+        "steps": [
+          "নতুন ইঞ্জিনে তৈরি শিটও এই তালিকাতেই আসে — পুরোনো শিটের সঙ্গে কোনো পার্থক্য নেই।",
+          "শিটের ভেতরে প্রতিটি খাতের (Basic, Mobile Bill...) আলাদা লাইন সংরক্ষিত থাকে, তাই পরে খাতের নাম বদলালেও পুরোনো পে-স্লিপ বদলায় না।",
+          "Update, Excel, Payment ও Print আগের মতোই কাজ করে।"
+        ]
       }
     ]
   },

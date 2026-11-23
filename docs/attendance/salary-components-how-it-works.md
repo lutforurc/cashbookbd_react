@@ -125,7 +125,7 @@ erDiagram
 
 | code | ধরন | হিসাব | prorate | rounding | deduction base | sheet | system |
 |---|---|---|---|---|---|---|---|
-| `basic` | earning | fixed | ✔ | up_10 | ✔ | monthly | ✔ |
+| `basic` | earning | fixed | ✔ | up_10 | ✔ | monthly, overtime | ✔ |
 | `house_rent` | earning | fixed | ✔ | up_10 | ✔ | monthly | |
 | `medical_allowance` | earning | fixed | | none | | monthly | |
 | `mobile_bill` | earning | fixed | ✔ | up_10 | ✔ | monthly | |

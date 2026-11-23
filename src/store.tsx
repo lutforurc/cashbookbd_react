@@ -53,6 +53,10 @@ import changeVoucherDateSlice from './components/modules/change_date/changeVouch
 import customerAuthReducer from './features/customerAuthReducer';
 import employeeSlice from './components/modules/hrms/employee/employeeSlice';
 import designationLevelSlice from './components/modules/hrms/designation-level/designationLevelSlice';
+import salaryComponentSlice from './components/modules/hrms/salary-component/salaryComponentSlice';
+import salaryStructureSlice from './components/modules/hrms/salary-structure/salaryStructureSlice';
+import salaryRevisionSlice from './components/modules/hrms/salary-revision/salaryRevisionSlice';
+import payrollSlice from './components/modules/hrms/payroll/payrollSlice';
 import hrmDesignationSlice from './components/modules/hrms/designation/hrmDesignationSlice';
 import electronicsSalesSlice from './components/modules/invoices/sales/electronicsSalesSlice';
 import deliverySlice from './components/modules/delivery/deliverySlice';
@@ -177,6 +181,10 @@ const store = configureStore({
     changeDate: changeVoucherDateSlice,
     employees: employeeSlice,
     designationLevel: designationLevelSlice,
+    salaryComponent: salaryComponentSlice,
+    salaryStructure: salaryStructureSlice,
+    salaryRevision: salaryRevisionSlice,
+    payroll: payrollSlice,
     hrmDesignation: hrmDesignationSlice,
     requisition: requisitionSlice,
     realEstateArea: realEstateArea,

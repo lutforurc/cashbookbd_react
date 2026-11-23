@@ -128,6 +128,12 @@
 | hrms_designation_level_list | HRM → Designation Level | `/hrms/designation-levels` | `designation-level-list` | done |
 | hrms_designation_level_create | HRM → Designation Level → New Level | `/hrms/designation-levels/create` | `designation-level-form` | done |
 | hrms_designation_level_edit | HRM → Designation Level → New Level | `/hrms/designation-levels/edit/:id` | `designation-level-form` | done |
+| hrms_salary_component_list | HRM → Salary → Salary Components | `/hrms/salary-components` | `salary-components` | done |
+| hrms_salary_component_create | HRM → Salary → Salary Components → New Pay Head | `/hrms/salary-components/create` | `salary-component-form` | done |
+| hrms_salary_component_edit | HRM → Salary → Salary Components → New Pay Head | `/hrms/salary-components/edit/:id` | `salary-component-form` | done |
+| hrms_salary_structure_list | HRM → Salary → Salary Structures | `/hrms/salary-structures` | `salary-structures` | done |
+| hrms_salary_structure_create | HRM → Salary → Salary Structures → New Structure | `/hrms/salary-structures/create` | `salary-structure-form` | done |
+| hrms_salary_structure_edit | HRM → Salary → Salary Structures → New Structure | `/hrms/salary-structures/edit/:id` | `salary-structure-form` | done |
 | hrms_designation_list | HRM → Designation | `/hrms/designations` | `designation-list` | done |
 | hrms_designation_create | HRM → Designation → New Designation | `/hrms/designations/create` | `designation-form` | done |
 | hrms_designation_edit | HRM → Designation → New Designation | `/hrms/designations/edit/:id` | `designation-form` | done |

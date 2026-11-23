@@ -16,6 +16,7 @@ import { fetchAttendancePolicies, fetchAttendanceShifts } from '../attendance/at
 import dayjs from 'dayjs';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { StepCard, StepFooter, StepNav, stepClass } from '../../../utils/components/FormSteps';
+import SalaryTab from '../salary-revision/SalaryTab';
 import { FIELD_LABEL } from '../../../../theme/fieldStyles';
 
 const EMPLOYEE_STEPS = ['Personal Information', 'Employment & Attendance', 'Salary & Payroll'];
@@ -506,6 +507,11 @@ const EmployeeEdit = ({ user }: any) => {
               value={formData.employee_serial}
               onChange={handleChange}
             />
+
+            {/* The component-based salary, effective dated. It writes the same
+                two legacy columns as the Basic / Others boxes above, so an
+                operator can use either while the old engine is still live. */}
+            <SalaryTab employeeId={id ? Number(id) : null} />
           </div>
           {/* শুধু Save button → Update */}
           {/* Update stays on every step: changing one field should not mean

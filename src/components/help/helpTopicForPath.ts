@@ -67,6 +67,12 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
 
   // HRM salary and bonus
   '/hrms/salary/salary-generate': 'salary-generate',
+  '/hrms/salary-components': 'salary-components',
+  '/hrms/salary-components/create': 'salary-component-form',
+  '/hrms/salary-components/edit/:id': 'salary-component-form',
+  '/hrms/salary-structures': 'salary-structures',
+  '/hrms/salary-structures/create': 'salary-structure-form',
+  '/hrms/salary-structures/edit/:id': 'salary-structure-form',
   '/hrms/salary-sheet': 'salary-sheet',
   '/hrms/salary-sheet/update': 'salary-sheet',
   '/hrms/festival-bonus': 'festival-bonus',

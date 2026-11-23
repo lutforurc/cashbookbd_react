@@ -142,6 +142,10 @@ import Employees from './components/modules/hrms/employee/Employees';
 import EmployeeEdit from './components/modules/hrms/employee/EmployeeEdit';
 import DesignationLevels from './components/modules/hrms/designation-level/DesignationLevels';
 import AddDesignationLevel from './components/modules/hrms/designation-level/AddDesignationLevel';
+import SalaryComponents from './components/modules/hrms/salary-component/SalaryComponents';
+import SalaryComponentForm from './components/modules/hrms/salary-component/SalaryComponentForm';
+import SalaryStructures from './components/modules/hrms/salary-structure/SalaryStructures';
+import SalaryStructureForm from './components/modules/hrms/salary-structure/SalaryStructureForm';
 import HrmDesignations from './components/modules/hrms/designation/HrmDesignations';
 import AddHrmDesignation from './components/modules/hrms/designation/AddHrmDesignation';
 import SalarySheetGenerate from './components/modules/hrms/salary/SalarySheetGenerate';
@@ -1624,6 +1628,16 @@ function App() {
                 <Route path={routes.hrms_designation_level_list} element={<DesignationLevels />} />
                 <Route path={routes.hrms_designation_level_create} element={<AddDesignationLevel />} />
                 <Route path={routes.hrms_designation_level_edit} element={<AddDesignationLevel />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.component.manage']} loading={permissionsLoading} />}>
+                <Route path={routes.hrms_salary_component_list} element={<SalaryComponents />} />
+                <Route path={routes.hrms_salary_component_create} element={<SalaryComponentForm />} />
+                <Route path={routes.hrms_salary_component_edit} element={<SalaryComponentForm />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['salary.structure.manage']} loading={permissionsLoading} />}>
+                <Route path={routes.hrms_salary_structure_list} element={<SalaryStructures />} />
+                <Route path={routes.hrms_salary_structure_create} element={<SalaryStructureForm />} />
+                <Route path={routes.hrms_salary_structure_edit} element={<SalaryStructureForm />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.designation.view']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_designation_list} element={<HrmDesignations />} />
