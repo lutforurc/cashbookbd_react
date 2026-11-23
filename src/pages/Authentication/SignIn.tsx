@@ -110,23 +110,6 @@ const SignIn: React.FC = () => {
     toast.info(msg, { toastId: 'login-error' } as any);
   }, [errors?.message]);
 
-  const handleSetUser = () => {
-    setFormData({
-      ...formData,
-      loginId: 'lutforurc@gmail.com',
-      password: 'Lutfor01911282149#',
-    });
-
-    if (process.env.NODE_ENV === 'development') {
-      (document.getElementById('emailaddress') as HTMLInputElement).value = 'lutforurco@gmail.com';
-      (document.getElementById('emailaddress') as HTMLInputElement).focus();
-
-      setTimeout(() => {
-        (document.getElementById('password') as HTMLInputElement).value = 'Lutfor01911282149#';
-        (document.getElementById('password') as HTMLInputElement).focus();
-      }, 100);
-    }
-  };
 
   return (
     <>
@@ -303,20 +286,6 @@ const SignIn: React.FC = () => {
               <p className="mb-6 w-full text-center text-sm text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
                 Sign in to continue.
               </p>
-
-              {process.env.NODE_ENV === 'development' ? (
-                <div className="w-full text-center">
-                  {/* Dev-only, and deliberately not on TEXT_LINK: this one
-                      should stand out from the card's muted links. */}
-                  <Button
-                    className="text-sm font-medium text-primary hover:underline"
-                    onClick={handleSetUser}
-                    type="button"
-                  >
-                    Set User
-                  </Button>
-                </div>
-              ) : null}
 
               {/* The card sits on a page painted the same white/boxdark, so
                   without a stroke it had no edge at all -- the shadow alone

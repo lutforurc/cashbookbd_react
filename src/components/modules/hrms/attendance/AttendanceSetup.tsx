@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiCalendar, FiCheck, FiClock, FiDollarSign, FiEdit2, FiRefreshCcw, FiSave, FiShield, FiUserCheck } from 'react-icons/fi';
+import { FiClock, FiCreditCard, FiEdit2, FiFileText, FiRefreshCcw, FiRepeat, FiSave, FiSun, FiUmbrella, FiUsers } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
@@ -33,12 +33,12 @@ import { chartDate, formatDateUsdToBd } from '../../../utils/utils-functions/for
 
 const tabs = [
   { key: 'shift', label: 'Shift', icon: FiClock },
-  { key: 'policy', label: 'Policy', icon: FiShield },
-  { key: 'roster', label: 'Roster', icon: FiUserCheck },
-  { key: 'weekly', label: 'Weekly Holiday', icon: FiCheck },
-  { key: 'holiday', label: 'Holiday', icon: FiCalendar },
-  { key: 'leave', label: 'Leave Type', icon: FiCalendar },
-  { key: 'rules', label: 'OT & Pay Rules', icon: FiDollarSign },
+  { key: 'policy', label: 'Policy', icon: FiFileText },
+  { key: 'roster', label: 'Roster', icon: FiUsers },
+  { key: 'weekly', label: 'Weekly Holiday', icon: FiRepeat },
+  { key: 'holiday', label: 'Holiday', icon: FiSun },
+  { key: 'leave', label: 'Leave Type', icon: FiUmbrella },
+  { key: 'rules', label: 'OT & Pay Rules', icon: FiCreditCard },
 ];
 
 const dayOptions = [
