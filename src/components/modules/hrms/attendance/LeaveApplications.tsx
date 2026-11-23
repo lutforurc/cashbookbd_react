@@ -212,13 +212,14 @@ const LeaveApplications = ({ user }: any) => {
             className="w-full"
           />
           <InputElement name="reason" label="Reason" value={form.reason || ''} onChange={handleChange(setForm)} />
-        </div>
-        <div className="mt-3 flex gap-2">
-          <ButtonLoading type="submit" buttonLoading={buttonLoading} label="Apply" className={commandButtonClass} icon={<FiSave className="mr-2" />} />
-          <Button type="button" onClick={reset} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
-            <FiRefreshCcw className="mr-2" />
-            Reset
-          </Button>
+          {/* The free cell beside Reason, bottom-aligned with the fields. */}
+          <div className="mt-1 flex gap-2 md:mt-0 md:self-end">
+            <ButtonLoading type="submit" buttonLoading={buttonLoading} label="Apply" className={commandButtonClass} icon={<FiSave className="mr-2" />} />
+            <Button type="button" onClick={reset} className={`inline-flex items-center justify-center ${commandButtonClass}`}>
+              <FiRefreshCcw className="mr-2" />
+              Reset
+            </Button>
+          </div>
         </div>
       </form>
 
