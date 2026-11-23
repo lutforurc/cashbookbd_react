@@ -181,7 +181,7 @@ export const useSidebarCustomization = (
       })
       .then((response) => {
         if (cancelled) return;
-        const remote = normalize(response?.data?.data?.preferences);
+        const remote = normalize(response?.data?.data?.data?.preferences);
 
         setPreferences((current) => {
           // An empty answer means the server has never been told anything --
@@ -552,7 +552,7 @@ export const useSidebarSubCustomization = (storageKey: string) => {
       .get(API_USER_DASHBOARD_PREFERENCES_URL, { params: { dashboard: 'sidebar-sub' } })
       .then((response) => {
         if (cancelled) return;
-        const remote = normalize(response?.data?.data?.preferences);
+        const remote = normalize(response?.data?.data?.data?.preferences);
 
         setPreferences((current) => {
           if (!remote.order.length && !remote.hidden.length) return current;

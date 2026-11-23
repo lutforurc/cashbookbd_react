@@ -283,7 +283,7 @@ import {
 } from 'react-icons/fi';
 import { FaBluetooth, FaRegStar } from 'react-icons/fa6';
 import { hasPermission } from '../utils/permissionChecker';
-import { inTabGroup, tabsFor } from '../utils/others/RouteTabs';
+import { inTabGroup, tabsFor, useTabOrder } from '../utils/others/RouteTabs';
 import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, DAILY_CONTROL_TABS, ORDER_TABS, UPLOAD_TABS, COMPANY_BRANCH_TABS, USER_TABS, ROLE_TABS, ADMIN_SETTINGS_TABS, PLATFORM_TABS, SMS_TABS, PRODUCT_TABS, CLASSIFICATION_TABS, STOCK_ALERT_TABS, VR_CORRECTION_TABS, VR_AUDIT_TABS, PARTY_TABS, COA_TABS, REPORT_CASH_BANK_TABS, REPORT_LEDGER_TABS, REPORT_SALES_TABS, REPORT_STOCK_TABS, REPORT_INSTALLMENT_TABS } from '../services/tabGroups';
 import { branchFormVariant, branchInvoiceVariant, separateEntriesShown, unifiedEntryShown } from '../utils/userFeatureSettings';
 import { useSelector } from 'react-redux';
@@ -345,6 +345,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   // enforces). The menu reads it instead of guessing from permissions, so a
   // tenant user is never shown a platform screen the API would refuse.
   const isPlatformAdmin = Boolean(settings?.data?.is_platform_admin);
+  // Each tab-group link opens the user's first tab, in their own order.
+  const { sort: sortTabs } = useTabOrder();
   const currentBranch = useSelector((s: any) => s.branchList.currentBranch);
   // Whether the branch the books are in offers "Deduct stock on delivery". The
   // Delivery menu and the dashboard's Delivery System entry exist only where it
@@ -1520,7 +1522,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(REPORT_CASH_BANK_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('reports', 'reports/cashbook')}>
                               <NavLink
-                                to={tabsFor(REPORT_CASH_BANK_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(REPORT_CASH_BANK_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_CASH_BANK_TABS, pathname) })}
                               >
                                 Cash & Bank
@@ -1530,7 +1532,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(REPORT_INSTALLMENT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('reports', 'reports/due-installments')}>
                               <NavLink
-                                to={tabsFor(REPORT_INSTALLMENT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(REPORT_INSTALLMENT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_INSTALLMENT_TABS, pathname) })}
                               >
                                 Installment & Somity
@@ -1540,7 +1542,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(REPORT_LEDGER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('reports', 'reports/ledger')}>
                               <NavLink
-                                to={tabsFor(REPORT_LEDGER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(REPORT_LEDGER_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_LEDGER_TABS, pathname) })}
                               >
                                 Ledger & Due
@@ -1550,7 +1552,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(REPORT_STOCK_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('reports', 'reports/product/stock')}>
                               <NavLink
-                                to={tabsFor(REPORT_STOCK_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(REPORT_STOCK_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_STOCK_TABS, pathname) })}
                               >
                                 Stock
@@ -1560,7 +1562,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(REPORT_SALES_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('reports', 'reports/purchase-ledger')}>
                               <NavLink
-                                to={tabsFor(REPORT_SALES_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(REPORT_SALES_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_SALES_TABS, pathname) })}
                               >
                                 Purchase & Sales
@@ -2818,7 +2820,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(CLASSIFICATION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('products', 'category/category-list')}>
                               <NavLink
-                                to={tabsFor(CLASSIFICATION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(CLASSIFICATION_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(CLASSIFICATION_TABS, pathname) })}
                               >
                                 Classification
@@ -2828,7 +2830,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(PRODUCT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('products', 'product/product-list')}>
                               <NavLink
-                                to={tabsFor(PRODUCT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(PRODUCT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(PRODUCT_TABS, pathname) })}
                               >
                                 Products
@@ -2838,7 +2840,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(STOCK_ALERT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('products', 'product_low_stock')}>
                               <NavLink
-                                to={tabsFor(STOCK_ALERT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(STOCK_ALERT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(STOCK_ALERT_TABS, pathname) })}
                               >
                                 Stock Alerts
@@ -2985,7 +2987,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(COMPANY_BRANCH_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'company_list')}>
                               <NavLink
-                                to={tabsFor(COMPANY_BRANCH_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(COMPANY_BRANCH_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(COMPANY_BRANCH_TABS, pathname) })}
                               >
                                 Company & Branch
@@ -2996,7 +2998,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(ADMIN_SETTINGS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'menu_arrangement')}>
                               <NavLink
-                                to={tabsFor(ADMIN_SETTINGS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(ADMIN_SETTINGS_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ADMIN_SETTINGS_TABS, pathname) })}
                               >
                                 Settings
@@ -3007,7 +3009,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(USER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'user_list')}>
                               <NavLink
-                                to={tabsFor(USER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(USER_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(USER_TABS, pathname) })}
                               >
                                 Users
@@ -3017,7 +3019,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(PLATFORM_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'reseller_admin')}>
                               <NavLink
-                                to={tabsFor(PLATFORM_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(PLATFORM_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(PLATFORM_TABS, pathname) })}
                               >
                                 Platform
@@ -3027,7 +3029,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(ROLE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'roles')}>
                               <NavLink
-                                to={tabsFor(ROLE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(ROLE_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ROLE_TABS, pathname) })}
                               >
                                 Roles & Permissions
@@ -3037,7 +3039,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(DAILY_CONTROL_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'admin/dayclose')}>
                               <NavLink
-                                to={tabsFor(DAILY_CONTROL_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(DAILY_CONTROL_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(DAILY_CONTROL_TABS, pathname) })}
                               >
                                 Daily Control
@@ -3047,7 +3049,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(ORDER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'order/order-list')}>
                               <NavLink
-                                to={tabsFor(ORDER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(ORDER_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ORDER_TABS, pathname) })}
                               >
                                 Orders
@@ -3063,7 +3065,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(UPLOAD_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'admin/image-upload')}>
                               <NavLink
-                                to={tabsFor(UPLOAD_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(UPLOAD_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(UPLOAD_TABS, pathname) })}
                               >
                                 Uploads
@@ -3075,7 +3077,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(SMS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('admin', 'sms_send')}>
                               <NavLink
-                                to={tabsFor(SMS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(SMS_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(SMS_TABS, pathname) })}
                               >
                                 SMS
@@ -3147,7 +3149,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(VR_CORRECTION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('vr_settings', 'admin_change_date')}>
                               <NavLink
-                                to={tabsFor(VR_CORRECTION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(VR_CORRECTION_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(VR_CORRECTION_TABS, pathname) })}
                               >
                                 Corrections
@@ -3159,7 +3161,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(VR_AUDIT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('vr_settings', 'voucher_history')}>
                               <NavLink
-                                to={tabsFor(VR_AUDIT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(VR_AUDIT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(VR_AUDIT_TABS, pathname) })}
                               >
                                 Audit
@@ -3233,7 +3235,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(DESIGNATION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_designation_list')}>
                               <NavLink
-                                to={tabsFor(DESIGNATION_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(DESIGNATION_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(DESIGNATION_TABS, pathname) })}
                               >
                                 Designations
@@ -3243,7 +3245,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(ATTENDANCE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_attendance_entries')}>
                               <NavLink
-                                to={tabsFor(ATTENDANCE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(ATTENDANCE_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_TABS, pathname) })}
                               >
                                 Attendance
@@ -3253,7 +3255,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(ATTENDANCE_REPORT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_attendance_report')}>
                               <NavLink
-                                to={tabsFor(ATTENDANCE_REPORT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(ATTENDANCE_REPORT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_REPORT_TABS, pathname) })}
                               >
                                 Attendance Reports
@@ -3263,7 +3265,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(ATTENDANCE_SETTINGS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_attendance_setup')}>
                               <NavLink
-                                to={tabsFor(ATTENDANCE_SETTINGS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(ATTENDANCE_SETTINGS_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_SETTINGS_TABS, pathname) })}
                               >
                                 Attendance Settings
@@ -3273,7 +3275,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(SALARY_SETUP_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms_salary_component_list')}>
                               <NavLink
-                                to={tabsFor(SALARY_SETUP_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(SALARY_SETUP_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_SETUP_TABS, pathname) })}
                               >
                                 Salary Setup
@@ -3283,7 +3285,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(SALARY_GENERATE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms/salary/salary-generate')}>
                               <NavLink
-                                to={tabsFor(SALARY_GENERATE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(SALARY_GENERATE_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_GENERATE_TABS, pathname) })}
                               >
                                 Salary & Bonus Generate
@@ -3293,7 +3295,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(LOAN_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'employee_loan_balance')}>
                               <NavLink
-                                to={tabsFor(LOAN_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(LOAN_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(LOAN_TABS, pathname) })}
                               >
                                 Loan
@@ -3303,7 +3305,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(SALARY_REPORT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('hrm', 'hrms/salary-sheet')}>
                               <NavLink
-                                to={tabsFor(SALARY_REPORT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(SALARY_REPORT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_REPORT_TABS, pathname) })}
                               >
                                 Salary Reports
@@ -3371,7 +3373,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(PARTY_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('customer-supplier', 'customer-supplier/list')}>
                               <NavLink
-                                to={tabsFor(PARTY_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(PARTY_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(PARTY_TABS, pathname) })}
                               >
                                 Customers
@@ -3381,7 +3383,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {tabsFor(COA_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('customer-supplier', 'coal1/coal1-list')}>
                               <NavLink
-                                to={tabsFor(COA_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                to={tabsFor(sortTabs(COA_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(COA_TABS, pathname) })}
                               >
                                 Chart of Accounts
