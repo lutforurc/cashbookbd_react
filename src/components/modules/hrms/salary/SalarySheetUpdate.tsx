@@ -392,7 +392,8 @@ const SalarySheetUpdate = (user: any) => {
         loan_deduction: Number(row.loan_deduction) || 0,
         attendance_deduction_amount: isDailyLabour(row.employment_type || history.employment_type || row.employee?.employment_type || salaryViewEmployee?.employment_type)
           ? 0
-          : pickNumber(liveSources, ["attendance_deduction_amount"], 0),
+          // The monthly summary always stores 0 here; the saved salary row holds the real amount.
+          : pickNumber([row, history], ["attendance_deduction_amount"], 0),
         attendance_absent_days: pickNumber(liveSources, ["attendance_absent_days"], 0),
         attendance_unpaid_leave_days: pickNumber(liveSources, ["attendance_unpaid_leave_days"], 0),
         attendance_half_days: pickNumber(liveSources, ["attendance_half_days"], 0),

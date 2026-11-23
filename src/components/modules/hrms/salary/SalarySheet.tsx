@@ -268,6 +268,13 @@ const SalarySheet = ({ user }: any) => {
       render: (row: any) => thousandSeparator(row.gross_salary),
     },
     {
+      key: "overtime_amount",
+      header: "OT Amount",
+      headerClass: "text-right",
+      cellClass: "text-right text-slate-700 dark:text-slate-200",
+      render: (row: any) => (Number(row.overtime_amount) ? thousandSeparator(row.overtime_amount) : "-"),
+    },
+    {
       key: "net_salary",
       header: "Net Salary",
       headerClass: "text-right",

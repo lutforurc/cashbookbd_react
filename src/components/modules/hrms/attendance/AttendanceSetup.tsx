@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FiClock, FiCreditCard, FiEdit2, FiFileText, FiRefreshCcw, FiRepeat, FiSave, FiSun, FiUmbrella, FiUsers } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -13,6 +13,7 @@ import InputElement from '../../../utils/fields/InputElement';
 import InputTimePicker from '../../../utils/fields/InputTimePicker';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import Table from '../../../utils/others/Table';
+import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import {
   fetchAttendanceShifts,
   fetchAttendancePolicies,
@@ -228,6 +229,12 @@ const AttendanceSetup = ({ user }: any) => {
   const [holidayForm, setHolidayForm] = useState<any>(initialHoliday);
   const [leaveTypeForm, setLeaveTypeForm] = useState<any>(initialLeaveType);
   const [rulesForm, setRulesForm] = useState<any>(initialRules);
+
+  // The branch list is this screen's own to load; it used to show only what
+  // another screen happened to leave in the store ("All Branch" alone otherwise).
+  useEffect(() => {
+    dispatch(getDdlProtectedBranch());
+  }, [dispatch]);
 
   const branches = branchDdlData?.protectedData?.data || [];
   const branchDropdownData = [{ id: '', name: 'All Branch' }, ...branches];

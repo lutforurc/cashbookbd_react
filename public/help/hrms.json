@@ -876,7 +876,8 @@
           "Branch-টি নতুন বেতন-খাত ইঞ্জিনে চালু থাকলে এই স্ক্রিন কিছুটা বদলায়: প্রতিটি খাতের (Basic, House Rent, Mobile Bill...) আলাদা কলাম আসে।",
           "সব অঙ্ক সার্ভার হিসাব করে — স্ক্রিন শুধু Loan, Other Deduction এবং বাদ দেওয়া কর্মচারী পাঠায়।",
           "Loan Ded. ও Other Ded. ঘরে টাইপ করলে নিচের Net Total সঙ্গে সঙ্গে বদলায়।",
-          "Action থেকে কোনো কর্মচারীকে এই শিট থেকে সরানো যায়; নিশ্চিত করার পর Generate চাপুন।"
+          "Action থেকে কোনো কর্মচারীকে এই শিট থেকে সরানো যায়; নিশ্চিত করার পর Generate চাপুন।",
+          "Overtime Salary শিটে শুধু ওভারটাইমের টাকা আসে — Basic মাসিক শিটেই একবার দেওয়া হয়।"
         ],
         "warning": "Branch নতুন ইঞ্জিনে চালু না থাকলে আগের মতোই সব কিছু চলে — কোনো পরিবর্তন নেই।"
       }
@@ -895,7 +896,8 @@
         "menu": "HRM → Salary → Salary Sheet",
         "steps": [
           "Branch ও Year বাছুন, Search চাপুন।",
-          "Payment Month, Employees, Gross Salary, Net Salary, Loan Ded., Payment Amount ও Due দেখা যায়।",
+          "Payment Month, Employees, Gross Salary, OT Amount, Net Salary, Loan Ded., Payment Amount ও Due দেখা যায়।",
+          "OT Amount-এ থাকে Overtime শিটের টাকা; মাসিক শিটের সারিতে এটি \"-\" দেখায়।",
           "Rows per page ও Font ঠিক করে প্রিন্ট করা যায়।"
         ]
       },
