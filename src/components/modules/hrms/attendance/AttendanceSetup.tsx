@@ -356,7 +356,8 @@ const AttendanceSetup = ({ user }: any) => {
   );
 
   const renderActions = (isEdit: boolean, reset: () => void) => (
-    <div className="flex gap-2">
+    // mt-auto: the buttons sit on the panel's bottom edge, level with the tab list.
+    <div className="mt-auto flex gap-2">
       <ButtonLoading
         type="submit"
         buttonLoading={buttonLoading}
@@ -516,10 +517,10 @@ const AttendanceSetup = ({ user }: any) => {
           })}
         </div>
 
-        <div className="flex-1 rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-sm">
+        <div className="flex flex-1 flex-col rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-sm">
 
       {activeTab === 'shift' && (
-        <form
+        <form className="flex flex-1 flex-col"
           onSubmit={(e) => {
             e.preventDefault();
             saveAndRefresh(saveAttendanceShift, shiftForm, () => setShiftForm(initialShift), 'Shift saved successfully');
@@ -549,7 +550,7 @@ const AttendanceSetup = ({ user }: any) => {
       )}
 
       {activeTab === 'policy' && (
-        <form
+        <form className="flex flex-1 flex-col"
           onSubmit={(e) => {
             e.preventDefault();
             saveAndRefresh(saveAttendancePolicy, policyForm, () => setPolicyForm(initialPolicy), 'Attendance policy saved successfully');
@@ -576,7 +577,7 @@ const AttendanceSetup = ({ user }: any) => {
       )}
 
       {activeTab === 'roster' && (
-        <form
+        <form className="flex flex-1 flex-col"
           onSubmit={(e) => {
             e.preventDefault();
             saveAndRefresh(saveShiftRoster, rosterForm, () => setRosterForm(initialRoster), 'Shift roster saved successfully');
@@ -613,8 +614,8 @@ const AttendanceSetup = ({ user }: any) => {
             <DropdownCommon id="roster_status" name="status" label="Status" value={rosterForm.status} data={rosterStatuses} onChange={handleChange(setRosterForm)} className="" />
             <InputElement name="remarks" label="Remarks" value={rosterForm.remarks || ''} onChange={handleChange(setRosterForm)} />
           </div>
-          {renderActions(Boolean(rosterForm.id), () => setRosterForm(initialRoster))}
-          <div className="mt-3 flex justify-end">
+          <div className="mt-auto flex flex-wrap justify-between gap-2">
+            {renderActions(Boolean(rosterForm.id), () => setRosterForm(initialRoster))}
             <Button type="button" onClick={() => dispatch(fetchShiftRosters(rosterForm.duty_date ? { duty_date: rosterForm.duty_date } : {}))} className={commandButtonClass}>
               Load Roster
             </Button>
@@ -623,7 +624,7 @@ const AttendanceSetup = ({ user }: any) => {
       )}
 
       {activeTab === 'weekly' && (
-        <form
+        <form className="flex flex-1 flex-col"
           onSubmit={(e) => {
             e.preventDefault();
             saveAndRefresh(saveWeeklyHoliday, weeklyForm, () => setWeeklyForm(initialWeekly), 'Weekly holiday saved successfully');
@@ -659,7 +660,7 @@ const AttendanceSetup = ({ user }: any) => {
       )}
 
       {activeTab === 'holiday' && (
-        <form
+        <form className="flex flex-1 flex-col"
           onSubmit={(e) => {
             e.preventDefault();
             saveAndRefresh(saveHoliday, holidayForm, () => setHolidayForm(initialHoliday), 'Holiday saved successfully');
@@ -688,7 +689,7 @@ const AttendanceSetup = ({ user }: any) => {
       )}
 
       {activeTab === 'rules' && (
-        <form
+        <form className="flex flex-1 flex-col"
           onSubmit={(e) => {
             e.preventDefault();
             saveAndRefresh(saveAttendanceRules, rulesForm, () => undefined, 'Attendance rules saved successfully');
@@ -711,18 +712,20 @@ const AttendanceSetup = ({ user }: any) => {
             <li>ছুটির দিনে (সাপ্তাহিক বা তালিকার) কাজ করলে পুরো সময়টাই ওভারটাইম, রেট গুণ করে।</li>
             <li>নতুন নিয়ম পরের সেভ বা পাঞ্চ থেকে খাটে। পুরোনো দিন বদলাতে Devices স্ক্রিনের Rebuild Days।</li>
           </ul>
-          <ButtonLoading
-            type="submit"
-            buttonLoading={buttonLoading}
-            label="Save Rules"
-            className={`${commandButtonClass} whitespace-nowrap`}
-            icon={<FiSave className="mr-2" />}
-          />
+          <div className="mt-auto">
+            <ButtonLoading
+              type="submit"
+              buttonLoading={buttonLoading}
+              label="Save Rules"
+              className={`${commandButtonClass} whitespace-nowrap`}
+              icon={<FiSave className="mr-2" />}
+            />
+          </div>
         </form>
       )}
 
       {activeTab === 'leave' && (
-        <form
+        <form className="flex flex-1 flex-col"
           onSubmit={(e) => {
             e.preventDefault();
             saveAndRefresh(saveLeaveType, leaveTypeForm, () => setLeaveTypeForm(initialLeaveType), 'Leave type saved successfully');
