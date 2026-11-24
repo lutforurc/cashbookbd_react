@@ -304,9 +304,9 @@
 | requisition_create | Requisition → New Requisition | `/requisition/create` | `requisition-form` | done |
 | requisition | Requisition → Requisition List | `/requisitions` | `requisition-list` | done |
 | reseller_dashboard | Reseller → Dashboard | `/reseller/dashboard` | `reseller-dashboard` | done |
-| print_template_designer | Admin → Company & Branch → Challan Layout | `/settings/challan-layout` | `print-layout` | done |
+| print_template_designer | Admin → Company & Branch → Paper Layout | `/settings/challan-layout` | `print-layout` | done |
 | menu_arrangement | Admin → Settings → Arrange Menu | `/settings/menu-arrangement` | `menu-arrangement` | done |
-| order_template_designer | Admin → Company & Branch → Challan Layout (Order paper) | `/settings/order-layout` | `print-layout` | done |
+| order_template_designer | Admin → Company & Branch → Paper Layout (Order paper) | `/settings/order-layout` | `print-layout` | done |
 | product_tracking_settings | Settings → Product Tracking | `/settings/product-tracking` | `product-tracking-settings` | done |
 | software_info | Admin → Company & Branch → Software Information | `/settings/software-info` | `software-info` | done |
 | sms_send | Admin → SMS → SMS Logs | `/sms/send` | `sms-log` | done |

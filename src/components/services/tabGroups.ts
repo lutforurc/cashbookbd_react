@@ -80,11 +80,11 @@ export const UPLOAD_TABS: RouteTab[] = [
   { label: 'Bulk Upload', path: routes.bulk_upload, permission: 'bulk.photo.upload' },
 ];
 
-// Challan Layout's paper switcher moves to the order-layout route; the tab stays lit there.
+// Paper Layout's paper switcher moves to the order-layout route; the tab stays lit there.
 export const COMPANY_BRANCH_TABS: RouteTab[] = [
   { label: 'Company Settings', path: routes.company_list, permission: 'company.view' },
   { label: 'Branch Settings', path: routes.branch_list, permission: 'branch.view' },
-  { label: 'Challan Layout', path: routes.print_template_designer, permission: 'print.template.view', also: [routes.order_template_designer] },
+  { label: 'Paper Layout', path: routes.print_template_designer, permission: 'print.template.view', also: [routes.order_template_designer] },
   { label: 'Software Information', path: routes.software_info, permission: 'software.information' },
 ];
 
