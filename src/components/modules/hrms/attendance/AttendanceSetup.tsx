@@ -506,9 +506,11 @@ const AttendanceSetup = ({ user }: any) => {
                   setActiveTab(tab.key);
                   fetchTabData(tab.key);
                 }}
-                className={`inline-flex cursor-pointer items-center gap-2 rounded px-4 text-sm font-medium transition md:w-full md:justify-start ${
- active
- ?'bg-blue-50 text-blue-600 dark:bg-slate-700/60 dark:text-blue-400':'text-slate-500 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-700/40 dark:hover:text-blue-400'}`}
+                className={`inline-flex cursor-pointer items-center gap-2 rounded-none border-r-4 px-4 text-sm font-medium transition md:w-full md:justify-start ${
+                  active
+                    ? 'border-blue-600 bg-blue-200 text-blue-800 dark:border-cyan-400 dark:bg-slate-700 dark:text-blue-300'
+                    : 'border-transparent text-slate-500 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-700/40 dark:hover:text-blue-400'
+                }`}
               >
                 <Icon className="text-base" />
                 {tab.label}
