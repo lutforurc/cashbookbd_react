@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "help:check": "node scripts/check-help.mjs"
+    "help:check": "node scripts/check-help.mjs",
+    "i18n:check": "node scripts/check-i18n.mjs"
   },
   "author": {
     "name": "Lutfor Rahman",
@@ -26,6 +27,8 @@
     "dayjs": "^1.11.13",
     "flatpickr": "^4.6.13",
     "formik": "^2.4.6",
+    "i18next": "^24.2.3",
+    "i18next-http-backend": "^3.0.6",
     "jquery": "^3.7.1",
     "js-cookie": "^3.0.5",
     "jsvectormap": "^1.6.0",
@@ -37,6 +40,7 @@
     "react-datepicker": "^9.1.0",
     "react-dom": "^19.2.8",
     "react-hot-toast": "^2.4.1",
+    "react-i18next": "^15.7.4",
     "react-icons": "^5.7.0",
     "react-quill-new": "^3.8.3",
     "react-redux": "^9.1.2",

@@ -191,6 +191,8 @@ export const API_CUSTOMER_OPENING_IMPORT_ROW_URL = `${API_BASE_URL}/contact/cust
 export const API_APP_SETTING_URL = `${API_BASE_URL}/settings/get-settings`;
 export const API_APP_BRANCH_SETTING_URL = `${API_BASE_URL}/settings/get-branch-settings`;
 export const API_APP_SETTING_VOCHER_TYPE_URL = `${API_BASE_URL}/settings/voucher-types`;
+// Language Settings (Phase 1): the company switch and one branch's defaults.
+export const API_LANGUAGE_SETTINGS_URL = `${API_BASE_URL}/settings/language`;
 export const API_SERVICE_LIST_URL = `${API_BASE_URL}/settings/service-list`;
 export const API_SOFTWARE_INFO_URL = `${API_BASE_URL}/settings/software-info`;
 export const API_SOFTWARE_INFO_UPDATE_URL = `${API_BASE_URL}/settings/software-info/update`;
@@ -224,6 +226,8 @@ export const API_USER_EDIT_URL = `${API_BASE_URL}/user/user-edit/`;
 export const API_USER_TEMPORARY_PASSWORD_URL = `${API_BASE_URL}/user/temporary-password/`;
 export const API_USER_DASHBOARD_PREFERENCES_URL = `${API_BASE_URL}/user/dashboard-preferences`;
 export const API_USER_UPDATE_URL = `${API_BASE_URL}/user/user-update`;
+// The caller's own language choice: 'en', 'local', or null (branch default).
+export const API_USER_LANGUAGE_URL = `${API_BASE_URL}/user/language`;
 // The signed-in user's own password; proven by the current one first.
 export const API_USER_CHANGE_PASSWORD_URL = `${API_BASE_URL}/user/change-password`;
 export const API_USER_TOGGLE_STATUS_URL = `${API_BASE_URL}/user/toggle-status`;

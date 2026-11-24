@@ -10,6 +10,10 @@ import httpService from '../components/services/httpService';
 import { Dispatch, AnyAction } from 'redux';
 import { userCurrentBranch } from '../components/modules/branch/branchSlice';
 import { getSettings } from '../components/modules/settings/settingsSlice';
+import {
+  CURRENT_DIRECTION_STORAGE_KEY,
+  CURRENT_LANGUAGE_STORAGE_KEY,
+} from '../i18n/currentLanguage';
 
 type AuthError = { message: string } | null;
 
@@ -62,6 +66,11 @@ export const removeData = () => {
   Cookies.remove('laravel_session');
   Cookies.remove('XSRF-TOKEN');
   localStorage.removeItem('settings');
+  // The language belongs to the user who chose it. Left behind, the next user
+  // on this browser would open the login page -- and their first requests --
+  // in the previous user's language.
+  localStorage.removeItem(CURRENT_LANGUAGE_STORAGE_KEY);
+  localStorage.removeItem(CURRENT_DIRECTION_STORAGE_KEY);
   clearReportFilters();
 };
 

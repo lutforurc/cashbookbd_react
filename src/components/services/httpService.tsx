@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import { API_BASE_URL, API_LOGIN_URL, API_CSRF_COOKIES } from './apiRoutes';
 import { getDeviceId } from './deviceId';
+import { getCurrentLanguage } from '../../i18n/currentLanguage';
 import { NEGATIVE_VALUE_MESSAGE, findNegativePath } from '../utils/utils-functions/nonNegative';
 
 const AUTH_TOKEN_COOKIE = '_trio_lead_token';
@@ -22,6 +23,10 @@ httpService.interceptors.request.use(function (config) {
     config.withCredentials = true;
     // Identifies this browser as one device slot against the plan's limit.
     config.headers['X-Device-Id'] = getDeviceId();
+    // The locale the server should answer in. Read from the module-level store
+    // rather than from i18next, so this interceptor never depends on the
+    // translation bundle having loaded.
+    config.headers['Accept-Language'] = getCurrentLanguage();
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }

@@ -54,6 +54,7 @@ import {
 } from '../../utils/utils-functions/padLogoLayout';
 import type { PadLogoConfig } from '../../utils/utils-functions/padLogoLayout';
 import { resolveAssetUrl } from '../../services/resolveAssetUrl';
+import LanguageSettings from '../settings/LanguageSettings';
 
 const shouldStripPublicPrefix = /^(https?:\/\/)?(localhost|127\.0\.0\.1|cashbook_api\.test)(:\d+)?$/i.test(
   API_REMOTE_URL,
@@ -712,9 +713,16 @@ const AddBranch = () => {
 
   // Built rather than fixed, so the step numbering and the "of N" count stay
   // right for everyone who does not see the extra one.
+  // Language Settings: the company's Bangla switch and this branch's default
+  // screen/print language and digits. Only for whoever holds the key its API
+  // asks for. It sits mid-list, never last, because it saves with its own
+  // button -- the last step is where the branch's Update button appears.
+  const canManageLanguage = hasPermission(settings?.data?.permissions || [], 'language.settings');
+
   const steps = [
     'Basic Info',
     'Print Setup',
+    ...(canManageLanguage ? ['Language Settings'] : []),
     'Invoice Setup',
     'Forms Setup',
     'Customer Setup',
@@ -1653,6 +1661,8 @@ const AddBranch = () => {
                   <p className="mt-0.5 text-xs leading-snug text-gray-500">
                     {currentStep === stepIndex('Basic Info') && 'Branch identity, contact details, and status.'}
                     {currentStep === stepIndex('Print Setup') && 'Print preferences, page size, and letterhead setup.'}
+                    {currentStep === stepIndex('Language Settings') &&
+                      'Whether the software also runs in Bangla, and this branch\'s default screen and print language.'}
                     {currentStep === stepIndex('Invoice Setup') && 'Invoice labels, notes, formatting, and invoice display options.'}
                     {currentStep === stepIndex('Forms Setup') && 'Which existing form each invoice category opens.'}
                     {currentStep === stepIndex('Customer Setup') && 'Customer and supplier related options for this branch.'}
@@ -3607,6 +3617,19 @@ const AddBranch = () => {
                       Only a branch that is a hotel uses these. Every other branch
                       can leave them alone.
                     </p>
+                  </>
+                )}
+
+                {currentStep === stepIndex('Language Settings') && (
+                  <>
+                    {!formData?.id ? (
+                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                        Save the branch first. The language defaults are kept per branch, so there is nothing to set
+                        until this one exists.
+                      </p>
+                    ) : (
+                      <LanguageSettings branchId={Number(formData.id)} />
+                    )}
                   </>
                 )}
 

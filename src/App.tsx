@@ -122,6 +122,7 @@ import ConstructionLabourInvoice from './components/modules/invoices/labour/Cons
 import RemoveApproval from './components/modules/voucher_approval/RemoveApproval';
 import FaviconUpdater from './components/utils/components/FaviconUpdater';
 import { useUserTheme } from './theme/userTheme';
+import { useLanguage } from './i18n/useLanguage';
 import BulkImageUpload from './components/modules/image-upload/BulkImageUpload';
 import GroupPurchaseSales from './components/modules/reports/group-report/GroupPurchaseSales';
 import GroupReportSetup from './components/modules/reports/group-report/GroupReportSetup';
@@ -360,6 +361,11 @@ function App() {
   // the root element as soon as the session settings arrive. Everything below
   // is already reading those variables, so nothing else has to know about it.
   useUserTheme(settings?.data?.user);
+
+  // And the language: <html lang/dir/data-lang> and the i18n labels, from the
+  // user's choice, the branch default and the company's local language. A
+  // side effect only; the header pill reads the same hook on its own.
+  useLanguage();
 
 
 

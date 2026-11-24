@@ -7,6 +7,9 @@ import './css/style.css';
 import './css/satoshi.css';
 import 'jsvectormap/dist/jsvectormap.css';
 import 'flatpickr/dist/flatpickr.min.css';
+// After the stylesheets and before the app: the bundle reads localStorage for
+// the language already chosen, so the first render is in the right one.
+import './i18n';
 import { Provider } from 'react-redux';
 import store from './store';
 import { ToastContainer } from 'react-toastify';
