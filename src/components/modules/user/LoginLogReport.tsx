@@ -243,65 +243,80 @@ const LoginLogReport: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-6">
-          <div>
-            <label className="block text-sm">From</label>
-            <InputDatePicker
- className="w-full text-sm font-medium"
- selectedDate={dateFrom}
- setSelectedDate={setDateFrom}
- setCurrentDate={setDateFrom}
-            />
-          </div>
+        {/* The filter row measures ITSELF, not the screen (the `@container`).
+            Keyed to the viewport it was a 6-column grid at `md` and the two
+            buttons were crammed into one sixth of it -- less room than their own
+            labels -- so they spilled past the panel. Then, keyed to `xl` for the
+            single row, a panel 1000px wide fell back to a two-column layout that
+            left Result alone in a half-width cell.
+            So: one column while narrow, two while middling -- Result and Search
+            paired, so the middle step is not lopsided -- four across once the
+            fields fit that way with the buttons beneath them, and the single row
+            (buttons beside the fields) only when the panel is wide enough for
+            both. The buttons keep the width their labels need at every step, and
+            only ever grow to share a row when stacked. */}
+        <div className="@container">
+          <div className="grid grid-cols-1 items-end gap-2 @xl:grid-cols-2 @3xl:grid-cols-4 @4xl:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.4fr)_auto]">
+            <div>
+              <label className="block text-sm">From</label>
+              <InputDatePicker
+                className="w-full text-sm font-medium"
+                selectedDate={dateFrom}
+                setSelectedDate={setDateFrom}
+                setCurrentDate={setDateFrom}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm">To</label>
-            <InputDatePicker
- className="w-full text-sm font-medium"
- selectedDate={dateTo}
- setSelectedDate={setDateTo}
- setCurrentDate={setDateTo}
-            />
-          </div>
+            <div>
+              <label className="block text-sm">To</label>
+              <InputDatePicker
+                className="w-full text-sm font-medium"
+                selectedDate={dateTo}
+                setSelectedDate={setDateTo}
+                setCurrentDate={setDateTo}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm">Result</label>
-            <Select
-              className={`${FIELD_SELECT} w-full px-2 text-sm`}
-              value={result}
-              onChange={(event) => setResult(event.target.value)}
-            >
-              <option value="">All</option>
-              <option value="success">Signed in</option>
-              <option value="failed">Refused</option>
-            </Select>
-          </div>
+            <div>
+              <label className="block text-sm">Result</label>
+              <Select
+                className={`${FIELD_SELECT} w-full px-2 text-sm`}
+                value={result}
+                onChange={(event) => setResult(event.target.value)}
+              >
+                <option value="">All</option>
+                <option value="success">Signed in</option>
+                <option value="failed">Refused</option>
+              </Select>
+            </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-sm">Search</label>
-            <SearchInput
- search={search}
- setSearchValue={setSearch}
- className="w-full text-sm"
-            />
-          </div>
+            <div>
+              <label className="block text-sm">Search</label>
+              <SearchInput
+                search={search}
+                setSearchValue={setSearch}
+                onEnter={handleSearch}
+                className="w-full text-sm"
+              />
+            </div>
 
-          <div className="flex items-end gap-2">
-            <ButtonLoading
-              onClick={handleSearch}
-              buttonLoading={loading}
-              label="Search"
-              variant="primary"
-              className="flex-1 text-sm"
-              icon={<FiSearch />}
-            />
-            <ButtonLoading
-              onClick={handleReset}
-              buttonLoading={false}
-              label="Reset"
-              className="flex-1 text-sm"
-              icon={<FiRefreshCcw />}
-            />
+            <div className="flex flex-wrap items-end justify-end gap-2 @xl:col-span-2 @3xl:col-span-4 @4xl:col-span-1">
+              <ButtonLoading
+                onClick={handleSearch}
+                buttonLoading={loading}
+                label="Search"
+                variant="primary"
+                className="flex-1 whitespace-nowrap text-sm @xl:flex-none"
+                icon={<FiSearch />}
+              />
+              <ButtonLoading
+                onClick={handleReset}
+                buttonLoading={false}
+                label="Reset"
+                className="flex-1 whitespace-nowrap text-sm @xl:flex-none"
+                icon={<FiRefreshCcw />}
+              />
+            </div>
           </div>
         </div>
 
@@ -334,6 +349,12 @@ const LoginLogReport: React.FC = () => {
               columns={columns}
               data={rows}
               className=""
+              // Nine columns have a width under which they stop being readable,
+              // and the table wraps itself in `overflow-x-auto` -- so on a narrow
+              // panel it scrolls sideways instead of squeezing Device and IP
+              // Address into a few characters each. Set inline, because the
+              // table's own `min-w-full` would otherwise win over a class.
+              tableStyle={{ minWidth: 900 }}
               noDataMessage={
                 loadError ? 'Nothing could be loaded' : 'Nothing recorded for this period'
               }
@@ -347,11 +368,15 @@ const LoginLogReport: React.FC = () => {
         </div>
 
         {totalPages > 1 ? (
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            handlePageChange={(next: any) => setPage(next)}
-          />
+          // Nine buttons and two words do not fit a phone: the row keeps its
+          // shape and scrolls sideways rather than pushing off the panel.
+          <div className="overflow-x-auto">
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              handlePageChange={(next: any) => setPage(next)}
+            />
+          </div>
         ) : null}
       </div>
     </div>
