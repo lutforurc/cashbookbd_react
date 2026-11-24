@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import BilingualInput from '../../utils/fields/BilingualInput';
 import { displayName } from '../../../i18n/displayName';
 
-const emptyEditForm = { id: '', category_name: '', name_local: '', description: '' };
+const emptyEditForm = { id: '', category_name: '', name_local: '', description: '', description_local: '' };
 
 const Category = () => {
   const category = useSelector((state: any) => state.category);
@@ -90,6 +90,7 @@ const Category = () => {
       category_name: row.name || '',
       name_local: row.name_local || '',
       description: row.description || '',
+      description_local: row.description_local || '',
     });
     setEditOpen(true);
   };
@@ -112,6 +113,10 @@ const Category = () => {
     }
     if (!editForm.category_name.trim()) {
       toast.info('Category name is required');
+      return;
+    }
+    if (localCode && !(editForm.description_local || '').trim()) {
+      toast.info(t('data.localRequired', { field: 'Category Description', language: localName }));
       return;
     }
     if (!editForm.description.trim()) {
@@ -171,6 +176,7 @@ const Category = () => {
     {
       key: 'description',
       header: 'Category Description',
+      render: (row: any) => displayName(row, 'description', languageCode),
     },
     {
       key: 'action',
@@ -273,13 +279,15 @@ const Category = () => {
                 />
               </div>
               <div>
-                <InputElement
-                  id="description"
+                <BilingualInput
                   name="description"
+                  kind="description"
                   label="Category Description"
                   placeholder="Category Description"
                   value={editForm.description}
+                  localValue={editForm.description_local || ''}
                   onChange={handleEditChange}
+                  onLocalChange={(value) => setEditForm((prev: any) => ({ ...prev, description_local: value }))}
                 />
               </div>
             </div>

@@ -19,6 +19,7 @@ interface CategoryFormValues {
   category_name: string;
   name_local: string;
   description: string;
+  description_local: string;
 }
 
 const AddCategory: React.FC = () => {
@@ -36,6 +37,9 @@ const AddCategory: React.FC = () => {
       ? Yup.string().required(t('data.localRequired', { field: 'Category Name', language: localName }))
       : Yup.string().nullable(),
     description: Yup.string().required('Description is required'),
+    description_local: localCode
+      ? Yup.string().required(t('data.localRequired', { field: 'Category Description', language: localName }))
+      : Yup.string().nullable(),
   });
 
   const formik = useFormik<CategoryFormValues>({
@@ -43,6 +47,7 @@ const AddCategory: React.FC = () => {
       category_name: '',
       name_local: '',
       description: '',
+      description_local: '',
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
@@ -97,17 +102,21 @@ const AddCategory: React.FC = () => {
           <div className="text-red-500 text-sm">{errors.name_local}</div>
         )}
 
-        <InputElement
-          id="description"
-          value={values.description}
+        <BilingualInput
           name="description"
+          kind="description"
+          value={values.description}
+          localValue={values.description_local}
           placeholder="Enter Category Description"
           label="Category Description"
-          className="mb-0"
           onChange={handleChange}
+          onLocalChange={(value) => formik.setFieldValue('description_local', value)}
         />
         {errors.description && touched.description && (
           <div className="text-red-500 text-sm">{errors.description}</div>
+        )}
+        {errors.description_local && touched.description_local && (
+          <div className="text-red-500 text-sm">{errors.description_local}</div>
         )}
 
         <div className="grid grid-cols-1 gap-x-1 gap-y-1 md:grid-cols-2">

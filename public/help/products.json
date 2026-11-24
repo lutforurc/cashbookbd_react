@@ -87,7 +87,7 @@
     "video": "",
     "intro": "পণ্যের ক্যাটাগরি তালিকা; নতুন ক্যাটাগরি এখান থেকেই যোগ বা বদলানো হয়।",
     "sections": [
-      { "heading": "ক্যাটাগরি", "menu": "Products → Classification → Category", "steps": ["Search দিয়ে খুঁজুন; New Category চাপলে ফর্ম খোলে।", "Category Name ও Category Description লিখে Save/Update চাপুন।", "Category List-এ Sl. No., Category Name, Category Description ও Action দেখা যায়।", "কোম্পানিতে বাংলা চালু থাকলে নামের ঘরের ভেতরে ডানের ENG | বাংলা সুইচে বাংলা নাম লিখুন — বাংলা চালু থাকায় এটাও আবশ্যক; বাংলা স্ক্রিনে তালিকায় বাংলা নাম দেখায়, বাংলা না থাকলে ইংরেজি।"] },
+      { "heading": "ক্যাটাগরি", "menu": "Products → Classification → Category", "steps": ["Search দিয়ে খুঁজুন; New Category চাপলে ফর্ম খোলে।", "Category Name ও Category Description লিখে Save/Update চাপুন।", "Category List-এ Sl. No., Category Name, Category Description ও Action দেখা যায়।", "কোম্পানিতে বাংলা চালু থাকলে নামের ঘরের ভেতরে ডানের ENG | বাংলা সুইচে বাংলা নাম লিখুন — বাংলা চালু থাকায় এটাও আবশ্যক; বাংলা স্ক্রিনে তালিকায় বাংলা নাম দেখায়, বাংলা না থাকলে ইংরেজি।", "Category Description-এর ঘরেও একই ENG | বাংলা সুইচ — বাংলা চালু থাকলে বাংলা বর্ণনাও আবশ্যক।"] },
       { "heading": "সতর্কতা", "warning": "যে ক্যাটাগরির নিচে পণ্য আছে সেটি মোছা যায় না। /category/edit পাতা শুধু Edit Category লেখা দেখায় — বদল আনতে তালিকার Edit ব্যবহার করুন।" }
     ]
   },
@@ -137,7 +137,7 @@
     "video": "",
     "intro": "পণ্যের গ্রুপ তালিকা; গ্রুপ দিয়ে রিপোর্টে পণ্য ভাগ করা যায়।",
     "sections": [
-      { "heading": "গ্রুপ", "menu": "Products → Classification → Product Group", "steps": ["Search দিয়ে খুঁজুন; New Group চাপলে জানালা খোলে।", "Group Name ও Group Description লিখে Save/Update চাপুন।", "তালিকায় Sl. No., Group Name, Group Description ও Action দেখা যায়।", "কোম্পানিতে বাংলা চালু থাকলে নামের ঘরের ভেতরে ডানের ENG | বাংলা সুইচে বাংলা নাম লিখুন — বাংলা চালু থাকায় এটাও আবশ্যক; বাংলা স্ক্রিনে তালিকায় বাংলা নাম দেখায়, বাংলা না থাকলে ইংরেজি।"] },
+      { "heading": "গ্রুপ", "menu": "Products → Classification → Product Group", "steps": ["Search দিয়ে খুঁজুন; New Group চাপলে জানালা খোলে।", "Group Name ও Group Description লিখে Save/Update চাপুন।", "তালিকায় Sl. No., Group Name, Group Description ও Action দেখা যায়।", "কোম্পানিতে বাংলা চালু থাকলে নামের ঘরের ভেতরে ডানের ENG | বাংলা সুইচে বাংলা নাম লিখুন — বাংলা চালু থাকায় এটাও আবশ্যক; বাংলা স্ক্রিনে তালিকায় বাংলা নাম দেখায়, বাংলা না থাকলে ইংরেজি।", "Group Description-এর ঘরেও একই ENG | বাংলা সুইচ — বাংলা চালু থাকলে বাংলা বর্ণনাও আবশ্যক।"] },
       { "heading": "সতর্কতা", "warning": "যে গ্রুপে পণ্য আছে সেটি মোছা যায় না।" }
     ]
   },
