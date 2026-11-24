@@ -495,14 +495,18 @@ const BalanceSheet = (user: any) => {
     <>
       <HelmetTitle title="Balance Sheet" />
       <div className="mx-auto space-y-2 ">
-        <div className="pl-0 pr-1 py-3">
+        {/* `@container`: the filter row follows the panel's own width, not the
+            screen's -- inside the tab page the panel is far narrower than the
+            viewport, and keyed to the screen Report Type wrapped alone with the
+            buttons pushed to a line of their own. */}
+        <div className="@container pl-0 pr-1 py-3">
           <div className="flex flex-wrap items-end gap-3">
             <FilterMenuShell
               enabled={useFilterMenuEnabled}
               isOpen={filterOpen}
               onToggle={() => setFilterOpen((prev) => !prev)}
               menuWidthClassName="w-[min(92vw,340px)]"
-              inlineClassName="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]"
+              inlineClassName="grid w-full grid-cols-1 items-end gap-3 @xl:grid-cols-2 @3xl:grid-cols-3 @7xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]"
             >
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -573,39 +577,16 @@ const BalanceSheet = (user: any) => {
                   icon={<FiRotateCcw />}
                 />
               </div>
-            </FilterMenuShell>
-
-            <div className={`${useFilterMenuEnabled ? "hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300" : "hidden"}`}>
-              Use the filter
-            </div>
-
-            {useFilterMenuEnabled ? (
-              <div className="ml-auto flex items-end gap-2">
-                <PrintRowsInput
-                  type="number"
-                  id="bs-per-page"
-                  label=""
-                  value={perPage}
-                  onChange={(e: any) => setPerPage(Number(e.target.value) || 0)}
-                  className="w-20! text-center"
-                />
-                <PrintFontInput
-                  type="number"
-                  id="bs-font-size"
-                  label=""
-                  value={fontSize}
-                  onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
-                  className="w-20! text-center"
-                />
-                <PrintButton
-                  label="Print"
-                  onClick={handlePrint}
-                  className="px-6"
-                  disabled={!hasReportData || writeOffPending}
-                />
-              </div>
-            ) : (
-              <div className="flex w-full flex-nowrap items-end justify-between gap-3 overflow-x-auto xl:ml-auto xl:w-auto">
+              {/* Apply/Print sit in the grid. The two groups need about 500px
+                  together, so the cell is sized by the panel's width:
+                  - two columns (@xl): a full row of its own under the fields;
+                  - three columns (@3xl, 768px+): beside Report Type, spanning the
+                    two cells it leaves, which are wide enough from there on;
+                  - very wide (@7xl): the fifth column of a single row.
+                  Each group stays on one line; only on a phone, narrower than
+                  both together, does Print drop under Apply. */}
+              {!useFilterMenuEnabled && (
+              <div className="flex flex-wrap items-end justify-between gap-2 @xl:col-span-2 @7xl:col-span-1">
                 <div className="flex flex-nowrap items-end gap-2">
                   <ButtonLoading
                     label="Apply"
@@ -648,7 +629,39 @@ const BalanceSheet = (user: any) => {
                   />
                 </div>
               </div>
-            )}
+              )}
+            </FilterMenuShell>
+
+            <div className={`${useFilterMenuEnabled ? "hidden min-w-[180px] flex-1 text-sm text-slate-600 md:block dark:text-slate-300" : "hidden"}`}>
+              Use the filter
+            </div>
+
+            {useFilterMenuEnabled ? (
+              <div className="ml-auto flex items-end gap-2">
+                <PrintRowsInput
+                  type="number"
+                  id="bs-per-page"
+                  label=""
+                  value={perPage}
+                  onChange={(e: any) => setPerPage(Number(e.target.value) || 0)}
+                  className="w-20! text-center"
+                />
+                <PrintFontInput
+                  type="number"
+                  id="bs-font-size"
+                  label=""
+                  value={fontSize}
+                  onChange={(e: any) => setFontSize(Number(e.target.value) || 12)}
+                  className="w-20! text-center"
+                />
+                <PrintButton
+                  label="Print"
+                  onClick={handlePrint}
+                  className="px-6"
+                  disabled={!hasReportData || writeOffPending}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
 
