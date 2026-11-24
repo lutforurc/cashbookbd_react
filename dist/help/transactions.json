@@ -17,8 +17,8 @@
         "heading": "জার্নাল লেখার ধাপ",
         "menu": "Transaction → Journal",
         "steps": [
-          "Select Payer Account থেকে যে খাত টাকা দেবে সেটি বাছুন।",
-          "Select Receiver Account থেকে যে খাত টাকা নেবে সেটি বাছুন।",
+          "Select Payer Account থেকে যে খাত টাকা দেবে সেটি নির্বাচন করুন।",
+          "Select Receiver Account থেকে যে খাত টাকা নেবে সেটি নির্বাচন করুন।",
           "Note-এ কারণ লিখুন।",
           "Amount-এ টাকার অঙ্ক লিখুন।",
           "Save চাপুন।"

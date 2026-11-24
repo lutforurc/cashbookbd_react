@@ -2,6 +2,7 @@ import React from "react";
 import { FiEye } from "react-icons/fi";
 import Pagination from "../utils-functions/Pagination";
 import ToggleSwitch from "../fields/ToggleSwitch";
+import { rl } from "../../../i18n/reportLabel";
 
 export interface TableHeaderCell {
   label: React.ReactNode;
@@ -281,14 +282,14 @@ export const TableColumnsPanel: React.FC<{
     }`}
   >
     <div className="mb-1 flex items-center justify-between border-b border-[rgb(var(--c-border))] pb-1">
-      <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Columns</span>
+      <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">{rl("Columns")}</span>
       <button
         type="button"
         onClick={onShowAll}
         disabled={!hiddenCount}
         className="text-xs text-indigo-600 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline dark:text-indigo-400 dark:disabled:text-gray-500"
       >
-        Show all
+        {rl("Show all")}
       </button>
     </div>
 
@@ -304,7 +305,7 @@ export const TableColumnsPanel: React.FC<{
             // that the table is refusing rather than broken.
             title={
               String(column.key) === lastShownMenuKey
-                ? 'A table needs at least one column'
+                ? rl('A table needs at least one column')
                 : undefined
             }
           >
@@ -772,7 +773,7 @@ const Table: React.FC<TableProps> = ({
                 colSpan={visibleColumns.length}
                 className="py-4 text-center text-gray-500 dark:text-gray-400"
               >
-                {noDataMessage || "No data found"}
+                {noDataMessage || rl("No data found")}
               </td>
             </tr>
           )}

@@ -40,7 +40,11 @@
   "branch": {
     "pricingHeading": "Pricing",
     "blockBelowCostLabel": "Block Sales Below Purchase Price?",
-    "blockBelowCostHint": "On, the tiles sales invoice refuses a line whose rate is below the purchase price listed in the product search. Off, a loss sale is written like any other line — for a clearance, or stock the market has moved under."
+    "blockBelowCostHint": "On, the tiles sales invoice refuses a line whose rate is below the purchase price listed in the product search. Off, a loss sale is written like any other line — for a clearance, or stock the market has moved under.",
+    "payrollHeading": "Payroll",
+    "payrollIntro": "How Salary Generate works out this branch's salaries.",
+    "salaryEngineLabel": "Salary from Pay Heads?",
+    "salaryEngineHint": "On, Salary Generate pays each employee from their salary revision, one column per pay head (Basic, Mobile Bill, Lunch Bill...). Off, the old fixed sheet. Saved at once; switch it off to go back."
   },
   "common": {
     "save": "Save",
@@ -216,7 +220,21 @@
     "Supplier advances": "Supplier advances",
     "Customer credit balances": "Customer credit balances",
     "Bank and finance borrowings": "Bank and finance borrowings",
-    "Loans received": "Loans received"
+    "Loans received": "Loans received",
+    "Payment Month": "Payment Month",
+    "Employees": "Employees",
+    "Gross Salary": "Gross Salary",
+    "OT Amount": "OT Amount",
+    "Payment Amount": "Payment Amount",
+    "Due": "Due",
+    "Branch Name": "Branch Name",
+    "Paid": "Paid",
+    "Select": "Select",
+    "Update": "Update",
+    "Excel": "Excel",
+    "Columns": "Columns",
+    "Show all": "Show all",
+    "A table needs at least one column": "A table needs at least one column"
   },
   "customerLocal": {
     "father": "Relation's Name",

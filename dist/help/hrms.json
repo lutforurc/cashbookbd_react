@@ -41,7 +41,7 @@
         "menu": "Labour Items → Item",
         "steps": [
           "New Item চাপুন।",
-          "Select Category থেকে ক্যাটাগরি বাছুন।",
+          "Select Category থেকে ক্যাটাগরি নির্বাচন করুন।",
           "Item Name ও Item Description লিখুন।",
           "Select Unit থেকে একক, Rate-এ হার লিখুন।",
           "Active চালু রেখে Save চাপুন; বদলাতে Update চাপুন।"
@@ -70,8 +70,8 @@
         "heading": "তালিকা দেখা",
         "menu": "Requisition → Requisition List",
         "steps": [
-          "Branch, Start Date ও End Date বাছুন।",
-          "Status থেকে Approved বা Rejected বাছুন, নাহলে Select All রাখুন।",
+          "Branch, Start Date ও End Date নির্বাচন করুন।",
+          "Status থেকে Approved বা Rejected নির্বাচন করুন, নাহলে Select All রাখুন।",
           "Search চাপুন।"
         ]
       },
@@ -154,7 +154,7 @@
         "heading": "তালিকা দেখা",
         "menu": "HRM → Employee → Employee List",
         "steps": [
-          "Branch ও Designation বাছুন, দরকার হলে Designation Level-ও।",
+          "Branch ও Designation নির্বাচন করুন, দরকার হলে Designation Level-ও।",
           "Search চাপুন।",
           "Employee চাপলে নতুন কর্মচারীর ফর্ম খোলে।"
         ]
@@ -190,11 +190,12 @@
         "heading": "ফর্ম পূরণ",
         "menu": "HRM → Employee → Employee",
         "steps": [
-          "ফর্মটি তিন ধাপে — উপরের ধাপের বোতাম চেপে যেকোনো ধাপে যাওয়া যায়, নিচে Back ও Next।",
+          "ফর্মটি তিন ধাপে — বাঁ দিকের ধাপের বোতাম চেপে যেকোনো ধাপে যাওয়া যায়, নিচে Back ও Next।",
           "১. Personal Information: Name, Father's Name, National ID, Date of Birth, Gender, Mobile Number, Present ও Permanent Address এবং Qualification।",
           "২. Employment & Attendance: Joining Date, Select Designation, Select Branch, Status, Attendance Type, Attendance Policy, Default Shift, Show in Manual Attendance, Overtime Eligible, Standard Work Minutes ও Device Code।",
           "৩. Salary & Payroll: Is Payable?, Basic Salary, House Rent, Medical ও Others Allowance, Daily Wage, OT Rate, Loan ও Others Deduction এবং Salary Sheet Serial Number।",
-          "শেষ ধাপে Save চাপুন। কোনো জরুরি ঘর ফাঁকা থাকলে ফর্ম নিজেই সেই ধাপে ফিরে যায়।"
+          "শেষ ধাপে Save চাপুন। কোনো জরুরি ঘর ফাঁকা থাকলে ফর্ম নিজেই সেই ধাপে ফিরে যায়।",
+          "কোম্পানিতে বাংলা চালু থাকলে Name, Father's Name, Present ও Permanent Address এবং Qualification-এর ঘরে ENG | বাংলা সুইচে বাংলাও লেখা যায়; বাংলা চালু থাকলে বাংলা নাম ও পিতার নাম আবশ্যক।"
         ]
       },
       {
@@ -204,9 +205,10 @@
           "Structure বাছলে তার খাতগুলো নিচে বসে যায়; অথবা Available pay heads থেকে একটি একটি করে যোগ করুন।",
           "Effective From শুধু মাস বাছা যায় — revision সবসময় মাসের ১ তারিখ থেকে শুরু হয়।",
           "Monthly Gross নিজে হিসাব হয়। Save Revision চাপলে নতুন revision তৈরি হয় এবং পুরোনোটির শেষ তারিখ আগের দিন হয়ে বন্ধ হয়।",
-          "নিচে Salary history-তে কে কোন মাস থেকে কত পেয়েছে তা দেখা যায়।"
+          "নিচে Salary history-তে কে কোন মাস থেকে কত পেয়েছে তা দেখা যায়।",
+          "প্যানেল খুললে সবচেয়ে নতুন revision-এর খাত ও অঙ্ক দেখায় — পরের মাস থেকে দেওয়া বেতনও। সেই মাসেই আবার Save করলে ওই মাসের revision বদলে যায়, নতুন সারি হয় না।"
         ],
-        "warning": "পুরোনো revision বদলানো যায় না — বেতন বাড়াতে নতুন revision দিন। এতে পুরোনো মাসের বেতন শিট অঙ্কে অপরিবর্তিত থাকে।"
+        "warning": "যে revision থেকে এখনও বেতন শিট হয়নি, Salary history-তে তার পাশে Edit ও Cancel থাকে — Edit চাপলে অঙ্ক ফর্মে আসে, ঠিক করে Save Revision চাপুন; ভুল বা দুবার হয়ে যাওয়া revision Cancel দিয়ে বাতিল করুন, তখন আগের revision আবার সেই মাসগুলো ধরে। বাতিল revision মোছে না — ইতিহাসের নিচে কাটা দাগসহ Cancelled লেখা থাকে, কে কবে বাতিল করেছে সহ, এবং কোনো বেতনে ধরা হয় না। একমাত্র revision বাতিল করা যায় না। শিট হয়ে গেলে পাশে Paid লেখা থাকে, তখন আর বদলানো যায় না — বেতন বাড়াতে পরের মাস থেকে নতুন revision দিন।"
       },
       {
         "heading": "যা মনে রাখবেন",
@@ -252,10 +254,11 @@
         "heading": "ফর্ম",
         "menu": "HRM → Designations → Designations → New Designation",
         "steps": [
-          "Designation Level বাছুন।",
+          "Designation Level নির্বাচন করুন।",
           "Designation Name, Sequence ও Description লিখুন।",
           "Save চাপুন; বদলাতে Update চাপুন।",
-          "Back দিয়ে তালিকায় ফিরুন।"
+          "Back দিয়ে তালিকায় ফিরুন।",
+          "কোম্পানিতে বাংলা চালু থাকলে Designation Name ও Description-এর ঘরে ENG | বাংলা সুইচে বাংলাও লেখা যায়; বাংলা চালু থাকলে বাংলা নাম আবশ্যক। বাংলা বেতন শিটে এই নামেই পদবি দেখায়।"
         ],
         "warning": "Sequence ছোট সংখ্যা আগে দেখাবে। একই ক্রম দুবার দিলে তালিকার ক্রম এলোমেলো দেখাবে।"
       }
@@ -384,7 +387,7 @@
         "menu": "HRM → Attendance Settings → Attendance Devices",
         "steps": [
           "Register Device চাপুন। Device Name ও Serial Number দিন — সিরিয়াল ডিভাইসের Menu → About-এ যা লেখা, হুবহু তাই।",
-          "Branch বাছুন; Device Code, Local IP ও Comm Key ঐচ্ছিক।",
+          "Branch নির্বাচন করুন; Device Code, Local IP ও Comm Key ঐচ্ছিক।",
           "Save Device চাপুন। তালিকায় Last Contact দেখা যায় — ডিভাইস যোগাযোগ করলে সময়টা বদলায়।"
         ]
       },
@@ -400,7 +403,7 @@
         "heading": "কর্মচারী ম্যাপিং",
         "steps": [
           "তালিকায় ডিভাইসের পাশে Users আইকনে চাপুন।",
-          "Device Code (ডিভাইসে যেই আইডি দিয়ে মুখ enroll করা) ও Employee বাছুন, তারপর Map চাপুন।",
+          "Device Code (ডিভাইসে যেই আইডি দিয়ে মুখ enroll করা) ও Employee নির্বাচন করুন, তারপর Map চাপুন।",
           "ম্যাপ করার সাথে সাথে সেই কোডের আগের সব পাঞ্চ থেকেও দিনের হাজিরা তৈরি হয় — কত দিন তৈরি হলো তা বার্তায় দেখা যায়।"
         ]
       },
@@ -463,7 +466,7 @@
         "menu": "HRM → Attendance → Unmatched Punches",
         "steps": [
           "প্রতিটি সারিতে Device Code, ডিভাইস, কত পাঞ্চ জমেছে ও প্রথম-শেষ পাঞ্চের সময় দেখা যায়।",
-          "Match To Employee ঘরে নাম লিখে কর্মচারী বাছুন, তারপর Map চাপুন।",
+          "Match To Employee ঘরে নাম লিখে কর্মচারী নির্বাচন করুন, তারপর Map চাপুন।",
           "ম্যাপ হলে সেই কোডের সব পাঞ্চ ওই কর্মচারীর হয়ে যায় এবং দিনের হাজিরা নতুন করে তৈরি হয়।"
         ]
       },
@@ -491,7 +494,7 @@
         "menu": "HRM → Attendance → Manual Attendance",
         "steps": [
           "Attendance List-এর উপরে + Attendance Entry চাপুন — ডান পাশে একটি প্যানেল খোলে। তালিকার Edit চাপলেও এই প্যানেলেই সারিটি খোলে।",
-          "Employee বাছুন, Branch, Shift ও Attendance Type ঠিক করুন।",
+          "Employee নির্বাচন করুন, Branch, Shift ও Attendance Type ঠিক করুন।",
           "Date, In Time, Out Time, Status ও Remarks দিন।",
           "Save Single চাপুন। আগের সারি খুললে বাটন Update Single হয়।"
         ]
@@ -528,7 +531,7 @@
         "heading": "রিপোর্ট দেখা",
         "menu": "HRM → Attendance Reports → Daily / Alerts",
         "steps": [
-          "From ও To দিন, Branch বাছুন।",
+          "From ও To দিন, Branch নির্বাচন করুন।",
           "Status ও Approval দিয়ে ফল ছোট করুন।",
           "Load চাপুন।"
         ]
@@ -586,7 +589,7 @@
         "heading": "রিপোর্ট দেখা",
         "menu": "HRM → Attendance Reports → Employee",
         "steps": [
-          "Employee বাছুন, From, To ও Branch দিন।",
+          "Employee নির্বাচন করুন, From, To ও Branch দিন।",
           "Status দিয়ে ফল ছোট করুন, Load চাপুন।"
         ]
       },
@@ -613,7 +616,7 @@
         "heading": "রিপোর্ট দেখা",
         "menu": "HRM → Attendance Reports → Branch",
         "steps": [
-          "Branch/Project, Month ও Year বাছুন।",
+          "Branch/Project, Month ও Year নির্বাচন করুন।",
           "Load চাপুন।"
         ]
       },
@@ -640,8 +643,8 @@
         "heading": "ক্যালেন্ডার দেখা",
         "menu": "HRM → Attendance Reports → Holiday Calendar",
         "steps": [
-          "Month, Year ও Branch/Project বাছুন।",
-          "Type থেকে Holiday বা Weekly Holiday বাছুন।",
+          "Month, Year ও Branch/Project নির্বাচন করুন।",
+          "Type থেকে Holiday বা Weekly Holiday নির্বাচন করুন।",
           "Load চাপুন।"
         ]
       },
@@ -668,7 +671,7 @@
         "heading": "রিপোর্ট দেখা",
         "menu": "HRM → Attendance Reports → Monthly",
         "steps": [
-          "Select Branch, Month ও Year বাছুন।",
+          "Select Branch, Month ও Year নির্বাচন করুন।",
           "Load চাপুন।"
         ]
       },
@@ -696,7 +699,7 @@
         "heading": "আবেদন লেখা",
         "menu": "HRM → Attendance → Leave Applications",
         "steps": [
-          "Employee, Branch ও Leave Type বাছুন।",
+          "Employee, Branch ও Leave Type নির্বাচন করুন।",
           "From Date, To Date ও Reason লিখুন।",
           "Apply চাপুন; ভুল হলে Reset।"
         ]
@@ -725,7 +728,7 @@
         "heading": "ইতিহাস দেখা",
         "menu": "HRM → Attendance Settings → Audit History",
         "steps": [
-          "From, To ও Branch/Project বাছুন।",
+          "From, To ও Branch/Project নির্বাচন করুন।",
           "Action (Submitted, Corrected, Approved, Rejected, Cleared/Cancelled) ও Employee দিয়ে ছোট করুন।",
           "Search-এ এন্ট্রি, কর্মচারী বা মন্তব্য লিখে Load চাপুন।"
         ]
@@ -786,9 +789,10 @@
           "Pay Head Name লিখুন (যেমন Mobile Bill)।",
           "Short Name দিন — বেতন শিটে কলামের শিরোনাম হিসেবে এটাই দেখাবে।",
           "Code দিন (যেমন mobile_bill) — ছোট হাতের ইংরেজি, সংখ্যা ও আন্ডারস্কোর। একবার Save করলে আর বদলায় না।",
-          "Type (Earning/Deduction) ও Calculation বাছুন।",
+          "Type (Earning/Deduction) ও Calculation নির্বাচন করুন।",
           "Prorate, Rounding, Include in Gross ও Order ঠিক করুন।",
-          "Save চাপুন; বদলাতে Update চাপুন।"
+          "Save চাপুন; বদলাতে Update চাপুন।",
+          "কোম্পানিতে বাংলা চালু থাকলে Pay Head Name-এর ঘরে ENG | বাংলা সুইচে বাংলা নামও লিখুন — বাংলা বেতন শিট ও প্রিন্টে এই নামেই কলাম আসে।"
         ],
         "warning": "যে code ইতিমধ্যে আছে সেটি আবার দিলে সংরক্ষণ হবে না।"
       }
@@ -855,10 +859,11 @@
         "heading": "শিট তৈরি",
         "menu": "HRM → Salary & Bonus Generate → Salary Generate",
         "steps": [
-          "Branch ও Designation Level বাছুন।",
-          "Monthly Salary বা Overtime Salary বাছুন।",
+          "Branch ও Designation Level নির্বাচন করুন।",
+          "Monthly Salary বা Overtime Salary নির্বাচন করুন।",
           "Month দিন, Search চাপুন।",
-          "তালিকা মিলিয়ে Salary Generate চাপুন।"
+          "তালিকা মিলিয়ে Salary Generate চাপুন।",
+          "স্ক্রিন বাংলায় থাকলে কলামের নাম, কর্মচারী ও পদবির নাম, খাতের নাম এবং সব সংখ্যা বাংলায় দেখায়; যার বাংলা নাম নেই তা ইংরেজিতেই আসে। বেতন শিটের প্রিন্টও বাংলায় আসে।"
         ]
       },
       {
@@ -896,7 +901,7 @@
         "heading": "তালিকা দেখা",
         "menu": "HRM → Salary Reports → Salary Reports",
         "steps": [
-          "Branch ও Year বাছুন, Search চাপুন।",
+          "Branch ও Year নির্বাচন করুন, Search চাপুন।",
           "Payment Month, Employees, Gross Salary, OT Amount, Net Salary, Loan Ded., Payment Amount ও Due দেখা যায়।",
           "OT Amount-এ থাকে Overtime শিটের টাকা; মাসিক শিটের সারিতে এটি \"-\" দেখায়।",
           "Rows per page ও Font ঠিক করে প্রিন্ট করা যায়।"
@@ -935,7 +940,7 @@
         "heading": "তালিকা দেখা",
         "menu": "HRM → Salary Reports → Bonus Reports",
         "steps": [
-          "ফিল্টার আইকন বা Use the filter চেপে Select Branch ও Select Year বাছুন, Apply চাপুন।",
+          "ফিল্টার আইকন বা Use the filter চেপে Select Branch ও Select Year নির্বাচন করুন, Apply চাপুন।",
           "Bonus Title, Month, Employees, Bonus Amount, Paid ও Due দেখা যায়।"
         ]
       },
@@ -964,8 +969,8 @@
         "menu": "HRM → Salary & Bonus Generate → Bonus Generate",
         "steps": [
           "Bonus % of Basic, Branch ও Bonus Month দিন।",
-          "Bonus Title বাছুন; Other হলে Custom Bonus Title লিখুন।",
-          "Designation Level বাছুন, নাহলে All levels রাখুন।",
+          "Bonus Title নির্বাচন করুন; Other হলে Custom Bonus Title লিখুন।",
+          "Designation Level নির্বাচন করুন, নাহলে All levels রাখুন।",
           "Load Employees চাপুন, উপরে Total Basic Salary, Eligible Employees ও Projected Bonus মিলিয়ে নিন।",
           "Generate Bonus চাপুন।"
         ]

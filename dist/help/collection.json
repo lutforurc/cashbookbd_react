@@ -11,7 +11,7 @@
         "heading": "আদায় লেখার ধাপ",
         "menu": "Transaction → Cash Received",
         "steps": [
-          "Select cash received account থেকে যে খাতে টাকা ঢুকছে সেটি বাছুন।",
+          "Select cash received account থেকে যে খাতে টাকা ঢুকছে সেটি নির্বাচন করুন।",
           "Enter Remarks-এ কারণ লিখুন, যেমন “বিক্রির টাকা” বা “বাকি আদায়”।",
           "Amount (Tk.)-এ টাকার অঙ্ক লিখুন।",
           "Add New চাপলে লাইনটি নিচের তালিকায় যোগ হয়।",
@@ -40,9 +40,9 @@
         "heading": "আদায় লেখার ধাপ",
         "menu": "Transaction → Bank Received",
         "steps": [
-          "Select Order (Optional) — কোনো অর্ডারের সঙ্গে যুক্ত হলে বাছুন, নাহলে খালি রাখুন।",
-          "Bank Received Account থেকে ব্যাংক হিসাব বাছুন।",
-          "Select Transaction Account থেকে যে খাতে টাকা ঢুকছে সেটি বাছুন।",
+          "Select Order (Optional) — কোনো অর্ডারের সঙ্গে যুক্ত হলে নির্বাচন করুন, নাহলে খালি রাখুন।",
+          "Bank Received Account থেকে ব্যাংক হিসাব নির্বাচন করুন।",
+          "Select Transaction Account থেকে যে খাতে টাকা ঢুকছে সেটি নির্বাচন করুন।",
           "Enter Remarks ও Amount (Tk.) পূরণ করুন।",
           "Add New চেপে তালিকায় যোগ করুন, তারপর Save চাপুন।"
         ]

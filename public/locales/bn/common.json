@@ -40,7 +40,11 @@
   "branch": {
     "pricingHeading": "মূল্য নির্ধারণ",
     "blockBelowCostLabel": "ক্রয়মূল্যের নিচে বিক্রয় আটকাবে?",
-    "blockBelowCostHint": "চালু থাকলে বিক্রয় ইনভয়েসে প্রোডাক্ট সার্চে দেখানো Purchase Price-এর চেয়ে কম দরে লাইন যোগ করা যায় না। বন্ধ থাকলে লোকসানে বিক্রয়ও অন্য লাইনের মতোই লেখা যায় — ক্লিয়ারেন্স বা বাজারদর কমে যাওয়া স্টকের জন্য।"
+    "blockBelowCostHint": "চালু থাকলে বিক্রয় ইনভয়েসে প্রোডাক্ট সার্চে দেখানো Purchase Price-এর চেয়ে কম দরে লাইন যোগ করা যায় না। বন্ধ থাকলে লোকসানে বিক্রয়ও অন্য লাইনের মতোই লেখা যায় — ক্লিয়ারেন্স বা বাজারদর কমে যাওয়া স্টকের জন্য।",
+    "payrollHeading": "বেতন",
+    "payrollIntro": "এই শাখার বেতন Salary Generate কীভাবে হিসাব করে।",
+    "salaryEngineLabel": "পে-হেড থেকে বেতন?",
+    "salaryEngineHint": "চালু থাকলে Salary Generate প্রত্যেক কর্মচারীকে তাঁর salary revision থেকে বেতন দেয়, প্রতিটা পে-হেডে (Basic, Mobile Bill, Lunch Bill...) একটা কলাম। বন্ধ থাকলে পুরনো নির্দিষ্ট শিট। সাথে সাথেই সেভ হয়; বন্ধ করলেই আগের মতো।"
   },
   "common": {
     "save": "সেভ",
@@ -216,7 +220,21 @@
     "Supplier advances": "সরবরাহকারীকে অগ্রিম",
     "Customer credit balances": "গ্রাহকের ক্রেডিট ব্যালেন্স",
     "Bank and finance borrowings": "ব্যাংক ও আর্থিক ঋণ",
-    "Loans received": "গৃহীত ঋণ"
+    "Loans received": "গৃহীত ঋণ",
+    "Payment Month": "বেতনের মাস",
+    "Employees": "কর্মচারী",
+    "Gross Salary": "মোট বেতন",
+    "OT Amount": "ওটি টাকা",
+    "Payment Amount": "পরিশোধের টাকা",
+    "Due": "বাকি",
+    "Branch Name": "শাখার নাম",
+    "Paid": "পরিশোধিত",
+    "Select": "বাছুন",
+    "Update": "সম্পাদনা",
+    "Excel": "এক্সেল",
+    "Columns": "কলাম",
+    "Show all": "সব দেখান",
+    "A table needs at least one column": "টেবিলে অন্তত একটা কলাম লাগবে"
   },
   "customerLocal": {
     "father": "সম্পর্কের নাম",

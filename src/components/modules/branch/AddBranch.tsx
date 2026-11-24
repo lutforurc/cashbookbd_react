@@ -3982,15 +3982,15 @@ const AddBranch = () => {
                     {canManageSalaryEngine && formData?.id ? (
                       <div className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4">
                         <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                          Payroll
+                          {t('branch.payrollHeading')}
                         </h4>
                         <p className="mt-0.5 mb-2 text-xs leading-snug text-gray-500">
-                          How Salary Generate works out this branch's salaries.
+                          {t('branch.payrollIntro')}
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                           <FormToggleField
-                            label="Salary from Pay Heads?"
-                            description="On, Salary Generate pays each employee from their salary revision, one column per pay head (Basic, Mobile Bill, Lunch Bill...). Off, the old fixed sheet. Saved at once; switch it off to go back."
+                            label={t('branch.salaryEngineLabel')}
+                            description={t('branch.salaryEngineHint')}
                             checked={salaryEngineOn}
                             disabled={salaryEngineSaving}
                             onChange={(checked) => handleSalaryEngineChange(checked)}

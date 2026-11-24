@@ -24,6 +24,11 @@ import routes from "../../../services/appRoutes";
 import { FiSearch } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import { Select } from '../../../utils/fields/FormControls';
+import { rl } from '../../../../i18n/reportLabel';
+import { toLocalMonth } from '../../../../i18n/months';
+import i18n from '../../../../i18n';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { useLocalDigits } from '../../../../i18n/useLocalDigits';
 
 const getSalaryHistory = (history?: string | Record<string, any>) => {
   if (!history) return {};
@@ -55,6 +60,13 @@ const SalarySheet = ({ user }: any) => {
   const dispatch: any = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Bangla digits on a Bangla screen, the same rule every report follows: the
+  // conversion happens over the rendered text, so nothing parsed back holds a
+  // Bangla digit. See useLocalDigits.
+  const { code: languageCode } = useLanguage();
+  const digitsRef = useRef<HTMLDivElement>(null);
+  useLocalDigits(digitsRef, languageCode !== 'en');
 
   const [perPage, setPerPage] = useState<number>(0);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -130,7 +142,7 @@ const SalarySheet = ({ user }: any) => {
 
   const branchColumn = {
     key: "branch_name",
-    header: "Branch Name",
+    header: rl("Branch Name"),
     render: (row: any) => row.main_trx?.branch?.name ?? "",
   };
 
@@ -236,54 +248,57 @@ const SalarySheet = ({ user }: any) => {
   const columns = [
     {
       key: "serial_no",
-      header: "Sl. No.",
+      header: rl("Sl. No."),
       headerClass: "text-center",
       cellClass: "text-center",
     },
     ...(!branchId ? [branchColumn] : []),
     {
       key: "payment_month",
-      header: "Payment Month",
+      header: rl("Payment Month"),
       render: (row: any) => (
         <span
           className="cursor-pointer font-semibold text-blue-600 hover:underline dark:text-blue-400"
           onClick={() => handlePrint(row)}
           title="Click to print salary sheet"
         >
-          {formatPaymentMonth(row.payment_month)}
+          {/* "October 2026" -> "অক্টোবর 2026" on a Bangla screen: the English
+              spelling is what formatPaymentMonth returns, so it is handed to
+              toLocalMonth, which reads a month by name. */}
+          {toLocalMonth(formatPaymentMonth(row.payment_month), i18n.language)}
         </span>
       ),
     },
     {
       key: "total_employee",
-      header: "Employees",
+      header: rl("Employees"),
       headerClass: "text-right",
       cellClass: "text-right",
     },
     {
       key: "gross_salary",
-      header: "Gross Salary",
+      header: rl("Gross Salary"),
       headerClass: "text-right",
       cellClass: "text-right font-medium text-slate-700 dark:text-slate-200",
       render: (row: any) => thousandSeparator(row.gross_salary),
     },
     {
       key: "overtime_amount",
-      header: "OT Amount",
+      header: rl("OT Amount"),
       headerClass: "text-right",
       cellClass: "text-right text-slate-700 dark:text-slate-200",
       render: (row: any) => (Number(row.overtime_amount) ? thousandSeparator(row.overtime_amount) : "-"),
     },
     {
       key: "net_salary",
-      header: "Net Salary",
+      header: rl("Net Salary"),
       headerClass: "text-right",
       cellClass: "text-right font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]",
       render: (row: any) => thousandSeparator(row.net_salary),
     },
     {
       key: "total_deduction",
-      header: "Loan Ded.",
+      header: rl("Loan Ded."),
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: any) => {
@@ -297,7 +312,7 @@ const SalarySheet = ({ user }: any) => {
     },
     {
       key: "payment_amount",
-      header: "Payment Amount",
+      header: rl("Payment Amount"),
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: any) => {
@@ -311,7 +326,7 @@ const SalarySheet = ({ user }: any) => {
     },
     {
       key: "due",
-      header: "Due",
+      header: rl("Due"),
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: any) => {
@@ -325,7 +340,7 @@ const SalarySheet = ({ user }: any) => {
     },
     {
       key: "action",
-      header: "Action",
+      header: rl("Action"),
       headerClass: "text-right",
       cellClass: "text-right",
       render: (row: any) => {
@@ -334,7 +349,7 @@ const SalarySheet = ({ user }: any) => {
         return (
           <>
             {dueAmount === 0 ? (
-              <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">Paid</span>
+              <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">{rl("Paid")}</span>
             ) : (
               <Select
                 defaultValue=""
@@ -345,10 +360,10 @@ const SalarySheet = ({ user }: any) => {
                 }}
                 className={`${FIELD_SELECT} min-w-28 px-2 py-1 text-sm`}
               >
-                <option value="">Select</option>
-                <option value="update">Update</option>
-                <option value="excel">Excel</option>
-                <option value="payment">Payment</option>
+                <option value="">{rl("Select")}</option>
+                <option value="update">{rl("Update")}</option>
+                <option value="excel">{rl("Excel")}</option>
+                <option value="payment">{rl("Payment")}</option>
               </Select>
             )}
           </>
@@ -419,8 +434,8 @@ const SalarySheet = ({ user }: any) => {
   };
 
   return (
-    <div>
-      <HelmetTitle title={"Salary Sheet"} />
+    <div ref={digitsRef}>
+      <HelmetTitle title={rl("Salary Sheet")} />
 
       <div className="flex overflow-x-auto justify-between mb-2">
         <div className="flex">

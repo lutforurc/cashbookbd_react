@@ -8,7 +8,7 @@
     "intro": "চালান, অর্ডার, হোটেল রিসিভ ও বিলের কাগজে কোন অংশ কোথায় বসবে তা সাজানো হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ print.template.view permission থাকলে।"] },
-      { "heading": "নকশা সাজানো", "menu": "Admin → Company & Branch → Paper Layout", "steps": ["Branch, Paper, Start from, Text size ও Rows per page বাছুন।", "Parts of the paper থেকে অংশ যোগ করুন; বাঁ প্যানেলে সেটিংস, মাঝে ব্যান্ড, ডানে What it will look like দেখুন।", "Left margin, Right margin, Print sideways, Half page ও Print the page foot ঠিক করুন।", "Name of this layout লিখে Save; Test Print দিয়ে পরীক্ষা করুন।"] },
+      { "heading": "নকশা সাজানো", "menu": "Admin → Company & Branch → Paper Layout", "steps": ["Branch, Paper, Start from, Text size ও Rows per page নির্বাচন করুন।", "Parts of the paper থেকে অংশ যোগ করুন; বাঁ প্যানেলে সেটিংস, মাঝে ব্যান্ড, ডানে What it will look like দেখুন।", "Left margin, Right margin, Print sideways, Half page ও Print the page foot ঠিক করুন।", "Name of this layout লিখে Save; Test Print দিয়ে পরীক্ষা করুন।"] },
       { "heading": "সতর্কতা", "warning": "শুধু 'prints' চিহ্নিত নকশাই প্রিন্টারে যায়। কিছু না থাকলে built-in নকশা ছাপে। উপরে-নিচের মার্জিন সব রিপোর্টের জন্য এক — আলাদা করতে Blank Space অংশ বসান।" }
     ]
   },
@@ -47,7 +47,7 @@
     "video": "",
     "intro": "কোন পণ্য আলাদা বিল ও নগদ লেনদেনে দেখা যাবে তা ঠিক করা হয়।",
     "sections": [
-      { "heading": "সেটিং যোগ", "menu": "Settings → Product Tracking", "steps": ["Product, Customer / Supplier (For all parties) ও Branch (All Branch) বাছুন।", "Sales Bill, Purchase Bill, Cash Received, Cash Payment ও Active চালু করুন।", "Add চাপুন; তালিকায় Customer / Supplier, Product ও প্রতিটি সুইচ দেখা যায়।"] },
+      { "heading": "সেটিং যোগ", "menu": "Settings → Product Tracking", "steps": ["Product, Customer / Supplier (For all parties) ও Branch (All Branch) নির্বাচন করুন।", "Sales Bill, Purchase Bill, Cash Received, Cash Payment ও Active চালু করুন।", "Add চাপুন; তালিকায় Customer / Supplier, Product ও প্রতিটি সুইচ দেখা যায়।"] },
       { "heading": "সতর্কতা", "warning": "এই সেটিং না থাকলে Cash Received ও Cash Payment ফর্মে Product ড্রপডাউন আসবে না। Delete করলে পুরনো ভাউচার মোছে না।" }
     ]
   },
@@ -120,7 +120,7 @@
     "video": "",
     "intro": "কে, কখন, কোন ভাউচারে কী কাজ করেছে তার তালিকা।",
     "sections": [
-      { "heading": "তালিকা", "menu": "VR Settings → Audit → Log Changes", "steps": ["Branch বাছুন এবং পৃষ্ঠার সংখ্যা ঠিক করুন।", "Sl. No., Vr No, Vr Date, Action, Action Time, Action By, Branch ও status দেখা যায়।"] },
+      { "heading": "তালিকা", "menu": "VR Settings → Audit → Log Changes", "steps": ["Branch নির্বাচন করুন এবং পৃষ্ঠার সংখ্যা ঠিক করুন।", "Sl. No., Vr No, Vr Date, Action, Action Time, Action By, Branch ও status দেখা যায়।"] },
       { "heading": "সতর্কতা", "warning": "এটি অডিট তালিকা — কোনো সারি এখান থেকে বদলানো বা মোছা যায় না।" }
     ]
   }

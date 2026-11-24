@@ -11,7 +11,7 @@
         "heading": "রিপোর্ট দেখার ধাপ",
         "menu": "Reports → Cash & Bank → Cash Book",
         "steps": [
-          "Select Branch থেকে শাখা বাছুন।",
+          "Select Branch থেকে শাখা নির্বাচন করুন।",
           "Start Date ও End Date দিন।",
           "Apply চাপুন।"
         ]
@@ -39,7 +39,7 @@
         "heading": "রিপোর্ট দেখার ধাপ",
         "menu": "Reports → Cash & Bank → Bank Book",
         "steps": [
-          "Select Branch থেকে শাখা বাছুন।",
+          "Select Branch থেকে শাখা নির্বাচন করুন।",
           "Start Date ও End Date দিন।",
           "Apply চাপুন।"
         ]

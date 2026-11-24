@@ -18,7 +18,7 @@
         "heading": "ইনভয়েস লেখার ধাপ",
         "menu": "Invoice → Sales Invoice",
         "steps": [
-          "Select Customer থেকে ক্রেতা বাছুন।",
+          "Select Customer থেকে ক্রেতা নির্বাচন করুন।",
           "দরকার হলে Vehicle Number লিখুন।",
           "Received Amount-এ হাতে পাওয়া টাকা লিখুন। নগদ ক্রেতার ক্ষেত্রে এটি নিজে থেকে বসে এবং বদলানো যায় না।",
           "Discount Amount ও Notes পূরণ করুন।",
@@ -69,7 +69,7 @@
         "heading": "ফেরত লেখার ধাপ",
         "menu": "Invoice → Sales Return",
         "steps": [
-          "Select Customer থেকে সেই ক্রেতাকে বাছুন যিনি মাল ফেরত দিয়েছেন।",
+          "Select Customer থেকে সেই ক্রেতাকে নির্বাচন করুন যিনি মাল ফেরত দিয়েছেন।",
           "Sales Invoice Number লিখুন — যে বিক্রির বিপরীতে ফেরত আসছে।",
           "দরকার হলে Vehicle Number লিখুন।",
           "Cash Payment-এ ক্রেতাকে ফেরত দেওয়া টাকা লিখুন।",
