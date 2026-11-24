@@ -14,6 +14,8 @@ import SelectOption from '../../../utils/utils-functions/SelectOption';
 import { deleteHrmDesignation, fetchHrmDesignations } from './hrmDesignationSlice';
 import { FiSearch, FiEdit2, FiPlus } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { displayName } from '../../../../i18n/displayName';
 
 const HrmDesignations = () => {
   const navigate = useNavigate();
@@ -90,6 +92,7 @@ const HrmDesignations = () => {
     }
   };
 
+  const { code: languageCode } = useLanguage();
   const columns = [
     {
       key: 'serial_no',
@@ -100,6 +103,8 @@ const HrmDesignations = () => {
     {
       key: 'name',
       header: 'Designation',
+      // The Bangla name on a Bangla screen; English where there is none.
+      render: (row: any) => displayName(row, 'name', languageCode),
     },
     {
       key: 'level_name',
@@ -116,7 +121,7 @@ const HrmDesignations = () => {
     {
       key: 'description',
       header: 'Description',
-      render: (row: any) => <span>{row.description || '-'}</span>,
+      render: (row: any) => <span>{displayName(row, 'description', languageCode) || '-'}</span>,
     },
     {
       key: 'action',

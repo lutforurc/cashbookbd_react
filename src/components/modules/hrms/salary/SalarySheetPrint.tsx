@@ -5,6 +5,10 @@ import { PrintBranch } from '../../../utils/utils-functions/printBranch';
 import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { formatDate, formatPaymentMonth } from '../../../utils/utils-functions/formatDate';
+import { rl } from '../../../../i18n/reportLabel';
+import { toLocalMonth } from '../../../../i18n/months';
+import { useLocalDigits } from '../../../../i18n/useLocalDigits';
+import i18n from '../../../../i18n';
 
 /* =======================
    Types
@@ -184,6 +188,8 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
     },
     ref
   ) => {
+    const digitsRef = React.useRef<HTMLDivElement>(null);
+    useLocalDigits(digitsRef, (i18n.language || 'en') !== 'en');
     const safeRows: EmployeeRow[] = Array.isArray(rows) ? rows : [];
     const pages = chunkRows(safeRows, rowsPerPage);
     const fs = fontSize;
@@ -213,6 +219,9 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className="print-root text-gray-900">
+        {/* Bangla digits on a Bangla screen; the wrapper keeps the print
+            root's own ref free for react-to-print. */}
+        <div ref={digitsRef}>
         <PrintStyles orientation="landscape" />
 
         {/* ========= PRINT CSS ========= */}
@@ -268,21 +277,21 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                 </div> */}
               <div className="grid grid-cols-3 items-center w-full"> 
                 <span className="justify-self-start text-sm ">
-                  <span className='font-semibold text-xs!'>Vr. No. & Date:</span> <span className='text-xs!'> {vr_no}, { formatDate(vr_date)}</span>
+                  <span className='font-semibold text-xs!'>{rl('Vr. No. & Date:')}</span> <span className='text-xs!'> {vr_no}, { formatDate(vr_date)}</span>
                 </span>
 
                 <h1 className="justify-self-center text-xl font-bold text-center">
-                  {title}
+                  {rl(title)}
                 </h1>
 
                 <div /> {/* right side empty, to keep title perfectly centered */}
               </div>
               <div className='flex justify-between'>
                 <div className="text-sm text-right">
-                  <span>Salary for</span> <span className="font-semibold">{metaInfo.level_name}</span>
+                  <span>{rl('Salary for')}</span> <span className="font-semibold">{metaInfo.level_name}</span>
                 </div>
                 <div className="text-sm text-right">
-                  <span>Salary for the Month of <span className="font-semibold">{formatPaymentMonth(metaInfo.month_id)}</span></span>
+                  <span>{rl('Salary for the Month of')} <span className="font-semibold">{toLocalMonth(formatPaymentMonth(metaInfo.month_id), i18n.language) || formatPaymentMonth(metaInfo.month_id)}</span></span>
                 </div>
               </div>
 
@@ -291,18 +300,18 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                 <thead>
                   <tr>
                     <th style={{ fontSize: fs }}>SL</th>
-                    <th className='text-left' style={{ fontSize: fs }}>Employee Name</th>
-                    <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>M. Days</th>
-                    <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>W. Days</th>
-                    <th style={{ fontSize: fs, textAlign: 'center' }}>M. Basic</th>
-                    <th style={{ fontSize: fs, textAlign: 'center' }}>Salary</th>
-                    <th style={{ fontSize: fs, textAlign: 'center' }}>Mobile</th>
-                    <th style={{ fontSize: fs, textAlign: 'center' }}>Total</th>
-                    <th style={{ fontSize: fs, textAlign: 'center' }}>Loan</th>
-                    <th style={{ fontSize: fs, textAlign: 'center' }}>Att. Ded</th>
-                    <th style={{ fontSize: fs, textAlign: 'center' }}>Net Salary</th>
-                    <th style={{ fontSize: fs, textAlign: 'center' }}>Payment</th>
-                    <th style={{ fontSize: fs }}>Signature</th>
+                    <th className='text-left' style={{ fontSize: fs }}>{rl('Employee Name')}</th>
+                    <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>{rl('M. Days')}</th>
+                    <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>{rl('W. Days')}</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('M. Basic')}</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Salary')}</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Mobile')}</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Total')}</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Loan')}</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Att. Ded')}</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Net Salary')}</th>
+                    <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Payment')}</th>
+                    <th style={{ fontSize: fs }}>{rl('Signature')}</th>
                   </tr>
                 </thead>
 
@@ -317,7 +326,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                           {h.serial_no ?? idx + 1}
                         </td>
                         <td style={{ fontSize: fs }}>
-                          <span className='block m-0 leading-tight'>{h.name || '-'}</span>
+                          <span className='block m-0 leading-tight'>{(i18n.language !== 'en' && (row as any).employee?.name_local) || h.name || '-'}</span>
                           <span className='block m-0 leading-tight'>{h.designation_name || '-'}</span>
                         </td>
                         <td style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60 }}>{monthDays}</td>
@@ -385,7 +394,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                       {/* ✅ Page Total শুধু multiple pages হলে */}
                       {hasMultiplePages && (
                         <tr style={{ fontSize: fs, fontWeight: 600, background: '#f3f3f3' }}>
-                          <td colSpan={4}>Page Total</td>
+                          <td colSpan={4}>{rl('Page Total')}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageMonthlyBasic)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageBasic)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAllowance)}</td>
@@ -398,7 +407,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         </tr>
                       )}
                       <tr style={{ fontSize: fs, fontWeight: 700, background: '#e5e5e5' }}>
-                        <td colSpan={4}>Grand Total</td>
+                        <td colSpan={4}>{rl('Grand Total')}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandMonthlyBasic)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandBasic)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandAllowance)}</td>
@@ -419,6 +428,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
           );
         })}
         <PrintFooter fixed />
+        </div>
       </div>
     );
   }

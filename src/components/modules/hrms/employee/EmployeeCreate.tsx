@@ -15,11 +15,15 @@ import { fetchEmployeeSettings, storeEmployee } from './employeeSlice';
 import { fetchAttendancePolicies, fetchAttendanceShifts } from '../attendance/attendanceSlice';
 import dayjs from 'dayjs';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
-import { StepCard, StepFooter, StepNav, stepClass } from '../../../utils/components/FormSteps';
+import { StepCard, StepFooter, stepClass } from '../../../utils/components/FormSteps';
 import { FIELD_LABEL } from '../../../../theme/fieldStyles';
 
 const EMPLOYEE_STEPS = ['Personal Information', 'Employment & Attendance', 'Salary & Payroll'];
 import { useNavigate } from 'react-router-dom';
+import BilingualInput from '../../../utils/fields/BilingualInput';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { useTranslation } from 'react-i18next';
+import StepRail from '../../../utils/others/StepRail';
 
 const employmentTypes = [
   { id: 'monthly', name: 'Monthly Employee' },
@@ -37,6 +41,11 @@ class EmployeeFormModel {
     return {
       name: '',
       father_name: '',
+      name_local: '',
+      father_name_local: '',
+      present_address_local: '',
+      permanent_address_local: '',
+      qualification_local: '',
       present_address: '',
       permanent_address: '',
       nid: '',
@@ -95,6 +104,8 @@ const EmployeeCreate = ({ user }: any) => {
   const [step, setStep] = useState(0);
 
   const [formData, setFormData] = useState<any>(EmployeeFormModel.create());
+  const { localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
   const shifts = Array.isArray(attendance?.shifts) ? attendance.shifts : [];
   const policies = Array.isArray(attendance?.policies) ? attendance.policies : [];
 
@@ -177,6 +188,17 @@ const EmployeeCreate = ({ user }: any) => {
       setStep(0);
       return toast.error('Please enter father name');
     }
+    // "Enable Bangla" on: what English must have, Bangla must have too.
+    if (localCode && !String(formData.name_local || '').trim()) {
+      setSaveLoading(false);
+      setStep(0);
+      return toast.error(t('data.localRequired', { field: 'Name', language: localName }));
+    }
+    if (localCode && !String(formData.father_name_local || '').trim()) {
+      setSaveLoading(false);
+      setStep(0);
+      return toast.error(t('data.localRequired', { field: "Father's Name", language: localName }));
+    }
     if (!formData.mobile) {
       setSaveLoading(false);
       setStep(0);
@@ -236,6 +258,14 @@ const EmployeeCreate = ({ user }: any) => {
       standard_work_minutes: formData.standard_work_minutes || '480',
       employee_serial: formData.employee_serial || '0',
       device_employee_code: formData.device_employee_code || null,
+      // The Bangla copies, only where the company has a local language.
+      ...(localCode ? {
+        name_local: formData.name_local,
+        father_name_local: formData.father_name_local,
+        present_address_local: formData.present_address_local,
+        permanent_address_local: formData.permanent_address_local,
+        qualification_local: formData.qualification_local,
+      } : {}),
     };
 
     try {
@@ -258,24 +288,31 @@ const EmployeeCreate = ({ user }: any) => {
     <>
       <HelmetTitle title="Employee Entry" />
       <div className="p-4">
-        <StepNav steps={EMPLOYEE_STEPS} current={step} onSelect={setStep} />
+        {/* Steps down the left, as on Branch Settings. */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
+        <StepRail steps={EMPLOYEE_STEPS} current={step} onSelect={setStep} />
+        <div className="min-w-0">
         <StepCard title={EMPLOYEE_STEPS[step]}>
         <div className={stepClass(0, step)}>
-            <InputElement
-              id="name"
+            <BilingualInput
               placeholder='Enter employee name'
               label="Name"
               name="name"
               value={formData.name}
               onChange={handleChange}
+              kind="name"
+              localValue={formData.name_local || ''}
+              onLocalChange={(value) => setFormData((prev: any) => ({ ...prev, name_local: value }))}
             />
-            <InputElement
-              id="father_name"
+            <BilingualInput
               placeholder="Enter father's name"
               label="Father's Name"
               name="father_name"
               value={formData.father_name}
               onChange={handleChange}
+              localLabel={t('employeeLocal.father_name')}
+              localValue={formData.father_name_local || ''}
+              onLocalChange={(value) => setFormData((prev: any) => ({ ...prev, father_name_local: value }))}
             />
             <InputElement
               id="nid"
@@ -312,29 +349,35 @@ const EmployeeCreate = ({ user }: any) => {
               value={formData.mobile}
               onChange={handleChange}
             />
-            <InputElement
+            <BilingualInput
               placeholder='Enter present address'
-              id="present_address"
               label="Present Address"
               name="present_address"
               value={formData.present_address}
               onChange={handleChange}
-              />
-            <InputElement
-              id="permanent_address"
+              localLabel={t('employeeLocal.present_address')}
+              localValue={formData.present_address_local || ''}
+              onLocalChange={(value) => setFormData((prev: any) => ({ ...prev, present_address_local: value }))}
+            />
+            <BilingualInput
               placeholder='Enter permanent address'
               label="Permanent Address"
               name="permanent_address"
               value={formData.permanent_address}
               onChange={handleChange}
-              />
-            <InputElement
+              localLabel={t('employeeLocal.permanent_address')}
+              localValue={formData.permanent_address_local || ''}
+              onLocalChange={(value) => setFormData((prev: any) => ({ ...prev, permanent_address_local: value }))}
+            />
+            <BilingualInput
               placeholder='Enter Qualification'
-              id="qualification"
               label="Qualification"
               name="qualification"
               value={formData.qualification}
               onChange={handleChange}
+              localLabel={t('employeeLocal.qualification')}
+              localValue={formData.qualification_local || ''}
+              onLocalChange={(value) => setFormData((prev: any) => ({ ...prev, qualification_local: value }))}
             />
         </div>
         <div className={stepClass(1, step)}>
@@ -551,6 +594,8 @@ const EmployeeCreate = ({ user }: any) => {
           }
         />
         </StepCard>
+        </div>
+        </div>
       </div>
 
     </>

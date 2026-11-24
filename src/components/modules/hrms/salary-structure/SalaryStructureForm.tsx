@@ -271,10 +271,13 @@ const SalaryStructureForm = () => {
     <>
       <HelmetTitle title={formData?.id ? 'Edit Salary Structure' : 'Add Salary Structure'} />
 
-      <div className="mx-auto mt-6 mb-10 w-full md:w-11/12 xl:w-10/12">
+      {/* `@container`: the layout follows the form's own width, not the
+          window's -- inside a tab page the form is far narrower, and the
+          two columns used to run off its right edge. */}
+      <div className="@container mx-auto mt-6 mb-10 w-full md:w-11/12 xl:w-10/12">
         {structureState?.isLoading && <Loader />}
 
-        <div className="grid grid-cols-1 gap-x-2 gap-y-2 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-x-2 gap-y-2 @2xl:grid-cols-2 @5xl:grid-cols-4">
           <InputElement
             id="name"
             name="name"
@@ -328,9 +331,9 @@ const SalaryStructureForm = () => {
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-12">
+        <div className="mt-4 grid grid-cols-1 gap-3 @4xl:grid-cols-12">
           {/* Available pay heads */}
-          <div className="lg:col-span-4">
+          <div className="min-w-0 @4xl:col-span-4">
             <div className="mb-1 text-sm font-semibold">Available pay heads</div>
             <div className="max-h-120 overflow-y-auto border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
               {availableComponents.length === 0 ? (
@@ -366,7 +369,7 @@ const SalaryStructureForm = () => {
           </div>
 
           {/* Selected pay heads */}
-          <div className="lg:col-span-8">
+          <div className="min-w-0 @4xl:col-span-8">
             <div className="mb-1 text-sm font-semibold">On this structure</div>
             <div className="overflow-x-auto border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
               {lines.length === 0 ? (
@@ -396,8 +399,9 @@ const SalaryStructureForm = () => {
                           </div>
                         </td>
                         <td className="w-32 px-2 py-2">
-                          <input
-                            type="text"
+                          <InputElement
+                            id={`amount_${line.component_id}`}
+                            name={`amount_${line.component_id}`}
                             inputMode="numeric"
                             value={line.amount}
                             placeholder="0"
@@ -406,7 +410,7 @@ const SalaryStructureForm = () => {
                                 amount: e.target.value.replace(/[^\d.]/g, ''),
                               })
                             }
-                            className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-right"
+                            className="text-right"
                           />
                         </td>
                         <td className="px-2 py-2 text-center">
@@ -472,7 +476,10 @@ const SalaryStructureForm = () => {
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-x-1 gap-y-1 md:w-2/5">
+        {/* Same 12-column grid as the lists above, so the buttons end where the
+            Available pay heads list ends. */}
+        <div className="mt-4 grid grid-cols-1 gap-3 @4xl:grid-cols-12">
+        <div className="grid grid-cols-2 gap-x-1 gap-y-1 @4xl:col-span-4">
           {formData?.id ? (
             <ButtonLoading
               onClick={handleUpdate}
@@ -498,6 +505,7 @@ const SalaryStructureForm = () => {
             className="whitespace-nowrap text-center mr-0"
             icon={<FiHome className="text-lg ml-2 mr-2" />}
           />
+        </div>
         </div>
       </div>
     </>

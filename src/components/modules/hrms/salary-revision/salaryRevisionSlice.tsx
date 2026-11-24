@@ -86,6 +86,29 @@ export const saveSalaryRevision = createAsyncThunk<
   }
 });
 
+/** Delete a revision nobody has been paid from yet. */
+export const deleteSalaryRevision = createAsyncThunk<
+  any,
+  { employeeId: number | string; revisionId: number | string },
+  { rejectValue: string }
+>('salaryRevision/deleteSalaryRevision', async ({ employeeId, revisionId }, thunkAPI) => {
+  try {
+    const res = await httpService.post(
+      `${API_HRMS_SALARY_EMPLOYEE_REVISION_URL}/${employeeId}/revisions/${revisionId}/delete`,
+    );
+
+    if (res.data?.success === false) {
+      return thunkAPI.rejectWithValue(res.data?.message || 'Failed to delete the salary revision');
+    }
+
+    return res.data;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.response?.data?.message || err?.message || 'Failed to delete the salary revision',
+    );
+  }
+});
+
 const salaryRevisionSlice = createSlice({
   name: 'salaryRevision',
   initialState,

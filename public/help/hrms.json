@@ -190,11 +190,12 @@
         "heading": "ফর্ম পূরণ",
         "menu": "HRM → Employee → Employee",
         "steps": [
-          "ফর্মটি তিন ধাপে — উপরের ধাপের বোতাম চেপে যেকোনো ধাপে যাওয়া যায়, নিচে Back ও Next।",
+          "ফর্মটি তিন ধাপে — বাঁ দিকের ধাপের বোতাম চেপে যেকোনো ধাপে যাওয়া যায়, নিচে Back ও Next।",
           "১. Personal Information: Name, Father's Name, National ID, Date of Birth, Gender, Mobile Number, Present ও Permanent Address এবং Qualification।",
           "২. Employment & Attendance: Joining Date, Select Designation, Select Branch, Status, Attendance Type, Attendance Policy, Default Shift, Show in Manual Attendance, Overtime Eligible, Standard Work Minutes ও Device Code।",
           "৩. Salary & Payroll: Is Payable?, Basic Salary, House Rent, Medical ও Others Allowance, Daily Wage, OT Rate, Loan ও Others Deduction এবং Salary Sheet Serial Number।",
-          "শেষ ধাপে Save চাপুন। কোনো জরুরি ঘর ফাঁকা থাকলে ফর্ম নিজেই সেই ধাপে ফিরে যায়।"
+          "শেষ ধাপে Save চাপুন। কোনো জরুরি ঘর ফাঁকা থাকলে ফর্ম নিজেই সেই ধাপে ফিরে যায়।",
+          "কোম্পানিতে বাংলা চালু থাকলে Name, Father's Name, Present ও Permanent Address এবং Qualification-এর ঘরে ENG | বাংলা সুইচে বাংলাও লেখা যায়; বাংলা চালু থাকলে বাংলা নাম ও পিতার নাম আবশ্যক।"
         ]
       },
       {
@@ -204,9 +205,10 @@
           "Structure বাছলে তার খাতগুলো নিচে বসে যায়; অথবা Available pay heads থেকে একটি একটি করে যোগ করুন।",
           "Effective From শুধু মাস বাছা যায় — revision সবসময় মাসের ১ তারিখ থেকে শুরু হয়।",
           "Monthly Gross নিজে হিসাব হয়। Save Revision চাপলে নতুন revision তৈরি হয় এবং পুরোনোটির শেষ তারিখ আগের দিন হয়ে বন্ধ হয়।",
-          "নিচে Salary history-তে কে কোন মাস থেকে কত পেয়েছে তা দেখা যায়।"
+          "নিচে Salary history-তে কে কোন মাস থেকে কত পেয়েছে তা দেখা যায়।",
+          "প্যানেল খুললে সবচেয়ে নতুন revision-এর খাত ও অঙ্ক দেখায় — পরের মাস থেকে দেওয়া বেতনও। সেই মাসেই আবার Save করলে ওই মাসের revision বদলে যায়, নতুন সারি হয় না।"
         ],
-        "warning": "পুরোনো revision বদলানো যায় না — বেতন বাড়াতে নতুন revision দিন। এতে পুরোনো মাসের বেতন শিট অঙ্কে অপরিবর্তিত থাকে।"
+        "warning": "যে revision থেকে এখনও বেতন শিট হয়নি, Salary history-তে তার পাশে Edit ও Cancel থাকে — Edit চাপলে অঙ্ক ফর্মে আসে, ঠিক করে Save Revision চাপুন; ভুল বা দুবার হয়ে যাওয়া revision Cancel দিয়ে বাতিল করুন, তখন আগের revision আবার সেই মাসগুলো ধরে। বাতিল revision মোছে না — ইতিহাসের নিচে কাটা দাগসহ Cancelled লেখা থাকে, কে কবে বাতিল করেছে সহ, এবং কোনো বেতনে ধরা হয় না। একমাত্র revision বাতিল করা যায় না। শিট হয়ে গেলে পাশে Paid লেখা থাকে, তখন আর বদলানো যায় না — বেতন বাড়াতে পরের মাস থেকে নতুন revision দিন।"
       },
       {
         "heading": "যা মনে রাখবেন",
@@ -255,7 +257,8 @@
           "Designation Level নির্বাচন করুন।",
           "Designation Name, Sequence ও Description লিখুন।",
           "Save চাপুন; বদলাতে Update চাপুন।",
-          "Back দিয়ে তালিকায় ফিরুন।"
+          "Back দিয়ে তালিকায় ফিরুন।",
+          "কোম্পানিতে বাংলা চালু থাকলে Designation Name ও Description-এর ঘরে ENG | বাংলা সুইচে বাংলাও লেখা যায়; বাংলা চালু থাকলে বাংলা নাম আবশ্যক। বাংলা বেতন শিটে এই নামেই পদবি দেখায়।"
         ],
         "warning": "Sequence ছোট সংখ্যা আগে দেখাবে। একই ক্রম দুবার দিলে তালিকার ক্রম এলোমেলো দেখাবে।"
       }
@@ -788,7 +791,8 @@
           "Code দিন (যেমন mobile_bill) — ছোট হাতের ইংরেজি, সংখ্যা ও আন্ডারস্কোর। একবার Save করলে আর বদলায় না।",
           "Type (Earning/Deduction) ও Calculation নির্বাচন করুন।",
           "Prorate, Rounding, Include in Gross ও Order ঠিক করুন।",
-          "Save চাপুন; বদলাতে Update চাপুন।"
+          "Save চাপুন; বদলাতে Update চাপুন।",
+          "কোম্পানিতে বাংলা চালু থাকলে Pay Head Name-এর ঘরে ENG | বাংলা সুইচে বাংলা নামও লিখুন — বাংলা বেতন শিট ও প্রিন্টে এই নামেই কলাম আসে।"
         ],
         "warning": "যে code ইতিমধ্যে আছে সেটি আবার দিলে সংরক্ষণ হবে না।"
       }
@@ -858,7 +862,8 @@
           "Branch ও Designation Level নির্বাচন করুন।",
           "Monthly Salary বা Overtime Salary নির্বাচন করুন।",
           "Month দিন, Search চাপুন।",
-          "তালিকা মিলিয়ে Salary Generate চাপুন।"
+          "তালিকা মিলিয়ে Salary Generate চাপুন।",
+          "স্ক্রিন বাংলায় থাকলে কলামের নাম, কর্মচারী ও পদবির নাম, খাতের নাম এবং সব সংখ্যা বাংলায় দেখায়; যার বাংলা নাম নেই তা ইংরেজিতেই আসে। বেতন শিটের প্রিন্টও বাংলায় আসে।"
         ]
       },
       {

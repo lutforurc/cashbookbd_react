@@ -17,6 +17,8 @@ import {
   updateSalaryComponent,
   SalaryComponentItem,
 } from './salaryComponentSlice';
+import BilingualInput from '../../../utils/fields/BilingualInput';
+import { useLanguage } from '../../../../i18n/useLanguage';
 
 interface SalaryComponentForm {
   id: string | number;
@@ -40,6 +42,7 @@ interface SalaryComponentForm {
 const initialFormData: SalaryComponentForm = {
   id: '',
   name: '',
+  name_local: '',
   short_name: '',
   code: '',
   component_type: 'earning',
@@ -108,6 +111,7 @@ const SalaryComponentForm = () => {
   const componentState = useSelector((state: any) => state.salaryComponent);
 
   const [formData, setFormData] = useState<SalaryComponentForm>(initialFormData);
+  const { localCode } = useLanguage();
   const [buttonLoading, setButtonLoading] = useState(false);
 
   const isSystemLocked = Boolean(componentState?.editData?.system_locked);
@@ -130,6 +134,7 @@ const SalaryComponentForm = () => {
     setFormData({
       id: loaded?.id ?? '',
       name: loaded?.name ?? '',
+      name_local: loaded?.name_local ?? '',
       short_name: loaded?.short_name ?? '',
       code: loaded?.code ?? '',
       component_type: loaded?.component_type ?? 'earning',
@@ -183,6 +188,9 @@ const SalaryComponentForm = () => {
 
   const payload = (): Partial<SalaryComponentItem> => ({
     ...formData,
+    // The Bangla name goes only where the company has a local language, so an
+    // untouched blank never clears one written while Bangla was on.
+    name_local: localCode ? (formData as any).name_local : undefined,
     component_type: formData.component_type as SalaryComponentItem['component_type'],
     code: formData.code.trim().toLowerCase(),
     default_amount: formData.default_amount === '' ? null : formData.default_amount,
@@ -234,13 +242,15 @@ const SalaryComponentForm = () => {
           {componentState?.isLoading === true ? <Loader /> : null}
 
           <div className="grid grid-cols-1 gap-x-2 gap-y-2 md:grid-cols-2">
-            <InputElement
-              id="name"
+            <BilingualInput
               name="name"
+              kind="name"
               value={formData.name}
+              localValue={(formData as any).name_local || ''}
               label="Pay Head Name"
               placeholder="e.g. Mobile Bill"
               onChange={handleOnChange}
+              onLocalChange={(value) => setFormData((prev: any) => ({ ...prev, name_local: value }))}
             />
 
             <InputElement

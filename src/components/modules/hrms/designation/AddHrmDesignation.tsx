@@ -17,6 +17,9 @@ import {
   saveHrmDesignation,
   updateHrmDesignation,
 } from './hrmDesignationSlice';
+import BilingualInput from '../../../utils/fields/BilingualInput';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { useTranslation } from 'react-i18next';
 
 interface HrmDesignationForm {
   id: string | number;
@@ -24,6 +27,8 @@ interface HrmDesignationForm {
   level_id: string;
   post_sequence: string;
   description: string;
+  name_local?: string;
+  description_local?: string;
 }
 
 const AddHrmDesignation = () => {
@@ -38,10 +43,14 @@ const AddHrmDesignation = () => {
     level_id: '',
     post_sequence: '',
     description: '',
+    name_local: '',
+    description_local: '',
   };
 
   const [formData, setFormData] = useState<HrmDesignationForm>(initialFormData);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const { localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     dispatch(fetchDesignationLevelOptions());
@@ -64,6 +73,8 @@ const AddHrmDesignation = () => {
       level_id: hrmDesignationState.editData?.level_id?.toString() ?? '',
       post_sequence: hrmDesignationState.editData?.post_sequence?.toString() ?? '',
       description: hrmDesignationState.editData?.description ?? '',
+      name_local: hrmDesignationState.editData?.name_local ?? '',
+      description_local: hrmDesignationState.editData?.description_local ?? '',
     });
   }, [hrmDesignationState?.editData]);
 
@@ -86,6 +97,11 @@ const AddHrmDesignation = () => {
   const validate = () => {
     if (!(formData.name || '').trim()) {
       toast.error('Please enter designation name.');
+      return false;
+    }
+    // "Enable Bangla" on: the Bangla name is required too.
+    if (localCode && !(formData.name_local || '').trim()) {
+      toast.error(t('data.localRequired', { field: 'Designation Name', language: localName }));
       return false;
     }
 
@@ -175,13 +191,15 @@ const AddHrmDesignation = () => {
             </div>
 
             <div className="mb-2">
-              <InputElement
-                id="name"
-                value={formData.name}
+              <BilingualInput
                 name="name"
+                kind="name"
+                value={formData.name}
+                localValue={formData.name_local || ''}
                 placeholder="Enter designation name"
                 label="Designation Name"
                 onChange={handleInputChange}
+                onLocalChange={(value) => setFormData((prev) => ({ ...prev, name_local: value }))}
               />
             </div>
 
@@ -197,13 +215,15 @@ const AddHrmDesignation = () => {
               />
             </div>
 
-            <InputElement
-              id="description"
-              value={formData.description}
+            <BilingualInput
               name="description"
+              kind="description"
+              value={formData.description}
+              localValue={formData.description_local || ''}
               placeholder="Enter short description"
               label="Description"
               onChange={handleInputChange}
+              onLocalChange={(value) => setFormData((prev) => ({ ...prev, description_local: value }))}
             />
 
             <div className="mt-3 grid grid-cols-2 gap-x-1 gap-y-1">

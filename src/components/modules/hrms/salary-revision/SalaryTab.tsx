@@ -11,6 +11,7 @@ import { fetchSalaryComponentDdl } from '../salary-component/salaryComponentSlic
 import { fetchSalaryStructureDdl, editSalaryStructure } from '../salary-structure/salaryStructureSlice';
 import {
   fetchSalaryRevisions,
+  deleteSalaryRevision,
   saveSalaryRevision,
 } from './salaryRevisionSlice';
 
@@ -83,18 +84,27 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
     dispatch(fetchSalaryRevisions(employeeId));
   }, [dispatch, employeeId]);
 
-  const revisions = revisionState?.revisions || [];
+  const allRevisions = revisionState?.revisions || [];
+  // A cancelled revision is kept for the record but pays nobody: it is shown
+  // greyed at the foot of the history and never fills the form.
+  const revisions = allRevisions.filter((revision: any) => revision.status !== 'cancelled');
+  const cancelledRevisions = allRevisions.filter((revision: any) => revision.status === 'cancelled');
 
-  /** The revision currently in force, which the next one builds on. */
-  const currentRevision = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
-
-    return revisions.find(
-      (revision: any) =>
-        String(revision.effective_from).slice(0, 10) <= today
-        && (!revision.effective_to || String(revision.effective_to).slice(0, 10) >= today),
-    ) || revisions[0];
-  }, [revisions]);
+  /**
+   * The latest revision -- the one the next one builds on.
+   *
+   * ⚠️ LATEST, NOT "IN FORCE TODAY". A raise saved for next month is the newest
+   * pay; opening the form on today's (older) figures made a saved revision look
+   * as if it had not been saved, and a second Save on those figures would have
+   * undone it.
+   */
+  const currentRevision = useMemo(
+    () =>
+      [...revisions].sort((a: any, b: any) =>
+        String(b.effective_from).localeCompare(String(a.effective_from)),
+      )[0],
+    [revisions],
+  );
 
   /** A fresh form always starts from what the employee earns today. */
   useEffect(() => {
@@ -198,6 +208,47 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
       );
     } catch (err: any) {
       toast.error(err || 'Failed to load the structure');
+    }
+  };
+
+  /**
+   * Open a revision that has not been paid yet for correction: its pay heads,
+   * structure, month and note go into the form, and Save writes them back over
+   * it (a save on the same month replaces that month's revision).
+   */
+  const editRevision = (revision: any) => {
+    setDrafts(
+      (revision.components || []).map((line: any, index: number) => ({
+        component_id: line.component_id,
+        code: line.code ?? '',
+        name: line.name ?? '',
+        short_name: line.short_name ?? '',
+        component_type: line.component_type,
+        amount: line.amount == null ? '' : String(line.amount),
+        prorate: String(line.prorate ?? '0'),
+        sort_order: Number(line.sort_order) || (index + 1) * 10,
+      })),
+    );
+    setStructureId(revision.structure_id ? String(revision.structure_id) : '');
+    setEffectiveFrom(String(revision.effective_from).slice(0, 7) + '-01');
+    setNote(revision.note || '');
+    toast.info(`Editing the ${formatMonth(revision.effective_from)} salary. Save Revision to keep the change.`);
+  };
+
+  /** Remove a duplicate or mistaken revision that has not been paid. */
+  const removeRevision = async (revision: any) => {
+    if (!window.confirm(`Cancel the ${formatMonth(revision.effective_from)} salary? It stays in the history as Cancelled and pays nobody.`)) return;
+
+    try {
+      const response = await dispatch(
+        deleteSalaryRevision({ employeeId: employeeId as any, revisionId: revision.id }),
+      ).unwrap();
+      toast.success(response?.message || 'Salary revision cancelled');
+      setDrafts([]);
+      await dispatch(fetchSalaryRevisions(employeeId as any)).unwrap();
+      onSaved?.();
+    } catch (err: any) {
+      toast.error(err || 'Failed to cancel the salary revision');
     }
   };
 
@@ -363,13 +414,14 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
                         </div>
                       </td>
                       <td className="w-36 px-2 py-2">
-                        <input
-                          type="text"
+                        <InputElement
+                          id={`revision_amount_${draft.component_id}`}
+                          name={`revision_amount_${draft.component_id}`}
                           inputMode="numeric"
                           value={draft.amount}
                           placeholder="0"
                           onChange={(event) => updateAmount(draft.component_id, event.target.value)}
-                          className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-right"
+                          className="text-right"
                         />
                       </td>
                       <td className="px-2 py-2 text-center">
@@ -405,7 +457,7 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
       <div className="mt-4">
         <div className="mb-1 text-sm font-semibold">Salary history</div>
         <div className="overflow-x-auto border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
-          {revisions.length === 0 ? (
+          {allRevisions.length === 0 ? (
             <p className="p-3 text-sm text-[rgb(var(--c-text-muted))]">
               No revision yet. Saving one above starts the history.
             </p>
@@ -419,6 +471,7 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
                   <th className="px-2 py-2 text-right">Gross</th>
                   <th className="px-2 py-2">Status</th>
                   <th className="px-2 py-2">Note</th>
+                  <th className="px-2 py-2 text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -437,6 +490,53 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
                     </td>
                     <td className="px-2 py-2 capitalize">{revision.status}</td>
                     <td className="px-2 py-2">{revision.note || '—'}</td>
+                    <td className="px-2 py-2 text-center">
+                      {/* Until a salary sheet is made from it, nobody has been
+                          paid on it, so it may still be corrected. */}
+                      {revision.editable ? (
+                        <span className="inline-flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => editRevision(revision)}
+                            className="text-sm text-blue-600 hover:underline dark:text-blue-300"
+                          >
+                            Edit
+                          </button>
+                          {revisions.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeRevision(revision)}
+                              className="text-sm text-red-600 hover:underline dark:text-red-400"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[rgb(var(--c-text-muted))]">Paid</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {cancelledRevisions.map((revision: any) => (
+                  <tr
+                    key={revision.id}
+                    className="border-b border-[rgb(var(--c-border))] text-[rgb(var(--c-text-muted))] line-through decoration-1 last:border-b-0"
+                  >
+                    <td className="px-2 py-2">{formatMonth(revision.effective_from)}</td>
+                    <td className="px-2 py-2">
+                      {revision.effective_to ? formatMonth(revision.effective_to) : '—'}
+                    </td>
+                    <td className="px-2 py-2">{revision.structure_name || '—'}</td>
+                    <td className="px-2 py-2 text-right">
+                      {thousandSeparator(Number(revision.gross_salary) || 0)}
+                    </td>
+                    <td className="px-2 py-2 no-underline" style={{ textDecoration: 'none' }}>Cancelled</td>
+                    <td className="px-2 py-2" style={{ textDecoration: 'none' }}>
+                      {revision.updated_by_name ? `by ${revision.updated_by_name}` : ''}
+                      {revision.updated_at ? ` · ${String(revision.updated_at).slice(0, 10)}` : ''}
+                    </td>
+                    <td className="px-2 py-2" />
                   </tr>
                 ))}
               </tbody>

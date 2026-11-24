@@ -15,6 +15,10 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import { fetchEmployeeSettings } from '../employee/employeeSlice';
 import { fetchPayrollPreview, generatePayroll } from './payrollSlice';
+import { rl } from '../../../../i18n/reportLabel';
+import InputElement from '../../../utils/fields/InputElement';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { useLocalDigits } from '../../../../i18n/useLocalDigits';
 
 /**
  * Salary Generate, priced by the component engine.
@@ -65,6 +69,10 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
   onLevelsChange,
   onGenerated,
 }) => {
+  const { code: languageCode } = useLanguage();
+  const digitsRef = React.useRef<HTMLDivElement>(null);
+  // Bangla digits too when the screen is in Bangla.
+  useLocalDigits(digitsRef, languageCode !== 'en');
   const dispatch = useDispatch<any>();
   const preview = useSelector((state: any) => state.payroll?.preview) as any;
   const isLoading = useSelector((state: any) => state.payroll?.isLoading) as boolean;
@@ -93,13 +101,17 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
     rows.forEach((row: any) => {
       (row.components || []).forEach((line: any) => {
         if (line.component_type === 'earning' && !seen.has(line.component_code)) {
-          seen.set(line.component_code, line.component_name);
+          // The pay head's Bangla name on a Bangla screen, where it has one.
+          seen.set(
+            line.component_code,
+            languageCode !== 'en' && line.component_name_local ? line.component_name_local : line.component_name,
+          );
         }
       });
     });
 
     return Array.from(seen.entries()).map(([code, name]) => ({ code, name }));
-  }, [rows]);
+  }, [rows, languageCode]);
 
   const amountOf = (row: any, code: string) => {
     const line = (row.components || []).find((item: any) => item.component_code === code);
@@ -252,29 +264,33 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
   const columns = [
     {
       key: 'employee_serial',
-      header: 'Sl',
+      header: rl('Sl'),
       headerClass: 'text-center w-16',
       cellClass: 'text-center',
     },
     {
       key: 'employee_name',
-      header: 'Name of Employee',
+      header: rl('Name of Employee'),
       render: (row: any) => (
         <>
-          <div className="font-semibold">{row.employee_name}</div>
-          <div className="text-xs text-gray-600 dark:text-gray-400">{row.designation_name}</div>
+          <div className="font-semibold">
+            {languageCode !== 'en' && row.employee_name_local ? row.employee_name_local : row.employee_name}
+          </div>
+          <div className="text-xs text-gray-600 dark:text-gray-400">
+            {languageCode !== 'en' && row.designation_name_local ? row.designation_name_local : row.designation_name}
+          </div>
         </>
       ),
     },
     {
       key: 'month_days',
-      header: 'Month Days',
+      header: rl('Month Days'),
       headerClass: 'text-right',
       cellClass: 'text-right',
     },
     {
       key: 'payable_days',
-      header: 'Working Day',
+      header: rl('Working Day'),
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => Number(row.payable_days || 0).toFixed(2).replace(/\.00$/, ''),
@@ -288,33 +304,37 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
     })),
     {
       key: 'gross',
-      header: 'Total',
+      header: rl('Total'),
       headerClass: 'text-right',
       cellClass: 'text-right font-semibold text-green-700 dark:text-green-400',
       render: (row: any) => thousandSeparator(row.gross),
     },
     {
       key: 'loan_deduction',
-      header: 'Loan Ded.',
+      header: rl('Loan Ded.'),
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <input
-          type="text"
-          inputMode="numeric"
-          value={draftOf(row).loan_deduction}
-          onChange={(event) =>
-            updateDraft(row.employee_id, {
-              loan_deduction: event.target.value.replace(/[^\d.]/g, ''),
-            })
-          }
-          className="w-24 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-right"
-        />
+        <div className="w-24">
+          <InputElement
+            id={`loan_deduction_${row.employee_id}`}
+            name={`loan_deduction_${row.employee_id}`}
+            inputMode="numeric"
+            value={draftOf(row).loan_deduction}
+            placeholder="0"
+            onChange={(event) =>
+              updateDraft(row.employee_id, {
+                loan_deduction: event.target.value.replace(/[^\d.]/g, ''),
+              })
+            }
+            className="text-right"
+          />
+        </div>
       ),
     },
     {
       key: 'attendance_deduction',
-      header: 'Att. Ded',
+      header: rl('Att. Ded'),
       headerClass: 'text-right',
       cellClass: 'text-right font-semibold text-red-700 dark:text-red-400',
       render: (row: any) =>
@@ -322,26 +342,30 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
     },
     {
       key: 'others_deduction',
-      header: 'Other Ded.',
+      header: rl('Other Ded.'),
       headerClass: 'text-right',
       cellClass: 'text-right',
       render: (row: any) => (
-        <input
-          type="text"
-          inputMode="numeric"
-          value={draftOf(row).others_deduction}
-          onChange={(event) =>
-            updateDraft(row.employee_id, {
-              others_deduction: event.target.value.replace(/[^\d.]/g, ''),
-            })
-          }
-          className="w-24 rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-right"
-        />
+        <div className="w-24">
+          <InputElement
+            id={`others_deduction_${row.employee_id}`}
+            name={`others_deduction_${row.employee_id}`}
+            inputMode="numeric"
+            value={draftOf(row).others_deduction}
+            placeholder="0"
+            onChange={(event) =>
+              updateDraft(row.employee_id, {
+                others_deduction: event.target.value.replace(/[^\d.]/g, ''),
+              })
+            }
+            className="text-right"
+          />
+        </div>
       ),
     },
     {
       key: 'net',
-      header: 'Net Salary',
+      header: rl('Net Salary'),
       headerClass: 'text-right',
       cellClass: 'text-right font-bold text-green-700 dark:text-green-400',
       render: (row: any) => {
@@ -360,7 +384,7 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
     },
     {
       key: 'actions',
-      header: 'Action',
+      header: rl('Action'),
       headerClass: 'text-center',
       cellClass: 'text-center',
       render: (row: any) => (
@@ -377,71 +401,72 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
   ];
 
   return (
-    <div>
-      <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex max-w-280 flex-wrap">
+    <div ref={digitsRef}>
+      {/* `@container`: the filters follow the panel's own width, not the
+          window's. Wide, they sit on one row with Salary Generate at the end;
+          narrower, two to a row; narrow, one under another. */}
+      <div className="@container mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
+        <div className="grid grid-cols-1 items-end gap-2 @2xl:grid-cols-2 @6xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_auto_auto]">
+          <div className="min-w-0">
             <BranchDropdown
               defaultValue={branchId?.toString()}
               onChange={(event: any) => onBranchChange(event.target.value === '' ? '' : Number(event.target.value))}
-              className="mr-2 w-60 p-2 text-sm font-medium"
+              className="w-full p-2 text-sm font-medium"
               branchDdl={branchDropdown}
             />
+          </div>
 
-            <div className="mr-2 w-full">
-              <MultiSelectDropdown
-                options={designationLevelOptions}
-                value={designationLevels}
-                onChange={onLevelsChange}
-                className="w-60"
-              />
-            </div>
-
-            <div className="mr-2">
-              <DropdownCommon
-                id="salary_sheet_type"
-                name="salary_sheet_type"
-                value={salarySheetType}
-                data={[
-                  { id: 'monthly', name: 'Monthly Salary' },
-                  { id: 'overtime', name: 'Overtime Salary' },
-                ]}
-                onChange={onSheetTypeChange}
-                className="h-[2.3rem] min-w-40 bg-transparent"
-              />
-            </div>
-
-            <div className="mr-2">
-              <MonthDropdown
-                id="month_id"
-                name="month_id"
-                value={monthId}
-                className="ml-2 mr-2 h-[2.3rem] min-w-35 bg-transparent"
-                onChange={onMonthChange}
-              />
-            </div>
-
-            <ButtonLoading
-              onClick={handleSearch}
-              buttonLoading={searchLoading}
-              disabled={searchLoading}
-              label="Search"
-              icon={<FiSearch className="mr-2" />}
-              className="mr-2 ml-2 whitespace-nowrap p-2"
+          <div className="min-w-0">
+            <MultiSelectDropdown
+              options={designationLevelOptions}
+              value={designationLevels}
+              onChange={onLevelsChange}
+              className="w-full"
             />
           </div>
 
-          <div className="flex gap-2">
-            {branchId && rows.length > 0 ? (
-              <ButtonLoading
-                onClick={() => setShowConfirm(true)}
-                buttonLoading={saveLoading}
-                label="Salary Generate"
-                className="whitespace-nowrap"
-                icon={<FiCheckSquare className="mr-2" />}
-              />
-            ) : null}
+          <div className="min-w-0">
+            <DropdownCommon
+              id="salary_sheet_type"
+              name="salary_sheet_type"
+              value={salarySheetType}
+              data={[
+                { id: 'monthly', name: rl('Monthly Salary') },
+                { id: 'overtime', name: rl('Overtime Salary') },
+              ]}
+              onChange={onSheetTypeChange}
+              className="w-full bg-transparent"
+            />
           </div>
+
+          <div className="min-w-0">
+            <MonthDropdown
+              id="month_id"
+              name="month_id"
+              value={monthId}
+              className="w-full bg-transparent"
+              onChange={onMonthChange}
+            />
+          </div>
+
+          <ButtonLoading
+            onClick={handleSearch}
+            buttonLoading={searchLoading}
+            disabled={searchLoading}
+            label={rl('Search')}
+            icon={<FiSearch className="mr-2" />}
+            className="w-full whitespace-nowrap p-2 @6xl:w-auto"
+          />
+
+          {branchId && rows.length > 0 ? (
+            <ButtonLoading
+              onClick={() => setShowConfirm(true)}
+              buttonLoading={saveLoading}
+              label={rl('Salary Generate')}
+              className="w-full whitespace-nowrap @6xl:w-auto"
+              icon={<FiCheckSquare className="mr-2" />}
+            />
+          ) : null}
         </div>
       </div>
 
@@ -452,7 +477,7 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[rgb(var(--c-border))] bg-slate-50 p-3 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
           <div>
-            Total Employees:{' '}
+            {rl('Total Employees:')}{' '}
             <span className="font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
               {payableRows.length}
             </span>
@@ -460,19 +485,19 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
 
           <div className="flex flex-wrap justify-end gap-x-6 gap-y-1">
             <div>
-              Total Salary:{' '}
+              {rl('Total Salary:')}{' '}
               <span className="font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
                 {thousandSeparator(totals.gross)}
               </span>
             </div>
             <div>
-              Att. Deduction:{' '}
+              {rl('Att. Deduction:')}{' '}
               <span className="font-semibold text-rose-600 dark:text-rose-400">
                 {thousandSeparator(totals.attendance_deduction)}
               </span>
             </div>
             <div className="font-bold text-emerald-600 dark:text-emerald-400">
-              Net Total: {thousandSeparator(totals.net)}
+              {rl('Net Total:')} {thousandSeparator(totals.net)}
             </div>
           </div>
         </div>

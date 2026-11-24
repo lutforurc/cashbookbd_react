@@ -31,6 +31,7 @@ import {
   API_BRANCH_CLEAR_OPENING_URL,
   API_BRANCH_CLEAR_TRANSACTION_URL,
   API_HRMS_ATTENDANCE_DEVICE_SETTINGS_URL,
+  API_HRMS_SALARY_ENGINE_URL,
   API_REMOTE_URL,
 } from '../../services/apiRoutes';
 import FormToggleField from '../../utils/utils-functions/FormToggleField';
@@ -733,6 +734,8 @@ const AddBranch = () => {
   // asks for. It sits mid-list, never last, because it saves with its own
   // button -- the last step is where the branch's Update button appears.
   const canManageLanguage = hasPermission(settings?.data?.permissions || [], 'language.settings');
+  // Owner-level: which salary engine this branch's Salary Generate uses.
+  const canManageSalaryEngine = hasPermission(settings?.data?.permissions || [], 'salary.engine.manage');
 
   const steps = [
     'Basic Info',
@@ -1291,6 +1294,16 @@ const AddBranch = () => {
   }, [branchEditData?.editData?.branch]);
 
   const [formData, setFormData] = useState<branchItem>(initialBranch);
+
+  /**
+   * "Salary from pay heads": the branch's payroll_engine row. Saved on its own
+   * the moment it is switched -- it is not part of the branch form, and the
+   * API keeps it apart (salary.engine.manage). Off, Salary Generate is the old
+   * fixed-column sheet; on, it prices every employee from their salary
+   * revision with one column per pay head.
+   */
+  const [salaryEngineOn, setSalaryEngineOn] = useState(false);
+  const [salaryEngineSaving, setSalaryEngineSaving] = useState(false);
   const { localCode, localName } = useLanguage();
   const { t } = useTranslation('common');
 
@@ -1608,6 +1621,47 @@ const AddBranch = () => {
 
     const previewUrl = URL.createObjectURL(file);
     setPadHeaderPreview(previewUrl);
+  };
+
+  useEffect(() => {
+    const branchId = formData?.id;
+    if (!branchId || !canManageSalaryEngine) return;
+
+    let cancelled = false;
+    httpService
+      .get(API_HRMS_SALARY_ENGINE_URL, { params: { branch_id: branchId } })
+      .then((response) => {
+        const engine = response?.data?.data?.data?.engine;
+        if (!cancelled) setSalaryEngineOn(engine === 'components');
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [formData?.id, canManageSalaryEngine]);
+
+  const handleSalaryEngineChange = async (checked: boolean) => {
+    const branchId = formData?.id;
+    if (!branchId) return;
+
+    setSalaryEngineSaving(true);
+    try {
+      const response = await httpService.post(API_HRMS_SALARY_ENGINE_URL, {
+        branch_id: branchId,
+        enabled: checked ? 1 : 0,
+      });
+      if (response?.data?.success === false) {
+        toast.error(response?.data?.message || 'Could not change the salary engine.');
+        return;
+      }
+      setSalaryEngineOn(checked);
+      toast.success(response?.data?.message || 'Saved.');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Could not change the salary engine.');
+    } finally {
+      setSalaryEngineSaving(false);
+    }
   };
 
   const handleBranchUpdate = () => {
@@ -3920,6 +3974,30 @@ const AddBranch = () => {
                       />
 
                     </div>
+
+                    {/* Payroll, ruled off on its own: it decides how this branch's
+                      salaries are priced, a different question from the
+                      operational switches above, and it saves the moment it is
+                      switched rather than with the branch. */}
+                    {canManageSalaryEngine && formData?.id ? (
+                      <div className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4">
+                        <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          Payroll
+                        </h4>
+                        <p className="mt-0.5 mb-2 text-xs leading-snug text-gray-500">
+                          How Salary Generate works out this branch's salaries.
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                          <FormToggleField
+                            label="Salary from Pay Heads?"
+                            description="On, Salary Generate pays each employee from their salary revision, one column per pay head (Basic, Mobile Bill, Lunch Bill...). Off, the old fixed sheet. Saved at once; switch it off to go back."
+                            checked={salaryEngineOn}
+                            disabled={salaryEngineSaving}
+                            onChange={(checked) => handleSalaryEngineChange(checked)}
+                          />
+                        </div>
+                      </div>
+                    ) : null}
 
                     {/* SMS used to flow on inside the grid above so no toggle sat
                       alone on a half-empty row. It reads better ruled off: these
