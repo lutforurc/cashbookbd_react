@@ -1,16 +1,17 @@
-# धाप ১ — Multi-language Foundation (Implementation Plan)
+# ধাপ ১ — Multi-language Foundation (Implementation Plan)
 
 **সোর্স:** `docs/mult-language/multi-language-plan.md` — ধাপ ১ (ভিত্তি)
 **স্কোপ:** i18n ভিত্তি + ভাষা বদলানো। **কোনো লেবেল এখনো অনুবাদ হবে না** — সব স্ক্রিন আজকের মতো ইংরেজিতেই চলবে।
-**বাদ:** ধাপ ১ক (ফন্ট/fonts টেবিল/NikoshBAN), `name_local` কলাম, প্রিন্ট, SMS — এগুলো আলাদা plan।
+**বাদ:** ধাপ ১ক (ফন্ট/fonts টেবিল/NikoshBAN), `name_local` কলাম, প্রিন্ট, SMS, HRM বাংলা বেতন শীট (সোর্স plan §১৪) — এগুলো আলাদা plan।
+**অবস্থা (24/11/2026):** এখনো শুরু হয়নি — `src/i18n`, `src/locales`, i18next dependency, `runMultiLanguage…` মেথড কোনোটাই নেই।
 
 ---
 
-## ০. যে সিন্ধান্তগুলো নেওয়া হলো
+## ০. যে সিদ্ধান্তগুলো নেওয়া হলো
 
 | বিষয় | সিদ্ধান্ত | কারণ |
 |---|---|---|
-| Backend | এই রিপোতে নেই → **নিচের contract অনুযায়ী spec** | `D:\cashbook_api` ওয়ার্কস্পেসে নেই। Frontend API-র উপর নির্ভর করে, তাই contract আগে ঠিক করতে হবে |
+| Backend | আলাদা রিপো `D:\www\cashbook_api` → **নিচের contract অনুযায়ী** | এখন ওয়ার্কস্পেস থেকে পড়া যায় (24/11/2026)। Frontend API-র উপর নির্ভর করে, তাই contract আগে ঠিক করতে হবে |
 | `users.lang` মান | `null \| 'en' \| 'local'` | ভাষা-নিরপেক্ষ। নতুন ভাষা যোগে ইউজারের মান বদলাতে হয় না |
 | ভাষা নির্ধারণের ক্রম | ইউজার → শাখার `ui_language` → English | সোর্স plan §২.৩ |
 | স্বিচার UI | হেডারে ছোট segmented pill: `EN \| বাংলা` | কোম্পানিতে সর্বোচ্চ English + ১টি local, তাই ড্রপডাউন দরকার নেই |
@@ -283,4 +284,6 @@ export const applyLanguage = (code: string, info?: LanguageInfo) => {
 
 ## E. ইচ্ছাকৃতভাবে বাদ (পরের ধাপ)
 
-ধাপ ১ক (fonts টেবিল, NikoshBAN, Branch Settings Font অংশ, CSS ফন্ট ভ্যারিয়েবল), `name_local` কলাম, `LocalNameInput`/`displayName`, প্রিন্ট ভাষা, SMS, Translations স্ক্রিন, `use_bangla` পুরনো branch toggle-এর পরিবর্তন।
+ধাপ ১ক (fonts টেবিল, NikoshBAN, Branch Settings Font অংশ, CSS ফন্ট ভ্যারিয়েবল), `name_local` কলাম, `LocalNameInput`/`displayName`, প্রিন্ট ভাষা, SMS, Translations স্ক্রিন, `use_bangla` পুরনো branch toggle-এর পরিবর্তন (`com_branches.use_bangla` ও `bangla` আছে; ধাপ ১ এগুলো পড়বে না, বদলাবেও না)।
+
+**HRM বাংলা বেতন শীট** (সোর্স plan §১৪) এই ভিত্তি ও ধাপ ১ক-এর উপর নির্ভর করে: বাংলা ফন্ট, বাংলা অঙ্ক আর প্রিন্টের ভাষা বাছাই এর পরেই আসবে। ধাপ ১-এ তার জন্য আলাদা কিছু লাগবে না — শুধু পরে `public/locales/bn/hrm.json` (namespace `hrm`) যোগ হবে।
