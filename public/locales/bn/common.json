@@ -37,6 +37,11 @@
     "descriptionInLanguage": "বর্ণনা ({{language}})",
     "missingLocalName": "{{language}} নাম নেই"
   },
+  "branch": {
+    "pricingHeading": "মূল্য নির্ধারণ",
+    "blockBelowCostLabel": "ক্রয়মূল্যের নিচে বিক্রয় আটকাবে?",
+    "blockBelowCostHint": "চালু থাকলে বিক্রয় ইনভয়েসে প্রোডাক্ট সার্চে দেখানো Purchase Price-এর চেয়ে কম দরে লাইন যোগ করা যায় না। বন্ধ থাকলে লোকসানে বিক্রয়ও অন্য লাইনের মতোই লেখা যায় — ক্লিয়ারেন্স বা বাজারদর কমে যাওয়া স্টকের জন্য।"
+  },
   "common": {
     "save": "সেভ",
     "cancel": "বাতিল",
@@ -59,6 +64,7 @@
     "Total Liabilities & Equity": "মোট দায় ও মূলধন",
     "Grand Total": "সর্বমোট",
     "Total": "মোট",
+    "Liabilities + Equity": "দায় + মূলধন",
     "Trial Balance Details": "রেওয়ামিল (বিস্তারিত)",
     "to": "থেকে",
     "Notes to the Trial Balance": "রেওয়ামিলের নোট",
@@ -189,5 +195,8 @@
     "contact_number": "যোগাযোগ নাম্বার",
     "relation": "সম্পর্ক",
     "mobile": "মোবাইল নম্বর"
+  },
+  "companyLocal": {
+    "notes": "নোট"
   }
 }

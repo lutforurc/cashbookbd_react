@@ -32,6 +32,7 @@
   "data": {
     "nameInLanguage": "নাম ({{language}})",
     "addressInLanguage": "ঠিকানা ({{language}})",
+    "descriptionInLanguage": "বর্ণনা ({{language}})",
     "missingLocalName": "{{language}} নাম নেই"
   },
   "common": {

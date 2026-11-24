@@ -1,7 +1,8 @@
 # বহুভাষা (Multi-language) পরিকল্পনা
 
-**তারিখ:** 17/11/2026 · **হালনাগাদ:** 24/11/2026 (ভাষা সেটিংস পেজ — §২.৪; HRM বাংলা বেতন শীট — §১৪)
-**অবস্থা:** পরিকল্পনা, এখনো কোনো কোড লেখা হয়নি (24/11/2026-এ যাচাই: `src/i18n`, `src/locales`, `public/fonts`, i18next dependency, `runMultiLanguage…` মেথড — কোনোটাই নেই)
+**তারিখ:** 17/11/2026 · **হালনাগাদ:** 24/11/2026 (ভাষা সেটিংস পেজ — §২.৪; HRM বাংলা বেতন শীট — §১৪; ধাপ ৬-এর বিস্তারিত প্লান)
+**অবস্থা:** ধাপ ১, ৩ ও ৪ **বাস্তবায়িত** (`cashbook_api` branch `Language-API` @ `ed343899`; `cashbookbd_react` — `src/i18n`, `src/locales`, i18next, `runMultiLanguage…` মেথড সব আছে)। ধাপ ২, ৫, ৬+ বাকি।
+**ধাপ ৬-এর প্লান:** [`multi-language-phase-6-master-data.md`](./multi-language-phase-6-master-data.md) — Product/Category/Unit ইত্যাদির `name_local`, আসল কোড রেফারেন্স সহ।
 
 ---
 

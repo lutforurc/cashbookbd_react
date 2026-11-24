@@ -20,6 +20,9 @@ import StepRail from '../../utils/others/StepRail';
 import { FiArrowLeft, FiArrowRight, FiRefreshCcw, FiSave } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
 import { editBranch, storeBranch, updateBranch } from './branchSlice';
+import BilingualInput from '../../utils/fields/BilingualInput';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../../common/Loader';
 import { getBranchSettings, getSettings } from '../settings/settingsSlice';
@@ -221,6 +224,18 @@ interface branchItem {
   party_ddl_lines: string;
   show_spelling_of_money: boolean;
   show_sales_balance_summary: boolean;
+  /**
+   * Branch Setup -> Invoice Setup -> "Block Sales Below Purchase Price?".
+   *
+   * On is the rule every tiles branch has always had: the sales invoice
+   * refuses a line whose rate is under what the product cost. Off, the desk may
+   * write a loss sale -- a clearance, or a batch bought at a price the market
+   * has since fallen under. Read by the tiles sales screen alone.
+   *
+   * ⚠️ On for a branch that has never been asked, which is the behaviour that
+   * existed before this switch -- see the hydration below.
+   */
+  block_below_cost_sale: boolean;
   need_demo_tutorial: boolean;
   need_customer_contact_person: boolean;
   due_list_with_address: boolean;
@@ -867,6 +882,9 @@ const AddBranch = () => {
     party_ddl_lines: 'multiple',
     show_spelling_of_money: false,
     show_sales_balance_summary: false,
+    // On: the tiles sales screen keeps refusing a line under its cost, which
+    // is what every branch did before this switch existed.
+    block_below_cost_sale: true,
     need_demo_tutorial: false,
     need_customer_contact_person: false,
     due_list_with_address: false,
@@ -1166,6 +1184,13 @@ const AddBranch = () => {
         show_instalment_list: toBooleanFlag(b.show_instalment_list),
         show_spelling_of_money: toBooleanFlag(b.show_spelling_of_money),
         show_sales_balance_summary: toBooleanFlag(b.show_sales_balance_summary),
+        // ⚠️ READ ON WHEN THE SERVER HAS NOTHING. A branch that has never been
+        // asked keeps refusing a line under its cost -- the behaviour before
+        // this switch existed -- so an absent answer must not read as off.
+        block_below_cost_sale:
+          b.block_below_cost_sale == null || b.block_below_cost_sale === ''
+            ? true
+            : toBooleanFlag(b.block_below_cost_sale),
         need_demo_tutorial: toBooleanFlag(b.need_demo_tutorial),
         need_customer_contact_person: toBooleanFlag(b.need_customer_contact_person),
         due_list_with_address: toBooleanFlag(b.due_list_with_address),
@@ -1266,6 +1291,17 @@ const AddBranch = () => {
   }, [branchEditData?.editData?.branch]);
 
   const [formData, setFormData] = useState<branchItem>(initialBranch);
+  const { localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
+
+  /** "Enable Bangla" on: the Bangla branch name is required too. */
+  const localNameMissing = () => {
+    if (localCode && !String((formData as any).name_local || '').trim()) {
+      toast.error(t('data.localRequired', { field: 'Branch Name', language: localName }));
+      return true;
+    }
+    return false;
+  };
 
   /**
    * The face terminals' two choices, kept apart from the branch payload: they
@@ -1575,6 +1611,7 @@ const AddBranch = () => {
   };
 
   const handleBranchUpdate = () => {
+    if (localNameMissing()) return;
     setButtonLoading(true);
     dispatch(
       updateBranch(buildBranchFormData(formData, padHeaderFile), (res: any) => {
@@ -1596,6 +1633,7 @@ const AddBranch = () => {
   };
 
   const handleBranchSave = () => {
+    if (localNameMissing()) return;
     setButtonLoading(true);
     dispatch(
       storeBranch(buildBranchFormData(formData, padHeaderFile), (res: any) => {
@@ -1689,15 +1727,16 @@ const AddBranch = () => {
                       identity fields did exactly that to Inventory System.
                       Flowing them together fills every row until the last. */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                      <InputElement
-                        id="name"
-                        value={formData.name || ''}
+                      <BilingualInput
                         name="name"
+                        kind="name"
+                        value={formData.name || ''}
+                        localValue={(formData as any).name_local || ''}
                         placeholder={'Enter Branch Name'}
                         label={'Enter Branch Name'}
                         description="How the branch is named everywhere it is listed, and on its printed papers."
-                        className={''}
                         onChange={handleOnChange}
+                        onLocalChange={(value) => setFormData((prev) => ({ ...prev, name_local: value }))}
                       />
                       <DropdownCommon
                         id="branch_types_id"
@@ -1749,35 +1788,38 @@ const AddBranch = () => {
                         className={''}
                         onChange={handleOnChange}
                       />
-                      <InputElement
-                        id="contact_person"
-                        value={formData.contact_person || ''}
+                      <BilingualInput
                         name="contact_person"
+                        localLabel={t('customerLocal.contact_person')}
+                        value={formData.contact_person || ''}
+                        localValue={(formData as any).contact_person_local || ''}
                         placeholder={'Enter Contact Person'}
                         label={'Enter Contact Person'}
                         description="Who to ask for at this branch -- the manager or whoever answers for it."
-                        className={''}
                         onChange={handleOnChange}
+                        onLocalChange={(value) => setFormData((prev) => ({ ...prev, contact_person_local: value }))}
                       />
-                      <InputElement
-                        id="address"
-                        value={formData.address || ''}
+                      <BilingualInput
                         name="address"
+                        kind="address"
+                        value={formData.address || ''}
+                        localValue={(formData as any).address_local || ''}
                         placeholder={'Enter Branch Address'}
                         label={'Enter Branch Address'}
                         description="Where the branch sits. It goes under the heading on its printed papers."
-                        className={''}
                         onChange={handleOnChange}
+                        onLocalChange={(value) => setFormData((prev) => ({ ...prev, address_local: value }))}
                       />
-                      <InputElement
-                        id="notes"
-                        value={formData.notes || ''}
+                      <BilingualInput
                         name="notes"
+                        localLabel={t('companyLocal.notes')}
+                        value={formData.notes || ''}
+                        localValue={(formData as any).notes_local || ''}
                         placeholder={'Enter notes'}
                         label={'Enter notes'}
                         description="For the office's own remarks about this branch. Nothing here is printed."
-                        className={''}
                         onChange={handleOnChange}
+                        onLocalChange={(value) => setFormData((prev) => ({ ...prev, notes_local: value }))}
                       />
                       <DropdownCommon
                         id="status"
@@ -2461,6 +2503,25 @@ const AddBranch = () => {
                         checked={Boolean(formData.block_negative_stock_sale)}
                         onChange={(checked) =>
                           handleToggleFieldChange('block_negative_stock_sale', checked)
+                        }
+                      />
+                    </div>
+
+                    {/* ---------- Pricing ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      {t('branch.pricingHeading')}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      {/* On is the rule the tiles sales invoice has always
+                          kept: a line under its cost is refused as it is added.
+                          Off, a loss sale is written like any other line -- for
+                          a clearance, or stock the market has moved under. */}
+                      <FormToggleField
+                        label={t('branch.blockBelowCostLabel')}
+                        description={t('branch.blockBelowCostHint')}
+                        checked={Boolean(formData.block_below_cost_sale)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('block_below_cost_sale', checked)
                         }
                       />
                     </div>

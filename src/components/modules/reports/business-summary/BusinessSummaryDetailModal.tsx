@@ -7,6 +7,8 @@ import { API_REPORT_BUSINESS_SUMMARY_DETAIL_URL } from "../../../services/apiRou
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import type { BusinessGroupRow, BusinessMonthInfo } from "./businessSummaryData";
 import { rl } from '../../../../i18n/reportLabel';
+import { toLocalMonth } from '../../../../i18n/months';
+import i18n from '../../../../i18n';
 
 type DetailItem = {
   coa4_id: number | null;
@@ -96,7 +98,7 @@ const BusinessSummaryDetailModal = ({ branchId, months, group, onClose }: Props)
             >
               {months.map((m) => (
                 <option key={m.month} value={m.month}>
-                  {m.label}
+                  {i18n.language !== 'en' ? toLocalMonth(m.month, i18n.language) : m.label}
                 </option>
               ))}
             </select>

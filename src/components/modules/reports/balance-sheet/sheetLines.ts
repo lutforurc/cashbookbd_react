@@ -5,6 +5,7 @@ import {
   reportSectionLabel,
   stockMoved,
 } from "./balanceSheetNotes";
+import { rl } from '../../../../i18n/reportLabel';
 
 /**
  * The balance sheet's shape, and the one list of lines both views draw from.
@@ -171,7 +172,7 @@ export const buildSheetLines = ({
   ) => {
     if (groups.length === 0) return;
 
-    out.push({ kind: "section", label: title });
+    out.push({ kind: "section", label: rl(title) });
 
     groups.forEach((group, index) => {
       serial += 1;
@@ -192,7 +193,7 @@ export const buildSheetLines = ({
       });
     });
 
-    out.push({ kind: "total", label: totalLabel, side, columns });
+    out.push({ kind: "total", label: rl(totalLabel), side, columns });
   };
 
   /**
@@ -238,7 +239,7 @@ export const buildSheetLines = ({
 
       out.push({
         kind: "subtotal",
-        label: "Less: Accumulated Depreciation",
+        label: rl("Less: Accumulated Depreciation"),
         side,
         indent: true,
         columns: {
@@ -250,7 +251,7 @@ export const buildSheetLines = ({
 
       out.push({
         kind: "subtotal",
-        label: `Net ${reportSectionLabel(section.name)}`,
+        label: `${rl("Net")} ${reportSectionLabel(section.name)}`,
         side,
         columns: section.columns ?? ZERO,
       });
@@ -260,7 +261,7 @@ export const buildSheetLines = ({
 
     out.push({
       kind: "subtotal",
-      label: `Total ${reportSectionLabel(section.name)}`,
+      label: `${rl("Total")} ${reportSectionLabel(section.name)}`,
       side,
       columns: section.columns ?? ZERO,
     });
@@ -275,9 +276,9 @@ export const buildSheetLines = ({
   ) => {
     if (list.length === 0) return;
 
-    out.push({ kind: "section", label: title });
+    out.push({ kind: "section", label: rl(title) });
     list.forEach((section) => pushSubSection(title, section, side));
-    out.push({ kind: "total", label: totalLabel, side, columns });
+    out.push({ kind: "total", label: rl(totalLabel), side, columns });
   };
 
   if (hasSections) {
@@ -292,7 +293,7 @@ export const buildSheetLines = ({
 
   out.push({
     kind: "total",
-    label: "Total Liabilities & Equity",
+    label: rl("Total Liabilities & Equity"),
     side: "credit",
     strong: true,
     columns: {

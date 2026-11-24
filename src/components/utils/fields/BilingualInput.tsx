@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../../i18n/useLanguage';
 import { FIELD_HEIGHT } from '../../../theme/fieldStyles';
 import InputElement from './InputElement';
+import { Textarea } from './FormControls';
 
 type Props = {
   /** The English field: its formik name, e.g. 'name' or 'manual_address'. */
@@ -23,6 +24,12 @@ type Props = {
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   autoComplete?: string;
+  /** The line under the box saying what it is for. */
+  description?: React.ReactNode;
+  /** Rows for a multi-line box (address, notes); left off it is one line. */
+  rows?: number;
+  /** Classes for that multi-line box, as the screen styles its others. */
+  textareaClassName?: string;
 };
 
 /**
@@ -43,6 +50,9 @@ const BilingualInput = ({
   onBlur,
   onKeyDown,
   autoComplete,
+  rows,
+  textareaClassName = '',
+  description,
 }: Props) => {
   const { t } = useTranslation('common');
   const { code, localCode, localInfo, localName } = useLanguage();
@@ -60,9 +70,29 @@ const BilingualInput = ({
       onBlur={onBlur}
       onKeyDown={onKeyDown}
       autoComplete={autoComplete}
+      description={description}
       className={localCode ? 'pr-32' : ''}
     />
   );
+
+  if (!localCode && rows) {
+    return (
+      <div className="text-left flex flex-col">
+        <label htmlFor={name} className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
+          {label}
+        </label>
+        <Textarea
+          id={name}
+          name={name}
+          rows={rows}
+          value={value}
+          onChange={(event: any) => onChange(event as any)}
+          placeholder={placeholder}
+          className={textareaClassName}
+        />
+      </div>
+    );
+  }
 
   if (!localCode) return english;
 
@@ -84,6 +114,58 @@ const BilingualInput = ({
       )}
     </button>
   );
+
+  const localTitle = localLabel ? (
+    localLabel
+  ) : kind ? (
+    t(`data.${kind}InLanguage`, { language: localName })
+  ) : (
+    <>
+      {label} ({localName})
+    </>
+  );
+
+  const switcher = (
+    <div
+      role="group"
+      aria-label={t('data.switchLanguage')}
+      className="flex h-full rounded-lg bg-gray-2 p-0.5 dark:bg-meta-4"
+      dir="ltr"
+    >
+      {tab(!showLocal, Boolean(value), 'ENG', () => setShowLocal(false))}
+      {tab(showLocal, Boolean(localValue), localShort, () => setShowLocal(true))}
+    </div>
+  );
+
+  // Multi-line: the same switch, in the box's top-right corner.
+  if (rows) {
+    const fieldId = showLocal ? `${name}_local` : name;
+    return (
+      <div className="text-left flex flex-col">
+        <label htmlFor={fieldId} className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
+          {showLocal ? localTitle : label}
+        </label>
+        <div
+          className="relative"
+          dir={showLocal && localInfo?.direction === 'rtl' ? 'rtl' : 'ltr'}
+          lang={showLocal ? localCode : undefined}
+        >
+          <Textarea
+            id={fieldId}
+            name={fieldId}
+            rows={rows}
+            value={showLocal ? localValue : value}
+            onChange={(event: any) =>
+              showLocal ? onLocalChange(event.target.value) : onChange(event as any)
+            }
+            placeholder={showLocal ? '' : placeholder}
+            className={`${textareaClassName} pr-32`}
+          />
+          <div className="absolute right-1 top-1 h-7">{switcher}</div>
+        </div>
+      </div>
+    );
+  }
 
   // The switch sits inside the box, at its right end; the box keeps room for it.
   return (
@@ -112,6 +194,7 @@ const BilingualInput = ({
             onChange={(event) => onLocalChange(event.target.value)}
             onKeyDown={onKeyDown}
             autoComplete="off"
+            description={description}
             className="pr-32"
           />
         ) : (

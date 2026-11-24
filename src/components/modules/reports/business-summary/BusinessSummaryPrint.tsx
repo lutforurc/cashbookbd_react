@@ -6,6 +6,8 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { businessBlocks, businessSections, sectionTotals } from './businessSummaryData';
 import type { BusinessLine, BusinessMonthValue, BusinessSummaryData } from './businessSummaryData';
 import { rl } from '../../../../i18n/reportLabel';
+import { toLocalMonth } from '../../../../i18n/months';
+import i18n from '../../../../i18n';
 
 type Props = {
   title?: string;
@@ -64,8 +66,12 @@ const DESCRIPTION_WIDTH_PX = 180;
 const valueColumnWidth = (widestChars: number, fontSize: number, floor = 44) =>
   Math.max(floor, widestChars * fontSize * 0.46 + 10);
 
+// Value columns on the sheet: Opening and Closing under the first month, then
+// Closing alone -- each later month opens at the one before's closing.
+const valueColumns = (months: number) => (months > 0 ? months + 1 : 0);
+
 const columnFloor = (months: number) =>
-  DESCRIPTION_WIDTH_PX + months * 2 * 44 <= SHEET_WIDTH_PX * 0.98 ? 44 : 0;
+  DESCRIPTION_WIDTH_PX + valueColumns(months) * 44 <= SHEET_WIDTH_PX * 0.98 ? 44 : 0;
 
 const widestFigure = (data: BusinessSummaryData | null) =>
   businessSections(data).reduce((widest, section) => {
@@ -93,7 +99,7 @@ export const printFontSize = (data: BusinessSummaryData | null, wanted: number) 
   const floor = columnFloor(months);
   const available = SHEET_WIDTH_PX * 0.98;
   let fs = wanted;
-  while (fs > 3 && DESCRIPTION_WIDTH_PX + months * 2 * valueColumnWidth(widestChars, fs, floor) > available) {
+  while (fs > 3 && DESCRIPTION_WIDTH_PX + valueColumns(months) * valueColumnWidth(widestChars, fs, floor) > available) {
     fs = Math.round((fs - 0.1) * 10) / 10;
   }
   return fs;
@@ -117,7 +123,7 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
       if (line.kind === 'section') {
         return (
           <tr key={`section-${rl(line.title)}-${index}`} className="avoid-break bg-gray-100">
-            <td colSpan={1 + months.length * 2} style={{ fontSize: fs }} className={`${cell} font-bold`}>
+            <td colSpan={1 + valueColumns(months.length)} style={{ fontSize: fs }} className={`${cell} font-bold`}>
               {rl(line.title)}
             </td>
           </tr>
@@ -129,9 +135,9 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
         return (
           <tr key={`${row.side}-${row.name}`} className="avoid-break align-top">
             <td style={{ fontSize: fs }} className={cell}>{row.name}</td>
-            {months.map((month) => (
+            {months.map((month, mi) => (
               <React.Fragment key={`${row.name}-${month.month}`}>
-                <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(row.months?.[month.month], 'opening')}</td>
+                {mi === 0 && <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(row.months?.[month.month], 'opening')}</td>}
                 <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(row.months?.[month.month], 'closing')}</td>
               </React.Fragment>
             ))}
@@ -142,9 +148,9 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
       return (
         <tr key={`total-${rl(line.label)}-${index}`} className="avoid-break font-bold">
           <td style={{ fontSize: fs }} className={`${cell} text-right`}>{rl(line.label)}</td>
-          {months.map((month) => (
+          {months.map((month, mi) => (
             <React.Fragment key={`${rl(line.label)}-${month.month}`}>
-              <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(line.values[month.month], 'opening')}</td>
+              {mi === 0 && <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(line.values[month.month], 'opening')}</td>}
               <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(line.values[month.month], 'closing')}</td>
             </React.Fragment>
           ))}
@@ -181,9 +187,9 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
               <table className="w-full table-fixed border-collapse">
                 <colgroup>
                   <col style={{ width: `${DESCRIPTION_WIDTH_PX}px` }} />
-                  {months.map((month) => (
+                  {months.map((month, mi) => (
                     <React.Fragment key={`${month.month}-cols`}>
-                      <col style={{ width: valueWidth }} />
+                      {mi === 0 && <col style={{ width: valueWidth }} />}
                       <col style={{ width: valueWidth }} />
                     </React.Fragment>
                   ))}
@@ -193,17 +199,18 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
                     <th rowSpan={2} style={{ fontSize: fs }} className={`${cell} text-left align-middle`}>
                       {rl("Description")}
                     </th>
-                    {months.map((month) => (
-                      <th key={month.month} colSpan={2} style={{ fontSize: fs }} className={`${cell} text-center`}>
-                        {month.label}
+                    {months.map((month, mi) => (
+                      <th key={month.month} colSpan={mi === 0 ? 2 : 1} rowSpan={mi === 0 ? 1 : 2} style={{ fontSize: fs }} className={`${cell} text-center align-middle`}>
+                        {i18n.language !== 'en' ? toLocalMonth(month.month, i18n.language) : month.label}
+                        {mi > 0 && <div>{rl("Closing")}</div>}
                       </th>
                     ))}
                   </tr>
                   <tr>
-                    {months.map((month) => (
+                    {months.map((month, mi) => (
                       <React.Fragment key={`${month.month}-head`}>
-                        <th style={{ fontSize: fs }} className={`${cell} text-center`}>{rl("Opening")}</th>
-                        <th style={{ fontSize: fs }} className={`${cell} text-center`}>{rl("Closing")}</th>
+                        {mi === 0 && <th style={{ fontSize: fs }} className={`${cell} text-center`}>{rl("Opening")}</th>}
+                        {mi === 0 && <th style={{ fontSize: fs }} className={`${cell} text-center`}>{rl("Closing")}</th>}
                       </React.Fragment>
                     ))}
                   </tr>

@@ -569,7 +569,7 @@ const BalanceSheetPrint = ({
                 <NoteRef n={1} />
               </h1>
               <p>
-                Period: {startDate} to {endDate}
+                {rl("Period:")} {startDate} {rl("to")} {endDate}
               </p>
               <p>{rl("As at")}: {endDate}</p>
             </div>

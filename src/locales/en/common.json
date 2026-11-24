@@ -37,6 +37,11 @@
     "descriptionInLanguage": "Description ({{language}})",
     "missingLocalName": "{{language}} name missing"
   },
+  "branch": {
+    "pricingHeading": "Pricing",
+    "blockBelowCostLabel": "Block Sales Below Purchase Price?",
+    "blockBelowCostHint": "On, the tiles sales invoice refuses a line whose rate is below the purchase price listed in the product search. Off, a loss sale is written like any other line — for a clearance, or stock the market has moved under."
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -59,6 +64,7 @@
     "Total Liabilities & Equity": "Total Liabilities & Equity",
     "Grand Total": "Grand Total",
     "Total": "Total",
+    "Liabilities + Equity": "Liabilities + Equity",
     "Trial Balance Details": "Trial Balance Details",
     "to": "to",
     "Notes to the Trial Balance": "Notes to the Trial Balance",
@@ -189,5 +195,8 @@
     "contact_number": "Contact Number",
     "relation": "Relation",
     "mobile": "Mobile Number"
+  },
+  "companyLocal": {
+    "notes": "Notes"
   }
 }

@@ -678,17 +678,34 @@ const TilesBusinessSales = () => {
     );
 
   /**
-   * ⚠️ NOTHING GOES OUT UNDER WHAT IT COST. The dropdown carries each product's
-   * purchase price beside its name (label_3) and that figure rides along in
-   * productData while the line is being written, so the rate the desk types can
-   * be measured against it. Haggling the rate down is the desk's business;
-   * selling at a loss is not.
+   * ⚠️ NOTHING GOES OUT UNDER WHAT IT COST -- UNLESS THE BRANCH HAS SAID SO.
+   *
+   * The dropdown carries each product's purchase price beside its name
+   * (label_3) and that figure rides along in productData while the line is
+   * being written, so the rate the desk types can be measured against it.
+   * Haggling the rate down is the desk's business; selling at a loss is not,
+   * unless this branch has switched that rule off on Branch Setup -> Invoice
+   * Setup -> "Block Sales Below Purchase Price?" (block_below_cost_sale). The
+   * setting is read from the session's branch figures, the same place
+   * deduct_stock_on_delivery comes from. An answer we do not have -- a session
+   * loaded before this switch existed, or a branch that has never been asked --
+   * blocks, which keeps the historical refusal.
    *
    * A purchase price we do not have is not a refusal -- a line pulled back out
    * of a saved invoice brings no cost with it, and a rule that cannot be
    * checked must not stop the desk.
    */
+  const belowCostSaleBlocked = () => {
+    const flag = settings?.data?.branch?.block_below_cost_sale;
+    // Nothing on file -- an older session, or a branch never asked -- blocks.
+    if (flag === undefined || flag === null || flag === '') return true;
+
+    return Number(flag) === 1;
+  };
+
   const refuseBelowPurchasePrice = () => {
+    if (!belowCostSaleBlocked()) return false;
+
     const cost = Number(productData.purchase_price) || 0;
     if (cost <= 0 || Number(productData.price) >= cost) return false;
 

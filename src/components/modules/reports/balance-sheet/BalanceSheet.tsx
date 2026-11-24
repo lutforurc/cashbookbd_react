@@ -707,9 +707,9 @@ const BalanceSheet = (user: any) => {
         {hasReportData && (
           <>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <SummaryCard title="Total Assets" value={totals.assets} tone="emerald" />
+              <SummaryCard title={rl("Total Assets")} value={totals.assets} tone="emerald" />
               <SummaryCard
-                title="Liabilities + Equity"
+                title={rl("Liabilities + Equity")}
                 value={totals.liabilitiesAndEquity}
                 tone="blue"
               />
@@ -742,9 +742,9 @@ const BalanceSheet = (user: any) => {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 px-5 py-5 lg:grid-cols-4">
-                  <DebugCard title="Assets" values={totals.assetsColumns} />
-                  <DebugCard title="Liabilities" values={totals.liabilitiesColumns} />
-                  <DebugCard title="Equity" values={totals.equityColumns} />
+                  <DebugCard title={rl("Assets")} values={totals.assetsColumns} />
+                  <DebugCard title={rl("Liabilities")} values={totals.liabilitiesColumns} />
+                  <DebugCard title={rl("Equity")} values={totals.equityColumns} />
                   <DebugCard title="Difference" values={totals.differenceColumns} highlight />
                 </div>
               </div>
@@ -1291,10 +1291,10 @@ const GroupDetailsModal = ({
 
           <div className="shrink-0 border-b border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 sm:px-5 sm:py-4 dark:bg-slate-900/40">
             <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
-              <ModalStat label="Opening" value={toNum(group.opening)} />
-              <ModalStat label="Movement" value={toNum(group.movement)} />
-              <ModalStat label="Closing" value={toNum(group.closing || group.total)} />
-              <ModalStat label="Items" value={items.length} isCount />
+              <ModalStat label={rl("Opening")} value={toNum(group.opening)} />
+              <ModalStat label={rl("Movement")} value={toNum(group.movement)} />
+              <ModalStat label={rl("Closing")} value={toNum(group.closing || group.total)} />
+              <ModalStat label={rl("Items")} value={items.length} isCount />
             </div>
           </div>
 

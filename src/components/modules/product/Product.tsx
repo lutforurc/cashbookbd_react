@@ -18,6 +18,7 @@ import InputElement from '../../utils/fields/InputElement';
 import PrintFontInput from '../../utils/fields/PrintFontInput';
 import PrintRowsInput from '../../utils/fields/PrintRowsInput';
 import { toast } from 'react-toastify';
+import { useLanguage } from '../../../i18n/useLanguage';
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { hasPermission } from '../../utils/permissionChecker';
@@ -106,6 +107,9 @@ const normalizeProductRows = (apiState: any) =>
 const Product = (user: any) => {
   const product = useSelector((state: any) => state.product);
   const settings = useSelector((state: any) => state.settings);
+  // Phase 6: the company's local language. Null when it is switched off, and
+  // the Bangla name is then not drawn at all -- the list reads as it did.
+  const { localCode } = useLanguage();
   const categoryData = useSelector((state: any) => state.category);
   const brand = useSelector((state: any) => state.brand);
   const productGroupData = useSelector((state: any) => state.productGroup);
@@ -1016,6 +1020,15 @@ const Product = (user: any) => {
             <div>
               <div className="text-sm text-gray-500">{row.brand && <> Brand: {row.brand} </>}</div>
               <div>{row.code && <>{row.code} - </>} {row.name}</div>
+              {/* Phase 6: the local-language name under its English one, the
+                  same shape the old Bijoy `bangla` used to print in. Only
+                  shown where the company has a local language and this product
+                  has a name in it. */}
+              {localCode && row.name_local && (
+                <div lang={localCode} className="text-sm text-gray-500">
+                  {row.name_local}
+                </div>
+              )}
             </div>
           );
         },
@@ -1171,7 +1184,7 @@ const Product = (user: any) => {
     // does not rebuild when the page changes, so without it the pencil kept
     // handing over the address from page one and the edit came back to page
     // one. Cost me a walk-through to see it.
-  }, [settings, editedRows, fieldEdits, unitSelectOptions, inlineEditOn, openingDeleteRow, openingDeleteLoading, canDeleteVoucher, openingOn, location]);
+  }, [settings, editedRows, fieldEdits, unitSelectOptions, inlineEditOn, openingDeleteRow, openingDeleteLoading, canDeleteVoucher, openingOn, location, localCode]);
 
   /* ================= RENDER ================= */
   const optionsWithAll = [

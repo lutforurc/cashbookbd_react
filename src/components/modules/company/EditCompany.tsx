@@ -14,6 +14,9 @@ import FormToggleField from '../../utils/utils-functions/FormToggleField';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { editCompany, updateCompany } from './companySlice';
 import { Input, Textarea } from '../../utils/fields/FormControls';
+import BilingualInput from '../../utils/fields/BilingualInput';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { useTranslation } from 'react-i18next';
 
 /** Matches the textarea in the product form, so both read as the same field. */
 const TEXTAREA_CLASS =
@@ -75,15 +78,21 @@ const EditCompany = () => {
   const environment = useSelector((state: any) => state.settings?.data?.env);
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
+  const { localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
 
   const [formData, setFormData] = useState({
     id: '',
     name: '',
+    name_local: '',
     contact_person: '',
+    contact_person_local: '',
     phone: '',
     email: '',
     address: '',
+    address_local: '',
     notes: '',
+    notes_local: '',
     company_logo: '',
     company_logo_dark: '',
     fy_start_month: '7',
@@ -112,6 +121,10 @@ const EditCompany = () => {
       email: editData.email || '',
       address: editData.address || '',
       notes: editData.notes || '',
+      name_local: editData.name_local || '',
+      contact_person_local: editData.contact_person_local || '',
+      address_local: editData.address_local || '',
+      notes_local: editData.notes_local || '',
       company_logo: editData.company_logo || '',
       company_logo_dark: editData.company_logo_dark || '',
       // Absent on a server not yet patched, which means July.
@@ -151,6 +164,11 @@ const EditCompany = () => {
       toast.error('Company name is required.');
       return;
     }
+    // "Enable Bangla" on: the Bangla name is required too.
+    if (localCode && !formData.name_local.trim()) {
+      toast.error(t('data.localRequired', { field: 'Name of Company', language: localName }));
+      return;
+    }
 
     const payload = buildCompanyFormData({
       ...formData,
@@ -177,23 +195,25 @@ const EditCompany = () => {
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputElement
-            id="name"
+          <BilingualInput
             name="name"
+            kind="name"
             label="Name of Company"
             placeholder="Enter company name"
             value={formData.name}
-            className=""
+            localValue={formData.name_local}
             onChange={(event) => handleChange('name', event.target.value)}
+            onLocalChange={(value) => handleChange('name_local', value)}
           />
-          <InputElement
-            id="contact_person"
+          <BilingualInput
             name="contact_person"
             label="Contact Person"
+            localLabel={t('customerLocal.contact_person')}
             placeholder="Enter contact person"
             value={formData.contact_person}
-            className=""
+            localValue={formData.contact_person_local}
             onChange={(event) => handleChange('contact_person', event.target.value)}
+            onLocalChange={(value) => handleChange('contact_person_local', value)}
           />
           <InputElement
             id="phone"
@@ -215,37 +235,33 @@ const EditCompany = () => {
             onChange={(event) => handleChange('email', event.target.value)}
           />
 
-          <div className="text-left flex flex-col">
-            <label htmlFor="address" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
-              Address
-            </label>
-            <Textarea
-              id="address"
-              name="address"
-              rows={2}
-              value={formData.address}
-              onChange={(event) => handleChange('address', event.target.value)}
-              placeholder="Enter address"
-              className={TEXTAREA_CLASS}
-            />
-          </div>
+          <BilingualInput
+            name="address"
+            kind="address"
+            label="Address"
+            placeholder="Enter address"
+            rows={2}
+            textareaClassName={TEXTAREA_CLASS}
+            value={formData.address}
+            localValue={formData.address_local}
+            onChange={(event) => handleChange('address', event.target.value)}
+            onLocalChange={(value) => handleChange('address_local', value)}
+          />
 
           {/* Printed under the company name on letterheads, so it is worth a
               couple of lines rather than a single-line input. */}
-          <div className="text-left flex flex-col">
-            <label htmlFor="notes" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
-              Notes
-            </label>
-            <Textarea
-              id="notes"
-              name="notes"
-              rows={2}
-              value={formData.notes}
-              onChange={(event) => handleChange('notes', event.target.value)}
-              placeholder="Enter notes"
-              className={TEXTAREA_CLASS}
-            />
-          </div>
+          <BilingualInput
+            name="notes"
+            label="Notes"
+            localLabel={t('companyLocal.notes')}
+            placeholder="Enter notes"
+            rows={2}
+            textareaClassName={TEXTAREA_CLASS}
+            value={formData.notes}
+            localValue={formData.notes_local}
+            onChange={(event) => handleChange('notes', event.target.value)}
+            onLocalChange={(value) => handleChange('notes_local', value)}
+          />
 
           {/* ⚠️ Which month the books' year starts in. The year end, the
               closing and the depreciation run all follow from this one number

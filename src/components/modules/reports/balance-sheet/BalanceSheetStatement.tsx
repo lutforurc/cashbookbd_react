@@ -1,4 +1,5 @@
 import { formatAmount, level2Indent, level3Indent, type ReportGroup, type SheetLine } from "./sheetLines";
+import { rl } from '../../../../i18n/reportLabel';
 
 /**
  * The balance sheet as a statement: the way it goes to a bank, an auditor or
@@ -71,7 +72,7 @@ const BalanceSheetStatement = ({
               return (
                 <tr key={`${line.label}-${index}`}>
                   <td colSpan={3} className={`pt-6 pb-1 text-lg font-bold ${text}`}>
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                 </tr>
               );
@@ -81,7 +82,7 @@ const BalanceSheetStatement = ({
               return (
                 <tr key={`${line.label}-${index}`}>
                   <td colSpan={3} className={`pt-3 pb-0.5 font-semibold ${level2Indent} ${text}`}>
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                 </tr>
               );
@@ -105,7 +106,7 @@ const BalanceSheetStatement = ({
                         : `pt-1.5 pb-2 ${level2Indent} font-semibold ${text}`
                     }
                   >
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                   <td className={cellClass}>{formatAmount(line.columns.opening)}</td>
                   <td className={cellClass}>{formatAmount(line.columns.closing)}</td>
@@ -119,7 +120,7 @@ const BalanceSheetStatement = ({
               return (
                 <tr key={`${line.label}-${index}`}>
                   <td className={`pt-2 pb-1 font-bold ${text} ${line.strong ? "text-base" : ""}`}>
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                   <td className={cellClass}>{formatAmount(line.columns.opening)}</td>
                   <td className={cellClass}>{formatAmount(line.columns.closing)}</td>

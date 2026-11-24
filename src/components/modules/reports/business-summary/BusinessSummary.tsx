@@ -31,6 +31,8 @@ import { useLanguage } from '../../../../i18n/useLanguage';
 import { localizeReport } from '../../../../i18n/displayName';
 import { useLocalDigits } from '../../../../i18n/useLocalDigits';
 import { rl } from '../../../../i18n/reportLabel';
+import { toLocalMonth } from '../../../../i18n/months';
+import i18n from '../../../../i18n';
 
 const figure = (v: BusinessMonthValue | undefined, field: 'opening' | 'closing') =>
   v ? thousandSeparator(v[field]) : '-';
@@ -53,17 +55,22 @@ const BusinessSummaryTable = ({
           <th rowSpan={2} className="w-[260px] px-3 py-3 text-left align-middle font-semibold">
             {rl("Description")}
           </th>
-          {months.map((month) => (
-            <th key={month.month} colSpan={2} className="px-3 py-3 text-center font-semibold">
-              {month.label}
+          {/* Opening only under the first month: each later month opens at the
+              month before's closing, which is already on the row. */}
+          {months.map((month, mi) => (
+            // A later month is one column: its name and "Closing" share one
+            // cell over both header rows, with no rule between them.
+            <th key={month.month} colSpan={mi === 0 ? 2 : 1} rowSpan={mi === 0 ? 1 : 2} className="px-3 py-3 text-center align-middle font-semibold">
+              {i18n.language !== 'en' ? toLocalMonth(month.month, i18n.language) : month.label}
+              {mi > 0 && <div>{rl("Closing")}</div>}
             </th>
           ))}
         </tr>
         <tr className="bg-gray-300 text-xs uppercase text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-          {months.map((month) => (
+          {months.map((month, mi) => (
             <React.Fragment key={`${month.month}-subhead`}>
-              <th className="px-3 py-3 text-center font-semibold">{rl("Opening")}</th>
-              <th className="px-3 py-3 text-center font-semibold">{rl("Closing")}</th>
+              {mi === 0 && <th className="px-3 py-3 text-center font-semibold">{rl("Opening")}</th>}
+              {mi === 0 && <th className="px-3 py-3 text-center font-semibold">{rl("Closing")}</th>}
             </React.Fragment>
           ))}
         </tr>
@@ -73,7 +80,7 @@ const BusinessSummaryTable = ({
           if (line.kind === 'section') {
             return (
               <tr key={`section-${rl(line.title)}`} className="bg-gray-100 dark:bg-gray-800">
-                <td colSpan={1 + months.length * 2} className="px-3 py-2 font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
+                <td colSpan={2 + months.length} className="px-3 py-2 font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
                   {rl(line.title)}
                 </td>
               </tr>
@@ -95,9 +102,9 @@ const BusinessSummaryTable = ({
                     {row.name}
                   </button>
                 </td>
-                {months.map((month) => (
+                {months.map((month, mi) => (
                   <React.Fragment key={`${row.name}-${month.month}`}>
-                    <td className="whitespace-nowrap px-3 py-2 text-right">{figure(row.months?.[month.month], 'opening')}</td>
+                    {mi === 0 && <td className="whitespace-nowrap px-3 py-2 text-right">{figure(row.months?.[month.month], 'opening')}</td>}
                     <td className="whitespace-nowrap px-3 py-2 text-right">{figure(row.months?.[month.month], 'closing')}</td>
                   </React.Fragment>
                 ))}
@@ -108,9 +115,9 @@ const BusinessSummaryTable = ({
           return (
             <tr key={`total-${rl(line.label)}-${index}`} className="font-bold transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700">
               <td className="px-3 py-2 text-right">{rl(line.label)}</td>
-              {months.map((month) => (
+              {months.map((month, mi) => (
                 <React.Fragment key={`${rl(line.label)}-${month.month}`}>
-                  <td className="whitespace-nowrap px-3 py-2 text-right">{figure(line.values[month.month], 'opening')}</td>
+                  {mi === 0 && <td className="whitespace-nowrap px-3 py-2 text-right">{figure(line.values[month.month], 'opening')}</td>}
                   <td className="whitespace-nowrap px-3 py-2 text-right">{figure(line.values[month.month], 'closing')}</td>
                 </React.Fragment>
               ))}
@@ -199,7 +206,11 @@ const BusinessSummary = () => {
         throw new Error(payload?.message || 'Unable to load business summary.');
       }
       setData(payload?.data?.data ?? payload?.data ?? null);
-      setPeriod(`${from.format('MMM-YY')} to ${to.format('MMM-YY')}`);
+      setPeriod(
+        languageCode !== 'en'
+          ? `${toLocalMonth(from.format('YYYY-MM'), languageCode)} থেকে ${toLocalMonth(to.format('YYYY-MM'), languageCode)}`
+          : `${from.format('MMM-YY')} to ${to.format('MMM-YY')}`,
+      );
     } catch (error: any) {
       toast.error(error?.response?.data?.message || error?.message || 'Unable to load business summary.');
       setData(null);

@@ -3,7 +3,7 @@
 **সোর্স:** `docs/mult-language/multi-language-plan.md` — ধাপ ১ (ভিত্তি)
 **স্কোপ:** i18n ভিত্তি + **ভাষা সেটিংস পেজ** (বাংলা চালু/বন্ধ, সোর্স plan §২.৪) + হেডারে ভাষা বদলানো। **কোনো লেবেল এখনো অনুবাদ হবে না** — সব স্ক্রিন আজকের মতো ইংরেজিতেই চলবে।
 **বাদ:** ধাপ ১ক (ফন্ট/fonts টেবিল/NikoshBAN), `name_local` কলাম, প্রিন্ট, SMS, HRM বাংলা বেতন শীট (সোর্স plan §১৪) — এগুলো আলাদা plan।
-**অবস্থা (24/11/2026):** এখনো শুরু হয়নি — `src/i18n`, `src/locales`, i18next dependency, `runMultiLanguage…` মেথড কোনোটাই নেই।
+**অবস্থা (24/11/2026):** **সম্পন্ন** — `src/i18n`, `src/locales`, i18next dependency, `runMultiLanguage…` মেথড সবই আছে (`cashbook_api` @ `ed343899`, `cashbookbd_react` `Reseller-ui`)।
 
 ---
 

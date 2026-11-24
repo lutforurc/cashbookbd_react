@@ -1,0 +1,4108 @@
+﻿import React, { useEffect, useRef, useState } from 'react';
+import { FIELD_FILE } from '../../../theme/fieldStyles';
+import InputElement from '../../utils/fields/InputElement';
+import InputDatePicker from '../../utils/fields/DatePicker';
+import RichTextEditor from '../../utils/fields/RichTextEditor';
+import HelmetTitle from '../../utils/others/HelmetTitle';
+import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
+import {
+  downPaymentBases,
+  ledgerDiscountSplit,
+  moneySpellFormat,
+  padLogoPositions,
+  padPrintModes,
+  printerSettings,
+  printPadHeading,
+  status,
+} from '../../utils/fields/DataConstant';
+import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import StepRail from '../../utils/others/StepRail';
+import { FiArrowLeft, FiArrowRight, FiRefreshCcw, FiSave } from 'react-icons/fi';
+import { useParams, useNavigate } from 'react-router-dom';
+import { editBranch, storeBranch, updateBranch } from './branchSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import Loader from '../../../common/Loader';
+import { getBranchSettings, getSettings } from '../settings/settingsSlice';
+import { toast } from 'react-toastify';
+import {
+  API_BRANCH_CLEAR_OPENING_URL,
+  API_BRANCH_CLEAR_TRANSACTION_URL,
+  API_HRMS_ATTENDANCE_DEVICE_SETTINGS_URL,
+  API_REMOTE_URL,
+} from '../../services/apiRoutes';
+import FormToggleField from '../../utils/utils-functions/FormToggleField';
+import { formatMobile } from '../../utils/utils-functions/mobileFormat';
+import ConfirmModal from '../../utils/components/ConfirmModalProps';
+import httpService from '../../services/httpService';
+import { hasPermission } from '../../utils/permissionChecker';
+import { Input } from '../../utils/fields/FormControls';
+import PadLogo from '../../utils/utils-functions/PadLogo';
+import {
+  PAD_LOGO_DEFAULT_HEIGHT,
+  PAD_LOGO_DEFAULT_MARGIN,
+  PAD_LOGO_DEFAULT_WIDTH,
+  PAD_LOGO_MAX_HEIGHT,
+  PAD_LOGO_MAX_MARGIN,
+  PAD_LOGO_MAX_WIDTH,
+  PAD_LOGO_MIN_HEIGHT,
+  PAD_LOGO_MIN_MARGIN,
+  PAD_LOGO_MIN_WIDTH,
+  normalizePadLogoPosition,
+  padLogoHeight,
+  padLogoMargin,
+  padLogoWidth,
+} from '../../utils/utils-functions/padLogoLayout';
+import type { PadLogoConfig } from '../../utils/utils-functions/padLogoLayout';
+import { resolveAssetUrl } from '../../services/resolveAssetUrl';
+
+const shouldStripPublicPrefix = /^(https?:\/\/)?(localhost|127\.0\.0\.1|cashbook_api\.test)(:\d+)?$/i.test(
+  API_REMOTE_URL,
+);
+
+/**
+ * What a number field holds: the number itself, never the text the box happens
+ * to show. Empty is its own state -- a cleared box, or a decimal mid-typing --
+ * so the field can be retyped without snapping back to zero.
+ */
+type NumberField = number | '';
+
+interface branchItem {
+  id: string | number;
+  branch_id?: string | number;
+  name: string;
+  branch_types_id: string;
+  branchTypeText?: string; // Add this line
+  business_type_id: string;
+  inventory_system_id: string | number;
+  email: string;
+  pad_heading_print: string;
+  /** Whether a print draws its own pad head or leaves room for a printed one. */
+  pad_print_mode: string;
+  /** How much of the page top a pre-printed pad head takes, in px. */
+  preprinted_pad_height: NumberField;
+  /** Whether the pad head prints the company's logo at all. Off by default. */
+  pad_logo_enabled: boolean;
+  /** Which side of the pad head the logo takes: 'right', 'left' or 'top'. */
+  pad_logo_position: string;
+  /** The box the logo is drawn in, in CSS px. */
+  pad_logo_width: NumberField;
+  pad_logo_height: NumberField;
+  /** How far the logo sits from the paper's edges, in px. */
+  pad_logo_margin_top: NumberField;
+  pad_logo_margin_right: NumberField;
+  pad_logo_margin_left: NumberField;
+  address: string;
+  print_size: string;
+  contact_person: string;
+  paper_size: string;
+  print_sizeText?: string; // Add this line
+  purchase_note: string;
+  sales_note: string;
+  combined_invoice_note: boolean;
+  /**
+   * The preferred existing form for each invoice category, or '' for Automatic.
+   * Automatic keeps choosing the form from the business type, exactly as the
+   * screens did before this setting existed.
+   */
+  invoice_variant_purchase: string;
+  invoice_variant_sales: string;
+  invoice_variant_purchase_return: string;
+  invoice_variant_sales_return: string;
+  invoice_variant_combined: string;
+  form_variant_cash_received: string;
+  form_variant_cash_payment: string;
+  form_variant_bank_received: string;
+  form_variant_bank_payment: string;
+  /** Which way this branch takes its received entries: '', 'unified' or 'separate'. */
+  received_entry_mode: string;
+  /** The same, chosen on its own, for its payment entries. */
+  payment_entry_mode: string;
+  money_format: string;
+  mobile_number_format: string;
+  phone: string;
+  notes: string;
+  invoice_label: string;
+  /**
+   * What the sales invoice calls its four handwritten figures. Blank means the
+   * invoice shows the standard names, which is where the fallback lives -- see
+   * the sales invoice screen.
+   */
+  manual_voucher_no_label: string;
+  manual_voucher_date_label: string;
+  manual_challan_no_label: string;
+  manual_challan_date_label: string;
+  /**
+   * How this branch's party ledger reads a bill that carries a discount.
+   * `''` is the report as it has always read; `'1'` shows the bill whole with
+   * the discount broken out beside it. Display only -- the books do not move.
+   */
+  ledger_discount_split: string;
+  /**
+   * Whether the Purchase and Sales ledgers print the product lines inside
+   * their Product & Details column. Off leaves the account and the voucher's
+   * note, and the quantity, rate and total columns untouched. Display only.
+   */
+  ledger_show_product_details: boolean;
+  decimal_places: number;
+  dashboard_top_sales_days: number;
+  dashboard_top_purchase_days: number;
+  dashboard_due_soon_days: number;
+  /** How far back the transaction button on List Customers opens. */
+  default_report_days: NumberField;
+  device_identifier_text?: string;
+  status: string;
+  warranty_controll: boolean;
+  have_warehouse: boolean;
+  share_product_with_other_branch: boolean;
+  share_customer_with_other_branch: boolean;
+  have_customer_sl: boolean;
+  have_is_guaranter: boolean;
+  have_customer_nominee: boolean;
+  stock_report_type: boolean;
+  need_product_group: boolean;
+  need_package: boolean;
+  need_code: boolean;
+  /**
+   * Branch Setup -> Product Setup -> "Editable Measurement on Product List?".
+   * On, the Product List draws Measurement, Measurement Unit, Package Size and
+   * Package Type as inputs that save as each box is left. Off, the four columns
+   * are not drawn at all.
+   */
+  product_list_inline_edit: boolean;
+  is_opening: boolean;
+  /** Opening চলাকালীন movement থাকা সত্ত্বেও opening বদলানোর ছাড়। */
+  multiple_opening_allow: boolean;
+  use_bangla: boolean;
+  report_zero_bal: boolean;
+  warn_negative_stock_sale: boolean;
+  block_negative_stock_sale: boolean;
+  deduct_stock_on_delivery: boolean;
+  manufactur_control: boolean;
+  sms_service: boolean;
+  received_sms: boolean;
+  purchase_sms: boolean;
+  sales_sms: boolean;
+  payment_sms: boolean;
+  booking_sms: boolean;
+  pad_header_image?: string;
+  show_instalment_list: boolean;
+  show_brand_in_invoice: boolean;
+  show_category_in_invoice: boolean;
+  show_description_in_invoice: boolean;
+  /**
+   * Branch Setup -> Product Dropdown: which lines the product search box shows
+   * beside a product's name. Read back settled by the API, so a branch that has
+   * never opened the step answers on for the five the dropdown has always
+   * shown and off for brand and group.
+   */
+  product_ddl_show_name: boolean;
+  product_ddl_show_category: boolean;
+  product_ddl_show_brand: boolean;
+  product_ddl_show_group: boolean;
+  product_ddl_show_purchase_price: boolean;
+  product_ddl_show_sales_price: boolean;
+  product_ddl_show_unit: boolean;
+  product_ddl_show_balance: boolean;
+  /** 'single' or 'multiple' -- one line per product in the search box, or the
+      details on lines of their own. */
+  product_ddl_lines: string;
+  /**
+   * Branch Setup -> Customer / Supplier Dropdown: the same two answers for the
+   * party search box the invoice screens pick a customer or a supplier with.
+   * Read back settled, so a branch that has never opened the step answers on --
+   * the box has always shown all four of these.
+   */
+  party_ddl_show_code: boolean;
+  party_ddl_show_mobile: boolean;
+  party_ddl_show_address: boolean;
+  party_ddl_show_father: boolean;
+  /** 'single' or 'multiple', for the party box. */
+  party_ddl_lines: string;
+  show_spelling_of_money: boolean;
+  show_sales_balance_summary: boolean;
+  need_demo_tutorial: boolean;
+  need_customer_contact_person: boolean;
+  due_list_with_address: boolean;
+  due_list_show_area: boolean;
+  need_relation_info: boolean;
+  need_customer_mother_name: boolean;
+  need_customer_sex: boolean;
+  /** When the day turns over at this property. HH:MM. */
+  hotel_check_in_time: string;
+  hotel_check_out_time: string;
+  /**
+   * How long a tentative hold keeps a room, in whole hours -- and the longest
+   * the desk may ask for.
+   *
+   * ⚠️ Hours on the clock, not days. A hold used to run to the end of its last
+   * day, so one taken in the morning and one taken at night lapsed together.
+   */
+  hotel_hold_hours: string;
+  hotel_hold_max_hours: string;
+  /** The small print under the registration card a guest signs at check-in. */
+  hotel_registration_terms: string;
+  /**
+   * How this property quotes its rates: 'exclusive' (the rate is before VAT and
+   * service charge, both added on the bill -- the way every property has billed
+   * so far) or 'inclusive' (the rate the guest is quoted is the whole price, and
+   * the bill works the tax and service charge back out of it).
+   *
+   * ⚠️ A SNAPSHOT, NOT A RECALCULATION. A bill already made keeps the figures it
+   * was made at; this only changes what the NEXT line is worked out as.
+   */
+  hotel_vat_mode: string;
+  /** 'customer' (default): a balance at check-out goes to a party. 'bill': it may stay on the booking. */
+  hotel_due_mode: string;
+  /** 'bill' (default): income is posted with the bill. 'settlement': with the money, on one voucher. */
+  hotel_income_mode: string;
+  /** False when the company has no Guest Receivable head, so 'settlement' cannot be chosen. */
+  hotel_guest_receivable_ready?: boolean;
+  salutation_male: string;
+  salutation_female: string;
+  salutation_other: string;
+  letter_signature: string;
+  need_customer_date_of_birth: boolean;
+  need_customer_occupation: boolean;
+  need_customer_permanent_address: boolean;
+  need_customer_photo: boolean;
+  need_customer_national_id: boolean;
+  need_nominee_photo: boolean;
+  need_customer_area: boolean;
+  /**
+   * Whether a customer is looked after by a member of staff: the picker on the
+   * Add and Edit Customer forms, and the filter and column on List Customers.
+   */
+  need_customer_handle_by_employee: boolean;
+  show_voucher_image: boolean;
+  multi_product_order: boolean;
+  /** Whether the cash forms ask which product a receipt or payment was for. */
+  product_tracking: boolean;
+  /** Whether Product List shows its second delete button (product + opening invoice). */
+  delete_with_opening_invoice: boolean;
+  /** Invoices dated before this day may be deleted with their product. */
+  delete_with_opening_invoice_date: string;
+  company_scheme: boolean;
+  company_scheme_due_days: NumberField;
+  /** '' = no fixed day (the days rule); '0'..'6' = Sunday..Saturday. */
+  company_scheme_due_weekday: string;
+  /** Share of the property value the allotment letter asks for up front, as a percentage. */
+  down_payment_percent: NumberField;
+  /** What that share is taken on: 'total' or 'net_payable'. */
+  down_payment_base: string;
+  /** Yearly late-payment rate the allotment letter quotes, as a percentage. */
+  delay_charge_percent: NumberField;
+  /**
+   * What an allotment letter's reference number starts with, e.g. 'BST/ALLOT'.
+   * The year and the sale's serial are added to it to suggest a number, which
+   * the clerk issuing the letter can still overwrite.
+   */
+  letter_ref_prefix: string;
+  /**
+   * Whether the letter carries its reference number at all. Off, the Ref No
+   * line is left off the page -- for an office that numbers its letters by
+   * hand on the printed sheet, or does not number them.
+   */
+  print_letter_ref: boolean;
+  /**
+   * The date the branch's allotment letters carry, as YYYY-MM-DD. Left empty,
+   * the screen issuing a letter offers today. Either way it is only what the
+   * clerk is shown -- they can write another date over it before issuing.
+   */
+  letter_ref_date: string;
+  /** Announce a new company registration to this branch. */
+  registration_alert: boolean;
+  /** Also text the numbers below when one registers. */
+  registration_alert_sms: boolean;
+  /** Comma-separated mobile numbers the alert texts. */
+  registration_alert_mobile: string;
+}
+
+const resolveImageUrl = (path?: string) => {
+  if (!path) return '';
+  if (/^(https?:|data:|blob:)/i.test(path)) return path;
+  const normalizedPath = path
+    .replace(/^\/+/, '')
+    .replace(shouldStripPublicPrefix ? /^public\//i : /$^/, '');
+  return `${API_REMOTE_URL}/${normalizedPath}`;
+};
+
+const buildBranchFormData = (data: branchItem, file: File | null) => {
+  const payload = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    if (key === 'pad_header_image') return;
+
+    if (typeof value === 'boolean') {
+      payload.append(key, value ? '1' : '0');
+      return;
+    }
+
+    payload.append(key, String(value));
+  });
+
+  if (file) {
+    payload.append('pad_header_image', file);
+  }
+
+  return payload;
+};
+
+/**
+ * The forms a branch may choose, one list per category.
+ *
+ * The values are the identifiers the screens already switch on, so a saved
+ * choice opens the matching existing form; '' is Automatic, which keeps
+ * choosing the form as before. The labels are the trade-neutral names the
+ * branch sees, never the business-type names behind them. Only forms a
+ * category actually has are listed, and no two entries open the same form --
+ * except "Both", which is a mode over the two invoice categories rather than a
+ * form of its own: it leaves both forms reachable from the one menu entry.
+ */
+const FORM_VARIANT_OPTIONS: Record<string, { id: string; name: string }[]> = {
+  invoice_variant_purchase: [
+    { id: '', name: 'Automatic' },
+    // Not a third form: a mode. It keeps both existing forms attached to the
+    // one Invoice -> Purchase entry and lets the screen ask which one this
+    // bill is. The other invoice categories are unchanged.
+    { id: 'both', name: 'Both — choose per invoice' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'electronics', name: 'Smart' },
+    { id: 'construction', name: 'Classic' },
+    { id: 'trading', name: 'Essential' },
+  ],
+  invoice_variant_sales: [
+    { id: '', name: 'Automatic' },
+    { id: 'both', name: 'Both — choose per invoice' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'electronics', name: 'Smart' },
+    { id: 'company_scheme', name: 'Partner' },
+    { id: 'trading', name: 'Essential' },
+    { id: 'general', name: 'Standard' },
+  ],
+  invoice_variant_purchase_return: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'standard', name: 'Standard' },
+  ],
+  invoice_variant_sales_return: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'general', name: 'Standard' },
+  ],
+  invoice_variant_combined: [
+    { id: '', name: 'Automatic' },
+    { id: 'not_applicable', name: 'Not Applicable' },
+    { id: 'trading', name: 'Essential' },
+    { id: 'tiles', name: 'Elegant' },
+  ],
+  // Cash and bank: the trade screens these categories actually have. Cash has a
+  // trading screen; bank has only the tiles and the one generic screen.
+  form_variant_cash_received: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'trading', name: 'Essential' },
+    { id: 'general', name: 'Standard' },
+  ],
+  form_variant_cash_payment: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'trading', name: 'Essential' },
+    { id: 'general', name: 'Standard' },
+  ],
+  form_variant_bank_received: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'general', name: 'Standard' },
+  ],
+  form_variant_bank_payment: [
+    { id: '', name: 'Automatic' },
+    { id: 'tiles', name: 'Elegant' },
+    { id: 'general', name: 'Standard' },
+  ],
+  // The received and payment sides, each taken as one unified screen or as its
+  // two separate cash/bank ones. The two choices are independent.
+  received_entry_mode: [
+    { id: '', name: 'Automatic' },
+    { id: 'unified', name: 'Received Entry Form' },
+    { id: 'separate', name: 'Separate Cash & Bank Forms' },
+  ],
+  payment_entry_mode: [
+    { id: '', name: 'Automatic' },
+    { id: 'unified', name: 'Payment Entry Form' },
+    { id: 'separate', name: 'Separate Cash & Bank Forms' },
+  ],
+};
+
+const toBooleanFlag = (value: unknown) => value == 1 || value === '1' || value === true;
+
+/**
+ * What the allotment letter signs off with when a branch has saved nothing —
+ * seeded into the editor so it can be reworded rather than typed from scratch.
+ * Kept in step with the fallback in pdf/allotment-letter.blade.php.
+ */
+const defaultSignatureBlock = (companyName = '') =>
+  '<p><strong>Authorized Signatory and Company Seal</strong></p>' +
+  '<p>Managing Director / Chief Executive Officer</p>' +
+  (companyName ? `<p>${companyName}</p>` : '');
+
+/**
+ * How much of the page top a pre-printed pad head is assumed to take when a
+ * branch has saved no measurement -- about the depth of the software one.
+ */
+const defaultPreprintedPadHeight = 150;
+
+/**
+ * The rates the allotment letter has always quoted, kept as the values a branch
+ * starts from. Match the fallbacks in UnitSaleController.
+ */
+const defaultDownPaymentPercent = 30;
+const defaultDownPaymentBase = 'total';
+const defaultDelayChargePercent = 10;
+const defaultCompanySchemeDueDays = 30;
+/** Kept in step with the `?? 30` in SettingsController::branch(). */
+const defaultReportDays = 30;
+const schemeDueWeekdays = [
+  { id: '', name: 'No fixed day (use days)' },
+  { id: '0', name: 'Sunday' },
+  { id: '1', name: 'Monday' },
+  { id: '2', name: 'Tuesday' },
+  { id: '3', name: 'Wednesday' },
+  { id: '4', name: 'Thursday' },
+  { id: '5', name: 'Friday' },
+  { id: '6', name: 'Saturday' },
+];
+
+/** Branch Setup -> Product Dropdown. Multiple Line is what the box has always
+    done, so it is also what a branch that has never been asked gets. */
+const ddlLineOptions = [
+  { id: 'multiple', name: 'Multiple Line' },
+  { id: 'single', name: 'Single Line' },
+];
+
+/**
+ * A saved choice as the form's own text. Unset metas come back false, so only
+ * a real answer is kept.
+ */
+const metaTextOr = (value: unknown, fallback: string) =>
+  value === null || value === undefined || value === '' || value === false
+    ? fallback
+    : String(value);
+
+/**
+ * A number of hours, said the way somebody says it.
+ *
+ * 168 is a correct answer to "how long is the hold" and an unreadable one. The
+ * field takes hours because that is what the engine counts, and this is what
+ * makes 168 legible as a week without making the form ask in two units.
+ *
+ * Days only where the hours divide into whole ones -- "1 day 12 hours" is
+ * harder to read at a glance than "36 hours", and the number in the box is the
+ * one that decides anything.
+ */
+const spellHours = (value: string): string => {
+  const hours = Number(value);
+
+  if (!Number.isFinite(hours) || hours < 1) return '';
+  if (hours % 24 !== 0) return `${hours} hour${hours === 1 ? '' : 's'}`;
+
+  const days = hours / 24;
+
+  if (days % 7 === 0 && days > 7) {
+    const weeks = days / 7;
+    return `${days} days — ${weeks} weeks`;
+  }
+
+  return `${days} day${days === 1 ? '' : 's'}`;
+};
+
+/**
+ * A stored 'YYYY-MM-DD' as a date on the calendar.
+ *
+ * Read out by hand rather than handed to `new Date`, which reads that shape as
+ * UTC midnight — east of Greenwich that is still the day before, and the picker
+ * would open on it.
+ */
+const parseIsoDate = (value: string): Date | null => {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(value ?? '');
+
+  if (!parts) {
+    return null;
+  }
+
+  const date = new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+/** And back again, off the local parts for the same reason. */
+const toIsoDate = (date: Date | null) =>
+  date && !Number.isNaN(date.getTime())
+    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+      date.getDate(),
+    ).padStart(2, '0')}`
+    : '';
+
+/**
+ * A saved rate as the number it is. Unset metas come back false, but a saved 0
+ * is a real answer -- a branch that asks for nothing -- so it stays.
+ */
+const metaNumberOr = (value: unknown, fallback: number): number => {
+  if (value === null || value === undefined || value === '' || typeof value === 'boolean') {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+/**
+ * The choice cards on the Hotel Setup step. Every option has its own colour.
+ * Whole class names, because Tailwind only ships what it can read in the source.
+ */
+const HOTEL_RADIO_TONES = {
+  blue: {
+    bar: 'border-l-blue-500',
+    card: 'border-blue-500 bg-blue-50 dark:bg-blue-500/15',
+    title: 'text-blue-700 dark:text-blue-300',
+    ring: 'border-blue-500',
+    fill: 'border-blue-600 bg-blue-600',
+  },
+  violet: {
+    bar: 'border-l-violet-500',
+    card: 'border-violet-500 bg-violet-50 dark:bg-violet-500/15',
+    title: 'text-violet-700 dark:text-violet-300',
+    ring: 'border-violet-500',
+    fill: 'border-violet-600 bg-violet-600',
+  },
+  amber: {
+    bar: 'border-l-amber-500',
+    card: 'border-amber-500 bg-amber-50 dark:bg-amber-500/15',
+    title: 'text-amber-700 dark:text-amber-300',
+    ring: 'border-amber-500',
+    fill: 'border-amber-600 bg-amber-600',
+  },
+  teal: {
+    bar: 'border-l-teal-500',
+    card: 'border-teal-500 bg-teal-50 dark:bg-teal-500/15',
+    title: 'text-teal-700 dark:text-teal-300',
+    ring: 'border-teal-500',
+    fill: 'border-teal-600 bg-teal-600',
+  },
+  indigo: {
+    bar: 'border-l-indigo-500',
+    card: 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/15',
+    title: 'text-indigo-700 dark:text-indigo-300',
+    ring: 'border-indigo-500',
+    fill: 'border-indigo-600 bg-indigo-600',
+  },
+  emerald: {
+    bar: 'border-l-emerald-500',
+    card: 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/15',
+    title: 'text-emerald-700 dark:text-emerald-300',
+    ring: 'border-emerald-500',
+    fill: 'border-emerald-600 bg-emerald-600',
+  },
+};
+
+type HotelRadioTone = keyof typeof HOTEL_RADIO_TONES;
+
+const hotelRadioCard = (chosen: boolean, tone: HotelRadioTone, disabled = false) =>
+  `relative flex items-start gap-3 rounded-lg border-2 border-l-[6px] p-4 transition ${
+    disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md'
+  } ${
+    chosen
+      ? `${HOTEL_RADIO_TONES[tone].card} shadow-md`
+      : `border-[rgb(var(--c-border))] ${HOTEL_RADIO_TONES[tone].bar}`
+  }`;
+
+const hotelRadioTitle = (tone: HotelRadioTone) =>
+  `block text-base font-bold ${HOTEL_RADIO_TONES[tone].title}`;
+
+/** The radio itself, drawn; the real input stays in the label for the keyboard. */
+const HotelRadioMark = ({ chosen, tone }: { chosen: boolean; tone: HotelRadioTone }) => (
+  <span
+    aria-hidden="true"
+    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition peer-focus-visible:ring-2 peer-focus-visible:ring-primary/50 ${
+      chosen ? HOTEL_RADIO_TONES[tone].fill : `bg-white dark:bg-transparent ${HOTEL_RADIO_TONES[tone].ring}`
+    }`}
+  >
+    {chosen && (
+      <svg viewBox="0 0 16 16" className="h-4 w-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <path d="M3 8.5l3.2 3.2L13 4.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    )}
+  </span>
+);
+
+/**
+ * VAT Setup — the two ways a hotel bill can read its own rate card.
+ *
+ * ⚠️ THIS IS ABOUT WHAT A RATE MEANS, NOT WHAT A TAX IS. Both modes charge the
+ * same service charge and the same VAT out of the same bill; they differ only
+ * in whether the rate the guest was quoted is the room BEFORE those or the whole
+ * price WITH them inside. A hotel that advertises a room at 3,000 and takes
+ * 3,000 is inclusive even though the desk still separates rent, service charge
+ * and VAT behind it.
+ *
+ * The figures below are worked at a 3,000 room, the 5% service charge and 15%
+ * VAT, so the two cards can be read against each other line by line. They are
+ * an illustration, not this property's rates — those live on Hotel Setup →
+ * Service Charge and on each Room Type and Charge.
+ *
+ * ⚠️ INCLUSIVE ROUNDS ITS PARTS, NOT ITS TOTAL. Rent and service charge are
+ * worked back out of the quoted price and rounded, and VAT is what is LEFT —
+ * so the parts always add up to exactly what the guest was quoted. Rounding VAT
+ * on its own would leave the bill a paisa off the rate card.
+ */
+const HOTEL_VAT_MODES = [
+  {
+    id: 'exclusive',
+    label: 'VAT Excluding',
+    blurb:
+      'The rate is the room alone. Service charge and VAT come on top, so a 3,000 room bills more than 3,000.',
+    lines: [
+      ['Room rent', '3,000.00'],
+      ['Service charge, 5%', '150.00'],
+      ['VAT, 15% on 3,150.00', '472.50'],
+    ],
+    total: ['The guest pays', '3,622.50'],
+  },
+  {
+    id: 'inclusive',
+    label: 'VAT Including',
+    blurb:
+      'The rate is the whole price. The guest pays exactly it, and rent, service charge and VAT are worked back out of it.',
+    lines: [
+      ['Room rent', '2,484.47'],
+      ['Service charge, 5%', '124.22'],
+      ['VAT, the rest of the 3,000', '391.31'],
+    ],
+    total: ['The guest pays', '3,000.00'],
+  },
+];
+
+const AddBranch = () => {
+  const navigate = useNavigate();
+  const branchEditData = useSelector((state: any) => state.branchList);
+  const settings = useSelector((state: any) => state.settings);
+
+  /**
+   * The SaaS step belongs to whoever runs the platform, not to a branch.
+   *
+   * Listed rather than tested once, because this step is expected to grow: the
+   * next setting brings its own permission, and the step should appear for
+   * anyone who can reach at least one of the things on it.
+   *
+   * Hiding it is only tidiness — anyone reading the bundle can see the test.
+   * The permission is what decides: BranchController drops each platform
+   * setting from the save for a caller who lacks its permission, so a request
+   * posted straight at the endpoint changes nothing.
+   */
+  const SAAS_PERMISSIONS = ['registration.alert.manage'];
+  const isPlatformOwner = SAAS_PERMISSIONS.some((permission) =>
+    hasPermission(settings?.data?.permissions || [], permission),
+  );
+
+  /**
+   * The face terminals step is for whoever administers them -- the same key the
+   * API asks for, so the step never appears to somebody whose save would be
+   * refused.
+   */
+  const canManageTerminals = hasPermission(settings?.data?.permissions || [], 'hrm.attendance.device.manage');
+
+  // Built rather than fixed, so the step numbering and the "of N" count stay
+  // right for everyone who does not see the extra one.
+  const steps = [
+    'Basic Info',
+    'Print Setup',
+    'Invoice Setup',
+    'Forms Setup',
+    'Customer Setup',
+    'Product Setup',
+    'Dropdown',
+    'Real Estate Setup',
+    'Hotel Setup',
+    'Feature Controls',
+    ...(canManageTerminals ? ['Face Attendance'] : []),
+    ...(isPlatformOwner ? ['SaaS Setup'] : []),
+  ];
+
+  /**
+   * Which panel to show, asked by name.
+   *
+   * The panels used to be keyed by the number they happened to sit at, so
+   * inserting a step in the middle silently renamed every one after it --
+   * Real Estate's fields appearing under the Feature Controls heading and so
+   * on. Names do not shift when the list grows.
+   */
+  const stepIndex = (title: string) => steps.indexOf(title);
+  const SAAS_STEP = stepIndex('SaaS Setup');
+
+  const paperSizeOptions = [
+    { id: '', name: 'Select Invoice Page Size' },
+    ...((settings?.branchSettings?.paperSize || []).map((item: any) => ({
+      id: String(item?.id ?? ''),
+      name: item?.name ?? '',
+    })) as { id: string; name: string }[]),
+  ];
+  const initialBranch: branchItem = {
+    id: '',
+    branch_id: '',
+    name: '',
+    branch_types_id: '',
+    branchTypeText: '', // Add this line
+    business_type_id: '',
+    inventory_system_id: 1, // default: General Inventory
+    email: '',
+    pad_heading_print: '',
+    pad_print_mode: 'software',
+    preprinted_pad_height: defaultPreprintedPadHeight,
+    // Off unless the branch asks: the pad prints exactly as it did before the
+    // logo existed, and no branch has to opt out after an upgrade.
+    pad_logo_enabled: false,
+    pad_logo_position: 'right',
+    pad_logo_width: PAD_LOGO_DEFAULT_WIDTH,
+    pad_logo_height: PAD_LOGO_DEFAULT_HEIGHT,
+    pad_logo_margin_top: PAD_LOGO_DEFAULT_MARGIN,
+    pad_logo_margin_right: PAD_LOGO_DEFAULT_MARGIN,
+    pad_logo_margin_left: PAD_LOGO_DEFAULT_MARGIN,
+    address: '',
+    print_size: '',
+    contact_person: '',
+    paper_size: '',
+    print_sizeText: '', // Add this line
+    purchase_note: '',
+    sales_note: '',
+    combined_invoice_note: false,
+    invoice_variant_purchase: '',
+    invoice_variant_sales: '',
+    invoice_variant_purchase_return: '',
+    invoice_variant_sales_return: '',
+    invoice_variant_combined: '',
+    form_variant_cash_received: '',
+    form_variant_cash_payment: '',
+    form_variant_bank_received: '',
+    form_variant_bank_payment: '',
+    received_entry_mode: '',
+    payment_entry_mode: '',
+    money_format: '',
+    mobile_number_format: '',
+    phone: '',
+    notes: '',
+    invoice_label: '',
+    manual_voucher_no_label: '',
+    manual_voucher_date_label: '',
+    manual_challan_no_label: '',
+    manual_challan_date_label: '',
+    ledger_discount_split: '',
+    // On: every ledger has shown its product lines since the report existed.
+    ledger_show_product_details: true,
+    decimal_places: 0,
+    dashboard_top_sales_days: 0,
+    dashboard_top_purchase_days: 0,
+    dashboard_due_soon_days: 0,
+    default_report_days: defaultReportDays,
+    device_identifier_text: '',
+    status: '',
+    warranty_controll: false,
+    have_warehouse: false,
+    share_product_with_other_branch: false,
+    share_customer_with_other_branch: false,
+    have_customer_sl: false,
+    have_is_guaranter: false,
+    have_customer_nominee: false,
+    stock_report_type: false,
+    need_product_group: false,
+    need_package: false,
+    need_code: false,
+    product_list_inline_edit: false,
+    is_opening: false,
+    multiple_opening_allow: false,
+    use_bangla: false,
+    report_zero_bal: false,
+    warn_negative_stock_sale: false,
+    block_negative_stock_sale: false,
+    deduct_stock_on_delivery: false,
+    manufactur_control: false,
+    sms_service: false,
+    received_sms: false,
+    purchase_sms: false,
+    sales_sms: false,
+    payment_sms: false,
+    booking_sms: false,
+    pad_header_image: '',
+    show_instalment_list: false,
+    show_brand_in_invoice: false,
+    show_category_in_invoice: false,
+    show_description_in_invoice: false,
+    // Product Dropdown. The five the search box has always shown start on; the
+    // two it has never shown start off. The API settles an untouched branch the
+    // same way -- see getBranchEdit().
+    product_ddl_show_name: true,
+    product_ddl_show_category: true,
+    product_ddl_show_brand: false,
+    product_ddl_show_group: false,
+    product_ddl_show_purchase_price: true,
+    product_ddl_show_sales_price: true,
+    product_ddl_show_unit: true,
+    // Off even for a branch that has never opened this step: it is the one
+    // detail that costs the search anything, and no branch shows one today.
+    product_ddl_show_balance: false,
+    product_ddl_lines: 'multiple',
+    // Customer / Supplier Dropdown. All four lines the party search box has
+    // always shown start on; the API settles an untouched branch the same way --
+    // see getBranchEdit().
+    party_ddl_show_code: true,
+    party_ddl_show_mobile: true,
+    party_ddl_show_address: true,
+    party_ddl_show_father: true,
+    party_ddl_lines: 'multiple',
+    show_spelling_of_money: false,
+    show_sales_balance_summary: false,
+    need_demo_tutorial: false,
+    need_customer_contact_person: false,
+    due_list_with_address: false,
+    due_list_show_area: true,
+    need_relation_info: false,
+    need_customer_mother_name: false,
+    need_customer_sex: false,
+    // Noon out and two in -- what most of the trade runs on, with two hours for
+    // housekeeping between. The server holds the same pair, so a branch nobody
+    // has asked reads the same here as it does on the hotel screens.
+    hotel_check_in_time: '14:00',
+    hotel_check_out_time: '12:00',
+    // ⚠️ Two hours, and a day at most. A HOLD IS NOT A BOOKING -- it is the desk
+    // waiting for somebody who said they were coming, so the default is a wait
+    // and not a reservation. The server holds the same two numbers as its own
+    // fallback, so the form and the engine cannot disagree about an unset
+    // branch.
+    hotel_hold_hours: '2',
+    hotel_hold_max_hours: '24',
+    hotel_registration_terms: '',
+    // The way every property has billed so far: the rate is before tax.
+    hotel_vat_mode: 'exclusive',
+    hotel_due_mode: 'customer',
+    hotel_income_mode: 'bill',
+    salutation_male: '',
+    salutation_female: '',
+    salutation_other: '',
+    letter_signature: defaultSignatureBlock(settings?.data?.company?.name || ''),
+    need_customer_date_of_birth: false,
+    need_customer_occupation: false,
+    need_customer_permanent_address: false,
+    need_customer_photo: false,
+    need_customer_national_id: false,
+    need_nominee_photo: false,
+    need_customer_area: false,
+    need_customer_handle_by_employee: false,
+    show_voucher_image: false,
+    multi_product_order: false,
+    product_tracking: false,
+    delete_with_opening_invoice: false,
+    delete_with_opening_invoice_date: '',
+    company_scheme: false,
+    company_scheme_due_days: defaultCompanySchemeDueDays,
+    company_scheme_due_weekday: '',
+    down_payment_percent: defaultDownPaymentPercent,
+    down_payment_base: defaultDownPaymentBase,
+    delay_charge_percent: defaultDelayChargePercent,
+    letter_ref_prefix: '',
+    // On, because every letter printed so far has carried its reference.
+    print_letter_ref: true,
+    letter_ref_date: '',
+    registration_alert: false,
+    registration_alert_sms: false,
+    registration_alert_mobile: '',
+  };
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [padHeaderFile, setPadHeaderFile] = useState<File | null>(null);
+  const [padHeaderPreview, setPadHeaderPreview] = useState('');
+  const [currentStep, setCurrentStep] = useState(0);
+  const dispatch = useDispatch();
+
+  const { id } = useParams();
+
+  // Clearing an opening is only meaningful for a branch that already exists,
+  // and only for those trusted with it. The branch must also still be taking
+  // its openings -- see showClearOpening below.
+  const canClearOpening =
+    Boolean(id) &&
+    hasPermission(settings?.data?.permissions || [], 'branch.opening.clear');
+  const [confirmClearOpening, setConfirmClearOpening] = useState(false);
+  const [clearingOpening, setClearingOpening] = useState(false);
+
+  // Clearing a branch's transactions takes every voucher it holds out of the
+  // books, so it carries a permission of its own rather than riding along on
+  // the one that clears openings.
+  const canClearTransactions =
+    Boolean(id) &&
+    hasPermission(settings?.data?.permissions || [], 'branch.transaction.clear');
+  const [confirmClearTransactions, setConfirmClearTransactions] = useState(false);
+  const [clearingTransactions, setClearingTransactions] = useState(false);
+
+  // null while nothing is being cleared, 0-100 while the bar is on screen.
+  const [clearProgress, setClearProgress] = useState<number | null>(null);
+  // What the bar says while it runs and once it is done. Only one clear can be
+  // in flight at a time, so a single pair covers both buttons.
+  const [clearLabel, setClearLabel] = useState({ running: '', done: '' });
+  const clearProgressTick = useRef<ReturnType<typeof setInterval> | null>(null);
+  const clearProgressHide = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Leaving the page mid-clear would otherwise leave both timers running against
+  // a component that no longer exists.
+  useEffect(
+    () => () => {
+      if (clearProgressTick.current) clearInterval(clearProgressTick.current);
+      if (clearProgressHide.current) clearTimeout(clearProgressHide.current);
+    },
+    [],
+  );
+
+  /**
+   * A clear destroys or withdraws figures that are kept nowhere else, so it
+   * should not feel like a button that does nothing. The bar is deliberately
+   * unhurried: it creeps up while the request is in flight, easing off so it
+   * never reaches the end on its own, and a fast answer is still held for
+   * MIN_VISIBLE_MS before it completes. What the user reads is "this took some
+   * doing", which is the truth of what just happened to their data.
+   *
+   * Both clears run this way, so the choreography lives here once and each
+   * caller supplies only the endpoint and the words.
+   */
+  const runClear = async (options: {
+    url: string;
+    setBusy: (busy: boolean) => void;
+    closeDialog: () => void;
+    running: string;
+    done: string;
+    successFallback: string;
+    errorFallback: string;
+  }) => {
+    if (!id) return;
+
+    const MIN_VISIBLE_MS = 2600;
+    const startedAt = Date.now();
+
+    options.setBusy(true);
+    // The dialog goes first, so the bar it would otherwise dim is in plain view.
+    options.closeDialog();
+    setClearLabel({ running: options.running, done: options.done });
+    setClearProgress(4);
+
+    if (clearProgressHide.current) clearTimeout(clearProgressHide.current);
+    if (clearProgressTick.current) clearInterval(clearProgressTick.current);
+
+    clearProgressTick.current = setInterval(() => {
+      setClearProgress((current) => {
+        const value = current ?? 0;
+        if (value >= 92) return value;
+        // Each step covers a twelfth of what is left, so it slows as it goes.
+        return Math.min(92, value + Math.max(1, (92 - value) / 12));
+      });
+    }, 320);
+
+    try {
+      const response = await httpService.post(options.url, {
+        branch_id: id,
+      });
+
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < MIN_VISIBLE_MS) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_VISIBLE_MS - elapsed),
+        );
+      }
+
+      toast.success(response?.data?.message || options.successFallback);
+    } catch (error: any) {
+      // A refusal the server explains -- no permission, expired session, no
+      // network -- has already been said once by the http interceptor, and
+      // saying it again only stacks the same words twice on screen.
+      if (!error?.toastReported) {
+        toast.error(
+          error?.response?.data?.message ||
+          error?.message ||
+          options.errorFallback,
+        );
+      }
+    } finally {
+      if (clearProgressTick.current) {
+        clearInterval(clearProgressTick.current);
+        clearProgressTick.current = null;
+      }
+
+      setClearProgress(100);
+      options.setBusy(false);
+
+      // Long enough for the bar to visibly reach the end before it disappears.
+      clearProgressHide.current = setTimeout(() => setClearProgress(null), 700);
+    }
+  };
+
+  const handleClearOpening = () => {
+    if (clearingOpening || clearingTransactions) return;
+
+    return runClear({
+      url: API_BRANCH_CLEAR_OPENING_URL,
+      setBusy: setClearingOpening,
+      closeDialog: () => setConfirmClearOpening(false),
+      running: 'Clearing opening balances...',
+      done: 'Opening cleared',
+      successFallback: 'Opening cleared',
+      errorFallback: 'Could not clear the opening',
+    });
+  };
+
+  const handleClearTransactions = () => {
+    if (clearingOpening || clearingTransactions) return;
+
+    return runClear({
+      url: API_BRANCH_CLEAR_TRANSACTION_URL,
+      setBusy: setClearingTransactions,
+      closeDialog: () => setConfirmClearTransactions(false),
+      running: 'Clearing transactions...',
+      done: 'Transactions cleared',
+      successFallback: 'Transactions cleared',
+      errorFallback: 'Could not clear the transactions',
+    });
+  };
+
+  useEffect(() => {
+    if (id) {
+      dispatch(editBranch(id));
+    }
+  }, [dispatch, id]);
+
+  useEffect(() => {
+    if (
+      settings?.branchSettings?.branchType?.length &&
+      settings?.branchSettings?.businessType?.length &&
+      settings?.branchSettings?.paperSize?.length
+    ) {
+      return;
+    }
+
+    dispatch(getBranchSettings(undefined) as any);
+  }, [
+    dispatch,
+    settings?.branchSettings?.branchType?.length,
+    settings?.branchSettings?.businessType?.length,
+    settings?.branchSettings?.paperSize?.length,
+  ]);
+
+  useEffect(() => {
+    const branch = branchEditData?.editData?.branch;
+    if (branch) {
+      const b = branch;
+
+      setFormData(prev => ({
+        ...prev,
+        ...b,
+        pad_heading_print: b.pad_heading_print != null ? String(b.pad_heading_print) : '',
+        pad_print_mode: metaTextOr(b.pad_print_mode, 'software'),
+        preprinted_pad_height: metaNumberOr(b.preprinted_pad_height, defaultPreprintedPadHeight),
+        // A logo is off unless a saved answer says otherwise, which is what an
+        // untouched meta reads as. The numbers fall back to the defaults the
+        // form starts with, so an older branch never opens the screen blank.
+        pad_logo_enabled: toBooleanFlag(b.pad_logo_enabled),
+        pad_logo_position: normalizePadLogoPosition(b.pad_logo_position),
+        pad_logo_width: metaNumberOr(b.pad_logo_width, PAD_LOGO_DEFAULT_WIDTH),
+        pad_logo_height: metaNumberOr(b.pad_logo_height, PAD_LOGO_DEFAULT_HEIGHT),
+        pad_logo_margin_top: metaNumberOr(b.pad_logo_margin_top, PAD_LOGO_DEFAULT_MARGIN),
+        pad_logo_margin_right: metaNumberOr(b.pad_logo_margin_right, PAD_LOGO_DEFAULT_MARGIN),
+        pad_logo_margin_left: metaNumberOr(b.pad_logo_margin_left, PAD_LOGO_DEFAULT_MARGIN),
+        paper_size: b.paper_size != null ? String(b.paper_size) : '',
+        device_identifier_text:
+          b.device_identifier_text == null ||
+            b.device_identifier_text === '' ||
+            b.device_identifier_text === 0 ||
+            b.device_identifier_text === '0'
+            ? ''
+            : String(b.device_identifier_text),
+        dashboard_top_sales_days: b.dashboard_top_sales_days != null ? b.dashboard_top_sales_days : 0,
+        dashboard_top_purchase_days:
+          b.dashboard_top_purchase_days != null ? b.dashboard_top_purchase_days : 0,
+        dashboard_due_soon_days:
+          b.dashboard_due_soon_days != null ? b.dashboard_due_soon_days : 0,
+
+        // 🔑 CHECKBOX FIX
+        is_opening: toBooleanFlag(b.is_opening),
+        // Off unless the branch asked for it, which is what an unsaved meta
+        // reads back as.
+        multiple_opening_allow: toBooleanFlag(b.multiple_opening_allow),
+        // The API answers 1 for a branch that has never been asked, since its
+        // ledgers have always printed the product lines. A key the server does
+        // not send at all (an install a version behind) is read the same way.
+        ledger_show_product_details:
+          b.ledger_show_product_details == null
+            ? true
+            : toBooleanFlag(b.ledger_show_product_details),
+        have_is_guaranter: toBooleanFlag(b.have_is_guaranter),
+        have_customer_nominee: toBooleanFlag(b.have_customer_nominee),
+        report_zero_bal: toBooleanFlag(b.report_zero_bal),
+        warn_negative_stock_sale: toBooleanFlag(b.warn_negative_stock_sale),
+        block_negative_stock_sale: toBooleanFlag(b.block_negative_stock_sale),
+        deduct_stock_on_delivery: toBooleanFlag(b.deduct_stock_on_delivery),
+        manufactur_control: toBooleanFlag(b.manufactur_control),
+        warranty_controll: toBooleanFlag(b.warranty_controll),
+        have_warehouse: toBooleanFlag(b.have_warehouse),
+        share_product_with_other_branch: toBooleanFlag(b.share_product_with_other_branch),
+        share_customer_with_other_branch: toBooleanFlag(b.share_customer_with_other_branch),
+        have_customer_sl: toBooleanFlag(b.have_customer_sl),
+        stock_report_type: toBooleanFlag(b.stock_report_type),
+        need_product_group: toBooleanFlag(b.need_product_group),
+        need_package: toBooleanFlag(b.need_package),
+        need_code: toBooleanFlag(b.need_code),
+        product_list_inline_edit: toBooleanFlag(b.product_list_inline_edit),
+        use_bangla: toBooleanFlag(b.use_bangla),
+        show_instalment_list: toBooleanFlag(b.show_instalment_list),
+        show_spelling_of_money: toBooleanFlag(b.show_spelling_of_money),
+        show_sales_balance_summary: toBooleanFlag(b.show_sales_balance_summary),
+        need_demo_tutorial: toBooleanFlag(b.need_demo_tutorial),
+        need_customer_contact_person: toBooleanFlag(b.need_customer_contact_person),
+        due_list_with_address: toBooleanFlag(b.due_list_with_address),
+        due_list_show_area: toBooleanFlag(b.due_list_show_area),
+        // A pattern, not a flag: `false` is what an unset meta reads as, and
+        // that would put the word "false" in the box.
+        mobile_number_format: b.mobile_number_format ? String(b.mobile_number_format) : '',
+        need_relation_info: toBooleanFlag(b.need_relation_info),
+        need_customer_mother_name: toBooleanFlag(b.need_customer_mother_name),
+        need_customer_sex: toBooleanFlag(b.need_customer_sex),
+        hotel_check_in_time: b.hotel_check_in_time || '14:00',
+        hotel_check_out_time: b.hotel_check_out_time || '12:00',
+        hotel_hold_hours: String(b.hotel_hold_hours ?? 2),
+        hotel_hold_max_hours: String(b.hotel_hold_max_hours ?? 24),
+        hotel_registration_terms: b.hotel_registration_terms ? String(b.hotel_registration_terms) : '',
+        // Anything other than the one other answer reads as the default, so a
+        // value written by another version cannot leave the screen in a mode it
+        // does not know how to bill.
+        hotel_vat_mode: metaTextOr(b.hotel_vat_mode, 'exclusive') === 'inclusive' ? 'inclusive' : 'exclusive',
+        hotel_due_mode: metaTextOr(b.hotel_due_mode, 'customer') === 'bill' ? 'bill' : 'customer',
+        hotel_income_mode: metaTextOr(b.hotel_income_mode, 'bill') === 'settlement' ? 'settlement' : 'bill',
+        hotel_guest_receivable_ready: b.hotel_guest_receivable_ready !== false,
+        salutation_male: b.salutation_male ? String(b.salutation_male) : '',
+        salutation_female: b.salutation_female ? String(b.salutation_female) : '',
+        salutation_other: b.salutation_other ? String(b.salutation_other) : '',
+        letter_signature: b.letter_signature
+          ? String(b.letter_signature)
+          : defaultSignatureBlock(settings?.data?.company?.name || ''),
+        need_customer_date_of_birth: toBooleanFlag(b.need_customer_date_of_birth),
+        need_customer_occupation: toBooleanFlag(b.need_customer_occupation),
+        need_customer_permanent_address: toBooleanFlag(b.need_customer_permanent_address),
+        need_customer_photo: toBooleanFlag(b.need_customer_photo),
+        need_customer_national_id: toBooleanFlag(b.need_customer_national_id),
+        need_nominee_photo: toBooleanFlag(b.need_nominee_photo),
+        need_customer_area: toBooleanFlag(b.need_customer_area),
+        need_customer_handle_by_employee: toBooleanFlag(b.need_customer_handle_by_employee),
+        show_voucher_image: toBooleanFlag(b.show_voucher_image),
+        multi_product_order: toBooleanFlag(b.multi_product_order),
+        product_tracking: toBooleanFlag(b.product_tracking),
+        delete_with_opening_invoice: toBooleanFlag(b.delete_with_opening_invoice),
+        delete_with_opening_invoice_date: metaTextOr(b.delete_with_opening_invoice_date, '').slice(0, 10),
+        company_scheme: toBooleanFlag(b.company_scheme),
+        company_scheme_due_days: metaNumberOr(b.company_scheme_due_days, defaultCompanySchemeDueDays),
+        default_report_days: metaNumberOr(b.default_report_days, defaultReportDays),
+        company_scheme_due_weekday: metaTextOr(b.company_scheme_due_weekday, ''),
+        down_payment_percent: metaNumberOr(b.down_payment_percent, defaultDownPaymentPercent),
+        down_payment_base: metaTextOr(b.down_payment_base, defaultDownPaymentBase),
+        delay_charge_percent: metaNumberOr(b.delay_charge_percent, defaultDelayChargePercent),
+        letter_ref_prefix: metaTextOr(b.letter_ref_prefix, ''),
+        // The API resolves this one itself, answering 1 for a branch that has
+        // never been asked -- so an old branch keeps printing its reference.
+        print_letter_ref: toBooleanFlag(b.print_letter_ref),
+        // Held as YYYY-MM-DD whatever the picker shows, so a stored value that
+        // came with a time on it is cut back to the day.
+        letter_ref_date: metaTextOr(b.letter_ref_date, '').slice(0, 10),
+        registration_alert: toBooleanFlag(b.registration_alert),
+        registration_alert_sms: toBooleanFlag(b.registration_alert_sms),
+        registration_alert_mobile: metaTextOr(b.registration_alert_mobile, ''),
+        sms_service: toBooleanFlag(b.sms_service),
+        received_sms: toBooleanFlag(b.received_sms),
+        purchase_sms: toBooleanFlag(b.purchase_sms),
+        sales_sms: toBooleanFlag(b.sales_sms),
+        payment_sms: toBooleanFlag(b.payment_sms),
+        booking_sms: toBooleanFlag(b.booking_sms),
+        pad_header_image: b.pad_header_image || b.pad_heading_image || b.letterhead_image || b.pad_image || b.header_image || '',
+        show_brand_in_invoice: toBooleanFlag(b.show_brand_in_invoice),
+        show_category_in_invoice: toBooleanFlag(b.show_category_in_invoice),
+        show_description_in_invoice: toBooleanFlag(b.show_description_in_invoice),
+        product_ddl_show_name: toBooleanFlag(b.product_ddl_show_name),
+        product_ddl_show_category: toBooleanFlag(b.product_ddl_show_category),
+        product_ddl_show_brand: toBooleanFlag(b.product_ddl_show_brand),
+        product_ddl_show_group: toBooleanFlag(b.product_ddl_show_group),
+        product_ddl_show_purchase_price: toBooleanFlag(b.product_ddl_show_purchase_price),
+        product_ddl_show_sales_price: toBooleanFlag(b.product_ddl_show_sales_price),
+        product_ddl_show_unit: toBooleanFlag(b.product_ddl_show_unit),
+        product_ddl_show_balance: toBooleanFlag(b.product_ddl_show_balance),
+        product_ddl_lines: metaTextOr(b.product_ddl_lines, 'multiple'),
+        party_ddl_show_code: toBooleanFlag(b.party_ddl_show_code),
+        party_ddl_show_mobile: toBooleanFlag(b.party_ddl_show_mobile),
+        party_ddl_show_address: toBooleanFlag(b.party_ddl_show_address),
+        party_ddl_show_father: toBooleanFlag(b.party_ddl_show_father),
+        party_ddl_lines: metaTextOr(b.party_ddl_lines, 'multiple'),
+        combined_invoice_note: toBooleanFlag(b.combined_invoice_note),
+      }));
+
+      setPadHeaderFile(null);
+      setPadHeaderPreview(
+        resolveImageUrl(
+          b.pad_header_image ||
+          b.pad_heading_image ||
+          b.letterhead_image ||
+          b.pad_image ||
+          b.header_image ||
+          '',
+        ),
+      );
+    }
+  }, [branchEditData?.editData?.branch]);
+
+  const [formData, setFormData] = useState<branchItem>(initialBranch);
+
+  /**
+   * The face terminals' two choices, kept apart from the branch payload: they
+   * live in hrm_attendance_settings and are saved by their own endpoint, one
+   * request per branch, not as part of the branch form.
+   */
+  const [attendanceDevice, setAttendanceDevice] = useState<any>({ auto_approve: false, retention_days: 0 });
+  const [attendanceDeviceLoading, setAttendanceDeviceLoading] = useState(false);
+  const [attendanceDeviceSaving, setAttendanceDeviceSaving] = useState(false);
+
+  /** Read this branch's terminal choices when the step is opened. */
+  const faceAttendanceStep = stepIndex('Face Attendance');
+
+  useEffect(() => {
+    if (currentStep !== faceAttendanceStep) return;
+
+    const branchId = formData?.id;
+    if (!branchId) return;
+
+    let cancelled = false;
+    setAttendanceDeviceLoading(true);
+
+    httpService
+      .get(API_HRMS_ATTENDANCE_DEVICE_SETTINGS_URL, { params: { branch_id: branchId } })
+      .then((response) => {
+        const value = response?.data?.data?.data;
+        if (!cancelled && value) setAttendanceDevice(value);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error('Could not load the face terminal settings');
+      })
+      .finally(() => {
+        if (!cancelled) setAttendanceDeviceLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentStep, faceAttendanceStep, formData?.id]);
+
+  /**
+   * Save the two terminal choices.
+   *
+   * ⚠️ ITS OWN REQUEST, NOT THE BRANCH FORM'S. These live in
+   * hrm_attendance_settings; folding them into the branch payload would mean a
+   * branch save that silently rewrote a permission-gated setting for a caller
+   * who may not hold it.
+   */
+  const saveAttendanceDeviceSettings = async () => {
+    const branchId = formData?.id;
+
+    if (!branchId) {
+      toast.error('Save the branch first, then set its terminal options');
+      return;
+    }
+
+    setAttendanceDeviceSaving(true);
+
+    try {
+      const response = await httpService.post(API_HRMS_ATTENDANCE_DEVICE_SETTINGS_URL, {
+        branch_id: branchId,
+        auto_approve: attendanceDevice.auto_approve ? 1 : 0,
+        retention_days: Number(attendanceDevice.retention_days || 0),
+      });
+
+      if (response?.data?.success === false) {
+        toast.error(response.data.message || 'The terminal settings could not be saved');
+        return;
+      }
+
+      toast.success('Face terminal settings saved');
+      const value = response?.data?.data?.data;
+      if (value) setAttendanceDevice((prev: any) => ({ ...prev, ...value }));
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'The terminal settings could not be saved');
+    } finally {
+      setAttendanceDeviceSaving(false);
+    }
+  };
+
+  // Stationery that already carries the letterhead: nothing here draws one, so
+  // the heading choice and its image have nothing to say.
+  const usesPreprintedPad = formData?.pad_print_mode === 'preprinted';
+
+  // Pad Logo. The preview draws the company's own mark where this branch puts
+  // it, so the margins can be tuned without wasting a sheet of paper. The image
+  // itself is uploaded on the Company screen -- this screen only places it.
+  const padLogoEnabled = Boolean(formData.pad_logo_enabled);
+  const companyLogoPath = settings?.data?.company?.company_logo || '';
+  const companyLogoPreviewUrl = companyLogoPath
+    ? resolveAssetUrl(companyLogoPath, settings?.data?.env)
+    : '';
+  const padLogoPreviewConfig: PadLogoConfig | null =
+    padLogoEnabled && companyLogoPreviewUrl
+      ? {
+          src: companyLogoPreviewUrl,
+          alt: settings?.data?.company?.name || 'Company logo',
+          position: normalizePadLogoPosition(formData.pad_logo_position),
+          width: padLogoWidth(formData.pad_logo_width),
+          height: padLogoHeight(formData.pad_logo_height),
+          marginTop: padLogoMargin(formData.pad_logo_margin_top),
+          marginRight: padLogoMargin(formData.pad_logo_margin_right),
+          marginLeft: padLogoMargin(formData.pad_logo_margin_left),
+        }
+      : null;
+  /**
+   * Logo Size: grows or shrinks the logo's box as a whole. The width is set and
+   * the height follows in the same proportion, so the box keeps its shape --
+   * changing only one side of an `object-fit: contain` box often shows no
+   * change at all, because the other side is what holds the image back.
+   */
+  const setPadLogoSize = (nextWidth: number) => {
+    setFormData((prev) => {
+      const width = padLogoWidth(prev.pad_logo_width);
+      const height = padLogoHeight(prev.pad_logo_height);
+      const newWidth = Math.round(
+        Math.min(PAD_LOGO_MAX_WIDTH, Math.max(PAD_LOGO_MIN_WIDTH, nextWidth)),
+      );
+      const newHeight = Math.round(
+        Math.min(
+          PAD_LOGO_MAX_HEIGHT,
+          Math.max(PAD_LOGO_MIN_HEIGHT, (newWidth * height) / width),
+        ),
+      );
+
+      return { ...prev, pad_logo_width: newWidth, pad_logo_height: newHeight };
+    });
+  };
+  const padLogoCurrentWidth = padLogoWidth(formData.pad_logo_width);
+  const padLogoCurrentHeight = padLogoHeight(formData.pad_logo_height);
+
+  // A pad the software does not draw gets no logo, and the screen says why
+  // rather than leaving the switch on and the printing mysteriously bare.
+  const padLogoDisabledNotice = !padLogoEnabled
+    ? ''
+    : usesPreprintedPad
+      ? 'Pre-printed Pad is chosen, so the logo is not printed -- the paper already carries it.'
+      : Number(formData?.pad_heading_print) === 3
+        ? 'Custom Image Pad is chosen, so the logo is not printed -- the uploaded image is the letterhead.'
+        : '';
+
+  // Both conditions, not either: the permission says who may clear an opening,
+  // and "Opening ongoing?" says the branch is still in the period where an
+  // opening is being entered. Once that is switched off the figures have been
+  // settled and traded against, so wiping them is no longer a correction.
+  const showClearOpening = canClearOpening && Boolean(formData.is_opening);
+
+  // Gated on the same two conditions as Clear Opening. Withdrawing every
+  // voucher a branch holds belongs to the period where its books are still
+  // being set up; once "Opening ongoing?" is switched off the branch is trading
+  // for real and a wholesale clear is no longer a correction.
+  const showClearTransactions = canClearTransactions && Boolean(formData.is_opening);
+
+  // One bar serves both buttons, and it spins while either is working.
+  const clearInFlight = clearingOpening || clearingTransactions;
+
+  // Branch Setup -> Forms Setup: unified hides the two separate selectors on
+  // that side. Their saved values stay in formData and are saved back
+  // untouched, so switching to Separate brings the choices back.
+  const receivedUnified = String(formData?.received_entry_mode || '') === 'unified';
+  const paymentUnified = String(formData?.payment_entry_mode || '') === 'unified';
+
+  // Hotel Setup -> VAT Setup. Anything that is not the one other answer reads as
+  // excluding, which is how every property has billed so far -- so a branch
+  // saved by another version, or not saved at all, lands on the behaviour it
+  // already has rather than on one it was never set up for.
+  const hotelVatMode = String(formData?.hotel_vat_mode || '') === 'inclusive' ? 'inclusive' : 'exclusive';
+  const hotelDueMode = String(formData?.hotel_due_mode || '') === 'bill' ? 'bill' : 'customer';
+  const hotelIncomeMode = String(formData?.hotel_income_mode || '') === 'settlement' ? 'settlement' : 'bill';
+  const canIncomeAtSettlement = formData?.hotel_guest_receivable_ready !== false;
+
+  // A form may only be chosen by someone who may open it: the four separate
+  // cash/bank forms on their own create permission, and each unified entry on
+  // its own transaction key -- the same keys its route guard, menu entry and
+  // search entry ask for. No Hotel permission is involved. Disabling a choice
+  // never touches a saved value -- the metas are written from formData, which
+  // is left exactly as it is.
+  const userPermissions = settings?.data?.permissions || [];
+  const canReceivedEntry = hasPermission(userPermissions, 'received.entry.create');
+  const canPaymentEntry = hasPermission(userPermissions, 'payment.entry.create');
+  const canCashReceived = hasPermission(userPermissions, 'cash.received.create');
+  const canBankReceived = hasPermission(userPermissions, 'bank.received.create');
+  const canCashPayment = hasPermission(userPermissions, 'cash.payment.create');
+  const canBankPayment = hasPermission(userPermissions, 'bank.payment.create');
+
+  const receivedModeOptions = FORM_VARIANT_OPTIONS.received_entry_mode.map((option) => ({
+    ...option,
+    disabled: option.id === 'unified' && !canReceivedEntry,
+  }));
+  const paymentModeOptions = FORM_VARIANT_OPTIONS.payment_entry_mode.map((option) => ({
+    ...option,
+    disabled: option.id === 'unified' && !canPaymentEntry,
+  }));
+
+  const receivedNote = receivedUnified
+    ? 'Received Entry Form is the one screen this branch uses, so Cash Received and Bank Received are not used. Their saved choices are kept, and come back if Separate is chosen.'
+    : [
+        !canReceivedEntry
+          ? 'You do not have permission to open the Received Entry form, so that mode cannot be selected.'
+          : '',
+        !canCashReceived || !canBankReceived
+          ? 'You do not have permission to open every cash/bank received form, so those cannot be selected.'
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+  const paymentNote = paymentUnified
+    ? 'Payment Entry Form is the one screen this branch uses, so Cash Payment and Bank Payment are not used. Their saved choices are kept, and come back if Separate is chosen.'
+    : [
+        !canPaymentEntry
+          ? 'You do not have permission to open the Payment Entry form, so that mode cannot be selected.'
+          : '',
+        !canCashPayment || !canBankPayment
+          ? 'You do not have permission to open every cash/bank payment form, so those cannot be selected.'
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+  useEffect(() => {
+    return () => {
+      if (padHeaderPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(padHeaderPreview);
+      }
+    };
+  }, [padHeaderPreview]);
+
+  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, type, value, checked } = e.target;
+
+    // If the input is a checkbox, use the 'checked' property, otherwise use 'value'
+    const inputValue = type === 'checkbox' ? checked : value;
+
+    // Update formData with the new value
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: inputValue,
+    }));
+  };
+
+  /**
+   * For the rates and measurements: what lands in state is the number, not the
+   * text the box holds. A number input reports an empty string both for a
+   * cleared box and for a half-typed decimal, and that empty is kept as it is
+   * -- rounding it to 0 would swallow the keystroke and make "1.5" untypable.
+   */
+  const handleOnNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const parsed = Number(value);
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value === '' || !Number.isFinite(parsed) ? '' : parsed,
+    }));
+  };
+
+  const handleOnSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+
+  /**
+   * The picker deals in dates, the meta in text. Cleared, it saves nothing —
+   * which is what makes each letter offer the day it is issued.
+   */
+  const handleRefDateChange = (date: Date | null) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      letter_ref_date: toIsoDate(date),
+    }));
+  };
+
+  /** The cutoff for deleting a product with its opening invoice, as YYYY-MM-DD. */
+  const handleOpeningInvoiceDateChange = (date: Date | null) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      delete_with_opening_invoice_date: toIsoDate(date),
+    }));
+  };
+
+  const handleToggleFieldChange = (name: keyof branchItem, checked: boolean) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: checked,
+    }));
+  };
+
+  const handlePadImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+
+    if (padHeaderPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(padHeaderPreview);
+    }
+
+    setPadHeaderFile(file);
+
+    if (!file) {
+      setPadHeaderPreview(resolveImageUrl(formData.pad_header_image));
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setPadHeaderPreview(previewUrl);
+  };
+
+  const handleBranchUpdate = () => {
+    setButtonLoading(true);
+    dispatch(
+      updateBranch(buildBranchFormData(formData, padHeaderFile), (res: any) => {
+        setButtonLoading(false);
+        if (res?.success) {
+          toast.success(res?.message || 'Branch updated successfully');
+          // Several of these switches (multi-product orders, voucher image, …)
+          // are read from the session settings, which are otherwise only loaded
+          // at login. Refetch them so a saved switch takes effect at once
+          // instead of after the next sign-in.
+          dispatch(getSettings(undefined) as any);
+          navigate('/branch/branch-list');
+          return;
+        }
+
+        toast.info(res?.error?.message || res?.message || 'Failed to update branch');
+      })
+    );
+  };
+
+  const handleBranchSave = () => {
+    setButtonLoading(true);
+    dispatch(
+      storeBranch(buildBranchFormData(formData, padHeaderFile), (res: any) => {
+        setButtonLoading(false);
+        if (res?.success) {
+          toast.success(res?.message || 'Branch saved successfully');
+          setFormData(initialBranch);
+          setPadHeaderFile(null);
+          setPadHeaderPreview('');
+          return;
+        }
+        toast.info(res?.error?.message || res?.message || 'Failed to save branch');
+      })
+    );
+  };
+
+  const goToNextStep = () => {
+    setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+  };
+
+  const goToPreviousStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 0));
+  };
+  return (
+    <>
+      <HelmetTitle title={formData?.id ? 'Update Branch Settings' : 'Add New Branch'} />
+      <div className='md:mt-2'></div>
+      {/* Pinned to the top of the window rather than to the form, so it stays in
+          view wherever the page happens to be scrolled. Above the modal layer,
+          because the dialog is still fading out as the bar starts moving. */}
+      {clearProgress !== null && (
+        <div
+          className="fixed inset-x-0 top-0 z-999999 h-1 bg-danger/20"
+          role="progressbar"
+          aria-label="Clearing opening balances"
+          aria-valuenow={Math.round(clearProgress)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className="h-full bg-danger transition-all duration-500 ease-out"
+            style={{ width: `${clearProgress}%` }}
+          />
+        </div>
+      )}
+      <>
+        {branchEditData.isLoading == true ? <Loader /> : ''}
+
+        <>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
+            <StepRail steps={steps} current={currentStep} onSelect={setCurrentStep} />
+
+            {/* Viewport-tall column so the action bar lands in the same spot on
+                every step, however short that step's content is. */}
+            <div className="flex min-h-[calc(100vh-7rem)] min-w-0 flex-col">
+              <div className="mb-4 rounded border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm dark:bg-transparent">
+                {/* Ruled off, so the step's own heading reads apart from the
+                  fields under it rather than as the first line of them. */}
+                <div className="mb-3 border-b border-[rgb(var(--c-border))] pb-1.5">
+                  <h2 className="text-base font-semibold leading-tight text-gray-800 dark:text-[rgb(var(--c-text))]">
+                    {steps[currentStep]}
+                  </h2>
+                  <p className="mt-0.5 text-xs leading-snug text-gray-500">
+                    {currentStep === stepIndex('Basic Info') && 'Branch identity, contact details, and status.'}
+                    {currentStep === stepIndex('Print Setup') && 'Print preferences, page size, and letterhead setup.'}
+                    {currentStep === stepIndex('Invoice Setup') && 'Invoice labels, notes, formatting, and invoice display options.'}
+                    {currentStep === stepIndex('Forms Setup') && 'Which existing form each invoice category opens.'}
+                    {currentStep === stepIndex('Customer Setup') && 'Customer and supplier related options for this branch.'}
+                    {currentStep === stepIndex('Product Setup') && 'How products are ordered and priced in this branch.'}
+                    {currentStep === stepIndex('Dropdown') &&
+                      'Which details the customer, supplier and product search boxes show.'}
+                    {currentStep === stepIndex('Real Estate Setup') && 'Real estate options for this branch.'}
+                    {currentStep === stepIndex('Hotel Setup') &&
+                      'When the day turns over at this property, for a branch that is a hotel.'}
+                    {currentStep === stepIndex('Feature Controls') && 'Operational controls, sharing options, and SMS preferences.'}
+                    {currentStep === faceAttendanceStep &&
+                      'Face terminals: whether their punches are approved as they land, and how long the raw punch log is kept.'}
+                    {currentStep === SAAS_STEP &&
+                      'Platform settings. Only this account sees them.'}
+                  </p>
+                </div>
+
+                {currentStep === stepIndex('Basic Info') && (
+                  <>
+                    {/* One grid for the whole step, not one per group of fields.
+                      A grid each starts its own rows, so a group that did not
+                      divide by three left its last field stranded beside two
+                      empty cells and pushed the next group down -- the four
+                      identity fields did exactly that to Inventory System.
+                      Flowing them together fills every row until the last. */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <InputElement
+                        id="name"
+                        value={formData.name || ''}
+                        name="name"
+                        placeholder={'Enter Branch Name'}
+                        label={'Enter Branch Name'}
+                        description="How the branch is named everywhere it is listed, and on its printed papers."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <DropdownCommon
+                        id="branch_types_id"
+                        name={'branch_types_id'}
+                        label="Select Branch Type"
+                        description="Head office or an ordinary branch. The head office sees company-wide figures and lists the others do not."
+                        onChange={handleOnSelectChange}
+                        value={formData?.branch_types_id || ''}
+                        className="bg-transparent"
+                        data={settings?.branchSettings?.branchType}
+                      />
+                      <DropdownCommon
+                        id="business_type_id"
+                        name={'business_type_id'}
+                        label="Select Business Type"
+                        description="The trade the branch is in. It decides which dashboard the branch opens on."
+                        onChange={handleOnSelectChange}
+                        value={formData?.business_type_id || ''}
+                        className="bg-transparent"
+                        data={settings?.branchSettings?.businessType}
+                      />
+                      <DropdownCommon
+                        id="inventory_system_id"
+                        name={'inventory_system_id'}
+                        label="Select Inventory System"
+                        description="Which purchase and sales screens the branch works with -- electronics, construction or trading."
+                        onChange={handleOnSelectChange}
+                        value={formData?.inventory_system_id || ''}
+                        className="bg-transparent"
+                        data={settings?.branchSettings?.inventorySystem}
+                      />
+                      <InputElement
+                        id="email"
+                        value={formData.email || ''}
+                        name="email"
+                        placeholder={'Enter Branch Email'}
+                        label={'Enter Branch Email'}
+                        description="The branch's own address, printed on its papers so customers can write back."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="phone"
+                        value={formData.phone || ''}
+                        name="phone"
+                        placeholder={'Enter Branch Phone'}
+                        label={'Enter Branch Phone'}
+                        description="The number printed on invoices and letters from this branch."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="contact_person"
+                        value={formData.contact_person || ''}
+                        name="contact_person"
+                        placeholder={'Enter Contact Person'}
+                        label={'Enter Contact Person'}
+                        description="Who to ask for at this branch -- the manager or whoever answers for it."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="address"
+                        value={formData.address || ''}
+                        name="address"
+                        placeholder={'Enter Branch Address'}
+                        label={'Enter Branch Address'}
+                        description="Where the branch sits. It goes under the heading on its printed papers."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="notes"
+                        value={formData.notes || ''}
+                        name="notes"
+                        placeholder={'Enter notes'}
+                        label={'Enter notes'}
+                        description="For the office's own remarks about this branch. Nothing here is printed."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <DropdownCommon
+                        id="status"
+                        name={'status'}
+                        label="Select Status"
+                        description="An inactive branch stays on record with all its figures, but nobody can work in it."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.status?.toString() ?? ''}
+                        data={status}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {currentStep === stepIndex('Print Setup') && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="pad_heading_print"
+                        name={'pad_heading_print'}
+                        label="Select Print Heading"
+                        description="Whose letterhead the software draws at the top -- this branch's, the company's, or an uploaded image."
+                        onChange={handleOnSelectChange}
+                        value={formData?.pad_heading_print || ''}
+                        className="bg-transparent"
+                        data={printPadHeading}
+                      />
+                      <DropdownCommon
+                        id="print_size"
+                        name={'print_size'}
+                        label="Select Printer Settings"
+                        description="A normal printer prints a full page; a POS printer prints the narrow roll used at a counter."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.print_size || ''}
+                        data={printerSettings}
+                      />
+                      <DropdownCommon
+                        id="paper_size"
+                        name={'paper_size'}
+                        label="Invoice Page Size"
+                        description="The paper an invoice is laid out for, so it fills the sheet the branch actually prints on."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.paper_size || ''}
+                        data={paperSizeOptions}
+                      />
+                    </div>
+
+                    {/* ---------- Pad Head ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Pad Head
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <div>
+                        <DropdownCommon
+                          id="pad_print_mode"
+                          name={'pad_print_mode'}
+                          label="Pad Head Printing"
+                          onChange={handleOnSelectChange}
+                          value={formData?.pad_print_mode || ''}
+                          className="bg-transparent"
+                          data={padPrintModes}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Software generated draws the heading chosen above.
+                          Pre-printed draws none, for paper that comes from the
+                          press with the letterhead already on it.
+                        </p>
+                      </div>
+                      {/* Always on show, so the paper can be measured before the
+                        branch switches over -- it just has nothing to do while
+                        the software draws the heading itself. */}
+                      <div>
+                        <InputElement
+                          id="preprinted_pad_height"
+                          value={formData.preprinted_pad_height ?? ''}
+                          name="preprinted_pad_height"
+                          type="number"
+                          min={0}
+                          max={600}
+                          step="1"
+                          placeholder={'Enter Blank Space (px)'}
+                          label={'Blank Space at Top (px)'}
+                          className={''}
+                          onChange={handleOnNumberChange}
+                          disabled={!usesPreprintedPad}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {usesPreprintedPad
+                            ? 'How deep the printed pad head is, so nothing prints on top of it. 96 px is about an inch of paper.'
+                            : 'Used only when Pre-printed Pad is chosen.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {Number(formData?.pad_heading_print) === 3 && !usesPreprintedPad && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <div className="flex flex-col">
+                          <label
+                            htmlFor="pad_header_image"
+                            className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
+                          >
+                            Pad Header Image
+                          </label>
+                          <Input
+                            id="pad_header_image"
+                            name="pad_header_image"
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePadImageChange}
+                            className={FIELD_FILE}
+                          />
+                          <span className="mt-1 text-xs text-gray-500">
+                            This image will print when `Custom Image Pad` is selected.
+                          </span>
+                        </div>
+                        <div className="md:col-span-2">
+                          {padHeaderPreview ? (
+                            <div className="rounded border border-gray-300 p-2">
+                              <img
+                                src={padHeaderPreview}
+                                alt="Pad header preview"
+                                className="max-h-28 w-full object-contain"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex h-full min-h-28 items-center justify-center rounded border border-dashed border-gray-300 text-sm text-gray-500">
+                              No image selected
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ---------- Pad Logo ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Pad Logo
+                    </h4>
+                    <FormToggleField
+                      label="Show Company Logo on Pad"
+                      description="Prints the company's logo on every pad head. Off by default, so the pad prints exactly as it did before. The image is uploaded once on the Company screen -- here only its place, size and margins are set."
+                      checked={padLogoEnabled}
+                      onChange={(checked) => handleToggleFieldChange('pad_logo_enabled', checked)}
+                      className="mb-2"
+                    />
+
+                    {/* Logo Size: one control that makes the whole logo bigger
+                        or smaller, keeping its shape. Width and Height below
+                        still set each side exactly. */}
+                    <div className="mb-2">
+                      <label
+                        htmlFor="pad_logo_size"
+                        className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]"
+                      >
+                        Logo Size
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPadLogoSize(padLogoCurrentWidth * 0.9)}
+                          disabled={!padLogoEnabled || padLogoCurrentWidth <= PAD_LOGO_MIN_WIDTH}
+                          className="h-8 w-8 shrink-0 rounded border border-[rgb(var(--c-border))] text-lg leading-none disabled:opacity-40"
+                          title="Make the logo smaller"
+                          aria-label="Make the logo smaller"
+                        >
+                          −
+                        </button>
+                        <input
+                          id="pad_logo_size"
+                          type="range"
+                          min={PAD_LOGO_MIN_WIDTH}
+                          max={PAD_LOGO_MAX_WIDTH}
+                          step={1}
+                          value={padLogoCurrentWidth}
+                          onChange={(e) => setPadLogoSize(Number(e.target.value))}
+                          disabled={!padLogoEnabled}
+                          className="w-full max-w-md disabled:opacity-40"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setPadLogoSize(padLogoCurrentWidth * 1.1 + 1)}
+                          disabled={!padLogoEnabled || padLogoCurrentWidth >= PAD_LOGO_MAX_WIDTH}
+                          className="h-8 w-8 shrink-0 rounded border border-[rgb(var(--c-border))] text-lg leading-none disabled:opacity-40"
+                          title="Make the logo bigger"
+                          aria-label="Make the logo bigger"
+                        >
+                          +
+                        </button>
+                        <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">
+                          {padLogoCurrentWidth} × {padLogoCurrentHeight} px
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Drag, or press − / +, to make the whole logo smaller or bigger. It keeps its shape.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="pad_logo_position"
+                        name={'pad_logo_position'}
+                        label="Logo Position"
+                        description="Which part of the pad head the logo takes. Top puts it above the branch name."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.pad_logo_position || 'right'}
+                        data={padLogoPositions}
+                        disabled={!padLogoEnabled}
+                      />
+                      <InputElement
+                        id="pad_logo_width"
+                        name="pad_logo_width"
+                        value={formData.pad_logo_width ?? ''}
+                        type="number"
+                        min={PAD_LOGO_MIN_WIDTH}
+                        max={PAD_LOGO_MAX_WIDTH}
+                        step="1"
+                        placeholder={'Enter Logo Width'}
+                        label={'Logo Width (px)'}
+                        description="The width of the box the logo is drawn in. The image keeps its own shape inside it."
+                        className={''}
+                        onChange={handleOnNumberChange}
+                        disabled={!padLogoEnabled}
+                      />
+                      <InputElement
+                        id="pad_logo_height"
+                        name="pad_logo_height"
+                        value={formData.pad_logo_height ?? ''}
+                        type="number"
+                        min={PAD_LOGO_MIN_HEIGHT}
+                        max={PAD_LOGO_MAX_HEIGHT}
+                        step="1"
+                        placeholder={'Enter Logo Height'}
+                        label={'Logo Height (px)'}
+                        description="The height of that same box. A wide logo leaves blank space above and below, so it is never stretched."
+                        className={''}
+                        onChange={handleOnNumberChange}
+                        disabled={!padLogoEnabled}
+                      />
+                      <InputElement
+                        id="pad_logo_margin_top"
+                        name="pad_logo_margin_top"
+                        value={formData.pad_logo_margin_top ?? ''}
+                        type="number"
+                        min={PAD_LOGO_MIN_MARGIN}
+                        allowNegative
+                        max={PAD_LOGO_MAX_MARGIN}
+                        step="1"
+                        placeholder={'Enter Top Margin'}
+                        label={'Top Margin (px)'}
+                        description="Distance from the top of the pad head to the logo. Read for every position. A minus value pulls the logo up."
+                        className={''}
+                        onChange={handleOnNumberChange}
+                        disabled={!padLogoEnabled}
+                      />
+                      <InputElement
+                        id="pad_logo_margin_right"
+                        name="pad_logo_margin_right"
+                        value={formData.pad_logo_margin_right ?? ''}
+                        type="number"
+                        min={PAD_LOGO_MIN_MARGIN}
+                        allowNegative
+                        max={PAD_LOGO_MAX_MARGIN}
+                        step="1"
+                        placeholder={'Enter Right Margin'}
+                        label={'Right Margin (px)'}
+                        description="Distance from the paper's right edge. Used when the logo sits on the right. A minus value pushes the logo further right."
+                        className={''}
+                        onChange={handleOnNumberChange}
+                        disabled={!padLogoEnabled || formData.pad_logo_position !== 'right'}
+                      />
+                      <InputElement
+                        id="pad_logo_margin_left"
+                        name="pad_logo_margin_left"
+                        value={formData.pad_logo_margin_left ?? ''}
+                        type="number"
+                        min={PAD_LOGO_MIN_MARGIN}
+                        allowNegative
+                        max={PAD_LOGO_MAX_MARGIN}
+                        step="1"
+                        placeholder={'Enter Left Margin'}
+                        label={'Left Margin (px)'}
+                        description="Distance from the paper's left edge. Used when the logo sits on the left. A minus value pushes the logo further left."
+                        className={''}
+                        onChange={handleOnNumberChange}
+                        disabled={!padLogoEnabled || formData.pad_logo_position !== 'left'}
+                      />
+                    </div>
+
+                    {/* The same placement, drawn on a sheet the size of a pad
+                        head -- margins are easier to judge than to imagine. */}
+                    {padLogoEnabled && (
+                      <div className="mb-2">
+                        <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
+                          Pad Logo Preview
+                        </label>
+                        <div className="rounded border border-gray-300 bg-white p-3">
+                          <div
+                            className="mx-auto overflow-hidden rounded border border-dashed border-gray-200 p-2"
+                            style={{ maxWidth: 560 }}
+                          >
+                            {!padLogoPreviewConfig && (
+                              <div className="mb-2 flex min-h-10 items-center justify-center text-xs text-gray-500">
+                                No company logo uploaded yet -- add one on the Company screen.
+                              </div>
+                            )}
+                            <PadLogo config={padLogoPreviewConfig}>
+                              <div className="text-center text-base font-bold uppercase text-gray-900">
+                                {formData.name || 'Branch Name'}
+                              </div>
+                              <div className="text-center text-xs text-gray-900">
+                                {formData.address || 'Branch address'}
+                              </div>
+                              <div className="text-center text-xs text-gray-900">
+                                {formData.phone || 'Phone'}
+                              </div>
+                            </PadLogo>
+                            {/* The rule under the head, as the print draws it. */}
+                            <div className="mt-1 border-t-2 border-gray-900" />
+                          </div>
+                          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            The logo prints on this branch's pad head and on the
+                            company pad head -- every sheet of every print. A
+                            pre-printed pad or a Custom Image Pad draws none,
+                            because the paper already carries the mark. On a
+                            narrow POS roll, use a smaller size or the Top
+                            position.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {padLogoDisabledNotice && (
+                      <p className="mb-2 text-xs text-amber-600 dark:text-amber-400">
+                        {padLogoDisabledNotice}
+                      </p>
+                    )}
+
+                    {/* Letter greetings, picked by the customer's sex when a
+                      document is printed. Blank falls back to the wording
+                      built into the software. */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <InputElement
+                        id="salutation_male"
+                        name="salutation_male"
+                        value={formData.salutation_male || ''}
+                        placeholder={'Dear Sir,'}
+                        label={'Salutation (Male)'}
+                        description="How a letter greets a male customer. Left blank, the software's own wording is used."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="salutation_female"
+                        name="salutation_female"
+                        value={formData.salutation_female || ''}
+                        placeholder={'Dear Madam,'}
+                        label={'Salutation (Female)'}
+                        description="How a letter greets a female customer. Left blank, the software's own wording is used."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="salutation_other"
+                        name="salutation_other"
+                        value={formData.salutation_other || ''}
+                        placeholder={'Dear Sir/Madam,'}
+                        label={'Salutation (Other / Not Set)'}
+                        description="Used when the customer's sex is not recorded, so a letter never goes out addressed wrongly."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                    </div>
+
+                    <div className="mb-2">
+                      <label className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
+                        Letter Signature Block
+                      </label>
+                      <RichTextEditor
+                        value={formData.letter_signature || ''}
+                        placeholder="Authorized Signatory and Company Seal"
+                        onChange={(html) =>
+                          setFormData((prev) => ({ ...prev, letter_signature: html }))
+                        }
+                      />
+                      <span className="mt-1 block text-xs text-gray-500">
+                        Prints at the foot of the allotment letter. Leave it empty and
+                        the letter signs off with the company name. The table button
+                        lays three signatories across the page; each row is a line,
+                        so add a row for the name under a signature, and add or drop
+                        a column to sign with more or fewer than three.
+                      </span>
+                    </div>
+
+                  </>
+                )}
+
+                {currentStep === stepIndex('Invoice Setup') && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <InputElement
+                        id="purchase_note"
+                        value={formData.purchase_note || ''}
+                        name="purchase_note"
+                        placeholder={'Purchase Invoice Note'}
+                        label={'Purchase Invoice Note'}
+                        description="Standing wording printed at the foot of every purchase invoice -- terms, conditions, whatever the branch always says."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="sales_note"
+                        value={formData.sales_note || ''}
+                        name="sales_note"
+                        placeholder={'Sales Invoice Note'}
+                        label={'Sales Invoice Note'}
+                        description="The same, printed at the foot of every sales invoice."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <DropdownCommon
+                        id="money_format"
+                        name={'money_format'}
+                        label="Select Money Format"
+                        description="Where the word Taka sits when the amount is written out -- before the words, after them, or wrapped in Only."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.money_format || ''}
+                        data={moneySpellFormat}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <InputElement
+                        id="invoice_label"
+                        value={formData.invoice_label || ''}
+                        name="invoice_label"
+                        placeholder={'Enter Invoice Label'}
+                        label={'Enter Invoice Label'}
+                        description="What the paper calls itself at the top -- Invoice, Cash Memo, Bill, whatever the branch issues."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="device_identifier_text"
+                        value={formData.device_identifier_text || ''}
+                        name="device_identifier_text"
+                        placeholder={'Device Identifier Text'}
+                        label={'Device Identifier Text'}
+                        description="The word printed before a serial number on the invoice, such as IMEI or Engine No. Left blank, the number stands alone."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="decimal_places"
+                        value={formData.decimal_places || 0}
+                        name="decimal_places"
+                        placeholder={'Enter Decimal Places'}
+                        label={'Decimal Places'}
+                        description="How many digits after the point every amount is shown with. 0 rounds to whole Taka."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                    </div>
+
+                    {/* ⚠️ THE BRANCH NAMES THESE FOR ITSELF. Every counter calls
+                        the handwritten papers something of its own -- challan,
+                        gate pass, kacha bill -- so the four figures the sales
+                        invoice keeps are named here. Left blank the invoice
+                        falls back to the standard four names, which is where
+                        the fallback lives and the only place it is written. */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
+                      <InputElement
+                        id="manual_voucher_no_label"
+                        value={formData.manual_voucher_no_label || ''}
+                        name="manual_voucher_no_label"
+                        placeholder={'Memo No.'}
+                        label={'Memo No.'}
+                        description="What the sales invoice calls its handwritten voucher number. Blank shows Memo No."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="manual_voucher_date_label"
+                        value={formData.manual_voucher_date_label || ''}
+                        name="manual_voucher_date_label"
+                        placeholder={'Memo Date'}
+                        label={'Memo Date'}
+                        description="The same for the voucher's date. Blank shows Memo Date."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="manual_challan_no_label"
+                        value={formData.manual_challan_no_label || ''}
+                        name="manual_challan_no_label"
+                        placeholder={'Challan No'}
+                        label={'Challan No'}
+                        description="What the sales invoice calls the paper the goods went out on. Blank shows Challan No."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                      <InputElement
+                        id="manual_challan_date_label"
+                        value={formData.manual_challan_date_label || ''}
+                        name="manual_challan_date_label"
+                        placeholder={'Challan Date'}
+                        label={'Challan Date'}
+                        description="The same for the challan's date. Blank shows Challan Date."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+                    </div>
+
+                    {/* ⚠️ HOW THE PARTY LEDGER READS A DISCOUNTED BILL, AND IT
+                        IS DECIDED HERE RATHER THAN ON THE REPORT. A branch
+                        answers once and every counter reads it the same way.
+                        Neither answer moves a figure: the party's line is
+                        posted net of the discount and the discount is its own
+                        leg on a head of its own, so the split is the same money
+                        told as full value plus concession instead of one net
+                        line. Balances, totals, Trial Balance and P&L are
+                        untouched. */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="ledger_discount_split"
+                        name={'ledger_discount_split'}
+                        label="Ledger: Discounted Bill"
+                        description="As it is now shows the party's line net of the discount -- one line a bill. The other shows the bill at full value with the discount as a line of its own on the opposite side."
+                        onChange={handleOnSelectChange}
+                        className="bg-transparent"
+                        value={formData?.ledger_discount_split || ''}
+                        data={ledgerDiscountSplit}
+                      />
+                      <FormToggleField
+                        label="Show Product Information in Ledger Details"
+                        description="Prints each product's name inside the Product & Details column of the Purchase and Sales ledgers. Off, the column still shows the account and the note, and the quantity, rate and total columns are untouched."
+                        checked={Boolean(formData.ledger_show_product_details)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('ledger_show_product_details', checked)
+                        }
+                      />
+                      {/* Sits directly to the right of the ledger switch, on
+                          the same row, at every width. On, the sales invoice
+                          offers "Deduct stock on delivery"; off, it does not --
+                          and the stock always moves with the invoice, as it did
+                          before this switch existed. */}
+                      <FormToggleField
+                        label="Enable Deduct Stock on Delivery"
+                        description="Makes the 'Deduct stock on delivery' option available on this branch's sales invoices, so the stock leaves the godown when the delivery is posted rather than when the invoice is written. Turning it on does not switch any invoice on by itself -- each invoice still chooses. Off is the historical behaviour: every invoice takes the stock at once."
+                        checked={Boolean(formData.deduct_stock_on_delivery)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('deduct_stock_on_delivery', checked)
+                        }
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <InputElement
+                        id="dashboard_top_sales_days"
+                        value={formData.dashboard_top_sales_days || ''}
+                        name="dashboard_top_sales_days"
+                        placeholder={'Dashboard Top Sales Days'}
+                        label={'Dashboard Top Sales Days'}
+                        description="How many days back the dashboard's top-selling list counts. 1 means today alone; left empty it looks back 1 day."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+
+                      {/* ⚠️ ITS OWN WINDOW, BECAUSE BUYING IS A DIFFERENT
+                          RHYTHM FROM SELLING. A shop restocks a line monthly,
+                          so a seven-day purchase list is usually the week the
+                          delivery happened to land. Empty means it follows the
+                          sales window above, which is what every branch had
+                          before this setting existed. */}
+                      <InputElement
+                        id="dashboard_top_purchase_days"
+                        value={formData.dashboard_top_purchase_days || ''}
+                        name="dashboard_top_purchase_days"
+                        placeholder={'Dashboard Top Purchase Days'}
+                        label={'Dashboard Top Purchase Days'}
+                        description="How many days back the dashboard's top-purchase list counts. Left empty it follows the top-sales window above."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+
+                      {/* How far ahead the dashboard's installments card
+                          looks. 7 by default: a weekly look is what a shop can
+                          act on, while the installment schedule itself is
+                          monthly. */}
+                      <InputElement
+                        id="dashboard_due_soon_days"
+                        value={formData.dashboard_due_soon_days || ''}
+                        name="dashboard_due_soon_days"
+                        placeholder={'Dashboard Due Soon Days'}
+                        label={'Dashboard Due Soon Days'}
+                        description="How many days ahead the dashboard's installments card looks. Left empty it looks 7 days ahead."
+                        className={''}
+                        onChange={handleOnChange}
+                      />
+
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Show spelling of money in invoice?"
+                        description="Prints the invoice total in words beneath the figure."
+                        checked={Boolean(formData.show_spelling_of_money)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_spelling_of_money', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Balance Summary in Sales & Purchase Invoice"
+                        description="Shows Previous Balance, Current Invoice, Discount, Received/Payment Amount and Total Tk. on the sales and purchase invoice screens. Off, the block is not drawn."
+                        checked={Boolean(formData.show_sales_balance_summary)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_sales_balance_summary', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Instalment List in Invoice"
+                        description="Prints the instalment schedule, with its dates and amounts, on an instalment sale."
+                        checked={Boolean(formData.show_instalment_list)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_instalment_list', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show description in invoice?"
+                        description="Prints each item's description line under its name."
+                        checked={Boolean(formData.show_description_in_invoice)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_description_in_invoice', checked)
+                        }
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Show Brand in Invoice?"
+                        description="Prints the brand of each item beside its name."
+                        checked={Boolean(formData.show_brand_in_invoice)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_brand_in_invoice', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Category in Invoice?"
+                        description="Prints the category of each item beside its name."
+                        checked={Boolean(formData.show_category_in_invoice)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_category_in_invoice', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show combined invoice note?"
+                        description="Offers a note box on the combined trading entry, so one remark covers the whole invoice."
+                        checked={Boolean(formData.combined_invoice_note)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('combined_invoice_note', checked)
+                        }
+                      />
+                    </div>
+
+                    {/* ---------- Stock ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Stock
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Warn On Negative Stock Sale?"
+                        description="Asks before an invoice sells more than the branch holds. Goods often arrive before the supplier's bill does, so the sale still goes through once confirmed -- this only makes sure a wrong line is noticed at the time, rather than in a stock report weeks later."
+                        checked={Boolean(formData.warn_negative_stock_sale)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('warn_negative_stock_sale', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Block Negative Stock Sale?"
+                        description="Refuses the invoice outright instead of asking, and nobody can override it. For a branch that only ever sells what it has already entered -- turn it off where goods are sold before the supplier's bill arrives, or the sale cannot be made at all."
+                        checked={Boolean(formData.block_negative_stock_sale)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('block_negative_stock_sale', checked)
+                        }
+                      />
+                    </div>
+                  </>
+                )}
+
+                {currentStep === stepIndex('Forms Setup') && (
+                  <>
+                    {/* Which existing form each invoice category opens on.
+                        Automatic leaves the choice to the Business Type, exactly
+                        as it was before this setting existed. */}
+                    <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Invoice Forms
+                    </h4>
+                    <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                      Choose your preferred form for each invoice category. Automatic keeps the current default.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="invoice_variant_purchase"
+                        name="invoice_variant_purchase"
+                        label="Purchase Invoice"
+                        description="Which purchase invoice form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.invoice_variant_purchase || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.invoice_variant_purchase}
+                      />
+                      <DropdownCommon
+                        id="invoice_variant_sales"
+                        name="invoice_variant_sales"
+                        label="Sales Invoice"
+                        description="Which sales invoice form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.invoice_variant_sales || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.invoice_variant_sales}
+                      />
+                      <DropdownCommon
+                        id="invoice_variant_purchase_return"
+                        name="invoice_variant_purchase_return"
+                        label="Purchase Return"
+                        description="Which purchase return form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.invoice_variant_purchase_return || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.invoice_variant_purchase_return}
+                      />
+                      <DropdownCommon
+                        id="invoice_variant_sales_return"
+                        name="invoice_variant_sales_return"
+                        label="Sales Return"
+                        description="Which sales return form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.invoice_variant_sales_return || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.invoice_variant_sales_return}
+                      />
+                      <DropdownCommon
+                        id="invoice_variant_combined"
+                        name="invoice_variant_combined"
+                        label="Combined Invoice"
+                        description="Which combined invoice form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.invoice_variant_combined || '')}
+                        className="bg-transparent"
+                        data={FORM_VARIANT_OPTIONS.invoice_variant_combined}
+                      />
+                    </div>
+
+                    {/* Received: one unified screen, or the two separate ones.
+                        Automatic keeps both on offer, exactly as before. A form
+                        may only be chosen by somebody who may open it. */}
+                    <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Received Forms
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="received_entry_mode"
+                        name="received_entry_mode"
+                        label="Mode"
+                        description="Automatic offers both ways; Received Entry Form uses the one unified screen; Separate Cash & Bank Forms uses the two beside it."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.received_entry_mode || '')}
+                        className="bg-transparent"
+                        data={receivedModeOptions}
+                      />
+                      <DropdownCommon
+                        id="form_variant_cash_received"
+                        name="form_variant_cash_received"
+                        label="Cash Received"
+                        description="Which cash received form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.form_variant_cash_received || '')}
+                        className="bg-transparent"
+                        disabled={receivedUnified || !canCashReceived}
+                        data={FORM_VARIANT_OPTIONS.form_variant_cash_received}
+                      />
+                      <DropdownCommon
+                        id="form_variant_bank_received"
+                        name="form_variant_bank_received"
+                        label="Bank Received"
+                        description="Which bank received form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.form_variant_bank_received || '')}
+                        className="bg-transparent"
+                        disabled={receivedUnified || !canBankReceived}
+                        data={FORM_VARIANT_OPTIONS.form_variant_bank_received}
+                      />
+                    </div>
+                    {receivedNote && (
+                      <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                        {receivedNote}
+                      </p>
+                    )}
+
+                    {/* Payment: the same two ways, chosen on its own. */}
+                    <h4 className="mb-2 mt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Payment Forms
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <DropdownCommon
+                        id="payment_entry_mode"
+                        name="payment_entry_mode"
+                        label="Mode"
+                        description="Automatic offers both ways; Payment Entry Form uses the one unified screen; Separate Cash & Bank Forms uses the two beside it."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.payment_entry_mode || '')}
+                        className="bg-transparent"
+                        data={paymentModeOptions}
+                      />
+                      <DropdownCommon
+                        id="form_variant_cash_payment"
+                        name="form_variant_cash_payment"
+                        label="Cash Payment"
+                        description="Which cash payment form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.form_variant_cash_payment || '')}
+                        className="bg-transparent"
+                        disabled={paymentUnified || !canCashPayment}
+                        data={FORM_VARIANT_OPTIONS.form_variant_cash_payment}
+                      />
+                      <DropdownCommon
+                        id="form_variant_bank_payment"
+                        name="form_variant_bank_payment"
+                        label="Bank Payment"
+                        description="Which bank payment form this branch opens."
+                        onChange={handleOnSelectChange}
+                        value={String(formData?.form_variant_bank_payment || '')}
+                        className="bg-transparent"
+                        disabled={paymentUnified || !canBankPayment}
+                        data={FORM_VARIANT_OPTIONS.form_variant_bank_payment}
+                      />
+                    </div>
+                    {paymentNote && (
+                      <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                        {paymentNote}
+                      </p>
+                    )}
+                  </>
+                )}
+
+                {currentStep === stepIndex('Customer Setup') && (
+                  <>
+                    {/* ---------- Customer ---------- */}
+                    <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Customer
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      {/* The "Need ..." switches all do the same thing: each one
+                        puts its field on the Add and Edit Customer forms. Said
+                        once here would be missed, so each says it for itself. */}
+                      <FormToggleField
+                        label="Use Customer Serial?"
+                        description="Gives every customer a serial number of its own on the customer form."
+                        checked={Boolean(formData.have_customer_sl)}
+                        onChange={(checked) => handleToggleFieldChange('have_customer_sl', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Area?"
+                        description="Adds the area field to the customer form, so customers can be grouped by locality."
+                        checked={Boolean(formData.need_customer_area)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_area', checked)}
+                      />
+                      <FormToggleField
+                        label="Customer Handle By Employee?"
+                        description="Asks which member of your staff looks after each customer: a picker on the Add and Edit Customer forms, and a filter and an Employee column on List Customers. The list of names is your HRMS employee list for this branch."
+                        checked={Boolean(formData.need_customer_handle_by_employee)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_handle_by_employee', checked)}
+                      />
+                      <FormToggleField
+                        label="Customer Share with Other branch?"
+                        description="Customers entered anywhere in the company can be picked here. Off, this branch sees only its own."
+                        checked={Boolean(formData.share_customer_with_other_branch)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('share_customer_with_other_branch', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Need Relation's Information?"
+                        description="Adds the father's/husband's name and relation fields to the customer form."
+                        checked={Boolean(formData.need_relation_info)}
+                        onChange={(checked) => handleToggleFieldChange('need_relation_info', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Mother's Name?"
+                        description="Adds the mother's name field to the customer form."
+                        checked={Boolean(formData.need_customer_mother_name)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_mother_name', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Sex?"
+                        description="Adds the sex field, which also decides which salutation a letter uses for the customer."
+                        checked={Boolean(formData.need_customer_sex)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_sex', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Contact Person?"
+                        description="Adds a contact person and their number, for customers reached through someone else."
+                        checked={Boolean(formData.need_customer_contact_person)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_contact_person', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Date of Birth?"
+                        description="Adds the date of birth field to the customer form."
+                        checked={Boolean(formData.need_customer_date_of_birth)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_date_of_birth', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Occupation?"
+                        description="Adds the occupation field to the customer form."
+                        checked={Boolean(formData.need_customer_occupation)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_occupation', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Permanent Address?"
+                        description="Adds a permanent address alongside the present one, as deeds and letters usually want both."
+                        checked={Boolean(formData.need_customer_permanent_address)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_permanent_address', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer Photo?"
+                        description="Adds the photo upload to the customer form."
+                        checked={Boolean(formData.need_customer_photo)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_photo', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Customer National ID?"
+                        description="Adds the national ID field to the customer form."
+                        checked={Boolean(formData.need_customer_national_id)}
+                        onChange={(checked) => handleToggleFieldChange('need_customer_national_id', checked)}
+                      />
+                      <FormToggleField
+                        label="Use Bangla?"
+                        description="Adds Bangla name fields beside the English ones, for papers that have to carry both."
+                        checked={Boolean(formData.use_bangla)}
+                        onChange={(checked) => handleToggleFieldChange('use_bangla', checked)}
+                      />
+                      {/* Unlike the switches above, these two do not add a field to
+                        the customer form -- they decide what the Due List prints.
+                        They sit here all the same: what they print is the
+                        customer's own address, mobile and area, so they are looked
+                        for with the rest of the customer's particulars rather than
+                        among the operational switches. Boxed together because
+                        both answer one question: what the Due List shows. */}
+                      <div className="rounded border border-[rgb(var(--c-border))] p-2 md:col-span-2">
+                        <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                          Due List
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                          <FormToggleField
+                            label="Report Due List with Address?"
+                            description="Prints each party's address and mobile beside the name on the Due List, so the sheet can be worked from in the field."
+                            checked={Boolean(formData.due_list_with_address)}
+                            onChange={(checked) =>
+                              handleToggleFieldChange('due_list_with_address', checked)
+                            }
+                          />
+                          <FormToggleField
+                            label="Area Show in Due List?"
+                            description="Shows the Area Code column on the Due List, on screen and on paper."
+                            checked={Boolean(formData.due_list_show_area)}
+                            onChange={(checked) =>
+                              handleToggleFieldChange('due_list_show_area', checked)
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* Not a switch, so it says what it does by showing it: the
+                        line underneath is the pattern applied to a real number,
+                        which is quicker to judge than any wording of the rule.
+
+                        Only how the number is *shown* -- what is stored stays
+                        the digits as typed, because that is what a phone dials
+                        and what the duplicate check compares. */}
+                      <div>
+                        <InputElement
+                          id="mobile_number_format"
+                          name="mobile_number_format"
+                          label="Mobile Number Format"
+                          placeholder="#####-######"
+                          value={formData.mobile_number_format || ''}
+                          onChange={handleOnChange}
+                          description={
+                            <>
+                              Groups every mobile number on screen. Write{' '}
+                              <span className="font-semibold">#</span> for a digit; anything else is
+                              printed as it stands. Leave empty to show numbers exactly as entered.
+                              {formData.mobile_number_format ? (
+                                <span className="mt-0.5 block">
+                                  01973190490 →{' '}
+                                  <span className="font-semibold text-primary">
+                                    {formatMobile('01973190490', formData.mobile_number_format)}
+                                  </span>
+                                </span>
+                              ) : null}
+                            </>
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    {/* ---------- Transaction report ---------- */}
+                    <div className="mt-4 border-t border-[rgb(var(--c-border))] pt-3">
+                      <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        Transaction Report
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        {/* Not a field of the customer form -- it decides what the
+                            transaction button on List Customers opens. It sits
+                            here with the other party-report settings for the same
+                            reason the Due List switch above does. */}
+                        <div>
+                          <InputElement
+                            id="default_report_days"
+                            value={formData.default_report_days ?? ''}
+                            name="default_report_days"
+                            type="number"
+                            min={0}
+                            step="1"
+                            placeholder={'Enter Days'}
+                            label={'Show Default Report Days'}
+                            className={''}
+                            onChange={handleOnNumberChange}
+                          />
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            How far back the transaction button opens on List Customers:
+                            the last this many days, up to the branch's transaction date.
+                            The range can be changed again inside the report.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ---------- Nominee & Guarantor ---------- */}
+                    <div className="mt-4 border-t border-[rgb(var(--c-border))] pt-3">
+                      <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        Nominee &amp; Guarantor
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <FormToggleField
+                          label="Use Customer Nominee?"
+                          description="Opens the nominee section on the customer form -- who inherits the customer's claim."
+                          checked={Boolean(formData.have_customer_nominee)}
+                          onChange={(checked) => handleToggleFieldChange('have_customer_nominee', checked)}
+                        />
+                        <FormToggleField
+                          label="Need Nominee Photo?"
+                          description="Asks for the nominee's photograph as well as their particulars."
+                          checked={Boolean(formData.need_nominee_photo)}
+                          onChange={(checked) => handleToggleFieldChange('need_nominee_photo', checked)}
+                        />
+                        <FormToggleField
+                          label="Use Guarantor?"
+                          description="Opens the guarantor section on the customer form -- who stands behind the customer's dues."
+                          checked={Boolean(formData.have_is_guaranter)}
+                          onChange={(checked) => handleToggleFieldChange('have_is_guaranter', checked)}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {currentStep === stepIndex('Product Setup') && (
+                  <>
+                    {/* ---------- Order ---------- */}
+                    <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Order
+                    </h4>
+                    {/* Each note sits in its own column, directly under the control
+                      it explains -- never spilling under a neighbouring field. */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <div>
+                        <FormToggleField
+                          label="Multi Product Order?"
+                          checked={Boolean(formData.multi_product_order)}
+                          onChange={(checked) =>
+                            handleToggleFieldChange('multi_product_order', checked)
+                          }
+                          className=""
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          <strong>On:</strong> one order can carry several products.
+                          <br />
+                          <strong>Off:</strong> the original single-product order form.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ---------- Stock ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Stock
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Stock With Zero?"
+                        description="Keeps items with no balance on the stock report, so what has run out is still visible."
+                        checked={Boolean(formData.report_zero_bal)}
+                        onChange={(checked) => handleToggleFieldChange('report_zero_bal', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Product Group?"
+                        description="Adds a Product Group dropdown ahead of Category on the Add Product form."
+                        checked={Boolean(formData.need_product_group)}
+                        onChange={(checked) => handleToggleFieldChange('need_product_group', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Package?"
+                        description="Adds a Pack Size dropdown (12Kg, 35Kg) to the Add / Edit Product form."
+                        checked={Boolean(formData.need_package)}
+                        onChange={(checked) => handleToggleFieldChange('need_package', checked)}
+                      />
+                      <FormToggleField
+                        label="Need Code?"
+                        description="Adds a Product Code box to the Add / Edit Product form -- a code of your own, unique within the company."
+                        checked={Boolean(formData.need_code)}
+                        onChange={(checked) => handleToggleFieldChange('need_code', checked)}
+                      />
+                      <FormToggleField
+                        label="Editable Measurement on Product List?"
+                        description="Product List draws Measurement, Measurement Unit, Package Size and Package Type as columns, each saving as soon as its box is left. Off, the list does not show them."
+                        checked={Boolean(formData.product_list_inline_edit)}
+                        onChange={(checked) => handleToggleFieldChange('product_list_inline_edit', checked)}
+                      />
+                      <FormToggleField
+                        label="Stock: Brand->Group->Category->Item"
+                        description="Groups the stock report by brand, then category, then item, instead of listing items straight."
+                        checked={Boolean(formData.stock_report_type)}
+                        onChange={(checked) => handleToggleFieldChange('stock_report_type', checked)}
+                      />
+                      <FormToggleField
+                        label="Warranty Control?"
+                        description="Products carry a warranty period, asked for when the product is set up and tracked from the sale."
+                        checked={Boolean(formData.warranty_controll)}
+                        onChange={(checked) => handleToggleFieldChange('warranty_controll', checked)}
+                      />
+                      <FormToggleField
+                        label="Product Share?"
+                        description="Products entered anywhere in the company can be picked here. Off, this branch sees only its own."
+                        checked={Boolean(formData.share_product_with_other_branch)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('share_product_with_other_branch', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Product Tracking?"
+                        description="Cash Received and Payment ask which product the money was for, and the Product Statement reports on it. Off, those forms stay exactly as they were."
+                        checked={Boolean(formData.product_tracking)}
+                        onChange={(checked) => handleToggleFieldChange('product_tracking', checked)}
+                      />
+                      {/* Only user 1 -- the account owner -- may turn this on.
+                          The API drops both keys for anyone else, so hiding
+                          the switch and posting it by hand changes nothing. */}
+                      {settings?.data?.user?.id === 1 && (
+                        <>
+                          <FormToggleField
+                            label="Delete With Opening Invoice?"
+                            description="Product List's second delete button removes a product together with the one old opening invoice that brought it in. Off, only the plain delete is shown. Only user 1 can change this."
+                            checked={Boolean(formData.delete_with_opening_invoice)}
+                            onChange={(checked) =>
+                              handleToggleFieldChange('delete_with_opening_invoice', checked)
+                            }
+                          />
+                          {formData.delete_with_opening_invoice && (
+                            <div>
+                              <InputDatePicker
+                                id="delete_with_opening_invoice_date"
+                                name="delete_with_opening_invoice_date"
+                                label="Opening Invoice Cutoff Date"
+                                className="w-full text-sm"
+                                selectedDate={parseIsoDate(formData.delete_with_opening_invoice_date)}
+                                setSelectedDate={handleOpeningInvoiceDateChange}
+                                setCurrentDate={handleOpeningInvoiceDateChange}
+                              />
+                              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                Only an invoice dated <strong>before</strong> this day
+                                can be deleted with its product. Set it before
+                                switching the button on.
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      <FormToggleField
+                        label="Company Scheme?"
+                        description="Invoice -> Sales opens the Company Scheme sale form on an electronics branch: the brand pays the balance later, and what it still owes is tracked IMEI by IMEI."
+                        checked={Boolean(formData.company_scheme)}
+                        onChange={(checked) => handleToggleFieldChange('company_scheme', checked)}
+                      />
+                    </div>
+                    {formData.company_scheme && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        <div>
+                          <InputElement
+                            id="company_scheme_due_days"
+                            value={formData.company_scheme_due_days ?? ''}
+                            name="company_scheme_due_days"
+                            type="number"
+                            min={0}
+                            step="1"
+                            placeholder={'Enter Days'}
+                            label={'Scheme Due Days'}
+                            className={''}
+                            onChange={handleOnNumberChange}
+                          />
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Days after the sale the brand is due to pay. The scheme sale
+                            form offers this as its due date; it can still be changed there.
+                          </p>
+                        </div>
+                        <div>
+                          <DropdownCommon
+                            id="company_scheme_due_weekday"
+                            name={'company_scheme_due_weekday'}
+                            label="Scheme Due Weekday"
+                            onChange={handleOnSelectChange}
+                            value={formData?.company_scheme_due_weekday ?? ''}
+                            className="bg-transparent"
+                            data={schemeDueWeekdays}
+                          />
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            When the brand pays on a fixed day of the week, the due date
+                            becomes the first such day after the sale, and the days above
+                            are not used.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {currentStep === stepIndex('Dropdown') && (
+                  <>
+                    {/* Two boxes in one step, each with its own switches. First
+                      the party search box -- Select Customer on a sales screen,
+                      Select Supplier on a purchase one -- then the product box.
+                      They share the step because they are the same kind of
+                      setting, not because they share answers: showing a party's
+                      address says nothing about a product's category. */}
+
+                    {/* ---------- Customer / Supplier Dropdown ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Customer / Supplier Dropdown
+                    </h4>
+                    <div className="mb-4 max-w-xs">
+                      <DropdownCommon
+                        id="party_ddl_lines"
+                        name="party_ddl_lines"
+                        label="Dropdown Type"
+                        onChange={handleOnSelectChange}
+                        value={formData?.party_ddl_lines ?? 'multiple'}
+                        className="bg-transparent"
+                        data={ddlLineOptions}
+                        description=""
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Show Code?"
+                        description="Lists the party's own code beside the name -- what tells two parties of the same name apart."
+                        checked={Boolean(formData.party_ddl_show_code)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_code', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Mobile?"
+                        description="Lists the party's mobile number under the name."
+                        checked={Boolean(formData.party_ddl_show_mobile)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_mobile', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Address?"
+                        description="Lists the party's address under the name."
+                        checked={Boolean(formData.party_ddl_show_address)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_address', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Father's Name?"
+                        description="Lists the father's name the party was filed under, which the counter often recognises before the party's own name."
+                        checked={Boolean(formData.party_ddl_show_father)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('party_ddl_show_father', checked)
+                        }
+                      />
+                    </div>
+
+                    {/* ---------- Product Dropdown ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Product Dropdown
+                    </h4>
+                    {/* How many lines each product takes, before which of the
+                      switches below are worth turning on: Single Line has room
+                      for one or two of them, Multiple Line for all of them. */}
+                    <div className="mb-4 max-w-xs">
+                      <DropdownCommon
+                        id="product_ddl_lines"
+                        name="product_ddl_lines"
+                        label="Dropdown Type"
+                        onChange={handleOnSelectChange}
+                        value={formData?.product_ddl_lines ?? 'multiple'}
+                        className="bg-transparent"
+                        data={ddlLineOptions}
+                        description=""
+                      />
+                    </div>
+                    {/* One grid for the whole step, the same shape as the
+                      Invoice Setup and Product Setup grids. */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Show Category?"
+                        description="Lists the category under each product's name in the search box."
+                        checked={Boolean(formData.product_ddl_show_category)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_category', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Brand?"
+                        description="Lists the brand under each product's name. A product with no brand shows none."
+                        checked={Boolean(formData.product_ddl_show_brand)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_brand', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Group?"
+                        description="Lists the group under each product's name, for a branch that files its products in groups."
+                        checked={Boolean(formData.product_ddl_show_group)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_group', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Product Name?"
+                        description="The name is the line a product is picked by. Off, only the details under it remain."
+                        checked={Boolean(formData.product_ddl_show_name)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_name', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Purchase Price?"
+                        description="Lists what the product cost. Still hidden from a user who may not see purchase prices."
+                        checked={Boolean(formData.product_ddl_show_purchase_price)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_purchase_price', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Sales Price?"
+                        description="Lists the price the product sells at."
+                        checked={Boolean(formData.product_ddl_show_sales_price)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_sales_price', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Unit?"
+                        description="Lists the unit the product is kept in, such as Kg or Pcs."
+                        checked={Boolean(formData.product_ddl_show_unit)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_unit', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Balance?"
+                        description="Lists what is left in stock on this branch. The only switch here that makes the product search work harder, so it is off by default."
+                        checked={Boolean(formData.product_ddl_show_balance)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('product_ddl_show_balance', checked)
+                        }
+                      />
+                    </div>
+                  </>
+                )}
+
+                {currentStep === stepIndex('Real Estate Setup') && (
+                  <>
+                    {/* ---------- Allotment Letter ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Allotment Letter
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <div>
+                        <DropdownCommon
+                          id="down_payment_base"
+                          name={'down_payment_base'}
+                          label="Down Payment Calculated On"
+                          onChange={handleOnSelectChange}
+                          value={formData?.down_payment_base || ''}
+                          className="bg-transparent"
+                          data={downPaymentBases}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          On the net payable balance the booking money is already
+                          out, so it is not adjusted against the down payment again.
+                        </p>
+                      </div>
+                      <div>
+                        <InputElement
+                          id="down_payment_percent"
+                          value={formData.down_payment_percent ?? ''}
+                          name="down_payment_percent"
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="0.01"
+                          placeholder={'Enter Down Payment (%)'}
+                          label={'Down Payment (%)'}
+                          className={''}
+                          onChange={handleOnNumberChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          What the payment terms ask for when the sale itself
+                          records no down payment.
+                        </p>
+                      </div>
+
+                      <div>
+                        <InputElement
+                          id="delay_charge_percent"
+                          value={formData.delay_charge_percent ?? ''}
+                          name="delay_charge_percent"
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="0.01"
+                          placeholder={'Enter Delay Charge (%)'}
+                          label={'Delay Charge (% per annum)'}
+                          className={''}
+                          onChange={handleOnNumberChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          The yearly rate the letter states on an overdue amount,
+                          charged for the actual number of days of delay.
+                        </p>
+                      </div>
+
+                      {/* Stands beside the two reference fields, because it is
+                        what decides whether either of them reaches the paper. */}
+                      <FormToggleField
+                        label="Print Reference Number?"
+                        description="The letter carries a Ref No line. Off, it prints without one, for an office that numbers its letters on the sheet by hand."
+                        checked={Boolean(formData.print_letter_ref)}
+                        onChange={(checked) => handleToggleFieldChange('print_letter_ref', checked)}
+                      />
+
+                      <div>
+                        <InputElement
+                          id="letter_ref_prefix"
+                          value={formData.letter_ref_prefix ?? ''}
+                          name="letter_ref_prefix"
+                          type="text"
+                          placeholder={'e.g. BST/ALLOT'}
+                          label={'Reference No Prefix'}
+                          className={''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Offered as written when a letter is issued — nothing is
+                          added to it. Left blank, the letter falls back to the
+                          project's initials. The clerk issuing a letter finishes
+                          or replaces it against the register.
+                        </p>
+                      </div>
+
+                      <div>
+                        <InputDatePicker
+                          id="letter_ref_date"
+                          name="letter_ref_date"
+                          label="Reference Date"
+                          className="w-full text-sm"
+                          selectedDate={parseIsoDate(formData.letter_ref_date)}
+                          setSelectedDate={handleRefDateChange}
+                          setCurrentDate={handleRefDateChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          The date letters are dated with. Left blank, each letter
+                          is offered the day it is issued — which is the safer of
+                          the two, since a date set here stays until it is changed.
+                        </p>
+                      </div>
+                    </div>
+
+                  </>
+                )}
+
+                {currentStep === stepIndex('Hotel Setup') && (
+                  <>
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Check-in and check-out
+                    </h4>
+
+                    {/* ⚠️ These two are not decoration, and the note says so.
+
+                      The booking engine counts NIGHTS and never hours: a stay of
+                      the 15th to the 18th holds three nights and leaves the 18th
+                      free for the next guest. That is true only while check-out
+                      comes BEFORE check-in on the same day. Reversed, the same
+                      room is let to two parties for the hours between, every
+                      turnover day, and nothing in the engine would notice. The
+                      server refuses to save them that way round. */}
+                    <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
+                      <div>
+                        <InputElement
+                          id="hotel_check_out_time"
+                          name="hotel_check_out_time"
+                          type="time"
+                          label="Check-out time"
+                          value={formData.hotel_check_out_time || ''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          When the room has to be given up. Noon almost everywhere.
+                        </p>
+                      </div>
+
+                      <div>
+                        <InputElement
+                          id="hotel_check_in_time"
+                          name="hotel_check_in_time"
+                          type="time"
+                          label="Check-in time"
+                          value={formData.hotel_check_in_time || ''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          When the next guest may take it. Two hours later leaves
+                          housekeeping a window.
+                        </p>
+                      </div>
+
+
+                    </div>
+
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      How long a room is held
+                    </h4>
+
+                    {/* ⚠️ A HOLD TAKES REAL INVENTORY -- one row per bed per
+                      night -- so this is how long an unconfirmed enquiry may
+                      keep a room off the market. Too long and the desk turns
+                      people away for rooms nobody is coming to; too short and a
+                      guest who said they would ring back finds their room sold.
+                      It is a commercial decision, which is why it is a setting
+                      and not a number in the booking code.
+
+                      Hours, on the clock. A hold used to run to the end of its
+                      last day, so one taken at nine in the morning and one
+                      taken at eleven at night lapsed at the same moment and the
+                      second lasted fourteen hours longer for no reason anybody
+                      chose. */}
+                    <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
+                      <div>
+                        <InputElement
+                          id="hotel_hold_hours"
+                          name="hotel_hold_hours"
+                          type="number"
+                          min={1}
+                          label="Hold lasts (hours)"
+                          value={formData.hotel_hold_hours || ''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          When the desk names no date of its own.{' '}
+                          {spellHours(formData.hotel_hold_hours) ? (
+                            <strong className="text-black dark:text-white">
+                              {spellHours(formData.hotel_hold_hours)}
+                            </strong>
+                          ) : null}
+                        </p>
+                      </div>
+
+                      <div>
+                        <InputElement
+                          id="hotel_hold_max_hours"
+                          name="hotel_hold_max_hours"
+                          type="number"
+                          min={1}
+                          label="Longest hold (hours)"
+                          value={formData.hotel_hold_max_hours || ''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          The most the desk may ask for.{' '}
+                          {spellHours(formData.hotel_hold_max_hours) ? (
+                            <strong className="text-black dark:text-white">
+                              {spellHours(formData.hotel_hold_max_hours)}
+                            </strong>
+                          ) : null}
+                        </p>
+                      </div>
+                    </div>
+
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      VAT Setup
+                    </h4>
+
+                    {/* ⚠️ WHAT A RATE MEANS, NOT WHAT A TAX IS. Properties differ
+                      on this, not by law but by how they advertise: one prints a
+                      room at 3,000 plus tax, another prints 3,000 and means it.
+                      Both keep the same books -- rent, service charge and VAT are
+                      separated either way -- so this is one setting, not two
+                      systems.
+
+                      ⚠️ IT DOES NOT CONVERT ANYTHING. The rates on Room Types and
+                      Charges are numbers, and this only changes how a number is
+                      read: switching to including re-reads a 3,000 room as the
+                      whole price, not as the rent. A property whose intention is
+                      to keep collecting the same money has to raise its rate card
+                      first, which is why the warning under the cards says so. */}
+                    <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                      {HOTEL_VAT_MODES.map((mode) => {
+                        const chosen = hotelVatMode === mode.id;
+                        const tone: HotelRadioTone = mode.id === 'inclusive' ? 'violet' : 'blue';
+
+                        return (
+                          <label
+                            key={mode.id}
+                            className={hotelRadioCard(chosen, tone)}
+                          >
+                            {/* The name IS the meta key, so the same handler that
+                                serves every other field writes it -- and what is
+                                saved is the id, never the label, which is free to
+                                be reworded later. */}
+                            <input
+                              type="radio"
+                              name="hotel_vat_mode"
+                              value={mode.id}
+                              checked={chosen}
+                              onChange={handleOnChange}
+                              className="peer sr-only"
+                            />
+                            <HotelRadioMark chosen={chosen} tone={tone} />
+                            <span className="min-w-0 text-sm">
+                              <strong className={hotelRadioTitle(tone)}>{mode.label}</strong>
+                              <span className="mt-0.5 block text-xs leading-snug text-gray-500 dark:text-gray-400">
+                                {mode.blurb}
+                              </span>
+
+                              {/* The two cards worked side by side, at the same
+                                  quoted rate. The money is what settles the
+                                  question -- no one has to take the sentence on
+                                  trust. */}
+                              <span className="mt-1.5 block border-t border-[rgb(var(--c-border))] pt-1.5 text-xs">
+                                {mode.lines.map(([what, howMuch]) => (
+                                  <span key={what} className="flex justify-between gap-2">
+                                    <span className="text-gray-500 dark:text-gray-400">{what}</span>
+                                    <span className="tabular-nums text-black dark:text-white">
+                                      {howMuch}
+                                    </span>
+                                  </span>
+                                ))}
+                                <span className="mt-1 flex justify-between gap-2 border-t border-[rgb(var(--c-border))] pt-1">
+                                  <span className="font-medium text-gray-500 dark:text-gray-400">
+                                    {mode.total[0]}
+                                  </span>
+                                  <strong className="tabular-nums text-black dark:text-white">
+                                    {mode.total[1]}
+                                  </strong>
+                                </span>
+                              </span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+
+                    <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                      Worked at a 3,000 room, the 5% service charge and 15% VAT. The rates themselves
+                      are set on <strong>Hotel Setup &rarr; Service Charge</strong> and on each{' '}
+                      <strong>Room Type</strong> and <strong>Charge</strong>.
+                    </p>
+
+                    {/* ⚠️ THE WARNING THAT MATTERS. Switching to including does not
+                        raise the rate card to compensate, so a property that had
+                        been taking 3,622.50 for a 3,000 room starts taking 3,000
+                        the moment this is saved -- VAT and service charge still
+                        due, but out of the same money. That is 17% off the
+                        takings, and it must not be something somebody finds out
+                        from the month's report. */}
+                    <p className="mb-2 rounded-xs border border-amber-300 bg-amber-50 p-2 text-xs leading-snug text-amber-900 dark:border-amber-500/50 dark:bg-amber-500/10 dark:text-amber-200">
+                      <strong>Nothing already on file is converted.</strong> Bills already made keep
+                      the figures they were made at, and the rates already typed on Room Types and
+                      Charges are not changed. Switching to <strong>VAT Including</strong> re-reads
+                      those rates as whole prices from that day on — so a property that means to go
+                      on collecting the same money must raise its rate card first.
+                    </p>
+
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Due Setup
+                    </h4>
+
+                    {/* Same trick as VAT Setup: the radio's name IS the meta key and
+                        what is saved is the id, never the label. */}
+                    <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                      {[
+                        {
+                          id: 'customer',
+                          tone: 'amber' as HotelRadioTone,
+                          label: 'Customer-wise due',
+                          blurb: 'A balance at check-out must be taken or billed to a party. The default.',
+                        },
+                        {
+                          id: 'bill',
+                          tone: 'teal' as HotelRadioTone,
+                          label: 'Bill-wise due',
+                          blurb:
+                            'With the Check-out With Due permission, a guest may leave owing. The balance stays on the booking and is collected, billed to a party or written off later.',
+                        },
+                      ].map((mode) => (
+                        <label
+                          key={mode.id}
+                          className={hotelRadioCard(hotelDueMode === mode.id, mode.tone)}
+                        >
+                          <input
+                            type="radio"
+                            name="hotel_due_mode"
+                            value={mode.id}
+                            checked={hotelDueMode === mode.id}
+                            onChange={handleOnChange}
+                            className="peer sr-only"
+                          />
+                          <HotelRadioMark chosen={hotelDueMode === mode.id} tone={mode.tone} />
+                          <span className="min-w-0 text-sm">
+                            <strong className={hotelRadioTitle(mode.tone)}>{mode.label}</strong>
+                            <span className="mt-0.5 block text-xs leading-snug text-gray-500 dark:text-gray-400">
+                              {mode.blurb}
+                            </span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Income Setup
+                    </h4>
+
+                    <div className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                      {[
+                        {
+                          id: 'bill',
+                          tone: 'indigo' as HotelRadioTone,
+                          label: 'Income at Bill',
+                          blurb:
+                            'Income and VAT post when the bill is made. Advance and settlement money both go to the advance head. The default.',
+                          disabled: false,
+                        },
+                        {
+                          id: 'settlement',
+                          tone: 'emerald' as HotelRadioTone,
+                          label: 'Income at Settlement',
+                          blurb:
+                            'The bill posts with the settlement, so the money goes to income and VAT. A balance left at check-out goes to Guest Receivable.',
+                          disabled: !canIncomeAtSettlement,
+                        },
+                      ].map((mode) => (
+                        <label
+                          key={mode.id}
+                          className={hotelRadioCard(hotelIncomeMode === mode.id, mode.tone, mode.disabled)}
+                        >
+                          <input
+                            type="radio"
+                            name="hotel_income_mode"
+                            value={mode.id}
+                            checked={hotelIncomeMode === mode.id}
+                            disabled={mode.disabled}
+                            onChange={handleOnChange}
+                            className="peer sr-only"
+                          />
+                          <HotelRadioMark chosen={hotelIncomeMode === mode.id} tone={mode.tone} />
+                          <span className="min-w-0 text-sm">
+                            <strong className={hotelRadioTitle(mode.tone)}>{mode.label}</strong>
+                            <span className="mt-0.5 block text-xs leading-snug text-gray-500 dark:text-gray-400">
+                              {mode.blurb}
+                            </span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {!canIncomeAtSettlement && (
+                      <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                        Income at Settlement needs a Guest Receivable head, which this company does
+                        not have yet.
+                      </p>
+                    )}
+
+                    <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                      Changing this affects new bills only. Money already in Guest Receivable is
+                      collected from that head.
+                    </p>
+
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      What the guest signs
+                    </h4>
+
+                    {/* The small print under the registration card -- the paper
+                      a guest signs at check-in (name, ID, room, rate, dates).
+                      The property's own words, in whichever language it
+                      writes them; a rule list is kept as typed, line breaks
+                      and all. Empty prints a card with no terms, which is
+                      still a card. */}
+                    <div className="mb-2">
+                      <label
+                        htmlFor="hotel_registration_terms"
+                        className="mb-1 block text-sm text-black dark:text-white"
+                      >
+                        Registration card terms
+                      </label>
+                      <textarea
+                        id="hotel_registration_terms"
+                        name="hotel_registration_terms"
+                        rows={5}
+                        value={formData.hotel_registration_terms || ''}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, hotel_registration_terms: e.target.value }))
+                        }
+                        placeholder={'Check-out by 12 noon. Visitors are not allowed in rooms after 10 pm. ...'}
+                        className="block w-full rounded-xs border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-2 text-sm text-gray-900 outline-none dark:text-[rgb(var(--c-text))]"
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Printed under every guest's registration card, above the two signature lines.
+                      </p>
+                    </div>
+
+                    <p className="mb-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                      Only a branch that is a hotel uses these. Every other branch
+                      can leave them alone.
+                    </p>
+                  </>
+                )}
+
+                {currentStep === faceAttendanceStep && (
+                  <>
+                    {!formData?.id ? (
+                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                        Save the branch first. The terminal options are kept per branch, so there is nothing to set
+                        until this one exists.
+                      </p>
+                    ) : attendanceDeviceLoading ? (
+                      <Loader />
+                    ) : (
+                      <>
+                        <p className="mb-3 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                          These apply to this branch’s face terminals — the ones registered under
+                          HRM → Attendance → Attendance Devices. A branch left unset follows the company, and a
+                          company left unset approves nothing automatically and keeps every punch.
+                        </p>
+
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                          <div className="rounded border border-[rgb(var(--c-border))] p-3">
+                            <DropdownCommon
+                              id="device_auto_approve"
+                              name="device_auto_approve"
+                              label="Auto-approve terminal punches"
+                              value={attendanceDevice.auto_approve ? '1' : '0'}
+                              data={[
+                                { id: '1', name: 'Yes — approve as they land' },
+                                { id: '0', name: 'No — wait for an admin' },
+                              ]}
+                              onChange={(event: any) =>
+                                setAttendanceDevice((prev: any) => ({
+                                  ...prev,
+                                  auto_approve: event.target.value === '1',
+                                }))
+                              }
+                              className="font-medium"
+                            />
+                            <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                              On: a punch is approved the moment the terminal sends it, carrying its real status
+                              (present / late / half day). Off: every device row waits in Manual Attendance for an
+                              admin, as it always has.
+                            </p>
+                          </div>
+
+                          <div className="rounded border border-[rgb(var(--c-border))] p-3">
+                            <InputElement
+                              id="device_retention_days"
+                              name="device_retention_days"
+                              label="Keep raw punches for (days)"
+                              type="number"
+                              value={String(attendanceDevice.retention_days ?? 0)}
+                              onChange={(event: any) =>
+                                setAttendanceDevice((prev: any) => ({
+                                  ...prev,
+                                  retention_days: event.target.value,
+                                }))
+                              }
+                              className="w-full md:w-40"
+                            />
+                            <p className="mt-2 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                              0 keeps every punch forever. A number deletes older <b>raw punches</b> in a nightly job —
+                              the attendance rows built from them are never touched. The punch log is the evidence
+                              behind a day’s pay, so set this only when the branch has decided how long it is worth
+                              keeping.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-3">
+                          <ButtonLoading
+                            type="button"
+                            onClick={saveAttendanceDeviceSettings}
+                            buttonLoading={attendanceDeviceSaving}
+                            disabled={attendanceDeviceSaving}
+                            label="Save Terminal Settings"
+                            icon={<FiSave />}
+                            className="px-5"
+                          />
+                        </div>
+
+                        <p className="mt-3 text-xs leading-snug text-gray-500 dark:text-gray-400">
+                          ⚠️ Enrollment stays on the terminal: no face template or photo reaches this server. The same
+                          employee can be put on several terminals by copying the mapping in Attendance Devices —
+                          the face is still enrolled on each device itself.
+                        </p>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {currentStep === stepIndex('Feature Controls') && (
+                  <>
+                    {/* One grid for the operational switches, not one per theme.
+                      A grid each broke into rows of its own and left a toggle
+                      stranded beside two empty cells whenever a group did not
+                      divide by three. SMS is the one exception below: it is
+                      ruled off because it answers a different question. */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      <FormToggleField
+                        label="Control Manufacture?"
+                        description="Opens the production side, so an item can be built from other items instead of only bought and sold."
+                        checked={Boolean(formData.manufactur_control)}
+                        onChange={(checked) => handleToggleFieldChange('manufactur_control', checked)}
+                      />
+                      <FormToggleField
+                        label="Multiple Warehouse?"
+                        description="Vouchers say which warehouse stock moved in or out of. Off, everything sits in one."
+                        checked={Boolean(formData.have_warehouse)}
+                        onChange={(checked) => handleToggleFieldChange('have_warehouse', checked)}
+                      />
+                      <FormToggleField
+                        label="Opening ongoing?"
+                        description="The branch is still entering its opening figures, so products and parties can take an opening balance. Switch off once the books are settled."
+                        checked={Boolean(formData.is_opening)}
+                        onChange={(checked) => handleToggleFieldChange('is_opening', checked)}
+                      />
+
+                      {/* Sits in a grid cell of its own, so it lines up with the
+                        toggles rather than interrupting their rhythm. Red,
+                        because it destroys figures that are kept nowhere else. */}
+                      {showClearOpening && (
+                        <div className="flex items-center">
+                          <ButtonLoading
+                            type="button"
+                            label="Clear Opening"
+                            title="Set every opening balance in this branch back to zero"
+                            icon={<FiRefreshCcw size={15} />}
+                            buttonLoading={clearingOpening}
+                            disabled={clearInFlight}
+                            onClick={() => setConfirmClearOpening(true)}
+                            variant="danger"
+                            className="whitespace-nowrap rounded"
+                          />
+                        </div>
+                      )}
+
+                      {/* Its own cell beside Clear Opening, and red for the same
+                        reason: it takes every voucher the branch holds out of
+                        the books in one stroke. */}
+                      {showClearTransactions && (
+                        <div className="flex items-center">
+                          <ButtonLoading
+                            type="button"
+                            label="Clear Transactions"
+                            title="Withdraw every voucher in this branch from the books"
+                            icon={<FiRefreshCcw size={15} />}
+                            buttonLoading={clearingTransactions}
+                            disabled={clearInFlight}
+                            onClick={() => setConfirmClearTransactions(true)}
+                            variant="danger"
+                            className="whitespace-nowrap rounded"
+                          />
+                        </div>
+                      )}
+
+                      {/* ⚠️ Its own cell, NOT inside showClearTransactions.
+                        That gate needs `branch.transaction.clear`, and tying
+                        this to it would hide the switch from everyone who can
+                        edit the branch but may not withdraw its vouchers. The
+                        only thing it answers to is "Opening ongoing?" -- a
+                        branch that has stopped taking openings has nothing to
+                        correct. */}
+                      {Boolean(formData.is_opening) && (
+                        <div className="flex items-center">
+                          <FormToggleField
+                            label="Multiple opening allow?"
+                            description=""
+                            checked={Boolean(formData.multiple_opening_allow)}
+                            onChange={(checked) =>
+                              handleToggleFieldChange('multiple_opening_allow', checked)
+                            }
+                          />
+                        </div>
+                      )}
+
+                      {/* The bar pinned to the top of the window is easy to miss
+                        from down here, where the eye already is. This one spans
+                        the row directly under the button that started the work,
+                        and says what is being cleared while it runs. */}
+                      {clearProgress !== null && (
+                        <div className="col-span-1 md:col-span-3">
+                          <div className="rounded border border-danger/30 bg-danger/5 px-3 py-2.5">
+                            <div className="mb-1.5 flex items-center justify-between gap-2 text-xs font-medium text-danger">
+                              <span className="flex items-center gap-1.5">
+                                <FiRefreshCcw
+                                  size={13}
+                                  className={clearInFlight ? 'animate-spin' : ''}
+                                />
+                                {clearInFlight ? clearLabel.running : clearLabel.done}
+                              </span>
+                              <span>{Math.round(clearProgress)}%</span>
+                            </div>
+                            <div
+                              className="h-1.5 w-full overflow-hidden rounded-full bg-danger/20"
+                              role="progressbar"
+                              aria-label={clearLabel.running}
+                              aria-valuenow={Math.round(clearProgress)}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                            >
+                              <div
+                                className="h-full rounded-full bg-danger transition-all duration-500 ease-out"
+                                style={{ width: `${clearProgress}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <FormToggleField
+                        label="Need Demo Tutorial?"
+                        description="Offers the guided walkthrough to users of this branch. Turn off once the staff know their way around."
+                        checked={Boolean(formData.need_demo_tutorial)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('need_demo_tutorial', checked)
+                        }
+                      />
+                      <FormToggleField
+                        label="Show Voucher Image?"
+                        description="Shows the image attached to a voucher in the Cash Book, Sales Ledger and Purchase Ledger."
+                        checked={Boolean(formData.show_voucher_image)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('show_voucher_image', checked)
+                        }
+                      />
+
+                    </div>
+
+                    {/* SMS used to flow on inside the grid above so no toggle sat
+                      alone on a half-empty row. It reads better ruled off: these
+                      decide what leaves the branch as a text message, which is a
+                      different question from the operational switches above. */}
+                    <>
+                      <div className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4">
+                        <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          SMS Services
+                        </h4>
+                        <p className="mt-0.5 text-xs leading-snug text-gray-500">
+                          Which events text the party, and who they go to. What each message
+                          says is set on the SMS Template screen, not here.
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                        {settings?.data?.user?.id === 1 && (
+                          <FormToggleField
+                            label="SMS Service"
+                            description="The master switch for this branch. Off, none of the messages below go out however they are set."
+                            checked={Boolean(formData.sms_service)}
+                            onChange={(checked) => handleToggleFieldChange('sms_service', checked)}
+                          />
+                        )}
+                        {!formData.sms_service && (
+                          <p className="col-span-full font-bold text-sm text-blue-800 dark:text-gray-100">SMS Service is not active for this branch.</p>
+                        )}
+                        {Boolean(formData.sms_service) && (
+                          <>
+                            {/* Money first, both directions, then the two invoice
+                                ones. Received and Payment are the same question
+                                asked of cash in and cash out, so they read as a
+                                pair; Sales and Purchase likewise. */}
+                            <FormToggleField
+                              label="Received SMS"
+                              description="Texts the party when money received from them is posted."
+                              checked={Boolean(formData.received_sms)}
+                              onChange={(checked) => handleToggleFieldChange('received_sms', checked)}
+                            />
+                            <FormToggleField
+                              label="Payment SMS"
+                              description="Texts the party when money paid to them is posted."
+                              checked={Boolean(formData.payment_sms)}
+                              onChange={(checked) => handleToggleFieldChange('payment_sms', checked)}
+                            />
+                            <FormToggleField
+                              label="Sales SMS"
+                              description="Texts the customer when a sale is invoiced to them."
+                              checked={Boolean(formData.sales_sms)}
+                              onChange={(checked) => handleToggleFieldChange('sales_sms', checked)}
+                            />
+                            <FormToggleField
+                              label="Purchase SMS"
+                              description="Texts the supplier when a purchase is posted against them."
+                              checked={Boolean(formData.purchase_sms)}
+                              onChange={(checked) => handleToggleFieldChange('purchase_sms', checked)}
+                            />
+                            <FormToggleField
+                              label="Hotel Booking SMS"
+                              description="Texts the booker the booking-confirmed message the moment a hotel booking is saved."
+                              checked={Boolean(formData.booking_sms)}
+                              onChange={(checked) => handleToggleFieldChange('booking_sms', checked)}
+                            />
+                          </>
+                        )}
+                      </div>
+                    </>
+                  </>
+                )}
+
+                {/* SaaS Setup — the platform operator's own step. Guarded on the
+                  index rather than a number, so it stays right if a step is
+                  ever added above it. */}
+                {SAAS_STEP >= 0 && currentStep === SAAS_STEP && (
+                  <>
+                    <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      New Company Registration
+                    </h4>
+                    <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+                      What happens when someone signs up for a new company. These
+                      belong to the branch that runs the platform — setting them on
+                      a customer's branch does nothing.
+                    </p>
+
+                    <div className="grid grid-cols-1 gap-2 mb-2 md:grid-cols-3">
+                      <div>
+                        <FormToggleField
+                          label="Notify on registration?"
+                          checked={Boolean(formData.registration_alert)}
+                          onChange={(checked) =>
+                            handleToggleFieldChange('registration_alert', checked)
+                          }
+                          className=""
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Puts a notice in this branch's bell, on the web and in the
+                          app. Costs nothing and cannot fail.
+                        </p>
+                      </div>
+
+                      <div>
+                        <FormToggleField
+                          label="Also send SMS?"
+                          checked={Boolean(formData.registration_alert_sms)}
+                          onChange={(checked) =>
+                            handleToggleFieldChange('registration_alert_sms', checked)
+                          }
+                          className=""
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Reaches you without opening anything, and is charged per
+                          message.
+                        </p>
+                      </div>
+
+                      <div>
+                        <InputElement
+                          id="registration_alert_mobile"
+                          value={formData.registration_alert_mobile ?? ''}
+                          name="registration_alert_mobile"
+                          type="text"
+                          placeholder={'01712345678, 01911111111'}
+                          label={'Alert Mobile Number(s)'}
+                          className={''}
+                          onChange={handleOnChange}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Separate several with commas. Left empty, no SMS is sent
+                          however the switch is set.
+                        </p>
+                      </div>
+                    </div>
+
+                  </>
+                )}
+              </div>
+
+              {/* Kept within reach on the long steps, so Save needs no scrolling back. */}
+              <div className="sticky bottom-0 z-20 mt-auto mb-2 rounded border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]/95 px-3 py-2.5 shadow-lg backdrop-blur /95">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="mr-1 whitespace-nowrap text-xs font-medium text-gray-500 dark:text-gray-400">
+                      Step {currentStep + 1} of {steps.length}
+                    </span>
+                    <ButtonLoading
+                      onClick={() => navigate('/branch/branch-list')}
+                      buttonLoading={false}
+                      label="Back"
+                      className="whitespace-nowrap text-center mr-0"
+                      icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+                    />
+                    <ButtonLoading
+                      onClick={() => {
+                        if (padHeaderPreview.startsWith('blob:')) {
+                          URL.revokeObjectURL(padHeaderPreview);
+                        }
+                        setFormData(initialBranch);
+                        setPadHeaderFile(null);
+                        setPadHeaderPreview('');
+                        setCurrentStep(0);
+                      }}
+                      buttonLoading={buttonLoading}
+                      label="Reset"
+                      className="whitespace-nowrap rounded px-4 py-1.5"
+                      icon={<FiRefreshCcw className="text-base mr-2" />}
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <ButtonLoading
+                      onClick={goToPreviousStep}
+                      buttonLoading={false}
+                      disabled={currentStep === 0}
+                      label="Previous"
+                      className="whitespace-nowrap rounded px-4 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
+                      icon={<FiArrowLeft className="text-base mr-2" />}
+                    />
+                    {currentStep < steps.length - 1 ? (
+                      <ButtonLoading
+                        onClick={goToNextStep}
+                        buttonLoading={false}
+                        label="Next"
+                        variant="primary"
+                        className="whitespace-nowrap rounded px-6 py-1.5"
+                        icon={<FiArrowRight className="text-base mr-2" />}
+                      />
+                    ) : branchEditData.editData?.branch ? (
+                      <ButtonLoading
+                        onClick={handleBranchUpdate}
+                        buttonLoading={buttonLoading}
+                        label="Update"
+                        variant="primary"
+                        className="whitespace-nowrap rounded px-6 py-1.5"
+                        icon={<FiSave className="text-base mr-2" />}
+                      />
+                    ) : (
+                      <ButtonLoading
+                        onClick={handleBranchSave}
+                        buttonLoading={buttonLoading}
+                        label="Save"
+                        variant="primary"
+                        className="whitespace-nowrap rounded px-6 py-1.5"
+                        icon={<FiSave className="text-base mr-2" />}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Named plainly, because the figures cannot be recovered from here --
+              they have to be typed in again. What is left alone is said too, so
+              nobody expects the accounts to move. */}
+          <ConfirmModal
+            show={confirmClearOpening}
+            title="Clear Opening Balances"
+            message={
+              <>
+                Set every opening balance in this branch back to zero?
+                <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
+                  Products and customers/suppliers both. The figures are not kept
+                  anywhere else, so they will have to be entered again.
+                </span>
+                <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
+                  The journal and stock entries already posted are left as they
+                  are.
+                </span>
+              </>
+            }
+            confirmLabel="Clear Opening"
+            className="bg-danger hover:bg-danger/90"
+            loading={clearingOpening}
+            onCancel={() => setConfirmClearOpening(false)}
+            onConfirm={handleClearOpening}
+          />
+
+          {/* Says plainly what survives: the vouchers are not erased, they stop
+              counting. That is the difference between this and a deletion, and
+              it is the thing somebody approving it needs to know. */}
+          <ConfirmModal
+            show={confirmClearTransactions}
+            title="Clear Transactions"
+            message={
+              <>
+                Withdraw every voucher in this branch from the books?
+                <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
+                  Every voucher this branch holds is marked inactive at once, so
+                  it stops showing in reports, ledgers and balances.
+                </span>
+                <span className="mt-2 block text-xs text-[rgb(var(--c-text-muted))] dark:text-[rgb(var(--c-text-muted))]">
+                  Nothing is deleted -- the entries stay on record -- but there
+                  is no button here to bring them back.
+                </span>
+              </>
+            }
+            confirmLabel="Clear Transactions"
+            className="bg-danger hover:bg-danger/90"
+            loading={clearingTransactions}
+            onCancel={() => setConfirmClearTransactions(false)}
+            onConfirm={handleClearTransactions}
+          />
+        </>
+      </>
+    </>
+  );
+};
+
+export default AddBranch;
+

@@ -508,7 +508,7 @@
     "intro": "মাস ধরে সম্পদ, দায় ও মূলধনের খোলা ও শেষের অঙ্ক দেখা যায়; প্রতিটি দল খুলে তার হিসাবগুলোও দেখা যায়।",
     "sections": [
       { "heading": "রিপোর্ট দেখা", "menu": "Financial Statement → Final Accounts → Business Summary", "steps": ["Select Branch, Start Month ও End Month নির্বাচন করুন।", "Apply চাপুন।", "কোম্পানিতে বাংলা চালু থাকলে ও স্ক্রিন বাংলায় থাকলে খাতের নাম, রিপোর্টের শিরোনাম, কলাম ও মোটের লেবেল এবং সব সংখ্যা ও তারিখ বাংলা অঙ্কে দেখায় (প্রিন্টেও); যে খাতের বাংলা নাম নেই সেটি ইংরেজিতেই আসে।"] },
-      { "heading": "ফল পড়া", "steps": ["Assets, Liabilities ও Equity ভাগে Opening ও Closing থাকে।", "Total Assets, Total Liabilities, Total Equity ও Difference দেখা যায়।", "দলের নামে চাপলে তার হিসাবগুলো খোলে।", "Print কাগজ বের করে।"] },
+      { "heading": "ফল পড়া", "steps": ["Assets, Liabilities ও Equity ভাগে প্রথম মাসের নিচে Opening ও Closing, পরের প্রতিটি মাসের নিচে শুধু Closing থাকে — পরের মাসের Opening আগের মাসের Closing-ই, তাই আলাদা করে দেখানো হয় না।", "Total Assets, Total Liabilities, Total Equity ও Difference দেখা যায়।", "দলের নামে চাপলে তার হিসাবগুলো খোলে।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "Difference শূন্য না হলে কোনো হিসাব মিলছে না — আগে সেটি খুঁজুন।" }
     ]
   },
