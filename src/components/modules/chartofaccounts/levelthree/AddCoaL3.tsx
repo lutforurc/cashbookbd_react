@@ -5,10 +5,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
-import InputElement from '../../../utils/fields/InputElement';
-import LocalNameInput from '../../../utils/fields/LocalNameInput';
+import BilingualInput from '../../../utils/fields/BilingualInput';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import { useLanguage } from '../../../../i18n/useLanguage';
+import { useTranslation } from 'react-i18next';
 import { displayName } from '../../../../i18n/displayName';
 import httpService from '../../../services/httpService';
 import {
@@ -33,7 +33,8 @@ const normalizePayloadData = (response: any) => response?.data?.data?.data || re
 const AddCoaL3 = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { code } = useLanguage();
+  const { code, localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
   const isEditMode = Boolean(id);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [isEditLoading, setIsEditLoading] = useState(false);
@@ -148,6 +149,11 @@ const AddCoaL3 = () => {
       toast.error('Accounts Group Head is required.');
       return;
     }
+    // "Enable Bangla" on: the Bangla name is required too.
+    if (localCode && !formData.name_local.trim()) {
+      toast.error(t('data.localRequired', { field: 'Accounts Group Head', language: localName }));
+      return;
+    }
 
     const normalizedName = formData.name.trim();
     const payload = {
@@ -235,24 +241,20 @@ const AddCoaL3 = () => {
             </div>
           ) : null}
 
-          <div>
-            <label className={fieldLabelClass}>
-              Accounts Group Head
-              <span className="text-red-500">*</span>
-            </label>
-            <InputElement
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange('name')}
-              placeholder="Accounts Group Head"
-            />
-          </div>
-
-          <LocalNameInput
-            field="name"
-            value={formData.name_local}
-            onChange={(value) => setFormData((prev) => ({ ...prev, name_local: value }))}
+          <BilingualInput
+            name="name"
+            kind="name"
+            label={
+              <span className={fieldLabelClass}>
+                Accounts Group Head
+                <span className="text-red-500">*</span>
+              </span>
+            }
+            value={formData.name}
+            localValue={formData.name_local}
+            onChange={handleInputChange('name')}
+            onLocalChange={(value) => setFormData((prev) => ({ ...prev, name_local: value }))}
+            placeholder="Accounts Group Head"
           />
 
           <div className="flex items-center gap-1 pt-2">

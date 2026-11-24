@@ -38,6 +38,10 @@ import {
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import { formatDate } from "../../../utils/utils-functions/formatDate";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { localizeReport } from '../../../../i18n/displayName';
+import { useLocalDigits } from '../../../../i18n/useLocalDigits';
+import { rl } from '../../../../i18n/reportLabel';
 
 /**
  * Two ways to lay the one sheet out. The statement is the one that leaves the
@@ -87,6 +91,10 @@ const BalanceSheet = (user: any) => {
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
   const balanceSheetState: any = useSelector((state: any) => state.balanceSheet);
   const settings: any = useSelector((state: any) => state.settings);
+  const { code: languageCode } = useLanguage();
+  const digitsRef = useRef<HTMLDivElement>(null);
+  // Bangla digits too when the screen is in Bangla.
+  useLocalDigits(digitsRef, languageCode !== 'en');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<number | null>(null);
@@ -157,12 +165,17 @@ const BalanceSheet = (user: any) => {
   const apiData = useMemo(() => {
     const raw = balanceSheetState?.data;
 
-    if (raw?.data?.data?.assets) return raw.data.data;
-    if (raw?.data?.assets) return raw.data;
-    if (raw?.assets) return raw;
+    const data = raw?.data?.data?.assets
+      ? raw.data.data
+      : raw?.data?.assets
+        ? raw.data
+        : raw?.assets
+          ? raw
+          : null;
 
-    return null;
-  }, [balanceSheetState?.data]);
+    // Head names in Bangla when the screen is in Bangla.
+    return localizeReport(data, languageCode);
+  }, [balanceSheetState?.data, languageCode]);
 
   /**
    * The sectioned shape, where the server sends one.
@@ -484,7 +497,7 @@ const BalanceSheet = (user: any) => {
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: "Balance Sheet",
+    documentTitle: rl("Balance Sheet"),
   });
 
   const handleResetFilters = () => {
@@ -492,7 +505,7 @@ const BalanceSheet = (user: any) => {
   };
 
   return (
-    <>
+    <div ref={digitsRef} className="contents">
       <HelmetTitle title="Balance Sheet" />
       <div className="mx-auto space-y-2 ">
         {/* `@container`: the filter row follows the panel's own width, not the
@@ -510,7 +523,7 @@ const BalanceSheet = (user: any) => {
             >
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Select Branch
+                  {rl("Select Branch")}
                 </label>
                 <BranchDropdown
                   branchDdl={dropdownData}
@@ -523,7 +536,7 @@ const BalanceSheet = (user: any) => {
 
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Start Date
+                  {rl("Start Date")}
                 </label>
                 <InputDatePicker
                   selectedDate={startDate}
@@ -535,7 +548,7 @@ const BalanceSheet = (user: any) => {
 
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  End Date
+                  {rl("End Date")}
                 </label>
                 <InputDatePicker
                   selectedDate={endDate}
@@ -549,14 +562,14 @@ const BalanceSheet = (user: any) => {
                   reload, and the print follows whichever is showing. */}
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Report Type
+                  {rl("Report Type")}
                 </label>
                 <DropdownCommon
                   id="bs-sheet-view"
                   name="bs-sheet-view"
                   className=""
                   value={sheetView}
-                  data={SHEET_VIEWS}
+                  data={SHEET_VIEWS.map((view) => ({ ...view, name: rl(view.name) }))}
                   onChange={(e: any) => setSheetView(e.target.value as SheetView)}
                 />
               </div>
@@ -675,11 +688,11 @@ const BalanceSheet = (user: any) => {
           <div className="rounded-sm border border-dashed border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-6 py-12 text-center shadow-default">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
               {balanceSheetState?.loading
-                ? "Balance sheet loading..."
-                : "No balance sheet loaded yet"}
+                ? rl("Balance sheet loading...")
+                : rl("No balance sheet loaded yet")}
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Select a branch, date range, then click Load Report.
+              {rl("Select a branch, date range, then click Load Report.")}
             </p>
           </div>
         )}
@@ -701,7 +714,7 @@ const BalanceSheet = (user: any) => {
                 tone="blue"
               />
               <SummaryCard
-                title="Difference"
+                title={rl("Difference")}
                 value={totals.difference}
                 tone={Math.abs(totals.difference) > 0.009 ? "amber" : "slate"}
                 formatted={formatDifferenceAmount(totals.difference)}
@@ -742,7 +755,7 @@ const BalanceSheet = (user: any) => {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                      Balance Sheet
+                      {rl("Balance Sheet")}
                       {/* Note 1 is the basis of the whole sheet, so it hangs on the
                           sheet's own title -- every other note is pointed at by the
                           group row it explains (see balanceSheetNotes). Same place
@@ -755,7 +768,7 @@ const BalanceSheet = (user: any) => {
                     </p>
                   </div>
                   <div className="rounded-sm bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                    As at {reportDates.asOn ? dayjs(reportDates.asOn).format("DD/MM/YYYY") : "-"}
+                    {rl("As at")} {reportDates.asOn ? dayjs(reportDates.asOn).format("DD/MM/YYYY") : "-"}
                   </div>
                 </div>
               </div>
@@ -789,7 +802,7 @@ const BalanceSheet = (user: any) => {
             {/* The notes sit under the sheet, on screen and on paper, and the
                 sheet's own rows point at their numbers. */}
             <ReportNotes
-              title="Notes to the Balance Sheet"
+              title={rl("Notes to the Balance Sheet")}
               notes={balanceSheetNotes}
             />
           </>
@@ -822,7 +835,7 @@ const BalanceSheet = (user: any) => {
         group={selectedGroup?.group || null}
         onClose={() => setSelectedGroup(null)}
       />
-    </>
+    </div>
   );
 };
 
@@ -853,19 +866,19 @@ const DebugCard = ({
   return (
     <div className="rounded-sm border border-amber-200 bg-[rgb(var(--c-surface))] p-4 dark:border-amber-500/20">
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        {title}
+        {rl(title)}
       </p>
       <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
         <div className="flex items-center justify-between gap-3">
-          <span>Opening</span>
+          <span>{rl("Opening")}</span>
           <span className={`font-semibold ${toneClass}`}>{formatAmount(values.opening)}</span>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <span>Movement</span>
+          <span>{rl("Movement")}</span>
           <span className={`font-semibold ${toneClass}`}>{formatAmount(values.movement)}</span>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <span>Closing</span>
+          <span>{rl("Closing")}</span>
           <span className={`font-semibold ${toneClass}`}>{formatAmount(values.closing)}</span>
         </div>
       </div>
@@ -947,7 +960,7 @@ const NetProfitDebugPanel = ({
       <div className="grid grid-cols-1 gap-4 px-5 py-5 xl:grid-cols-3">
         <div className="rounded-sm border border-sky-200 bg-[rgb(var(--c-surface))] p-4 dark:border-sky-500/20">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Balance Sheet Stock
+            {rl("Balance Sheet Stock")}
           </p>
           <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
             <DebugLine label="Opening" value={values.stock.opening} />
@@ -1018,7 +1031,7 @@ const SummaryCard = ({
   return (
     <div className={`rounded border px-4 py-4 shadow-sm ${toneMap[tone]}`}>
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
-        {title}
+        {rl(title)}
       </p>
       <p className="mt-3 text-2xl font-semibold">{formatted ?? formatAmount(value)}</p>
     </div>
@@ -1078,25 +1091,25 @@ const BalanceSheetTable = ({
         <thead>
           <tr className="bg-slate-100 dark:bg-slate-800">
             <th rowSpan={2} className={`${headCell} w-16 text-center`}>
-              Serial
+              {rl("Serial")}
             </th>
             <th rowSpan={2} className={`${headCell} text-left`}>
-              Description
+              {rl("Description")}
             </th>
             <th colSpan={2} className={`${headCell} px-1 text-center`}>
-              Opening
+              {rl("Opening")}
             </th>
             <th colSpan={2} className={`${headCell} px-1 text-center`}>
-              Movement
+              {rl("Movement")}
             </th>
             <th colSpan={2} className={`${headCell} px-1 text-center`}>
-              Closing
+              {rl("Closing")}
             </th>
           </tr>
           <tr className="bg-slate-100 dark:bg-slate-800">
             {["Dr", "Cr", "Dr", "Cr", "Dr", "Cr"].map((label, index) => (
               <th key={`${label}-${index}`} className={moneyHeadCell}>
-                {label}
+                {rl(label)}
               </th>
             ))}
           </tr>
@@ -1105,12 +1118,12 @@ const BalanceSheetTable = ({
           {lines.map((line, index) => {
             if (line.kind === "section") {
               return (
-                <tr key={`${line.label}-${index}`} className="bg-slate-100 dark:bg-slate-800">
+                <tr key={`${rl(line.label)}-${index}`} className="bg-slate-100 dark:bg-slate-800">
                   <td
                     colSpan={8}
                     className={`${cell} font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200`}
                   >
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                 </tr>
               );
@@ -1118,13 +1131,13 @@ const BalanceSheetTable = ({
 
             if (line.kind === "subsection") {
               return (
-                <tr key={`${line.label}-${index}`} className="bg-slate-50 dark:bg-slate-800/50">
+                <tr key={`${rl(line.label)}-${index}`} className="bg-slate-50 dark:bg-slate-800/50">
                   {/* ⚠️ No indent in the worksheet: the serial is the
                       hierarchy here, so every name starts at the cell's own
                       padding and the eye reads straight down the column. The
                       statement keeps its stair -- see BalanceSheetStatement. */}
                   <td colSpan={8} className={`${cell} font-medium text-slate-600 dark:text-slate-300`}>
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                 </tr>
               );
@@ -1135,16 +1148,16 @@ const BalanceSheetTable = ({
                apart from the groups it sums. */
             if (line.kind === "subtotal") {
               return (
-                <tr key={`${line.label}-${index}`}>
+                <tr key={`${rl(line.label)}-${index}`}>
                   <td className={cell} />
                   <td className={`${cell}${line.indent ? "" : " font-semibold"} text-slate-700 dark:text-slate-200`}>
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                   {(["opening", "movement", "closing"] as const).flatMap((column) => [
-                    <td key={`${line.label}-${column}-dr`} className={moneyCell}>
+                    <td key={`${rl(line.label)}-${column}-dr`} className={moneyCell}>
                       {line.side === "debit" ? formatAmount(line.columns[column]) : "-"}
                     </td>,
-                    <td key={`${line.label}-${column}-cr`} className={moneyCell}>
+                    <td key={`${rl(line.label)}-${column}-cr`} className={moneyCell}>
                       {line.side === "credit" ? formatAmount(line.columns[column]) : "-"}
                     </td>,
                   ])}
@@ -1155,14 +1168,14 @@ const BalanceSheetTable = ({
             if (line.kind === "total") {
               return (
                 <tr
-                  key={`${line.label}-${index}`}
+                  key={`${rl(line.label)}-${index}`}
                   className={line.strong ? "bg-slate-100 dark:bg-slate-800" : ""}
                 >
                   <td
                     colSpan={2}
                     className={`${cell} text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}
                   >
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                   {amountCells(line.side, line.columns, true)}
                 </tr>
@@ -1180,7 +1193,7 @@ const BalanceSheetTable = ({
                 </td>
                 <td className={`${cell} text-slate-800 dark:text-slate-100`}>
                   <div className="flex items-center justify-between gap-3">
-                    <span>{line.label}</span>
+                    <span>{rl(line.label)}</span>
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                       {line.itemCount} item{line.itemCount === 1 ? "" : "s"}
                     </span>
@@ -1194,7 +1207,7 @@ const BalanceSheetTable = ({
           {lines.length === 0 && (
             <tr>
               <td colSpan={8} className={`${cell} py-6 text-center text-slate-500`}>
-                No balance sheet data found
+                {rl("No balance sheet data found")}
               </td>
             </tr>
           )}
@@ -1206,7 +1219,7 @@ const BalanceSheetTable = ({
                 colSpan={2}
                 className={`${cell} text-right font-bold text-slate-900 dark:text-[rgb(var(--c-text))]`}
               >
-                Grand Total
+                {rl("Grand Total")}
               </td>
               {(["opening", "movement", "closing"] as const).flatMap((column) => [
                 <td
@@ -1261,10 +1274,10 @@ const GroupDetailsModal = ({
           <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-4 py-3 sm:px-5 sm:py-4">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                {title}: {group.group_name || "Details"}
+                {rl(title)}: {group.group_name || "Details"}
               </h3>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Clicked summary details are shown here.
+                {rl("Clicked summary details are shown here.")}
               </p>
             </div>
             <Button
@@ -1272,7 +1285,7 @@ const GroupDetailsModal = ({
               onClick={onClose}
               className="rounded-sm border border-[rgb(var(--c-border))] px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             >
-              Close
+              {rl("Close")}
             </Button>
           </div>
 
@@ -1290,16 +1303,16 @@ const GroupDetailsModal = ({
               <thead>
                 <tr className="sticky top-0 z-20 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm">
                   <th className="px-2 py-2 text-left text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    Particular
+                    {rl("Particular")}
                   </th>
                   <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
-                    Opening
+                    {rl("Opening")}
                   </th>
                   <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
-                    Movement
+                    {rl("Movement")}
                   </th>
                   <th className="w-28 px-2 py-2 text-right text-sm font-semibold whitespace-nowrap text-slate-700 dark:text-slate-200">
-                    Closing
+                    {rl("Closing")}
                   </th>
                 </tr>
               </thead>
@@ -1330,7 +1343,7 @@ const GroupDetailsModal = ({
                       colSpan={4}
                       className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
                     >
-                      No detailed items found for this summary.
+                      {rl("No detailed items found for this summary.")}
                     </td>
                   </tr>
                 )}

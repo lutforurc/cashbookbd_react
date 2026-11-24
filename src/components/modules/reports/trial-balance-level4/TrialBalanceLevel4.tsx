@@ -22,6 +22,9 @@ import { fetchTrialBalanceLevel4 } from "./trialBalanceLevel4Slice";
 import TrialBalanceLevel4Print from "./TrialBalanceLevel4Print";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { useLocalDigits } from '../../../../i18n/useLocalDigits';
+import { rl } from '../../../../i18n/reportLabel';
 
 type TrialBalanceRow = {
   key: string;
@@ -150,6 +153,10 @@ const TrialBalanceLevel4 = (user: any) => {
     (state: any) => state.trialBalanceLevel4,
   );
   const settings = useSelector((state: any) => state.settings);
+  const { code: languageCode } = useLanguage();
+  const digitsRef = useRef<HTMLDivElement>(null);
+  // Bangla digits too when the screen is in Bangla.
+  useLocalDigits(digitsRef, languageCode !== "en");
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -208,8 +215,16 @@ const TrialBalanceLevel4 = (user: any) => {
   }, [trialBalanceState?.data]);
 
   const rows = useMemo(() => {
-    return normalizeRows(findArrayCollection(rawReportData));
-  }, [rawReportData]);
+    const items = findArrayCollection(rawReportData);
+    // The ledger's Bangla name when the screen is in Bangla, where it has one.
+    return normalizeRows(
+      languageCode !== "en"
+        ? items.map((item: any) =>
+            item?.name_local ? { ...item, coal4_name: item.name_local, NAME: item.name_local, name: item.name_local } : item,
+          )
+        : items,
+    );
+  }, [rawReportData, languageCode]);
 
   const tableData = useMemo(() => {
     return rows.map((row, index) => ({
@@ -284,7 +299,7 @@ const TrialBalanceLevel4 = (user: any) => {
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: "Trial Balance Details",
+    documentTitle: rl("Trial Balance Details"),
   });
 
   const handleResetFilters = () => {
@@ -301,48 +316,48 @@ const TrialBalanceLevel4 = (user: any) => {
     },
     {
       key: "name",
-      header: "Description",
+      header: rl("Description"),
       cellClass: "w-80",
       render: (row: any) => <div className="whitespace-normal">{row.name}</div>,
     },
     {
       key: "openingDebit",
-      header: "Dr",
+      header: rl("Dr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{thousandSeparator(row.openingDebit)}</div>,
     },
     {
       key: "openingCredit",
-      header: "Cr",
+      header: rl("Cr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{thousandSeparator(row.openingCredit)}</div>,
     },
     {
       key: "movementDebit",
-      header: "Dr",
+      header: rl("Dr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{thousandSeparator(row.movementDebit)}</div>,
     },
     {
       key: "movementCredit",
-      header: "Cr",
+      header: rl("Cr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{thousandSeparator(row.movementCredit)}</div>,
     },
     {
       key: "closingDebit",
-      header: "Dr",
+      header: rl("Dr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{thousandSeparator(row.closingDebit)}</div>,
     },
     {
       key: "closingCredit",
-      header: "Cr",
+      header: rl("Cr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{thousandSeparator(row.closingCredit)}</div>,
@@ -352,24 +367,24 @@ const TrialBalanceLevel4 = (user: any) => {
   const headerRows = [
     [
       { label: "Sl. No", rowSpan: 2, className: "text-center" },
-      { label: "Description", rowSpan: 2 },
-      { label: "Opening", colSpan: 2, className: "text-center" },
-      { label: "Movement", colSpan: 2, className: "text-center" },
-      { label: "Closing", colSpan: 2, className: "text-center" },
+      { label: rl("Description"), rowSpan: 2 },
+      { label: rl("Opening"), colSpan: 2, className: "text-center" },
+      { label: rl("Movement"), colSpan: 2, className: "text-center" },
+      { label: rl("Closing"), colSpan: 2, className: "text-center" },
     ],
     [
-      { label: "Dr", className: "text-center" },
-      { label: "Cr", className: "text-center" },
-      { label: "Dr", className: "text-center" },
-      { label: "Cr", className: "text-center" },
-      { label: "Dr", className: "text-center" },
-      { label: "Cr", className: "text-center" },
+      { label: rl("Dr"), className: "text-center" },
+      { label: rl("Cr"), className: "text-center" },
+      { label: rl("Dr"), className: "text-center" },
+      { label: rl("Cr"), className: "text-center" },
+      { label: rl("Dr"), className: "text-center" },
+      { label: rl("Cr"), className: "text-center" },
     ],
   ];
 
   const footerRows = [
     [
-      { label: "Grand Total", colSpan: 2, className: "text-right" },
+      { label: rl("Grand Total"), colSpan: 2, className: "text-right" },
       { label: thousandSeparator(totals.openingDebit), className: "text-right" },
       { label: thousandSeparator(totals.openingCredit), className: "text-right" },
       { label: thousandSeparator(totals.movementDebit), className: "text-right" },
@@ -380,7 +395,7 @@ const TrialBalanceLevel4 = (user: any) => {
   ];
 
   return (
-    <>
+    <div ref={digitsRef} className="contents">
       <HelmetTitle title="Trial Balance Details" />
       <div className="mx-auto space-y-2">
         <div className="pl-0 pr-1 py-3">
@@ -417,7 +432,7 @@ const TrialBalanceLevel4 = (user: any) => {
                   >
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                        Select Branch
+                        {rl("Select Branch")}
                       </label>
                       <BranchDropdown
  branchDdl={dropdownData}
@@ -430,7 +445,7 @@ const TrialBalanceLevel4 = (user: any) => {
 
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                        Start Date
+                        {rl("Start Date")}
                       </label>
                       <InputDatePicker
  selectedDate={startDate}
@@ -442,7 +457,7 @@ const TrialBalanceLevel4 = (user: any) => {
 
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                        End Date
+                        {rl("End Date")}
                       </label>
                       <InputDatePicker
  selectedDate={endDate}
@@ -585,7 +600,7 @@ const TrialBalanceLevel4 = (user: any) => {
               <SummaryCard title="Closing Debit" value={totals.closingDebit} tone="emerald" />
               <SummaryCard title="Closing Credit" value={totals.closingCredit} tone="blue" />
               <SummaryCard
-                title="Difference"
+                title={rl("Difference")}
                 value={totals.closingDebit - totals.closingCredit}
                 tone={
                   Math.abs(totals.closingDebit - totals.closingCredit) > 0.009
@@ -640,7 +655,7 @@ const TrialBalanceLevel4 = (user: any) => {
           />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
@@ -667,7 +682,7 @@ const SummaryCard = ({
   return (
     <div className={`rounded border px-4 py-4 shadow-sm ${toneMap[tone]}`}>
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
-        {title}
+        {rl(title)}
       </p>
       <p className="mt-3 text-2xl font-semibold">{thousandSeparator(value)}</p>
     </div>

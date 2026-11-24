@@ -2,9 +2,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Bangla script only: Latin text keeps Satoshi. */
+@font-face {
+  font-family: 'NikoshBAN';
+  src: url('/fonts/NikoshBAN.ttf') format('truetype');
+  font-display: swap;
+  unicode-range: U+0980-09FF, U+200C-200D, U+25CC;
+}
+
 @theme {
   --font-*: initial;
-  --font-satoshi: Satoshi, sans-serif;
+  --font-satoshi: Satoshi, NikoshBAN, sans-serif;
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;

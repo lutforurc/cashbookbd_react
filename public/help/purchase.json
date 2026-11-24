@@ -18,7 +18,7 @@
         "heading": "ইনভয়েস লেখার ধাপ",
         "menu": "Invoice → Purchase Invoice",
         "steps": [
-          "Select Supplier থেকে সরবরাহকারী বাছুন।",
+          "Select Supplier থেকে সরবরাহকারী নির্বাচন করুন।",
           "Notes, Invoice Number, Invoice Date ও Vehicle Number পূরণ করুন।",
           "Discount Amount লিখুন।",
           "Payment Amount-এ এখনই দেওয়া টাকা লিখুন। নগদ সরবরাহকারীর ক্ষেত্রে এটি নিজে থেকে বসে এবং বদলানো যায় না।",
@@ -62,7 +62,7 @@
         "heading": "ফেরত লেখার ধাপ",
         "menu": "Invoice → Purchase Return",
         "steps": [
-          "Select Supplier থেকে সরবরাহকারী বাছুন।",
+          "Select Supplier থেকে সরবরাহকারী নির্বাচন করুন।",
           "Purchase Invoice Number ও Notes লিখুন।",
           "দরকার হলে Vehicle Number লিখুন।",
           "Discount Amount ও Cash Received পূরণ করুন।",

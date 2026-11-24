@@ -12,8 +12,12 @@ import { deleteCategory, getCategory, storeCategory } from './categorySlice';
 import Table from '../../utils/others/Table';
 import InputElement from '../../utils/fields/InputElement';
 import { toast } from 'react-toastify';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { useTranslation } from 'react-i18next';
+import BilingualInput from '../../utils/fields/BilingualInput';
+import { displayName } from '../../../i18n/displayName';
 
-const emptyEditForm = { id: '', category_name: '', description: '' };
+const emptyEditForm = { id: '', category_name: '', name_local: '', description: '' };
 
 const Category = () => {
   const category = useSelector((state: any) => state.category);
@@ -28,6 +32,8 @@ const Category = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [editForm, setEditForm] = useState<any>(emptyEditForm);
+  const { code: languageCode, localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
   const [editOpen, setEditOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [deleteRow, setDeleteRow] = useState<any>(null);
@@ -82,6 +88,7 @@ const Category = () => {
     setEditForm({
       id: row.id,
       category_name: row.name || '',
+      name_local: row.name_local || '',
       description: row.description || '',
     });
     setEditOpen(true);
@@ -98,6 +105,11 @@ const Category = () => {
   };
 
   const handleEditSave = () => {
+    if (localCode && !(editForm.name_local || '').trim()) {
+      // "Enable Bangla" on: the Bangla name is required too.
+      toast.info(t('data.localRequired', { field: 'Category Name', language: localName }));
+      return;
+    }
     if (!editForm.category_name.trim()) {
       toast.info('Category name is required');
       return;
@@ -153,6 +165,8 @@ const Category = () => {
     {
       key: 'name',
       header: 'Category Name',
+      // The Bangla name on a Bangla screen; English where there is none.
+      render: (row: any) => displayName(row, 'name', languageCode),
     },
     {
       key: 'description',
@@ -247,13 +261,15 @@ const Category = () => {
 
             <div className="space-y-3 p-5">
               <div>
-                <InputElement
-                  id="category_name"
+                <BilingualInput
                   name="category_name"
+                  kind="name"
                   label="Category Name"
                   placeholder="Category Name"
                   value={editForm.category_name}
+                  localValue={editForm.name_local || ''}
                   onChange={handleEditChange}
+                  onLocalChange={(value) => setEditForm((prev: any) => ({ ...prev, name_local: value }))}
                 />
               </div>
               <div>

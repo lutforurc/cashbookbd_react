@@ -1,6 +1,8 @@
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { stockMovementNote } from "../../../utils/utils-functions/ReportNotes";
 import type { ReportNote } from "../../../utils/utils-functions/ReportNotes";
+import { rl } from '../../../../i18n/reportLabel';
+import i18n from '../../../../i18n';
 
 /**
  * Notes to the Profit & Loss Account.
@@ -209,7 +211,7 @@ export const buildProfitLossNotes = (
   const notes: ReportNote[] = [
     {
       n: index.basis,
-      title: "Basis of preparation",
+      title: rl("Basis of preparation"),
       body:
         `The account covers ${periodText} for the branch selected. Income and ` +
         "expenses come from eligible posted vouchers: posted, not a year-end " +
@@ -227,7 +229,7 @@ export const buildProfitLossNotes = (
     },
     {
       n: index.cogs,
-      title: "Cost of goods sold",
+      title: rl("Cost of goods sold"),
       body:
         `Opening stock ${money(cogs.opening)}, plus net purchase ${money(cogs.netPurchase)}, ` +
         `plus direct acquisition costs ${money(cogs.directAcquisitionCosts)}, less closing ` +
@@ -238,7 +240,7 @@ export const buildProfitLossNotes = (
     },
     {
       n: index.acquisition,
-      title: "Direct acquisition costs",
+      title: rl("Direct acquisition costs"),
       body:
         Number(cogs.directAcquisitionCosts) > 0
           ? `The production labour and transport of ${money(cogs.directAcquisitionCosts)} ` +
@@ -266,7 +268,7 @@ export const buildProfitLossNotes = (
       ? [
           {
             n: index.income,
-            title: "Income accounts",
+            title: rl("Income accounts"),
             body:
               `The income of the period is ${money(net.totalIncome)}` +
               (incomeLines ? `: ${incomeLines}. ` : ". ") +
@@ -281,7 +283,7 @@ export const buildProfitLossNotes = (
       : []),
     {
       n: index.stock,
-      title: "Stock valuation",
+      title: rl("Stock valuation"),
       body:
         `Closing stock ${money(cogs.closing)}. The layers are the purchase records, ` +
         "and what is left standing is taken from the newest layer backwards until " +
@@ -307,6 +309,127 @@ export const buildProfitLossNotes = (
 
   if (stockNote) {
     notes.push({ n: index.stockMovement, title: stockNote.title, body: stockNote.body });
+  }
+
+  // The same notes in Bangla when the screen is in Bangla; same figures.
+  if ((i18n.language || "en") !== "en") {
+    const periodBn =
+      period.startDate && period.endDate
+        ? `${period.startDate} থেকে ${period.endDate}`
+        : "বাছাই করা সময়";
+    const incomeLinesBn = incomes
+      .map((group) => {
+        const inner = (Array.isArray(group.children) ? group.children : [])
+          .map((child: any) => `${child.name} ${money(child.credit)}`)
+          .join("; ");
+        return inner
+          ? `${group.name} ${money(group.credit)} (${inner})`
+          : `${group.name} ${money(group.credit)}`;
+      })
+      .join("; ");
+
+    const bn: Record<number, { title?: string; body: string }> = {
+      [index.basis]: {
+        body:
+          `হিসাবটি বাছাই করা শাখার ${periodBn} সময়ের। আয় ও খরচ নেওয়া হয়েছে যোগ্য পোস্ট করা ভাউচার থেকে: পোস্ট করা, ` +
+          "বছর-শেষের সমাপনী এন্ট্রি নয়, এই কোম্পানি ও শাখার, এবং সময়ের মধ্যে তারিখের। নিট বিক্রয় = বিক্রয় থেকে সেই সময়ের " +
+          "বিক্রয় ফেরত ও বিক্রয় ছাড় বাদ; নিট ক্রয় = ক্রয় থেকে ক্রয় ফেরত ও ক্রয় ছাড় বাদ। অন্য শাখায় পাঠানো বা অন্য শাখা থেকে " +
+          "পাওয়া পণ্য ক্রয়মূল্যে শাখায় পাঠানো পণ্য ও শাখা থেকে পাওয়া পণ্য হিসেবে একবারই ধরা হয়। প্রতিটি শাখা চালানের নিজের " +
+          "দিক রাখে — প্রেরক পাঠানো পণ্যের ক্রয়মূল্য ক্রেডিট করে, গ্রহীতা একই মূল্য ক্রয় হিসেবে ডেবিট করে — এবং ট্রেডিং হিসাবের " +
+          "নিচের আয়-খরচ থেকে স্থানান্তরের খাত বাদ, তাই স্থানান্তর ফলাফলে ঠিক একবার আসে। এই হিসাব সবসময় এক শাখার, তাই দুই " +
+          "দিক মিলিয়ে বাদ দেওয়ার মতো কোনো একীভূত হিসাব নেই।",
+      },
+      [index.cogs]: {
+        body:
+          `প্রারম্ভিক মজুদ ${money(cogs.opening)}, যোগ নিট ক্রয় ${money(cogs.netPurchase)}, যোগ সরাসরি অর্জন ব্যয় ` +
+          `${money(cogs.directAcquisitionCosts)}, বাদ সমাপনী মজুদ ${money(cogs.closing)} — বিক্রীত পণ্যের ব্যয় ${money(cogs.total)}। ` +
+          "এটি ট্রেডিং হিসাবে আগে থেকেই থাকা অঙ্কের ফল দেখায় এবং কোনো মোটে যোগ হয় না; পাশে দেখানো মোট লাভ " +
+          `${money(net.grossProfit)} এটাই ব্যাখ্যা করে।`,
+      },
+      [index.acquisition]: {
+        body:
+          Number(cogs.directAcquisitionCosts) > 0
+            ? `এই সময়ে পোস্ট করা ব্যাচগুলোর উৎপাদন শ্রম ও পরিবহন ${money(cogs.directAcquisitionCosts)} সেই ব্যাচে তৈরি ` +
+              "মজুদের মূল্যে ধরা হয়েছে। এটি ওপরে বিক্রীত পণ্যের ব্যয়ে সরাসরি অর্জন ব্যয় হিসেবে দেখানো, এবং একই অঙ্ক নিচের " +
+              "Production Cost খরচ দল থেকে বাদ দেওয়া হয়েছে, তাই একবারই গোনা হয়: মোট লাভ এই ব্যয়ের পরে, নিট লাভ অপরিবর্তিত। " +
+              "অন্য কোনো খরচ সরানো হয়নি, এবং মজুদ অন্যথায় প্রতিটি ক্রয় লাইনের লিপিবদ্ধ দরে মূল্যায়িত।"
+            : "কোনো ভাড়া, খালাস বা হ্যান্ডলিং খরচ মজুদের মূল্যে ধরা হয়নি, ওপরের বিক্রীত পণ্যের ব্যয়েও নেই। মজুদ প্রতিটি ক্রয় " +
+              "লাইনের লিপিবদ্ধ দরে মূল্যায়িত, এবং মজুদের রেকর্ডে এমন খরচের আলাদা অংশ নেই; যে হিসাবগুলো এগুলো নেয় তারা খরচ " +
+              "হওয়ার সময়ের খরচ হিসেবেই বই করে। এর কিছু অংশ পণ্য আনার সাথে সরাসরি যুক্ত কি না — এবং তাই মজুদের ব্যয়ে পড়ে কি না " +
+              "— তা ঠিক করা হয়নি, কোনো বণ্টনও হয়নি। এটা ঠিক করা মানে শুধু এখানে অঙ্ক যোগ করা নয়: একই খরচ তার বর্তমান খরচের " +
+              "খাত থেকে বের করতে হবে, নইলে মজুদে একবার আর খরচে আবার গোনা হবে। তাই এটা এই হিসাবের বর্তমান সীমাবদ্ধতা, অঙ্কগুলো " +
+              "ভাউচারে যেমন পোস্ট হয়েছে তেমন।",
+      },
+      [index.stock]: {
+        body:
+          `সমাপনী মজুদ ${money(cogs.closing)}। স্তরগুলো হলো ক্রয়ের রেকর্ড, আর হাতে থাকা পরিমাণ পূরণ না হওয়া পর্যন্ত নতুনতম ` +
+          "স্তর থেকে পেছনের দিকে নেওয়া হয় — শেষে-আসা-আগে-যায় (LIFO)। এই হিসাবের যে পদ্ধতি অন্য জায়গায় বলা আছে তা এটি নয়: " +
+          "রুটিনের নিজের নাম এবং পণ্যভিত্তিক রিপোর্টের আলাদা হিসাব দুটোই পুরোনো স্তর আগে নেয়। পর্যালোচিত সময়ে দুটো মাপা হয়েছে, " +
+          "অল্প কিছু পণ্যে পার্থক্য আছে; সংশোধন প্রয়োগ হয়নি, এই রিপোর্টের অঙ্ক আজকের হিসাবেরই। এর তিনটি সীমা: হাতে থাকা " +
+          "পরিমাণের পূর্ণসংখ্যা অংশ পর্যন্তই স্তর ও পরিমাণ পড়ে, তাই ভগ্নাংশ পরিমাণের পণ্যের কিছু অংশ দামহীন থাকতে পারে; স্তরের " +
+          "মূল্য ক্রয় লাইনের লিপিবদ্ধ দর থেকে ওই লাইনের ছাড় বাদ, কোনো অর্জন ব্যয় নেই " +
+          `(নোট ${index.acquisition}); আর মজুদ ক্রয়মূল্যে রাখা, কারণ নিট আদায়যোগ্য মূল্যের পর্যালোচনা বা মূল্য কমানোর ব্যবস্থা ` +
+          "নেই — দাম পড়ে যাওয়া বা অবিক্রয়যোগ্য মজুদ স্টক-আউট ভাউচারে বের না করা পর্যন্ত কমানো হয় না।" +
+          (Number(trading.purchaseDiscountCredit)
+            ? " ক্রয় ছাড় পুরোটাই ট্রেডিং হিসাবে নেওয়া হয়, বিক্রীত ও হাতে থাকা পণ্যে ভাগ করা হয় না, অথচ মজুদের স্তরে বিলের " +
+              "লাইনের মোট দর থাকে — তাই হাতে থাকা মজুদ তার ভাগের ছাড় পরিমাণ বেশি মূল্যে রাখা। এই সময়ের ছাড় মোট " +
+              `${money(trading.purchaseDiscountCredit)}; কোনো বণ্টন করলে বিক্রীত পণ্যের জন্য নিট ক্রয় থেকেও একই অঙ্ক বাদ দিতে ` +
+              "হবে, নইলে ছাড় দুবার বাদ যাবে।"
+            : ""),
+      },
+    };
+    if (index.income) {
+      bn[index.income] = {
+        body:
+          `এই সময়ের আয় ${money(net.totalIncome)}` +
+          (incomeLinesBn ? `: ${incomeLinesBn}। ` : "। ") +
+          "কোনো দলের ভেতরে দেখানো হিসাবগুলো সেই দলের নিজের অঙ্কের অংশ, দ্বিতীয়বার যোগ হয় না।" +
+          (interest
+            ? " Personal Interest হলো ব্যবসার সম্পদ হিসেবে রাখা একটি ঋণের ওপর ধার্য সুদ। এটি পাওয়া নয়, ঋণের ব্যালেন্সে " +
+              "যোগ হয়েছে; একই তারিখে ঋণ হিসাবে ব্যাংকে পাওয়া টাকা সুদ ও আসল একসাথে বলে ক্রেডিট হয়েছে: আদায়ের প্রমাণ আছে, " +
+              "দুটোর ভাগ লেখা নেই। সুদটি এই খাতা শুরুর আগে শেষ হওয়া বছরের।"
+            : "") +
+          (commission
+            ? " Company Commission নগদে নিষ্পত্তি হয়েছে: অঙ্কটি এক সরবরাহকারীর দেনার বিপরীতে ডেবিট ও একই তারিখে ব্যাংকে " +
+              "ক্রেডিট হয়েছে, এবং মন্তব্যে এটি এই সময়ের আগের বছরের।"
+            : "") +
+          (interest || commission
+            ? " এই দুটো পোস্টিং অনুমোদিত নয় (is_approved = 0)। কোনো হিসাব সরানো হয়নি, পুরোনো কোনো পোস্টিং বদলানো হয়নি। " +
+              `এগুলো বাদ রাখলে ফলাফল মোট ${money(interest + commission)} কমবে` +
+              (interest && commission
+                ? `, এর মধ্যে সুদ ${money(interest)} ও কমিশন ${money(commission)}।`
+                : "।")
+            : ""),
+      };
+    }
+    if (stockNote) {
+      bn[index.stockMovement] = {
+        title:
+          inventoryLoss > 0 && stockReceipts > 0
+            ? "ক্রয়-বিক্রয় ছাড়া মজুদের আনা-নেওয়া"
+            : inventoryLoss > 0
+              ? "মজুদ ক্ষতি — নষ্ট বা হারানো পণ্য"
+              : "ক্রয় ছাড়া পাওয়া পণ্য",
+        body:
+          (inventoryLoss > 0
+            ? `এই সময়ে নষ্ট বা হারানো হিসেবে বাদ দেওয়া পণ্যের মূল্য ${money(inventoryLoss)}, প্রতিটি বাদ দেওয়ার সময়ের লিপিবদ্ধ দরে। `
+            : "") +
+          (stockReceipts > 0
+            ? `একই সময়ে ক্রয় ছাড়া পাওয়া পণ্যের মূল্য ${money(stockReceipts)}, খাতায় থাকা দরে। `
+            : "") +
+          "বাদ দেওয়া পরিমাণ হাতের মজুদ থেকে বেরিয়েছে আর পাওয়া পরিমাণ যোগ হয়েছে, তাই দুটোই সেই সমাপনী মজুদের ভেতরে আছে " +
+          `যা থেকে বিক্রীত পণ্যের ব্যয় হিসাব হয় (নোট ${index.cogs}) — ক্ষতি সেই ব্যয় বাড়িয়েছে, প্রাপ্তি কমিয়েছে — এবং কোনোটিই ` +
+          "আলাদা খরচ হিসেবে আবার সমন্বয় হয়নি। কোনো পণ্য একাধিক দরে কেনা হলে সমাপনী মজুদ মূল্যায়ন " +
+          `(নোট ${index.stock}) একই পরিমাণকে ভিন্ন দরে ধরতে পারে, তাই বিক্রীত পণ্যের ব্যয়ে প্রভাব বাদের অঙ্ক থেকে আলাদা হতে পারে।`,
+      };
+    }
+    for (const note of notes) {
+      const local = bn[note.n];
+      if (local) {
+        note.body = local.body;
+        if (local.title) note.title = local.title;
+      }
+    }
   }
 
   return notes;

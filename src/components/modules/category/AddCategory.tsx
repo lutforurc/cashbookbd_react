@@ -11,9 +11,13 @@ import { storeDayClose } from '../settings/settingsSlice'; // ✅ Make sure this
 import { storeCategory } from './categorySlice';
 import { setTime } from 'react-datepicker/dist/date_utils';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { useTranslation } from 'react-i18next';
+import BilingualInput from '../../utils/fields/BilingualInput';
 
 interface CategoryFormValues {
   category_name: string;
+  name_local: string;
   description: string;
 }
 
@@ -22,15 +26,22 @@ const AddCategory: React.FC = () => {
   const dispatch = useDispatch();
   const { isLoading } = useSelector((state: any) => state.settings); // Adjust typing as needed
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
+  const { localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
 
   const validationSchema = Yup.object({
     category_name: Yup.string().required('Category name is required'),
+    // "Enable Bangla" on: the Bangla name is required too.
+    name_local: localCode
+      ? Yup.string().required(t('data.localRequired', { field: 'Category Name', language: localName }))
+      : Yup.string().nullable(),
     description: Yup.string().required('Description is required'),
   });
 
   const formik = useFormik<CategoryFormValues>({
     initialValues: {
       category_name: '',
+      name_local: '',
       description: '',
     },
     validationSchema,
@@ -69,17 +80,21 @@ const AddCategory: React.FC = () => {
         onSubmit={handleSubmit}
         className="grid grid-cols-1 gap-2 w-full md:w-2/3 lg:w-1/2 justify-center mx-auto mt-5"
       >
-        <InputElement
-          id="category_name"
-          value={values.category_name}
+        <BilingualInput
           name="category_name"
+          kind="name"
+          value={values.category_name}
+          localValue={values.name_local}
           placeholder="Category Name"
           label="Enter Category Name"
-          className="mb-0"
           onChange={handleChange}
+          onLocalChange={(value) => formik.setFieldValue('name_local', value)}
         />
         {errors.category_name && touched.category_name && (
           <div className="text-red-500 text-sm">{errors.category_name}</div>
+        )}
+        {errors.name_local && touched.name_local && (
+          <div className="text-red-500 text-sm">{errors.name_local}</div>
         )}
 
         <InputElement

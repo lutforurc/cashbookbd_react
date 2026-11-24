@@ -1,6 +1,8 @@
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import { stockMovementNote } from "../../../utils/utils-functions/ReportNotes";
 import type { ReportNote } from "../../../utils/utils-functions/ReportNotes";
+import { rl } from '../../../../i18n/reportLabel';
+import i18n from '../../../../i18n';
 
 /**
  * The notes to the Balance Sheet, and the report's own labels.
@@ -19,7 +21,7 @@ const SECTION_LABELS: Record<string, string> = {
 };
 
 export const reportSectionLabel = (name?: string): string =>
-  SECTION_LABELS[name || ""] || name || "-";
+  rl(SECTION_LABELS[name || ""] || name || "-");
 
 /**
  * Which groups carry a note, in the order the notes are numbered.
@@ -72,7 +74,7 @@ const findGroup = (
   for (const side of Object.keys(sections || {})) {
     for (const section of sections[side] || []) {
       for (const group of section.groups || []) {
-        if (group.group_name === name) return group;
+        if (((group as any).group_name_en ?? group.group_name) === name) return group;
       }
     }
   }
@@ -187,6 +189,9 @@ export const buildBalanceSheetNotes = (
   const ledgerResult = result - stockMovement;
 
   const asOn = period.asOn ? ` as at ${period.asOn}` : "";
+  // The notes read in Bangla when the screen does; the amounts are the same.
+  const bn = (i18n.language || "en") !== "en";
+  const asOnBn = period.asOn ? `${period.asOn} তারিখের ` : "";
 
   /**
    * The write-offs of the sheet's period at cost, and the goods received without
@@ -220,12 +225,41 @@ export const buildBalanceSheetNotes = (
       "inventory even though the goods are on the shelf."
   );
 
+  if (stockNote && bn) {
+    stockNote.title =
+      inventoryLoss > 0 && stockReceipts > 0
+        ? "ক্রয়-বিক্রয় ছাড়া মজুদের আনা-নেওয়া"
+        : inventoryLoss > 0
+          ? "মজুদ ক্ষতি — নষ্ট বা হারানো পণ্য"
+          : "ক্রয় ছাড়া পাওয়া পণ্য";
+    stockNote.body =
+      (inventoryLoss > 0
+        ? `এই সময়ে নষ্ট বা হারানো হিসেবে বাদ দেওয়া পণ্যের মূল্য ${money(inventoryLoss)}, প্রতিটি বাদ দেওয়ার সময়ের লিপিবদ্ধ দরে। `
+        : "") +
+      (stockReceipts > 0
+        ? `একই সময়ে ক্রয় ছাড়া পাওয়া পণ্যের মূল্য ${money(stockReceipts)}, খাতায় থাকা দরে। `
+        : "") +
+      "বাদ দেওয়া পরিমাণ সম্পদের সমাপনী মজুদ থেকে বাদ আছে এবং পাওয়া পরিমাণ তার ভেতরে আছে; এদের আর্থিক প্রভাব " +
+      "মজুদ মূল্যায়ন ও মূলধনের চলতি সময়ের লাভ-ক্ষতির মধ্য দিয়ে প্রতিফলিত" +
+      (resultNote ? ` (নোট ${resultNote})` : "") +
+      "। তাই প্রকাশিত কোনো অঙ্ক সম্পদ বা মূলধনের সাথে আবার সমন্বয় করা হয়নি। ক্রয়মূল্য ভিন্ন হলে মজুদ মূল্যায়নের " +
+      "পদ্ধতির কারণে চলতি ফলাফলে প্রভাব লিপিবদ্ধ বাদের অঙ্ক থেকে আলাদা হতে পারে; আর খাতায় কোনো দর না থাকায় " +
+      "বিনা দরে নেওয়া পণ্য তাকে থাকলেও সমাপনী মজুদে কিছু যোগ করে না।";
+  }
+
   const notes: ReportNote[] = [];
 
   notes.push({
     n: 1,
-    title: "Basis of preparation",
-    body:
+    title: rl("Basis of preparation"),
+    body: bn
+      ? `${asOnBn}এই হিসাব পোস্ট করা ভাউচার থেকে তৈরি, বছর বন্ধ হয়ে থাকলে বছর-শেষের সমাপনী ভাউচারসহ; তাই মূলধন হিসাবে ` +
+        "বন্ধ হওয়া বছরগুলো থাকে এবং চলতি সময়ে থাকে শুধু যা বাকি আছে। প্রতিটি হিসাব তার নিজের সমাপনী ব্যালেন্স ও প্রকৃতি অনুযায়ী বসানো: " +
+        "ডেবিট ব্যালেন্সের খাত সম্পদে, ক্রেডিট ব্যালেন্সের খাত দায়ে — হিসাব-তালিকায় খাতটি যেখানেই থাকুক। এতে কোনো হিসাব তালিকার " +
+        "উল্টো দিকে পড়লে সেটি একবারই দেখানো হয়, ওই দিকে তার প্রকৃতি অনুযায়ী নামের দলে — যেমন গ্রাহকের খাতা ও পার্টির ঋণ হিসাব " +
+        "দুটোই তালিকার সম্পদ শাখায় থাকে, অথচ দুটোই দেনা। সম্পদ, দায় ও মালিকের মূলধন মোট অঙ্কে দেখানো, কোনো হিসাব অন্যটির " +
+        "সাথে কাটাকাটি করা হয়নি; শুধু ব্যালেন্সের চিহ্ন তার দিক ঠিক করে, অন্য কোনো কারণে কোনো ব্যালেন্স সরানো হয়নি।"
+      :
       `The sheet${asOn} is drawn from posted vouchers, including a year-end ` +
       "closing voucher where a year has been closed, so the capital accounts carry " +
       "the years already closed and the current period carries only what is left " +
@@ -246,8 +280,14 @@ export const buildBalanceSheetNotes = (
   if (index["Supplier Advances"]) {
     notes.push({
       n: index["Supplier Advances"],
-      title: "Supplier advances",
-      body:
+      title: rl("Supplier advances"),
+      body: bn
+        ? `সরবরাহকারীদের কাছে ব্যবসার পাওনা ${money(supplierAdvances)} — ডেবিট ব্যালেন্সের সরবরাহকারী খাতা, চলতি সম্পদে দেখানো ` +
+          "এবং অন্য দিকে সরবরাহকারীদের দেনা থেকে আলাদা রাখা। এগুলো আদায়যোগ্য অঙ্ক, তবে সবসময় বিলের আগে দেওয়া টাকা নয়: খাতায় " +
+          "শুধু ব্যালেন্সের দিক লেখা থাকে, যা অগ্রিম, বেশি দেওয়া বা খাতা আনার সময়ের প্রারম্ভিক ব্যালেন্স — সবক্ষেত্রেই একই। কোনো " +
+          "ব্যালেন্স পণ্য হিসেবে, ফেরত হিসেবে, নাকি আগের বিলের বিপরীতে ফিরবে তা কোথাও লেখা থাকে না, তাই রিপোর্ট তা বলে না — " +
+          "ব্যালেন্স যেমন আছে তেমন দেখায় এবং কারণটি খাতার ওপর ছেড়ে দেয়।"
+        :
         `${money(supplierAdvances)} in the business's favour with suppliers — ` +
         "supplier ledgers carrying a debit balance, shown inside Current Assets and " +
         "kept apart from the amounts owed to suppliers on the other side. These are " +
@@ -264,8 +304,11 @@ export const buildBalanceSheetNotes = (
   if (index["Account Payable"]) {
     notes.push({
       n: index["Account Payable"],
-      title: "Accounts payable",
-      body:
+      title: rl("Accounts payable"),
+      body: bn
+        ? `সরবরাহকারীদের কাছে দেনা ${money(payables)} — সরবরাহকারী খাতাগুলোর পুরো ক্রেডিট ব্যালেন্স। অন্য সরবরাহকারীর খাতার ` +
+          "ডেবিট ব্যালেন্স দিয়ে এটি কমানো হয়নি: দুটো আলাদা পার্টির ব্যালেন্স, এক পার্টির ডেবিট অন্যের ক্রেডিট শোধ করে না।"
+        :
         `${money(payables)} owed to suppliers — the credit balances of the supplier ` +
         "ledgers, in full. They are not reduced by a debit balance standing on " +
         "another supplier's ledger: the two are different parties' balances, and one " +
@@ -276,8 +319,13 @@ export const buildBalanceSheetNotes = (
   if (index["Customer Advances"]) {
     notes.push({
       n: index["Customer Advances"],
-      title: "Customer credit balances",
-      body:
+      title: rl("Customer credit balances"),
+      body: bn
+        ? `গ্রাহকদের জন্য রাখা ${money(customerCredits)} — ক্রেডিট ব্যালেন্সের গ্রাহক খাতা, অর্থাৎ ব্যবসা যা ফেরত দেবে, ঋণাত্মক ` +
+          "পাওনা নয়। এটি নিচের ঋণগুলো থেকে আলাদা অংশে দেখানো, কারণ এটি ঋণ নয়: গ্রাহকের পাওনা শোধ হয় পণ্য দিয়ে বা টাকা ফেরত " +
+          "দিয়ে, সুদসহ ঋণ শোধের মতো নয়; দুটোর মিল শুধু হিসাবের একই দিকে পড়া। এর কোনো পরিশোধের শর্ত লেখা নেই এবং কোনটি হবে খাতা " +
+          "বলে না, তাই অঙ্কটি যেমন আছে তেমন দেখানো হয়েছে।"
+        :
         `${money(customerCredits)} held for customers — customer ledgers standing in ` +
         "credit, which is money the business owes back rather than a negative " +
         "receivable. It is shown in a section of its own, apart from the borrowings " +
@@ -292,8 +340,15 @@ export const buildBalanceSheetNotes = (
   if (index["Bank & Finance Borrowings"]) {
     notes.push({
       n: index["Bank & Finance Borrowings"],
-      title: "Bank and finance borrowings",
-      body:
+      title: rl("Bank and finance borrowings"),
+      body: bn
+        ? `ক্রেডিট ব্যালেন্সের ব্যাংক ও আর্থিক খাতা ${money(bankCredits)}, যেখানে ব্যবসাই দেনাদার। ⚠️ ব্যাংক খাতায় ক্রেডিট ` +
+          "ব্যালেন্স থাকলেই সেটি ওভারড্রাফট নয়, এবং এই দলকেও সেই নাম দেওয়া হয়নি: পেছনে চলতি হিসাব, ক্যাশ-ক্রেডিট বা ওভারড্রাফট " +
+          "সুবিধা, অথবা আর্থিক প্রতিষ্ঠানের খাতা থাকতে পারে — কোনটি তা শুধু খাতাই বলে। রিপোর্ট কোনোটি বেছে নেয় না, হিসাব-তালিকাতেও " +
+          "কোনো খাত ওভারড্রাফট নামে নেই। এসব হিসাবের সুবিধার শর্ত, সীমা বা মেয়াদ লেখা নেই — কোনো ভাউচারে নির্ধারিত তারিখ নেই — " +
+          "তাই রিপোর্ট শুধু ব্যালেন্স যা প্রমাণ করে তাই বলে। এমন হিসাবের সুদ সময়ের খরচ হিসেবে Bank Interest-এ পোস্ট হয়; তাতে " +
+          "ব্যালেন্সের শ্রেণী বদলায় না।"
+        :
         `${money(bankCredits)} of bank and finance ledgers standing in credit, on ` +
         "which the business is the one that owes. ⚠️ A credit balance on a bank ledger " +
         "does not by itself make the account an overdraft, and this group is not named " +
@@ -312,8 +367,14 @@ export const buildBalanceSheetNotes = (
   if (index["Loans Received"]) {
     notes.push({
       n: index["Loans Received"],
-      title: "Loans received",
-      body:
+      title: rl("Loans received"),
+      body: bn
+        ? `পার্টির কাছ থেকে নেওয়া ঋণ ${money(loans)}, হিসাব-তালিকায় সম্পদ শাখার "Advance" শিরোনামের নিচে রাখা এবং এখানে ` +
+          "তার প্রকৃতি অনুযায়ী দেখানো — ব্যবসা নিয়েছে, দেয়নি। ⚠️ একই শিরোনামে ব্যবসার দেওয়া ঋণও থাকে, যা সম্পদের দিকে বসে; দুটো " +
+          "আলাদা হয় শুধু ব্যালেন্সের দিক দিয়ে, তাই একই শিরোনাম হিসাবের দুই দিকেই আসতে পারে। এখানকার ব্যালেন্স খাতা আনার সময়ের " +
+          "প্রারম্ভিক ব্যালেন্স বা এই সময়ে আসলে নেওয়া টাকা হতে পারে — রিপোর্ট ব্যালেন্স দেখায়, ভাগ করে না। কোনোটির পরিশোধের " +
+          "তারিখ বা শর্ত লেখা নেই, তাই এগুলো চলতি ও দীর্ঘমেয়াদিতে ভাগ করা হয়নি।"
+        :
         `${money(loans)} borrowed from parties, filed in the chart under the heading ` +
         '"Advance" inside the asset branch and shown here for what it is — money the ' +
         "business has taken, not given. ⚠️ That same chart heading also carries loans " +
@@ -330,8 +391,18 @@ export const buildBalanceSheetNotes = (
   if (resultNote) {
     notes.push({
       n: resultNote,
-      title: "Current period result",
-      body:
+      title: rl("Current period result"),
+      body: bn
+        ? `${money(result)} — এই সময়ের ফলাফল, মালিকের মূলধনে নেওয়া এবং এখনও বণ্টন হয়নি। এটি মেলানোর জন্য বসানো অঙ্ক নয়: ` +
+          "দুই দিক মেলাতে কখনো কিছু ঢোকানো হয় না, দুই দিক না মিললে হিসাব লাভ দিয়ে ফাঁক না ভরে তার পার্থক্য দেখায়। অঙ্কটি হলো " +
+          "খাতার নিজস্ব আয় ও খরচের খাত, যাদের এই হিসাবে আর জায়গা নেই, সাথে মজুদের মূল্যের পরিবর্তন — মজুদ খাতে পোস্ট না হয়ে " +
+          "মজুদের রেকর্ড থেকে মূল্যায়ন হয়, তাই খাতায় তার জায়গা নেই। " +
+          `এই সময়ে খাতার আয় ও খরচের খাত মিলে ${money(ledgerResult)}, যা পণ্য হাতে থাকলে সাধারণত ঋণাত্মক, কারণ এই সময়ের ক্রয় ` +
+          `সেখানে পুরোটাই খরচ হিসেবে বসে; সময়ে মজুদ যে ${money(stockMovement)} বেড়েছে তা যোগ করলে হয় ${money(result)}। ` +
+          "একই তারিখের লাভ-ক্ষতি হিসাব এই হিসাব থেকে আলাদাভাবে যে নিট ফলাফল দেখায়, এটি সেই অঙ্কই; কখনো না মিললে কারণ মজুদ " +
+          "মূল্যায়ন বা না-মেলা কোনো ভাউচার, আর দুটোই অন্য জায়গায় দেখানো হয়, এখানে চাপা দেওয়া হয় না। বছর বন্ধ হয়ে থাকলে সমাপনী " +
+          "ভাউচার সেই বছরের আয়-খরচ মূলধনে নিয়ে গেছে, তাই এই লাইনে থাকে শুধু এই সময়ের বাকি অংশ।"
+        :
         `${money(result)} — the result of the period, carried to the owners' stake ` +
         "and not yet distributed. It is not a balancing figure: nothing is ever " +
         "inserted to make the two sides agree, and a sheet whose sides differ prints " +

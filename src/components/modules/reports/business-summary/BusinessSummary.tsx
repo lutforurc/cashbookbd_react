@@ -27,6 +27,10 @@ import type {
   BusinessMonthValue,
   BusinessSummaryData,
 } from './businessSummaryData';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { localizeReport } from '../../../../i18n/displayName';
+import { useLocalDigits } from '../../../../i18n/useLocalDigits';
+import { rl } from '../../../../i18n/reportLabel';
 
 const figure = (v: BusinessMonthValue | undefined, field: 'opening' | 'closing') =>
   v ? thousandSeparator(v[field]) : '-';
@@ -47,7 +51,7 @@ const BusinessSummaryTable = ({
       <thead>
         <tr className="bg-gray-300 text-xs uppercase text-gray-800 dark:bg-gray-700 dark:text-gray-300">
           <th rowSpan={2} className="w-[260px] px-3 py-3 text-left align-middle font-semibold">
-            Description
+            {rl("Description")}
           </th>
           {months.map((month) => (
             <th key={month.month} colSpan={2} className="px-3 py-3 text-center font-semibold">
@@ -58,8 +62,8 @@ const BusinessSummaryTable = ({
         <tr className="bg-gray-300 text-xs uppercase text-gray-800 dark:bg-gray-700 dark:text-gray-300">
           {months.map((month) => (
             <React.Fragment key={`${month.month}-subhead`}>
-              <th className="px-3 py-3 text-center font-semibold">Opening</th>
-              <th className="px-3 py-3 text-center font-semibold">Closing</th>
+              <th className="px-3 py-3 text-center font-semibold">{rl("Opening")}</th>
+              <th className="px-3 py-3 text-center font-semibold">{rl("Closing")}</th>
             </React.Fragment>
           ))}
         </tr>
@@ -68,9 +72,9 @@ const BusinessSummaryTable = ({
         {lines.map((line, index) => {
           if (line.kind === 'section') {
             return (
-              <tr key={`section-${line.title}`} className="bg-gray-100 dark:bg-gray-800">
+              <tr key={`section-${rl(line.title)}`} className="bg-gray-100 dark:bg-gray-800">
                 <td colSpan={1 + months.length * 2} className="px-3 py-2 font-semibold text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  {line.title}
+                  {rl(line.title)}
                 </td>
               </tr>
             );
@@ -86,7 +90,7 @@ const BusinessSummaryTable = ({
                     type="button"
                     className="text-left text-blue-600 hover:underline dark:text-blue-300"
                     onClick={() => onGroupClick(row)}
-                    title="Show accounts"
+                    title={rl("Show accounts")}
                   >
                     {row.name}
                   </button>
@@ -102,10 +106,10 @@ const BusinessSummaryTable = ({
           }
 
           return (
-            <tr key={`total-${line.label}-${index}`} className="font-bold transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700">
-              <td className="px-3 py-2 text-right">{line.label}</td>
+            <tr key={`total-${rl(line.label)}-${index}`} className="font-bold transition-colors hover:bg-indigo-50 dark:hover:bg-gray-700">
+              <td className="px-3 py-2 text-right">{rl(line.label)}</td>
               {months.map((month) => (
-                <React.Fragment key={`${line.label}-${month.month}`}>
+                <React.Fragment key={`${rl(line.label)}-${month.month}`}>
                   <td className="whitespace-nowrap px-3 py-2 text-right">{figure(line.values[month.month], 'opening')}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right">{figure(line.values[month.month], 'closing')}</td>
                 </React.Fragment>
@@ -130,7 +134,13 @@ const BusinessSummary = () => {
   // month and year count.
   const [startMonth, setStartMonth] = useState<Date | null>(null);
   const [endMonth, setEndMonth] = useState<Date | null>(null);
-  const [data, setData] = useState<BusinessSummaryData | null>(null);
+  const [rawData, setData] = useState<BusinessSummaryData | null>(null);
+  const { code: languageCode } = useLanguage();
+  const digitsRef = useRef<HTMLDivElement>(null);
+  // Bangla digits too when the screen is in Bangla.
+  useLocalDigits(digitsRef, languageCode !== 'en');
+  // Head names in Bangla when the screen is in Bangla.
+  const data = useMemo(() => localizeReport(rawData, languageCode), [rawData, languageCode]);
   const [period, setPeriod] = useState('');
   const [loading, setLoading] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(0);
@@ -200,7 +210,7 @@ const BusinessSummary = () => {
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: 'Business Summary',
+    documentTitle: rl("Business Summary"),
   });
 
   const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -216,7 +226,7 @@ const BusinessSummary = () => {
   const hasReport = lines.length > 0;
 
   return (
-    <div>
+    <div ref={digitsRef}>
       <HelmetTitle title="Business Summary" />
 
       {/* `@container`: the row follows the panel's own width, not the
@@ -230,7 +240,7 @@ const BusinessSummary = () => {
           <div className="grid min-w-0 grid-cols-1 items-end gap-3 @xl:grid-cols-3 @6xl:grid-cols-[repeat(3,minmax(0,1fr))_auto]">
             <div className="min-w-0">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                Select Branch <span className="text-red-500">*</span>
+                {rl("Select Branch")} <span className="text-red-500">*</span>
               </label>
               {branchDdlData?.isLoading ? <Loader /> : null}
               <BranchDropdown
@@ -242,7 +252,7 @@ const BusinessSummary = () => {
             </div>
 
             <div className="min-w-0">
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Month *</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">{rl("Start Month")} *</label>
               <InputDatePicker
                 selectedDate={startMonth}
                 setSelectedDate={setStartMonth}
@@ -253,7 +263,7 @@ const BusinessSummary = () => {
             </div>
 
             <div className="min-w-0">
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Month *</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">{rl("End Month")} *</label>
               <InputDatePicker
                 selectedDate={endMonth}
                 setSelectedDate={setEndMonth}
@@ -326,7 +336,7 @@ const BusinessSummary = () => {
       <div className="hidden">
         <BusinessSummaryPrint
           ref={printRef}
-          title="Business Summary"
+          title={rl("Business Summary")}
           period={period}
           data={data}
           rowsPerPage={rowsPerPage}

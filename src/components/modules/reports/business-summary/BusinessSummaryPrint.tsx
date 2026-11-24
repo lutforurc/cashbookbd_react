@@ -5,6 +5,7 @@ import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { businessBlocks, businessSections, sectionTotals } from './businessSummaryData';
 import type { BusinessLine, BusinessMonthValue, BusinessSummaryData } from './businessSummaryData';
+import { rl } from '../../../../i18n/reportLabel';
 
 type Props = {
   title?: string;
@@ -99,7 +100,7 @@ export const printFontSize = (data: BusinessSummaryData | null, wanted: number) 
 };
 
 const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
-  ({ title = 'Business Summary', period, data, rowsPerPage = 0, fontSize }, ref) => {
+  ({ title = rl("Business Summary"), period, data, rowsPerPage = 0, fontSize }, ref) => {
     const wanted = Number.isFinite(fontSize) && Number(fontSize) > 0 ? Number(fontSize) : 9;
     const months = data?.months ?? [];
     const fs = printFontSize(data, wanted);
@@ -115,9 +116,9 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
     const drawLine = (line: BusinessLine, index: number) => {
       if (line.kind === 'section') {
         return (
-          <tr key={`section-${line.title}-${index}`} className="avoid-break bg-gray-100">
+          <tr key={`section-${rl(line.title)}-${index}`} className="avoid-break bg-gray-100">
             <td colSpan={1 + months.length * 2} style={{ fontSize: fs }} className={`${cell} font-bold`}>
-              {line.title}
+              {rl(line.title)}
             </td>
           </tr>
         );
@@ -139,10 +140,10 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
       }
 
       return (
-        <tr key={`total-${line.label}-${index}`} className="avoid-break font-bold">
-          <td style={{ fontSize: fs }} className={`${cell} text-right`}>{line.label}</td>
+        <tr key={`total-${rl(line.label)}-${index}`} className="avoid-break font-bold">
+          <td style={{ fontSize: fs }} className={`${cell} text-right`}>{rl(line.label)}</td>
           {months.map((month) => (
-            <React.Fragment key={`${line.label}-${month.month}`}>
+            <React.Fragment key={`${rl(line.label)}-${month.month}`}>
               <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(line.values[month.month], 'opening')}</td>
               <td style={{ fontSize: fs }} className={`${cell} text-right`}>{figure(line.values[month.month], 'closing')}</td>
             </React.Fragment>
@@ -168,10 +169,10 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
           <div key={pageNumber} className="print-page business-summary-print-page">
             <PadPrinting />
             <div className="">
-              <h1 className="text-center text-2xl font-bold">{title}</h1>
+              <h1 className="text-center text-2xl font-bold">{rl(title)}</h1>
               <div className="flex items-center justify-end gap-4 text-xs">
                 <div className="text-right">
-                  <span className="font-semibold">Period:</span> {period || '-'}
+                  <span className="font-semibold">{rl("Period:")}</span> {period || '-'}
                 </div>
               </div>
             </div>
@@ -190,7 +191,7 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
                 <thead className="bg-gray-100">
                   <tr>
                     <th rowSpan={2} style={{ fontSize: fs }} className={`${cell} text-left align-middle`}>
-                      Description
+                      {rl("Description")}
                     </th>
                     {months.map((month) => (
                       <th key={month.month} colSpan={2} style={{ fontSize: fs }} className={`${cell} text-center`}>
@@ -201,8 +202,8 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
                   <tr>
                     {months.map((month) => (
                       <React.Fragment key={`${month.month}-head`}>
-                        <th style={{ fontSize: fs }} className={`${cell} text-center`}>Opening</th>
-                        <th style={{ fontSize: fs }} className={`${cell} text-center`}>Closing</th>
+                        <th style={{ fontSize: fs }} className={`${cell} text-center`}>{rl("Opening")}</th>
+                        <th style={{ fontSize: fs }} className={`${cell} text-center`}>{rl("Closing")}</th>
                       </React.Fragment>
                     ))}
                   </tr>
@@ -218,8 +219,8 @@ const BusinessSummaryPrint = React.forwardRef<HTMLDivElement, Props>(
         )) : (
           <div className="print-page business-summary-print-page">
             <PadPrinting />
-            <h1 className="text-center text-2xl font-bold">{title}</h1>
-            <div className="mt-6 text-center text-sm text-gray-500">No data found</div>
+            <h1 className="text-center text-2xl font-bold">{rl(title)}</h1>
+            <div className="mt-6 text-center text-sm text-gray-500">{rl("No data found")}</div>
           </div>
         )}
       </div>

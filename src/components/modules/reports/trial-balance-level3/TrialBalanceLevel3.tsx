@@ -30,6 +30,9 @@ import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes
 import { buildTrialBalanceNotes } from "./trialBalanceNotes";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { useLocalDigits } from '../../../../i18n/useLocalDigits';
+import { rl } from '../../../../i18n/reportLabel';
 
 type TrialBalanceRow = {
   key: string;
@@ -222,6 +225,10 @@ const TrialBalanceLevel3 = (user: any) => {
     (state: any) => state.trialBalanceLevel3,
   );
   const settings = useSelector((state: any) => state.settings);
+  const { code: languageCode } = useLanguage();
+  const digitsRef = useRef<HTMLDivElement>(null);
+  // Bangla digits too when the screen is in Bangla.
+  useLocalDigits(digitsRef, languageCode !== "en");
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -295,8 +302,16 @@ const TrialBalanceLevel3 = (user: any) => {
   }, [trialBalanceState?.data]);
 
   const rows = useMemo(() => {
-    return normalizeRows(findArrayCollection(rawReportData));
-  }, [rawReportData]);
+    const items = findArrayCollection(rawReportData);
+    // The group's Bangla name when the screen is in Bangla, where it has one.
+    const named =
+      languageCode !== "en"
+        ? items.map((item: any) =>
+            item?.coal3_name_local ? { ...item, coal3_name: item.coal3_name_local } : item,
+          )
+        : items;
+    return normalizeRows(named);
+  }, [rawReportData, languageCode]);
 
   /**
    * The list the PRINT reads: the groups, and in Detailed mode each group
@@ -597,7 +612,7 @@ const TrialBalanceLevel3 = (user: any) => {
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: "Trial Balance Group",
+    documentTitle: rl("Trial Balance Group"),
   });
 
   const handleResetFilters = () => {
@@ -614,48 +629,48 @@ const TrialBalanceLevel3 = (user: any) => {
     },
     {
       key: "name",
-      header: "Description",
+      header: rl("Description"),
       cellClass: "w-80",
-      render: (row: any) => <div className="whitespace-normal">{row.name}</div>,
+      render: (row: any) => <div className="whitespace-normal">{rl(row.name)}</div>,
     },
     {
       key: "openingDebit",
-      header: "Dr",
+      header: rl("Dr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{row.openingDebit ? thousandSeparator(row.openingDebit) : '-'}</div>,
     },
     {
       key: "openingCredit",
-      header: "Cr",
+      header: rl("Cr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{row.openingCredit ? thousandSeparator(row.openingCredit) : '-'}</div>,
     },
     {
       key: "movementDebit",
-      header: "Dr",
+      header: rl("Dr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{row.movementDebit ? thousandSeparator(row.movementDebit) : '-'}</div>,
     },
     {
       key: "movementCredit",
-      header: "Cr",
+      header: rl("Cr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{row.movementCredit ? thousandSeparator(row.movementCredit) : '-'}</div>,
     },
     {
       key: "closingDebit",
-      header: "Dr",
+      header: rl("Dr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{row.closingDebit ? thousandSeparator(row.closingDebit) : '-'}</div>,
     },
     {
       key: "closingCredit",
-      header: "Cr",
+      header: rl("Cr"),
       headerClass: "text-right",
       cellClass: "text-right w-32",
       render: (row: any) => <div>{row.closingCredit ? thousandSeparator(row.closingCredit) : '-'}</div>,
@@ -667,18 +682,18 @@ const TrialBalanceLevel3 = (user: any) => {
       { label: "Sl. No", rowSpan: 2, className: "text-center" },
       // The same references the printed sheet carries, put where each note's
       // subject is: the columns are note 2, the group rows note 3.
-      { label: <>Description<NoteRef n={3} /></>, rowSpan: 2 },
-      { label: "Opening", colSpan: 2, className: "text-center" },
-      { label: <>Movement<NoteRef n={2} /></>, colSpan: 2, className: "text-center" },
-      { label: "Closing", colSpan: 2, className: "text-center" },
+      { label: <>{rl("Description")}<NoteRef n={3} /></>, rowSpan: 2 },
+      { label: rl("Opening"), colSpan: 2, className: "text-center" },
+      { label: <>{rl("Movement")}<NoteRef n={2} /></>, colSpan: 2, className: "text-center" },
+      { label: rl("Closing"), colSpan: 2, className: "text-center" },
     ],
     [
-      { label: "Dr", className: "text-center" },
-      { label: "Cr", className: "text-center" },
-      { label: "Dr", className: "text-center" },
-      { label: "Cr", className: "text-center" },
-      { label: "Dr", className: "text-center" },
-      { label: "Cr", className: "text-center" },
+      { label: rl("Dr"), className: "text-center" },
+      { label: rl("Cr"), className: "text-center" },
+      { label: rl("Dr"), className: "text-center" },
+      { label: rl("Cr"), className: "text-center" },
+      { label: rl("Dr"), className: "text-center" },
+      { label: rl("Cr"), className: "text-center" },
     ],
   ];
 
@@ -687,7 +702,7 @@ const TrialBalanceLevel3 = (user: any) => {
       {
         label: (
           <>
-            Grand Total
+            {rl("Grand Total")}
             <NoteRef n={4} />
             <NoteRef n={5} />
             {hasStockNote && <NoteRef n={6} />}
@@ -706,7 +721,7 @@ const TrialBalanceLevel3 = (user: any) => {
   ];
 
   return (
-    <>
+    <div ref={digitsRef} className="contents">
       <HelmetTitle title="Trial Balance Group" />
       <div className="mx-auto space-y-2">
         <div className="pl-0 pr-1 py-3">
@@ -743,7 +758,7 @@ const TrialBalanceLevel3 = (user: any) => {
                   >
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                        Select Branch
+                        {rl("Select Branch")}
                       </label>
                       <BranchDropdown
  branchDdl={dropdownData}
@@ -756,7 +771,7 @@ const TrialBalanceLevel3 = (user: any) => {
 
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                        Start Date
+                        {rl("Start Date")}
                       </label>
                       <InputDatePicker
  selectedDate={startDate}
@@ -768,7 +783,7 @@ const TrialBalanceLevel3 = (user: any) => {
 
                     <div>
                       <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                        End Date
+                        {rl("End Date")}
                       </label>
                       <InputDatePicker
  selectedDate={endDate}
@@ -936,7 +951,7 @@ const TrialBalanceLevel3 = (user: any) => {
                 tone="blue"
               />
               <SummaryCard
-                title="Difference"
+                title={rl("Difference")}
                 value={totals.closingDebit - totals.closingCredit}
                 tone={
                   Math.abs(totals.closingDebit - totals.closingCredit) > 0.009
@@ -1064,7 +1079,7 @@ const TrialBalanceLevel3 = (user: any) => {
                       <thead>
                         <tr className="border-b border-amber-200 text-left dark:border-amber-500/20">
                           <th className="px-2 py-2">Code</th>
-                          <th className="px-2 py-2">Description</th>
+                          <th className="px-2 py-2">{rl("Description")}</th>
                           <th className="px-2 py-2 text-right">Opening Net</th>
                           <th className="px-2 py-2 text-right">Movement Net</th>
                           <th className="px-2 py-2 text-right">Closing Net</th>
@@ -1078,7 +1093,7 @@ const TrialBalanceLevel3 = (user: any) => {
                             className="border-b border-amber-100 dark:border-amber-500/10"
                           >
                             <td className="px-2 py-2">{row.code || "-"}</td>
-                            <td className="px-2 py-2">{row.name}</td>
+                            <td className="px-2 py-2">{rl(row.name)}</td>
                             <td className="px-2 py-2 text-right">
                               {thousandSeparator(row.rowNetOpening)}
                             </td>
@@ -1144,7 +1159,7 @@ const TrialBalanceLevel3 = (user: any) => {
                       in front of them. Imported, not retyped, so the screen and
                       the printed sheet say the same thing. */}
                   <ReportNotes
-                    title="Notes to the Trial Balance"
+                    title={rl("Notes to the Trial Balance")}
                     notes={trialBalanceNotes}
                   />
 
@@ -1196,13 +1211,13 @@ const TrialBalanceLevel3 = (user: any) => {
                                   Accounts Head Name
                                 </th>
                                 <th colSpan={2} className="w-64 px-3 pt-3 pb-1 text-center">
-                                  Opening
+                                  {rl("Opening")}
                                 </th>
                                 <th colSpan={2} className="w-64 px-3 pt-3 pb-1 text-center">
-                                  Movement
+                                  {rl("Movement")}
                                 </th>
                                 <th colSpan={2} className="w-64 px-3 pt-3 pb-1 text-center">
-                                  Closing
+                                  {rl("Closing")}
                                 </th>
                               </tr>
                               <tr>
@@ -1213,10 +1228,10 @@ const TrialBalanceLevel3 = (user: any) => {
                                     column it names. */}
                                 {["Dr", "Cr", "Dr", "Cr", "Dr", "Cr"].map((label, index) => (
                                   <th
-                                    key={`${label}-${index}`}
+                                    key={`${rl(label)}-${index}`}
                                     className="w-32 px-3 pb-3 text-center font-semibold"
                                   >
-                                    {label}
+                                    {rl(label)}
                                   </th>
                                 ))}
                               </tr>
@@ -1225,7 +1240,7 @@ const TrialBalanceLevel3 = (user: any) => {
                               {selectedLevel4Rows.map((row, index) => (
                                 <tr key={row.key}>
                                   <td className="px-3 py-2 text-center">{index + 1}</td>
-                                  <td className="px-3 py-2">{row.name}</td>
+                                  <td className="px-3 py-2">{rl(row.name)}</td>
                                   <td className="px-3 py-2 text-right">{thousandSeparator(row.openingDebit)}</td>
                                   <td className="px-3 py-2 text-right">{thousandSeparator(row.openingCredit)}</td>
                                   <td className="px-3 py-2 text-right">{thousandSeparator(row.movementDebit)}</td>
@@ -1237,7 +1252,7 @@ const TrialBalanceLevel3 = (user: any) => {
                             </tbody>
                             <tfoot className="bg-slate-100 font-semibold text-slate-800 dark:bg-slate-900 dark:text-slate-100">
                               <tr>
-                                <td colSpan={2} className="px-3 py-3 text-right">Total</td>
+                                <td colSpan={2} className="px-3 py-3 text-right">{rl("Total")}</td>
                                 <td className="px-3 py-3 text-right">{thousandSeparator(selectedLevel4Totals.openingDebit)}</td>
                                 <td className="px-3 py-3 text-right">{thousandSeparator(selectedLevel4Totals.openingCredit)}</td>
                                 <td className="px-3 py-3 text-right">{thousandSeparator(selectedLevel4Totals.movementDebit)}</td>
@@ -1273,7 +1288,7 @@ const TrialBalanceLevel3 = (user: any) => {
           totals={totals}
         />
       </div>
-    </>
+    </div>
   );
 };
 
@@ -1300,7 +1315,7 @@ const SummaryCard = ({
   return (
     <div className={`rounded border px-4 py-4 shadow-sm ${toneMap[tone]}`}>
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
-        {title}
+        {rl(title)}
       </p>
       <p className="mt-3 text-2xl font-semibold">{thousandSeparator(value)}</p>
     </div>

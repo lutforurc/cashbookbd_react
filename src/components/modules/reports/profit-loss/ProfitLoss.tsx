@@ -28,6 +28,10 @@ import { API_REPORT_PROFIT_LOSS_EXPENSE_SUMMARY_URL } from "../../../services/ap
 import httpService from "../../../services/httpService";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { localizeReport } from '../../../../i18n/displayName';
+import { useLocalDigits } from '../../../../i18n/useLocalDigits';
+import { rl } from '../../../../i18n/reportLabel';
 
 type TradingRow = {
   coal3_id?: number | string;
@@ -139,6 +143,10 @@ const ProfitLoss = (user: any) => {
   const branchDdlData: any = useSelector((state: any) => state.branchDdl);
   const profitLossState: any = useSelector((state: any) => state.profitLoss);
   const settings = useSelector((state: any) => state.settings);
+  const { code: languageCode } = useLanguage();
+  const digitsRef = useRef<HTMLDivElement>(null);
+  // Bangla digits too when the screen is in Bangla.
+  useLocalDigits(digitsRef, languageCode !== 'en');
   const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [dropdownData, setDropdownData] = useState<any[]>([]);
@@ -239,12 +247,17 @@ const ProfitLoss = (user: any) => {
   const apiData = useMemo(() => {
     const raw = profitLossState?.data;
 
-    if (raw?.data?.data?.trading) return raw.data.data;
-    if (raw?.data?.trading) return raw.data;
-    if (raw?.trading) return raw;
+    const data = raw?.data?.data?.trading
+      ? raw.data.data
+      : raw?.data?.trading
+        ? raw.data
+        : raw?.trading
+          ? raw
+          : null;
 
-    return null;
-  }, [profitLossState?.data]);
+    // Head names in Bangla when the screen is in Bangla.
+    return localizeReport(data, languageCode);
+  }, [profitLossState?.data, languageCode]);
 
   const hasReportData = useMemo(() => {
     const trading = apiData?.trading;
@@ -530,13 +543,13 @@ const ProfitLoss = (user: any) => {
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: "Profit & Loss Account",
+    documentTitle: rl("Profit & Loss Account"),
   });
 
   // Print handler for closing stock item details.
   const handleItemPrint = useReactToPrint({
     contentRef: itemPrintRef,
-    documentTitle: "Stock Details with rate",
+    documentTitle: rl("Stock Details with rate"),
   });
 
   // Load closing stock item details before printing.
@@ -668,7 +681,7 @@ const ProfitLoss = (user: any) => {
   };
 
   return (
-    <div>
+    <div ref={digitsRef}>
       <HelmetTitle title={"Profit & Loss Account"} />
 
       {/* `@container`: the filter row follows the panel's own width, not the
@@ -709,7 +722,7 @@ const ProfitLoss = (user: any) => {
                   }
                 >
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">{rl("Select Branch")}</label>
                     {branchDdlData?.isLoading ? <Loader /> : null}
                     <BranchDropdown
  defaultValue={user?.user?.branch_id}
@@ -721,7 +734,7 @@ const ProfitLoss = (user: any) => {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Start Date</label>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">{rl("Start Date")}</label>
                     <InputDatePicker
                       setCurrentDate={(d: any) => setStartDate(d)}
                       className="font-medium text-sm w-full"
@@ -731,7 +744,7 @@ const ProfitLoss = (user: any) => {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">End Date</label>
+                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">{rl("End Date")}</label>
                     <InputDatePicker
                       setCurrentDate={(d: any) => setEndDate(d)}
                       className="font-medium text-sm w-full"
@@ -815,7 +828,7 @@ const ProfitLoss = (user: any) => {
 
                         <PrintButton
                           onClick={handleItemPrintButtonClick}
-                          label="Item"
+                          label={rl("Item")}
                           className="px-6"
                           disabled={!hasReportData || itemPrintLoading}
                         />
@@ -889,14 +902,14 @@ const ProfitLoss = (user: any) => {
           {/* The notes sit under the account, on screen and on paper, and the
               account's own rows point at their numbers. */}
           <ReportNotes
-            title="Notes to the Profit & Loss Account"
+            title={rl("Notes to the Profit & Loss Account")}
             notes={profitLossNotes}
           />
         </>
       ) : (
         <div className="rounded border border-dashed border-[rgb(var(--c-border))] bg-white p-6 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-300">
           {profitLossState?.loading
-            ? "Profit/Loss report loading..."
+            ? rl("Profit/Loss report loading...")
             : "Click Apply to view the report. Once the data is loaded, the Profit/Loss Report will be displayed here."}
         </div>
       )}
@@ -906,7 +919,7 @@ const ProfitLoss = (user: any) => {
         <ProfitLossPrint
           ref={printRef}
           report={report}
-          title="Profit & Loss Account"
+          title={rl("Profit & Loss Account")}
           startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
           endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
           rowsPerPage={Number(perPage)}
@@ -917,7 +930,7 @@ const ProfitLoss = (user: any) => {
         <ItemDetailsPrint
           ref={itemPrintRef}
           report={closingStockData}
-          title="Closing Stock Item Details"
+          title={rl("Closing Stock Item Details")}
           startDate={startDate ? dayjs(startDate).format("DD/MM/YYYY") : ""}
           endDate={endDate ? dayjs(endDate).format("DD/MM/YYYY") : ""}
           fontSize={Number(fontSize)}
@@ -989,12 +1002,12 @@ const ExpenseDetailsModal = ({
           <div className="sticky top-0 z-10 flex items-start justify-between border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-5 py-4">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                {detail.name}
+                {rl(detail.name)}
               </h3>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
                 {isIncome
-                  ? "NET PROFIT OR LOSS A/C income summary"
-                  : "NET PROFIT OR LOSS A/C expense summary"}
+                  ? rl("NET PROFIT OR LOSS A/C income summary")
+                  : rl("NET PROFIT OR LOSS A/C expense summary")}
               </p>
             </div>
 
@@ -1003,7 +1016,7 @@ const ExpenseDetailsModal = ({
               onClick={onClose}
               className="rounded-lg border border-[rgb(var(--c-border))] px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
             >
-              Close
+              {rl("Close")}
             </Button>
           </div>
 
@@ -1019,9 +1032,9 @@ const ExpenseDetailsModal = ({
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="sticky top-0 z-20 border-b border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-sm dark:text-slate-300">
-                  <th className="px-3 py-3 text-left font-semibold">Particular</th>
-                  <th className="px-3 py-3 text-right font-semibold">Debit</th>
-                  <th className="px-3 py-3 text-right font-semibold">Credit</th>
+                  <th className="px-3 py-3 text-left font-semibold">{rl("Particular")}</th>
+                  <th className="px-3 py-3 text-right font-semibold">{rl("Debit")}</th>
+                  <th className="px-3 py-3 text-right font-semibold">{rl("Credit")}</th>
                   <th className="px-3 py-3 text-right font-semibold">{netLabel}</th>
                 </tr>
               </thead>
@@ -1032,7 +1045,7 @@ const ExpenseDetailsModal = ({
                       colSpan={4}
                       className="px-3 py-6 text-center text-slate-500 dark:text-slate-300"
                     >
-                      Loading expense summary...
+                      {rl("Loading expense summary...")}
                     </td>
                   </tr>
                 ) : error ? (
@@ -1064,7 +1077,7 @@ const ExpenseDetailsModal = ({
                       </tr>
                     ))}
                     <tr className="border-t border-[rgb(var(--c-border))] font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
-                      <td className="px-3 py-3">Total</td>
+                      <td className="px-3 py-3">{rl("Total")}</td>
                       <td className="px-3 py-3 text-right">
                         {thousandSeparator(totalMovementDebit)}
                       </td>
@@ -1082,7 +1095,7 @@ const ExpenseDetailsModal = ({
                       colSpan={4}
                       className="px-3 py-6 text-center text-slate-500 dark:text-slate-300"
                     >
-                      No summary found.
+                      {rl("No summary found.")}
                     </td>
                   </tr>
                 )}

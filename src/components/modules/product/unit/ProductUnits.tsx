@@ -13,6 +13,8 @@ import SelectOption from '../../../utils/utils-functions/SelectOption';
 import ROUTES from '../../../services/appRoutes';
 import { fetchProductUnits } from './unitSlice';
 import { FiPlus, FiSearch, FiEdit2 } from 'react-icons/fi';
+import { displayName } from '../../../../i18n/displayName';
+import { useLanguage } from '../../../../i18n/useLanguage';
 
 const ProductUnits = () => {
   const dispatch = useDispatch<any>();
@@ -82,6 +84,7 @@ const ProductUnits = () => {
     dispatch(fetchProductUnits({ search, page: 1, per_page: nextPerPage }));
   };
 
+  const { code: languageCode } = useLanguage();
   const columns = [
     {
       key: 'serial_no',
@@ -92,6 +95,8 @@ const ProductUnits = () => {
     {
       key: 'name',
       header: 'Unit Name',
+      // The Bangla name on a Bangla screen; English where there is none.
+      render: (row: any) => displayName(row, 'name', languageCode),
     },
     {
       key: 'short_name',

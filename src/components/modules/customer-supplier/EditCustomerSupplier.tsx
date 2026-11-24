@@ -18,7 +18,8 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import InputElement from "../../utils/fields/InputElement";
-import LocalNameInput from "../../utils/fields/LocalNameInput";
+import { useTranslation } from 'react-i18next';
+import BilingualInput from "../../utils/fields/BilingualInput";
 import DropdownCommon from "../../utils/utils-functions/DropdownCommon";
 import {
   ClientType,
@@ -126,7 +127,8 @@ const EditCustomerSupplier = () => {
   const needHandleByEmployee = String(branchSettings?.need_customer_handle_by_employee) === '1';
   // Same switch the Add page and the customer list read.
   const isOpeningEnabled = String(branchSettings?.is_opening) === '1';
-  const { localCode } = useLanguage();
+  const { localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
 
   /**
    * An opening balance is a one-time entry: the API posts a journal voucher
@@ -273,6 +275,13 @@ const EditCustomerSupplier = () => {
     () =>
       Yup.object().shape({
         name: Yup.string().required("Name is required"),
+        // "Enable Bangla" on: what English must have, Bangla must have too.
+        name_local: localCode
+          ? Yup.string().required(t('data.localRequired', { field: 'Name', language: localName }))
+          : Yup.string().nullable(),
+        address_local: localCode
+          ? Yup.string().required(t('data.localRequired', { field: 'Address', language: localName }))
+          : Yup.string().nullable(),
         father: Yup.string().nullable(),
         mother_name: Yup.string().nullable(),
         occupation: Yup.string().nullable(),
@@ -340,7 +349,7 @@ const EditCustomerSupplier = () => {
             )
           : Yup.array(),
       }),
-    [guarantorEnabled, nomineeEnabled]
+    [guarantorEnabled, nomineeEnabled, localCode, localName, t]
   );
 
   /* ================= FORM ================= */
@@ -363,6 +372,11 @@ const EditCustomerSupplier = () => {
       manual_address: editCustomer?.manual_address ?? "",
       address_local: editCustomer?.address_local ?? "",
       permanent_address: editCustomer?.permanent_address ?? "",
+      father_local: editCustomer?.father_local ?? "",
+      mother_name_local: editCustomer?.mother_name_local ?? "",
+      occupation_local: editCustomer?.occupation_local ?? "",
+      contact_person_local: editCustomer?.contact_person_local ?? "",
+      permanent_address_local: editCustomer?.permanent_address_local ?? "",
       mobile: editCustomer?.mobile ?? "",
       ledger_page: editCustomer?.ledger_page ?? "",
       openingbalance:
@@ -397,8 +411,18 @@ const EditCustomerSupplier = () => {
          * a customer fail. An empty string is dropped for the same reason —
          * the API reads it as a non-numeric opening rather than as "no value".
          */
-        const { openingbalance, handle_by_employee_id, name_local, address_local, ...rest } =
-          values as any;
+        const {
+          openingbalance,
+          handle_by_employee_id,
+          name_local,
+          address_local,
+          father_local,
+          mother_name_local,
+          occupation_local,
+          contact_person_local,
+          permanent_address_local,
+          ...rest
+        } = values as any;
         const sendsOpening =
           isOpeningEnabled && !openingLocked && String(openingbalance ?? "").trim() !== "";
 
@@ -420,7 +444,17 @@ const EditCustomerSupplier = () => {
               // Only where the company has a local language. Sent on an
               // English-only company, an untouched blank would clear a name
               // written while Bangla was on.
-              ...(localCode ? { name_local, address_local } : {}),
+              ...(localCode
+                ? {
+                    name_local,
+                    address_local,
+                    father_local,
+                    mother_name_local,
+                    occupation_local,
+                    contact_person_local,
+                    permanent_address_local,
+                  }
+                : {}),
               ...(sendsOpening ? { openingbalance } : {}),
               ...(sendsHandleByEmployee ? { handle_by_employee_id } : {}),
             },
@@ -580,12 +614,14 @@ const EditCustomerSupplier = () => {
               )}
 
             <div className="text-left flex flex-col">
-              <InputElement
-                id="name"
+              <BilingualInput
                 name="name"
+                kind="name"
                 placeholder="Enter Name"
                 label="Name"
                 value={formik.values.name}
+                localValue={formik.values.name_local}
+                onLocalChange={(value) => formik.setFieldValue('name_local', value)}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
               />
@@ -593,6 +629,9 @@ const EditCustomerSupplier = () => {
                 <div className="text-red-500 text-sm">
                   {formik.errors.name as any}
                 </div>
+              )}
+              {formik.touched.name_local && formik.errors.name_local && (
+                <div className="text-red-500 text-sm">{formik.errors.name_local as any}</div>
               )}
             </div>
             {/* The branch keeps its ledgers in Bangla, so the name is written
@@ -612,12 +651,6 @@ const EditCustomerSupplier = () => {
                 />
               </div>
             )}
-
-            <LocalNameInput
-              field="name"
-              value={formik.values.name_local}
-              onChange={(value) => formik.setFieldValue('name_local', value)}
-            />
             {settings?.data?.branch?.need_relation_info === '1' && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                 <>
@@ -625,7 +658,7 @@ const EditCustomerSupplier = () => {
                     <DropdownCommon
  id="relation_id"
  name="relation_id"
- label="Relation"
+ label={t('customerLocal.relation')}
  onChange={formik.handleChange}
  value={formik.values.relation_id}
  className="bg-transparent"
@@ -633,9 +666,11 @@ const EditCustomerSupplier = () => {
                     />
                   </div>
                   <div className="md:col-span-3">
-                    <InputElement
-                      id="father"
+                    <BilingualInput
                       name="father"
+                      localLabel={t('customerLocal.father')}
+                      localValue={formik.values.father_local}
+                      onLocalChange={(value) => formik.setFieldValue('father_local', value)}
                       placeholder="Enter relation's name"
                       label="Relation's Name"
                       value={formik.values.father}
@@ -651,9 +686,11 @@ const EditCustomerSupplier = () => {
             )}
             {settings?.data?.branch?.need_customer_mother_name === '1' && (
               <div className="text-left flex flex-col">
-                <InputElement
-                  id="mother_name"
+                <BilingualInput
                   name="mother_name"
+                  localLabel={t('customerLocal.mother_name')}
+                  localValue={formik.values.mother_name_local}
+                  onLocalChange={(value) => formik.setFieldValue('mother_name_local', value)}
                   placeholder="Enter Mother's Name"
                   label="Mother's Name"
                   value={formik.values.mother_name}
@@ -695,9 +732,11 @@ const EditCustomerSupplier = () => {
             )}
 
             {needOccupation && (
-              <InputElement
-                id="occupation"
+              <BilingualInput
                 name="occupation"
+                localLabel={t('customerLocal.occupation')}
+                localValue={formik.values.occupation_local}
+                onLocalChange={(value) => formik.setFieldValue('occupation_local', value)}
                 placeholder="Enter Occupation"
                 label="Occupation"
                 value={formik.values.occupation}
@@ -709,9 +748,11 @@ const EditCustomerSupplier = () => {
             {settings?.data?.branch?.need_customer_contact_person === '1' && (
               <>
               <div className="text-left flex flex-col">
-                <InputElement
-                  id="contact_person"
+                <BilingualInput
                   name="contact_person"
+                  localLabel={t('customerLocal.contact_person')}
+                  localValue={formik.values.contact_person_local}
+                  onLocalChange={(value) => formik.setFieldValue('contact_person_local', value)}
                   placeholder="Enter Contact Person"
                   label="Contact Person"
                   value={formik.values.contact_person}
@@ -728,7 +769,7 @@ const EditCustomerSupplier = () => {
                   id="contact_number"
                   name="contact_number"
                   placeholder="Enter Contact Number"
-                  label="Contact Number"
+                  label={t('customerLocal.contact_number')}
                   value={formik.values.contact_number}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
@@ -756,7 +797,7 @@ const EditCustomerSupplier = () => {
                 id="mobile"
                 name="mobile"
                 placeholder="Enter Mobile Number"
-                label="Mobile Number"
+                label={t('customerLocal.mobile')}
                 value={formik.values.mobile}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
@@ -769,12 +810,14 @@ const EditCustomerSupplier = () => {
             </div>
 
             <div className="text-left flex flex-col">
-              <InputElement
-                id="manual_address"
+              <BilingualInput
                 name="manual_address"
+                localLabel={t('customerLocal.manual_address')}
                 placeholder="Enter Present Address"
                 label="Present Address"
                 value={formik.values.manual_address}
+                localValue={formik.values.address_local}
+                onLocalChange={(value) => formik.setFieldValue('address_local', value)}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
               />
@@ -783,18 +826,17 @@ const EditCustomerSupplier = () => {
                   {formik.errors.manual_address as any}
                 </div>
               )}
+              {formik.touched.address_local && formik.errors.address_local && (
+                <div className="text-red-500 text-sm">{formik.errors.address_local as any}</div>
+              )}
             </div>
 
-            <LocalNameInput
-              field="address"
-              value={formik.values.address_local}
-              onChange={(value) => formik.setFieldValue('address_local', value)}
-            />
-
             {needPermanentAddress && (
-              <InputElement
-                id="permanent_address"
+              <BilingualInput
                 name="permanent_address"
+                localLabel={t('customerLocal.permanent_address')}
+                localValue={formik.values.permanent_address_local}
+                onLocalChange={(value) => formik.setFieldValue('permanent_address_local', value)}
                 placeholder="Enter Permanent Address"
                 label="Permanent Address"
                 value={formik.values.permanent_address}
@@ -1051,7 +1093,7 @@ const EditCustomerSupplier = () => {
                           <DropdownCommon
  id={`nominees.${index}.relation`}
  name={`nominees.${index}.relation`}
- label="Relation"
+ label={t('customerLocal.relation')}
  onChange={formik.handleChange}
  value={n.relation || ''}
  className="bg-transparent"

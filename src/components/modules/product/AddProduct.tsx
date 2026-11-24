@@ -20,6 +20,10 @@ import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import { FIELD_TEXTAREA } from '../../../theme/fieldStyles';
 import { Textarea } from '../../utils/fields/FormControls';
 import { isBranchSettingOn } from '../../utils/userFeatureSettings';
+import BilingualInput from '../../utils/fields/BilingualInput';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { withLocalNames } from '../../../i18n/displayName';
+import { useTranslation } from 'react-i18next';
 
 interface productItem {
   id: string | number;
@@ -53,6 +57,10 @@ interface productItem {
   measurement_unit_id?: string | number;
   package_size?: string | number;
   package_unit_id?: string | number;
+  /** The optional second name and description, in the company's local
+      language (Phase 6). Shown only while that language is switched on. */
+  name_local?: string;
+  description_local?: string;
 }
 
 // ".67" is 0.67 written without its leading zero. The API asks for a digit
@@ -70,6 +78,12 @@ const AddProduct = () => {
   const product = useSelector((state) => state.product);
   const brand = useSelector((state) => state.brand);
   const settings = useSelector((state) => state.settings);
+  // Phase 6: the company's local language, and whether it is switched on at
+  // all. `localCode` is null when it is off, and BilingualInput is then a plain
+  // English box -- so an English-only company sees the form exactly
+  // as it was.
+  const { code: languageCode, localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
   const categoryData = useSelector((state) => state.category);
   const warrantyTypeOptions = warrantyType.map(item => ({
     ...item,
@@ -102,6 +116,8 @@ const AddProduct = () => {
     measurement_unit_id: '',
     package_size: '',
     package_unit_id: '',
+    name_local: '',
+    description_local: '',
   };
 
   // The same branch switch the product list reads before showing its
@@ -131,7 +147,8 @@ const AddProduct = () => {
   const needPackage = isBranchSettingOn(settings, 'need_package');
   const needCode = isBranchSettingOn(settings, 'need_code');
   const productTypeOptions = category?.ddlData?.data?.product_type || [];
-  const unitOptions = category?.ddlData?.data?.unit || [];
+  // Names in Bangla on a Bangla screen, where the row has one.
+  const unitOptions = withLocalNames(category?.ddlData?.data?.unit, languageCode);
 
   // The measurement and package unit pickers read the same authorized unit list
   // the Unit field uses -- no second endpoint, and never a unit the branch
@@ -164,6 +181,8 @@ const AddProduct = () => {
         package_unit_id: edit?.package_unit_id != null ? String(edit.package_unit_id) : '',
         warranty_type: String(warrantyTypeKey || edit?.warranty_type || '0'),
         warranty_days: edit?.warranty_days?.day || '',
+        name_local: edit?.name_local ?? '',
+        description_local: edit?.description_local ?? '',
       });
     }
   }, [product?.editData]);
@@ -197,8 +216,15 @@ const AddProduct = () => {
     }
     // ".67" is accepted on screen but sent as "0.67"; empty stays empty, which
     // the API reads as NULL.
+    //
+    // Phase 6: the two local columns travel only while the company has its
+    // local language switched on — the same rule the party form follows. With
+    // it off they are dropped from the payload entirely, so a company that
+    // never turned Bangla on sends exactly the body it always did.
+    const { name_local, description_local, ...rest } = formData;
     const payload = {
-      ...formData,
+      ...rest,
+      ...(localCode ? { name_local, description_local } : {}),
       measurement: withLeadingZero(formData.measurement),
       package_size: withLeadingZero(formData.package_size),
     };
@@ -314,8 +340,15 @@ const AddProduct = () => {
     } else if (!(formData.name || '').trim()) {
       toast.info('Please enter valid name.');
       return;
+    } else if (localCode && !(formData.name_local || '').trim()) {
+      // "Enable Bangla" on: a required English field needs its Bangla too.
+      toast.info(t('data.localRequired', { field: 'Product Name', language: localName }));
+      return;
     } else if (!(formData.description || '').trim()) {
       toast.info('Please enter description.');
+      return;
+    } else if (localCode && !(formData.description_local || '').trim()) {
+      toast.info(t('data.localRequired', { field: 'Product Description', language: localName }));
       return;
     } else if (!(formData.unit_id || '').trim()) {
       toast.info('Please select unit.');
@@ -337,8 +370,13 @@ const AddProduct = () => {
 
     // ".67" is accepted on screen but sent as "0.67"; empty stays empty, which
     // the API reads as NULL.
+    //
+    // Phase 6: the two local columns travel only while the company has its
+    // local language switched on. See the update path above.
+    const { name_local, description_local, ...rest } = formData;
     const payload = {
-      ...formData,
+      ...rest,
+      ...(localCode ? { name_local, description_local } : {}),
       measurement: withLeadingZero(formData.measurement),
       package_size: withLeadingZero(formData.package_size),
     };
@@ -357,6 +395,10 @@ const AddProduct = () => {
             code: '',
             name: '',
             description: '',
+            // Phase 6: the next product gets its own local name, not the one
+            // just saved.
+            name_local: '',
+            description_local: '',
             purchase_price: '',
             sales_price: '',
           }));
@@ -459,12 +501,12 @@ const AddProduct = () => {
 
   const brandOptions = [
     { id: '', name: 'Not applicable' },
-    ...(brand?.brandDdl?.data || []),
+    ...withLocalNames(brand?.brandDdl?.data, languageCode),
   ];
 
   const optionsWithAll = [
     { id: '', name: 'Select Category' },
-    ...(Array.isArray(ddlCategory) ? ddlCategory : []),
+    ...withLocalNames(ddlCategory, languageCode),
   ];
 
   // Optional, so the list opens on this blank option rather than forcing a
@@ -472,7 +514,7 @@ const AddProduct = () => {
   // chosen yet.
   const productGroupOptions = [
     { id: '', name: 'Not applicable' },
-    ...(Array.isArray(ddlProductGroup) ? ddlProductGroup : []),
+    ...withLocalNames(ddlProductGroup, languageCode),
   ];
 
   useEffect(() => {
@@ -613,23 +655,27 @@ const AddProduct = () => {
             onChange={handleOnChange}
           />
         )}
-        <InputElement
-          id="name"
-          value={formData.name}
+        {/* English and the company's local language share one box, with an
+            ENG | local switch inside it (plain box when no local language). */}
+        <BilingualInput
           name="name"
+          kind="name"
+          value={formData.name ?? ''}
+          localValue={formData.name_local ?? ''}
           placeholder={'Enter Product Name'}
           label={'Product Name'}
-          className={''}
           onChange={handleOnChange}
+          onLocalChange={(value) => setFormData({ ...formData, name_local: value })}
         />
-        <InputElement
-          id="description"
-          value={formData.description}
+        <BilingualInput
           name="description"
+          kind="description"
+          value={formData.description ?? ''}
+          localValue={formData.description_local ?? ''}
           placeholder={'Enter Product Description'}
           label={'Product Description'}
-          className={''}
           onChange={handleOnChange}
+          onLocalChange={(value) => setFormData({ ...formData, description_local: value })}
         />
         {/* The two prices side by side in one cell, the way Product Type and
             Unit already are below: they are read together. */}

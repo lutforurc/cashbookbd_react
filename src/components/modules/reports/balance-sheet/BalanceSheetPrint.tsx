@@ -10,6 +10,7 @@ import {
   reportSectionLabel,
   stockMoved,
 } from "./balanceSheetNotes";
+import { rl } from '../../../../i18n/reportLabel';
 
 type ColumnAmounts = {
   opening: number;
@@ -238,7 +239,7 @@ const buildLines = (
 
       lines.push({
         kind: "subtotal",
-        label: "Less: Accumulated Depreciation",
+        label: rl("Less: Accumulated Depreciation"),
         side,
         indent: true,
         amounts: {
@@ -247,12 +248,12 @@ const buildLines = (
           closing: -1 * Number(dep.closing ?? 0),
         },
       });
-      lines.push({ kind: "subtotal", label: `Net ${reportSectionLabel(section.name)}`, side, amounts: section.columns ?? zero });
+      lines.push({ kind: "subtotal", label: `${rl("Net")} ${reportSectionLabel(section.name)}`, side, amounts: section.columns ?? zero });
 
       return;
     }
 
-    lines.push({ kind: "subtotal", label: `Total ${reportSectionLabel(section.name)}`, side, amounts: section.columns ?? zero });
+    lines.push({ kind: "subtotal", label: `${rl("Total")} ${reportSectionLabel(section.name)}`, side, amounts: section.columns ?? zero });
   };
 
   const pushSectioned = (
@@ -286,7 +287,7 @@ const buildLines = (
 
   lines.push({
     kind: "total",
-    label: "Total Liabilities & Equity",
+    label: rl("Total Liabilities & Equity"),
     side: "credit",
     amounts: sectionTotals.liabilitiesAndEquity,
   });
@@ -337,13 +338,13 @@ const StatementTable = ({
         <tr>
           <th className="pb-1" />
           <th style={{ fontSize: fs }} className="pb-1 pl-3 text-right align-bottom font-semibold">
-            Opening
+            {rl("Opening")}
             <span className="block font-normal text-gray-600" style={{ fontSize: Math.max(fs - 2, 7) }}>
               {openingDate}
             </span>
           </th>
           <th style={{ fontSize: fs }} className="pb-1 pl-3 text-right align-bottom font-semibold">
-            Closing
+            {rl("Closing")}
             <span className="block font-normal text-gray-600" style={{ fontSize: Math.max(fs - 2, 7) }}>
               {closingDate}
             </span>
@@ -355,9 +356,9 @@ const StatementTable = ({
           lines.map((line, index) => {
             if (line.kind === "section") {
               return (
-                <tr key={`${line.label}-${index}`}>
+                <tr key={`${rl(line.label)}-${index}`}>
                   <td colSpan={3} style={{ fontSize: fs + 2 }} className="pt-4 pb-0.5 font-bold">
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                 </tr>
               );
@@ -365,9 +366,9 @@ const StatementTable = ({
 
             if (line.kind === "subsection") {
               return (
-                <tr key={`${line.label}-${index}`}>
+                <tr key={`${rl(line.label)}-${index}`}>
                   <td colSpan={3} style={{ fontSize: fs }} className={`pt-2 ${level2Indent} font-semibold`}>
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                 </tr>
               );
@@ -383,12 +384,12 @@ const StatementTable = ({
                 : `${subtotalRule} pt-1 pb-1.5 pl-3 font-semibold ${amount}`;
 
               return (
-                <tr key={`${line.label}-${index}`}>
+                <tr key={`${rl(line.label)}-${index}`}>
                   <td
                     style={{ fontSize: fs }}
                     className={line.indent ? `py-0.5 ${level3Indent}` : `pt-1 pb-1.5 ${level2Indent} font-semibold`}
                   >
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                   <td style={{ fontSize: totalFs }} className={cellClass}>
                     {formatAmount(line.amounts.opening)}
@@ -404,9 +405,9 @@ const StatementTable = ({
               const cellClass = `${totalRule} pt-1 pb-0.5 pl-3 font-bold ${amount}`;
 
               return (
-                <tr key={`${line.label}-${index}`}>
+                <tr key={`${rl(line.label)}-${index}`}>
                   <td style={{ fontSize: fs }} className="pt-1 pb-0.5 font-bold">
-                    {line.label}
+                    {rl(line.label)}
                   </td>
                   <td style={{ fontSize: totalFs }} className={cellClass}>
                     {formatAmount(line.amounts.opening)}
@@ -419,9 +420,9 @@ const StatementTable = ({
             }
 
             return (
-              <tr key={`${line.name}-${line.serial}`}>
+              <tr key={`${rl(line.name)}-${line.serial}`}>
                 <td style={{ fontSize: fs }} className={`py-0.5 ${level3Indent}`}>
-                  {line.name}
+                  {rl(line.name)}
                 </td>
                 <td style={{ fontSize: fs }} className={`py-0.5 pl-3 ${amount}`}>
                   {formatAmount(line.amounts.opening)}
@@ -435,7 +436,7 @@ const StatementTable = ({
         ) : (
           <tr>
             <td colSpan={3} className="px-3 py-6 text-center text-gray-500">
-              No data found
+              {rl("No data found")}
             </td>
           </tr>
         )}
@@ -447,7 +448,7 @@ const StatementTable = ({
         <tfoot>
           <tr className="font-semibold">
             <td style={{ fontSize: fs }} className="pt-2 text-right">
-              Difference
+              {rl("Difference")}
             </td>
             <td colSpan={2} style={{ fontSize: totalFs }} className={`pt-2 pl-3 ${amount}`}>
               {formatAmount(difference)}
@@ -553,7 +554,7 @@ const BalanceSheetPrint = ({
 
             <div className="mt-3 text-center" style={{ fontSize: `${fs}px` }}>
               <h1 className="mt-3 font-bold" style={{ fontSize: `${fs + 10}px` }}>
-                Balance Sheet
+                {rl("Balance Sheet")}
                 {/* ⚠️ NOTE 1 HANGS ON THE SHEET'S OWN TITLE, which is the only
                     thing on the page it explains. Every other note is pointed at
                     by the row it explains — reportGroupLabel puts the number the
@@ -570,7 +571,7 @@ const BalanceSheetPrint = ({
               <p>
                 Period: {startDate} to {endDate}
               </p>
-              <p>As at: {endDate}</p>
+              <p>{rl("As at")}: {endDate}</p>
             </div>
 
             <div className="w-full overflow-hidden">
@@ -603,35 +604,35 @@ const BalanceSheetPrint = ({
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-1 py-1 text-center"
                     >
-                      Serial
+                      {rl("Serial")}
                     </th>
                     <th
                       rowSpan={2}
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-1 text-left"
                     >
-                      Description
+                      {rl("Description")}
                     </th>
                     <th
                       colSpan={2}
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-1 text-center"
                     >
-                      Opening
+                      {rl("Opening")}
                     </th>
                     <th
                       colSpan={2}
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-1 text-center"
                     >
-                      Movement
+                      {rl("Movement")}
                     </th>
                     <th
                       colSpan={2}
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-1 text-center"
                     >
-                      Closing
+                      {rl("Closing")}
                     </th>
                   </tr>
                   <tr>
@@ -641,7 +642,7 @@ const BalanceSheetPrint = ({
                         style={{ fontSize: fs }}
                         className="border border-gray-900 px-1 py-1 text-center"
                       >
-                        {label}
+                        {rl(label)}
                       </th>
                     ))}
                   </tr>
@@ -651,13 +652,13 @@ const BalanceSheetPrint = ({
                     pageLines.map((line, index) => {
                       if (line.kind === "section") {
                         return (
-                          <tr key={`${line.label}-${index}`} className="bg-gray-100 font-semibold">
+                          <tr key={`${rl(line.label)}-${index}`} className="bg-gray-100 font-semibold">
                             <td
                               colSpan={8}
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-1 text-left uppercase"
                             >
-                              {line.label}
+                              {rl(line.label)}
                             </td>
                           </tr>
                         );
@@ -665,13 +666,13 @@ const BalanceSheetPrint = ({
 
                       if (line.kind === "subsection") {
                         return (
-                          <tr key={`${line.label}-${index}`} className="bg-gray-50 font-medium">
+                          <tr key={`${rl(line.label)}-${index}`} className="bg-gray-50 font-medium">
                             <td
                               colSpan={8}
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-0.5 text-left"
                             >
-                              {line.label}
+                              {rl(line.label)}
                             </td>
                           </tr>
                         );
@@ -680,7 +681,7 @@ const BalanceSheetPrint = ({
                       /* The level-2 subtotal, and the "Less:" line above it. */
                       if (line.kind === "subtotal") {
                         return (
-                          <tr key={`${line.label}-${index}`} className={line.indent ? "" : "font-semibold"}>
+                          <tr key={`${rl(line.label)}-${index}`} className={line.indent ? "" : "font-semibold"}>
                             {/* ⚠️ No left padding, and no wrapping.
 
                                 The cell is right-aligned, so a left padding
@@ -707,7 +708,7 @@ const BalanceSheetPrint = ({
                                 line.indent ? " whitespace-nowrap" : ""
                               }`}
                             >
-                              {line.label}
+                              {rl(line.label)}
                             </td>
                             {amountCells(line.side, line.amounts, totalFs, !line.indent)}
                           </tr>
@@ -716,13 +717,13 @@ const BalanceSheetPrint = ({
 
                       if (line.kind === "total") {
                         return (
-                          <tr key={`${line.label}-${index}`} className="font-semibold">
+                          <tr key={`${rl(line.label)}-${index}`} className="font-semibold">
                             <td
                               colSpan={2}
                               style={{ fontSize: fs }}
                               className="border border-gray-900 px-2 py-0.5 text-right"
                             >
-                              {line.label}
+                              {rl(line.label)}
                             </td>
                             {amountCells(line.side, line.amounts, totalFs, true)}
                           </tr>
@@ -730,7 +731,7 @@ const BalanceSheetPrint = ({
                       }
 
                       return (
-                        <tr key={`${line.name}-${line.serial}`}>
+                        <tr key={`${rl(line.name)}-${line.serial}`}>
                           <td
                             style={{ fontSize: fs }}
                             className="border border-gray-900 px-1 py-0.5 text-center align-middle"
@@ -741,7 +742,7 @@ const BalanceSheetPrint = ({
                             style={{ fontSize: fs }}
                             className="border border-gray-900 px-2 py-0.5 align-middle"
                           >
-                            {line.name}
+                            {rl(line.name)}
                           </td>
                           {amountCells(line.side, line.amounts, fs, false)}
                         </tr>
@@ -753,7 +754,7 @@ const BalanceSheetPrint = ({
                         colSpan={8}
                         className="border border-gray-900 px-3 py-6 text-center text-gray-500"
                       >
-                        No data found
+                        {rl("No data found")}
                       </td>
                     </tr>
                   )}
@@ -766,7 +767,7 @@ const BalanceSheetPrint = ({
                         style={{ fontSize: fs }}
                         className="border border-gray-900 px-2 py-1 text-right"
                       >
-                        Grand Total
+                        {rl("Grand Total")}
                       </td>
                       {(["opening", "movement", "closing"] as const).flatMap((column) => [
                         <td
@@ -792,7 +793,7 @@ const BalanceSheetPrint = ({
                           style={{ fontSize: fs }}
                           className="border border-gray-900 px-2 py-0.5 text-right"
                         >
-                          Difference
+                          {rl("Difference")}
                         </td>
                         <td
                           colSpan={6}
@@ -827,11 +828,11 @@ const BalanceSheetPrint = ({
 
             <div className="mb-3 mt-3 text-center" style={{ fontSize: `${fs}px` }}>
               {/* <p className="font-semibold">{branchName}</p> */}
-              <p>As at: {endDate}</p>
+              <p>{rl("As at")}: {endDate}</p>
             </div>
 
             <ReportNotes
-              title="Notes to the Balance Sheet"
+              title={rl("Notes to the Balance Sheet")}
               notes={notes}
               fontSize={fs}
               variant="print"

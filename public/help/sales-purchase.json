@@ -7,7 +7,7 @@
     "video": "",
     "intro": "সাধারণ (General) ব্যবসার বিক্রয় চালান — গ্রাহক, গাড়ি নম্বর, রিসিভ ও ডিসকাউন্ট সহ।",
     "sections": [
-      { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Select Customer বাছুন (Select an account), Vehicle Number ও Received Amount দিন।", "Discount Amount ও Notes লিখুন।", "Select Product, Select Warehouse (Not Applicable), Enter Quantity ও Enter Price দিয়ে Add New / Update করুন।", "Save (সম্পাদনায় Update), Reset, Print বা Home চাপুন।"] },
+      { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Select Customer নির্বাচন করুন (Select an account), Vehicle Number ও Received Amount দিন।", "Discount Amount ও Notes লিখুন।", "Select Product, Select Warehouse (Not Applicable), Enter Quantity ও Enter Price দিয়ে Add New / Update করুন।", "Save (সম্পাদনায় Update), Reset, Print বা Home চাপুন।"] },
       { "heading": "তালিকা", "steps": ["Sl. No., Product Name, Quantity, Rate, Total ও Action; নিচে Grand Total।", "স্টক কম হলে Not Enough Stock জানালা আসে — Available, Requested দেখে Cancel বা Continue Save।"] },
       { "heading": "সতর্কতা", "warning": "Received Amount ভুল হলে Previous Balance, Current Invoice, Discount ও Total Tk. ভুল দেখাবে। অনুমোদিত ভাউচার বদলানো যায় না।" }
     ]
@@ -20,7 +20,7 @@
     "video": "",
     "intro": "ট্রেডিং ব্যবসার বিক্রয় চালান — বস্তার নম্বর, ওজন পার্থক্য ও অর্ডার লিংক সহ।",
     "sections": [
-      { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Select Customer, Vehicle Number, Select Purchase Order / Select Sales Order বাছুন।", "Received Amount, Discount Amount ও Notes দিন।", "Select Product, Select Warehouse, Enter Bag Number, Weight Variance ও Variance Type (Not Applicable / (+) Increase / (-) Decrease) দিন।", "Enter Quantity ও Enter Price দিয়ে Add New / Update; Save বা Update চাপুন।"] },
+      { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Select Customer, Vehicle Number, Select Purchase Order / Select Sales Order নির্বাচন করুন।", "Received Amount, Discount Amount ও Notes দিন।", "Select Product, Select Warehouse, Enter Bag Number, Weight Variance ও Variance Type (Not Applicable / (+) Increase / (-) Decrease) দিন।", "Enter Quantity ও Enter Price দিয়ে Add New / Update; Save বা Update চাপুন।"] },
       { "heading": "বিশেষ নিয়ম", "steps": ["Sales Order বাছলে Customer তার থেকেই আসে; বদলাতে Order বদলান বা খালি করুন।", "Select Product (Optional) দিয়ে ভাউচারটি কোন পণ্যের বিপরীতে তা যোগ করুন; খালি রাখলে আগের হিসাবই থাকে।"] },
       { "heading": "সতর্কতা", "warning": "Weight Variance (+) হলে পরিমাণ বাড়ে, (-) হলে কমে — Variance Type না বাছলে ঘরটি বন্ধ থাকে। Approved ভাউচার বদলানো যায় না।" }
     ]
@@ -33,7 +33,7 @@
     "video": "",
     "intro": "টাইলস/স্যানিটারি শাখার বিক্রয় — মেমো-চালানের হাতে লেখা নম্বর ও ডেলিভারি স্টক নিয়ম সহ।",
     "sections": [
-      { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Select Customer বাছুন; Reference চালু করলে Select Reference, Type a name or mobile দিয়ে রেফারেন্স দিন।", "Received Amount, Discount Amount ও Notes দিন।", "Memo No., Memo Date, Challan No ও Challan Date লিখুন (শাখার নাম অনুযায়ী)।", "Select Product, Select Warehouse, Quantity ও Enter Price দিয়ে Add New / Update; Save চাপুন।"] },
+      { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Select Customer নির্বাচন করুন; Reference চালু করলে Select Reference, Type a name or mobile দিয়ে রেফারেন্স দিন।", "Received Amount, Discount Amount ও Notes দিন।", "Memo No., Memo Date, Challan No ও Challan Date লিখুন (শাখার নাম অনুযায়ী)।", "Select Product, Select Warehouse, Quantity ও Enter Price দিয়ে Add New / Update; Save চাপুন।"] },
       { "heading": "ডেলিভারি ও মোট", "steps": ["Deduct stock on delivery চালু থাকলে স্টক ডেলিভারির সময় কমে; বন্ধ থাকলে এখনই কমে।", "Previous Balance, Current Invoice, Discount, Received Amount ও Total Tk. সবসময় দেখা যায়।"] },
       { "heading": "সতর্কতা", "warning": "একই পণ্য দুইবার যোগ করা যায় না। বিক্রয় দর ক্রয় দরের ({cost}) নিচে হতে পারে না। ডেলিভারি হয়ে গেলে লাইন মোছা যায় না — বিক্রয় ফেরত দিন।" }
     ]
@@ -46,7 +46,7 @@
     "video": "",
     "intro": "ইলেকট্রনিক্স বিক্রয় — সিরিয়াল/আইএমইআই দিয়ে পরিমাণ ও কিস্তির বিক্রয়।",
     "sections": [
-      { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Select Customer বাছুন; Installment Sale চালু করলে কিস্তির হিসাব খোলে।", "Received Amount, Discount Amount, Notes এবং শাখার সার্ভিস চার্জ/TDS/পরিবহন ঘর দিন।", "Select Product, Select Warehouse, Enter Serial Number লিখুন — প্রতিটি সিরিয়াল আলাদা লাইনে।", "Quantity ও Enter Price দিয়ে Add New / Update; Save চাপুন।"] },
+      { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Select Customer নির্বাচন করুন; Installment Sale চালু করলে কিস্তির হিসাব খোলে।", "Received Amount, Discount Amount, Notes এবং শাখার সার্ভিস চার্জ/TDS/পরিবহন ঘর দিন।", "Select Product, Select Warehouse, Enter Serial Number লিখুন — প্রতিটি সিরিয়াল আলাদা লাইনে।", "Quantity ও Enter Price দিয়ে Add New / Update; Save চাপুন।"] },
       { "heading": "কিস্তি", "steps": ["Installment Details-এ Installment Amount, Start Date, Installments No., Early Payment, Early Discount ও Early Payment Date দিন; Close করুন।", "Table: Sl. No., Product Name, Quantity, Rate, Total ও Grand Total।"] },
       { "heading": "সতর্কতা", "warning": "সিরিয়াল না দিলে Quantity ঠিক হবে না। কিস্তির সব ঘর না দিলে Please fill all installment details দেখাবে।" }
     ]
@@ -59,7 +59,7 @@
     "video": "",
     "intro": "ব্র্যান্ডের স্কিমে ফোন বিক্রয় — ক্রেতার তথ্য, স্কিমের মেয়াদ ও আইএমইআই বাধ্যতামূলক।",
     "sections": [
-      { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Company Scheme চালু করুন; customer ঘরটি Company (scheme account) হয়ে যায় — Cash নয়, স্কিম অ্যাকাউন্ট বাছুন।", "Company Due Date (Branch Setup থেকে), Buyer Name, Buyer Mobile ও Buyer Address দিন।", "Installment Sale লাগলে চালু করুন; Received / Total Amount, Discount Amount ও Notes দিন।", "Select Product, Enter Serial Number, Quantity ও Enter Price দিয়ে Add New / Update; Save চাপুন।"] },
+      { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Company Scheme চালু করুন; customer ঘরটি Company (scheme account) হয়ে যায় — Cash নয়, স্কিম অ্যাকাউন্ট নির্বাচন করুন।", "Company Due Date (Branch Setup থেকে), Buyer Name, Buyer Mobile ও Buyer Address দিন।", "Installment Sale লাগলে চালু করুন; Received / Total Amount, Discount Amount ও Notes দিন।", "Select Product, Enter Serial Number, Quantity ও Enter Price দিয়ে Add New / Update; Save চাপুন।"] },
       { "heading": "শর্ত", "steps": ["প্রতিটি লাইনে IMEI / serial number লাগবে।", "একই আইএমইআই আগে বিক্রি হলে IMEI Already Sold জানালা আসে — ফিরে এসেছে কি না নিশ্চিত হয়ে Continue Save করুন।"] },
       { "heading": "সতর্কতা", "warning": "স্কিম অ্যাকাউন্ট না বাছলে বা ক্রেতার নাম-মোবাইল না দিলে সেভ হবে না। অনুমোদিত হলে স্কিম সুইচ বদলানো যায় না।" }
     ]
@@ -73,7 +73,7 @@
     "intro": "সাধারণ ব্যবসার বিক্রয় ফেরত — মূল চালানের নম্বর-তারিখ ও ফেরত দেওয়া পণ্য।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ sales.return permission থাকলে।"] },
-      { "heading": "ফর্ম", "menu": "Invoice → Sales Return", "steps": ["Select Customer বাছুন; Sales Invoice Number ও Sales Invoice Date দিন।", "Vehicle Number, Cash Payment, Discount Amount ও Notes দিন।", "Select Product, Select Warehouse, Enter Quantity ও Enter Price দিয়ে Add New / Update করুন।", "Save চাপুন; Save হওয়ার পর Print সক্রিয় হয়।"] },
+      { "heading": "ফর্ম", "menu": "Invoice → Sales Return", "steps": ["Select Customer নির্বাচন করুন; Sales Invoice Number ও Sales Invoice Date দিন।", "Vehicle Number, Cash Payment, Discount Amount ও Notes দিন।", "Select Product, Select Warehouse, Enter Quantity ও Enter Price দিয়ে Add New / Update করুন।", "Save চাপুন; Save হওয়ার পর Print সক্রিয় হয়।"] },
       { "heading": "তালিকা", "steps": ["Sl. No., Product Name, Quantity, Rate, Total ও Grand Total দেখা যায়।", "শাখা Tiles হলে একই রুটে Tiles বিক্রয় ফেরতের স্ক্রিন আসে — তার নিজের লেখা আছে।"] },
       { "heading": "সতর্কতা", "warning": "মূল চালান না মিললে ফেরত ভুল খাতায় বসবে; Cash Payment ভুল হলে Total Tk. ভুল হবে।" }
     ]
@@ -115,7 +115,7 @@
     "intro": "একই ফর্মে ট্রেডিং ক্রয় ও বিক্রি — প্রতি পণ্যে দুটি দর ও লাভ-ক্ষতি।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ trading.combined.create permission থাকলে।"] },
-      { "heading": "ফর্ম", "menu": "Invoice → Combined Invoice", "steps": ["Select Supplier ও Select Customer বাছুন; Vehicle Number দিন।", "Select Purchase Order / Sales Order, Amount Tk. (Sales বা Both), Discount Amount ও Notes দিন।", "Notes-এর পাশে Both / Purchase / Sales / Separate বেছে কোন ভাউচারে নোট যাবে ঠিক করুন।", "Select Product, Bag Number, Weight Variance, Variance Type, Quantity, Purchase Rate ও Sales Rate দিয়ে Add New / Update করুন।"] },
+      { "heading": "ফর্ম", "menu": "Invoice → Combined Invoice", "steps": ["Select Supplier ও Select Customer নির্বাচন করুন; Vehicle Number দিন।", "Select Purchase Order / Sales Order, Amount Tk. (Sales বা Both), Discount Amount ও Notes দিন।", "Notes-এর পাশে Both / Purchase / Sales / Separate বেছে কোন ভাউচারে নোট যাবে ঠিক করুন।", "Select Product, Bag Number, Weight Variance, Variance Type, Quantity, Purchase Rate ও Sales Rate দিয়ে Add New / Update করুন।"] },
       { "heading": "মোট", "steps": ["Purchase Tk., Sales Tk. এবং Profit Tk. / Loss Tk. দেখা যায়।", "Table: SL. NO., PRODUCT NAME, WEIGHT VARIANCE, QUANTITY, PURCHASE RATE, PURCHASE, SALES RATE, TOTAL ও ACTION।"] },
       { "heading": "সতর্কতা", "warning": "একই পণ্যে Purchase Order ও Sales Order মিলছে না হলে সেভ হবে না। Approved ভাউচার খুললে editable ভাউচার খোলে — মূলটি বদলায় না।" }
     ]
@@ -129,7 +129,7 @@
     "intro": "টাইলস/স্যানিটারির একই ফর্মে ক্রয় ও বিক্রি — আলাদা পেমেন্ট, রিসিভ ও মেমো-চালান।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ tiles.combined.create permission থাকলে।"] },
-      { "heading": "ফর্ম", "menu": "Invoice → Combined Invoice", "steps": ["Select Supplier ও Select Customer বাছুন; Payment Tk., Received Tk. ও Date দিন।", "Purchase Discount, Sales Discount ও Notes দিন; নোট কোন ভাউচারে যাবে বাছুন।", "Purchase ও Sales অংশে Memo No., Memo Date, Challan No ও Challan Date দিন।", "Select Product, Select Warehouse, Quantity, Purchase Rate ও Sales Rate দিয়ে Add New / Update; Save চাপুন।"] },
+      { "heading": "ফর্ম", "menu": "Invoice → Combined Invoice", "steps": ["Select Supplier ও Select Customer নির্বাচন করুন; Payment Tk., Received Tk. ও Date দিন।", "Purchase Discount, Sales Discount ও Notes দিন; নোট কোন ভাউচারে যাবে নির্বাচন করুন।", "Purchase ও Sales অংশে Memo No., Memo Date, Challan No ও Challan Date দিন।", "Select Product, Select Warehouse, Quantity, Purchase Rate ও Sales Rate দিয়ে Add New / Update; Save চাপুন।"] },
       { "heading": "মোট", "steps": ["Purchase: Previous Payable, Current Purchase, Discount, Payment Amount Tk. ও Total Tk.।", "Sales: Previous Balance, Current Invoice, Discount, Rcvd Amt Tk. ও Total Tk.।", "Table: SL. NO., PRODUCT NAME, QUANTITY, PURCHASE RATE, PURCHASE, SALES RATE, TOTAL ও ACTION।"] },
       { "heading": "সতর্কতা", "warning": "একই পণ্য দুইবার যোগ করা যায় না; স্টক কম হলে Not Enough Stock জানালা আসে। Approved ভাউচার বদলানো যায় না।" }
     ]
@@ -142,7 +142,7 @@
     "video": "",
     "intro": "ট্রেডিং ব্যবসার ক্রয় চালান — অর্ডার, বস্তা, ওজন পার্থক্য ও পেমেন্ট সহ।",
     "sections": [
-      { "heading": "ফর্ম", "menu": "Invoice → Purchase", "steps": ["Select Supplier ও Select Purchase Order বাছুন।", "Invoice Number, Invoice Date, Vehicle Number, Payment Amount, Discount Amount ও Notes দিন।", "Select Product, Select Warehouse, Bag Number, Weight Variance, Variance Type, Quantity ও Price দিন।", "Add New / Update দিয়ে লাইন যোগ করে Save বা Update চাপুন।"] },
+      { "heading": "ফর্ম", "menu": "Invoice → Purchase", "steps": ["Select Supplier ও Select Purchase Order নির্বাচন করুন।", "Invoice Number, Invoice Date, Vehicle Number, Payment Amount, Discount Amount ও Notes দিন।", "Select Product, Select Warehouse, Bag Number, Weight Variance, Variance Type, Quantity ও Price দিন।", "Add New / Update দিয়ে লাইন যোগ করে Save বা Update চাপুন।"] },
       { "heading": "তালিকা", "steps": ["Sl. No., Product Name, Weight Variance, Quantity, Rate, Total ও Action; নিচে Grand Total।", "Purchase Order বাছলে Supplier তার থেকেই আসে।"] },
       { "heading": "সতর্কতা", "warning": "শাখা Tiles হলে এই স্ক্রিনে Invoice No/Date/Vehicle-এর বদলে Memo/Challan ঘর আসে। Approved ভাউচার বদলানো যায় না।" }
     ]
@@ -168,7 +168,7 @@
     "video": "",
     "intro": "টাইলস/স্যানিটারি শাখার ক্রয় — মেমো-চালানের চার ঘর ও সর্বদা দৃশ্যমান মোট।",
     "sections": [
-      { "heading": "ফর্ম", "menu": "Invoice → Purchase", "steps": ["Select Supplier বাছুন; Memo No., Memo Date, Challan No ও Challan Date লিখুন।", "Payment Amount, Discount Amount ও Notes দিন।", "Select Product (Optional) দিয়ে ভাউচারটি কোন পণ্যের বিপরীতে তা দিন।", "Select Product, Select Warehouse, Quantity ও Price দিয়ে Add New / Update; Save চাপুন।"] },
+      { "heading": "ফর্ম", "menu": "Invoice → Purchase", "steps": ["Select Supplier নির্বাচন করুন; Memo No., Memo Date, Challan No ও Challan Date লিখুন।", "Payment Amount, Discount Amount ও Notes দিন।", "Select Product (Optional) দিয়ে ভাউচারটি কোন পণ্যের বিপরীতে তা দিন।", "Select Product, Select Warehouse, Quantity ও Price দিয়ে Add New / Update; Save চাপুন।"] },
       { "heading": "মোট", "steps": ["Previous Balance, Current Invoice, Discount, Payment Amount ও Total Tk. সবসময় দেখা যায়।", "Table: Sl. No., Product Name, Quantity, Rate, Total ও Grand Total।"] },
       { "heading": "সতর্কতা", "warning": "একই পণ্য দুইবার যোগ করা যায় না। Invoice Number/Date/Vehicle বা অর্ডার ঘর এই স্ক্রিনে নেই।" }
     ]

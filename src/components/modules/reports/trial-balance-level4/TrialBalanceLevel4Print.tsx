@@ -3,6 +3,7 @@ import PadPrinting from "../../../utils/utils-functions/PadPrinting";
 import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
+import { rl } from '../../../../i18n/reportLabel';
 
 type TrialBalancePrintRow = {
   key: string;
@@ -94,11 +95,11 @@ const TrialBalanceLevel4Print = React.forwardRef<
                 className="mt-3 text-center font-bold"
                 style={{ fontSize: `${fs + 10}px` }}
               >
-                Trial Balance Details
+                {rl("Trial Balance Details")}
               </h1>
               <div className="mt-1 grid grid-cols-2 gap-1 text-xs">
                 <div className="text-left">
-                  <span className="font-semibold">Report Date:</span> {startDate} - {endDate}
+                  <span className="font-semibold">{rl("Report Date:")}</span> {startDate} - {endDate}
                 </div>
               </div>
             </div>
@@ -129,48 +130,48 @@ const TrialBalanceLevel4Print = React.forwardRef<
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-1 text-left whitespace-nowrap"
                     >
-                      Description
+                      {rl("Description")}
                     </th>
                     <th
                       colSpan={2}
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-1 text-center"
                     >
-                      Opening
+                      {rl("Opening")}
                     </th>
                     <th
                       colSpan={2}
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-1 text-center"
                     >
-                      Movement
+                      {rl("Movement")}
                     </th>
                     <th
                       colSpan={2}
                       style={{ fontSize: fs }}
                       className="border border-gray-900 px-2 py-1 text-center"
                     >
-                      Closing
+                      {rl("Closing")}
                     </th>
                   </tr>
                   <tr>
                     <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-center">
-                      Dr
+                      {rl("Dr")}
                     </th>
                     <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-center">
-                      Cr
+                      {rl("Cr")}
                     </th>
                     <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-center">
-                      Dr
+                      {rl("Dr")}
                     </th>
                     <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-center">
-                      Cr
+                      {rl("Cr")}
                     </th>
                     <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-center">
-                      Dr
+                      {rl("Dr")}
                     </th>
                     <th style={{ fontSize: fs }} className="border border-gray-900 px-1 py-1 text-center">
-                      Cr
+                      {rl("Cr")}
                     </th>
                   </tr>
                 </thead>
@@ -216,7 +217,7 @@ const TrialBalanceLevel4Print = React.forwardRef<
                         colSpan={8}
                         className="border border-gray-900 px-3 py-6 text-center text-gray-500"
                       >
-                        No data found
+                        {rl("No data found")}
                       </td>
                     </tr>
                   )}
@@ -259,7 +260,7 @@ const TrialBalanceLevel4Print = React.forwardRef<
                         style={{ fontSize: fs }}
                         className="border border-gray-900 px-2 py-0.5 text-right"
                       >
-                        Grand Total
+                        {rl("Grand Total")}
                       </td>
                       <td style={{ fontSize: totalFs }} className="border border-gray-900 px-1 py-0.5 text-right">
                         {thousandSeparator(totals.openingDebit)}

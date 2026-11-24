@@ -199,7 +199,8 @@ const brandSlice = createSlice({
       .addCase(editBrand.fulfilled, (state, action: PayloadAction<any>) => {
         state.isLoading = false;
 
-        const brandData: Brand | null = action.payload?.data ?? null;
+        // foundData() nests the row one level down: { data: { data: brand } }.
+        const brandData: Brand | null = action.payload?.data?.data ?? action.payload?.data ?? null;
         state.editData = brandData;
 
         if (brandData?.id) {

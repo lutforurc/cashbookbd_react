@@ -1,3 +1,4 @@
+import { rl } from '../../../../i18n/reportLabel';
 /** One month of the report. `month` is its key, "YYYY-MM" -- a range may cross a year end. */
 export type BusinessMonthInfo = {
   month: string;
@@ -40,7 +41,7 @@ const SECTION_TITLES: Array<{ key: BusinessSectionKey; title: string }> = [
 /** The sections that have rows, in the order a balance sheet reads them. */
 export const businessSections = (data: BusinessSummaryData | null): BusinessSection[] =>
   data
-    ? SECTION_TITLES.map(({ key, title }) => ({ key, title, rows: data.sections?.[key] ?? [] })).filter(
+    ? SECTION_TITLES.map(({ key, title }) => ({ key, title: rl(title), rows: data.sections?.[key] ?? [] })).filter(
         (section) => section.rows.length > 0
       )
     : [];
@@ -107,10 +108,10 @@ export const businessBlocks = (data: BusinessSummaryData | null): BusinessLine[]
   const blocks: BusinessLine[][] = sections.map((section) => [
     { kind: 'section', title: section.title },
     ...section.rows.map((row) => ({ kind: 'group' as const, row })),
-    { kind: 'total', label: `Total ${section.title}`, values: sectionTotals(data, section.key) },
+    { kind: 'total', label: `${rl('Total')} ${section.title}`, values: sectionTotals(data, section.key) },
   ]);
   if (blocks.length) {
-    blocks[blocks.length - 1].push({ kind: 'total', label: 'Difference', values: differenceTotals(data) });
+    blocks[blocks.length - 1].push({ kind: 'total', label: rl('Difference'), values: differenceTotals(data) });
   }
   return blocks;
 };

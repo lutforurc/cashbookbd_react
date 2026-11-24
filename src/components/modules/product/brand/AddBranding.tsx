@@ -16,6 +16,9 @@ import InputElement from '../../../utils/fields/InputElement';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import { editBrand, saveBrand, updateBrand } from './brandSlice';
 import ROUTES from '../../../services/appRoutes';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { useTranslation } from 'react-i18next';
+import BilingualInput from '../../../utils/fields/BilingualInput';
 
 
 interface Brand {
@@ -24,6 +27,7 @@ interface Brand {
   address: string;
   email: string;
   contacts: string;
+  name_local?: string;
 }
 
 const AddBranding = () => {
@@ -35,6 +39,7 @@ const AddBranding = () => {
   const initialBrand: Brand = {
     id: '',
     name: '',
+    name_local: '',
     address: '',
     email: '',
     contacts: '',
@@ -42,6 +47,8 @@ const AddBranding = () => {
 
   const [formData, setFormData] = useState<Brand>(initialBrand);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const { localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
 
   // ========== Edit Mode: load data ==========
   useEffect(() => {
@@ -55,6 +62,7 @@ const AddBranding = () => {
       setFormData({
         id: brand.editData?.id ?? '',
         name: brand.editData?.name ?? '',
+        name_local: brand.editData?.name_local ?? '',
         address: brand.editData?.address ?? '',
         email: brand.editData?.email ?? '',
         contacts: brand.editData?.contacts ?? '',
@@ -89,6 +97,11 @@ const AddBranding = () => {
   const validate = () => {
     if (!(formData.name || '').trim()) {
       toast.error('Please enter brand name.');
+      return false;
+    }
+    // "Enable Bangla" on: the Bangla name is required too.
+    if (localCode && !(formData.name_local || '').trim()) {
+      toast.error(t('data.localRequired', { field: 'Brand Name', language: localName }));
       return false;
     }
     const email = (formData.email || '').trim();
@@ -146,14 +159,15 @@ const AddBranding = () => {
       {brand?.isLoading === true ? <Loader /> : null}
 
       <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-        <InputElement
-          id="name"
-          value={formData.name}
+        <BilingualInput
           name="name"
+          kind="name"
+          value={formData.name}
+          localValue={formData.name_local || ''}
           placeholder="Enter Brand Name"
           label="Brand Name"
-          className=""
           onChange={handleOnChange}
+          onLocalChange={(value) => setFormData((prev) => ({ ...prev, name_local: value }))}
         />
 
         <InputElement

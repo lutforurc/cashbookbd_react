@@ -7,7 +7,9 @@ import { FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2, FiArrowLeft } from 'rea
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
-import LocalNameInput from '../../utils/fields/LocalNameInput';
+import { useTranslation } from 'react-i18next';
+import BilingualInput from '../../utils/fields/BilingualInput';
+import ToggleSwitch from '../../utils/fields/ToggleSwitch';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { ClientType, nomineeRelationType, relationType, sexType, TrueFalse } from '../../utils/fields/DataConstant';
 import DdlDynamicMultiline from '../../utils/utils-functions/DdlDynamicMultiline';
@@ -17,7 +19,6 @@ import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import { storeCustomer } from './customerSlice';
 import { toast } from 'react-toastify';
 import InputDatePicker from '../../utils/fields/DatePicker';
-import Checkbox from '../../utils/fields/Checkbox';
 import PhotoInput from '../../utils/fields/PhotoInput';
 import httpService from '../../services/httpService';
 import { API_CUSTOMER_MOBILE_CHECK_URL } from '../../services/apiRoutes';
@@ -49,7 +50,8 @@ const AddCustomerSupplier = () => {
   const area = useSelector((state: any) => state.area);
   const settings = useSelector((state: any) => state.settings);
   const employees = useSelector((state: any) => state.employees);
-  const { localCode } = useLanguage();
+  const { localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
 
   // Branch switches from Branch > Customer & Supplier Setup.
   const branchSettings = settings?.data?.branch;
@@ -161,6 +163,13 @@ const AddCustomerSupplier = () => {
 
   const validationSchema = Yup.object().shape({
     name: Yup.string().required('Name is required'),
+    // "Enable Bangla" on: what English must have, Bangla must have too.
+    name_local: localCode
+      ? Yup.string().required(t('data.localRequired', { field: 'Name', language: localName }))
+      : Yup.string().nullable(),
+    address_local: localCode
+      ? Yup.string().required(t('data.localRequired', { field: 'Address', language: localName }))
+      : Yup.string().nullable(),
     father: Yup.string(),
     mother_name: Yup.string(),
     occupation: Yup.string(),
@@ -237,6 +246,11 @@ const AddCustomerSupplier = () => {
     manual_address: '',
     address_local: '',
     permanent_address: '',
+    father_local: '',
+    mother_name_local: '',
+    occupation_local: '',
+    contact_person_local: '',
+    permanent_address_local: '',
     mobile: '',
     ledger_page: '',
     openingbalance: '',
@@ -260,8 +274,29 @@ const AddCustomerSupplier = () => {
       // The local columns belong to the local-language mode. Left in the
       // payload on a company that has it off, an untouched blank would clear a
       // name somebody had written when the company still had Bangla on.
-      const { name_local, address_local, ...rest } = values;
-      const payload = localCode ? { ...rest, name_local, address_local } : rest;
+      // The local copies go only where the company has a local language.
+      const {
+        name_local,
+        address_local,
+        father_local,
+        mother_name_local,
+        occupation_local,
+        contact_person_local,
+        permanent_address_local,
+        ...rest
+      } = values;
+      const payload = localCode
+        ? {
+            ...rest,
+            name_local,
+            address_local,
+            father_local,
+            mother_name_local,
+            occupation_local,
+            contact_person_local,
+            permanent_address_local,
+          }
+        : rest;
 
       const res = await dispatch(storeCustomer(payload as any) as any).unwrap();
       toast.success(res?.message || 'Customer saved successfully!');
@@ -352,7 +387,8 @@ const AddCustomerSupplier = () => {
     if (!sameAsPresentAddress) return;
 
     formik.setFieldValue('permanent_address', formik.values.manual_address);
-  }, [sameAsPresentAddress, formik.values.manual_address]);
+    formik.setFieldValue('permanent_address_local', formik.values.address_local);
+  }, [sameAsPresentAddress, formik.values.manual_address, formik.values.address_local]);
 
   // An error in the tab that is out of view would be invisible, so bring its tab
   // forward once the form has been submitted at least once.
@@ -605,18 +641,23 @@ const AddCustomerSupplier = () => {
             )}
 
             <div className="text-left flex flex-col">
-              <InputElement
-                id="name"
+              <BilingualInput
                 name="name"
+                kind="name"
                 placeholder="Enter Name"
                 label="Name"
                 value={formik.values.name}
+                localValue={formik.values.name_local}
                 onChange={formik.handleChange}
+                onLocalChange={(value) => formik.setFieldValue('name_local', value)}
                 onBlur={formik.handleBlur}
                 onKeyDown={handleEnterNavigation('name')}
               />
               {formik.touched.name && formik.errors.name && (
                 <div className="text-red-500 text-sm">{formik.errors.name}</div>
+              )}
+              {formik.touched.name_local && formik.errors.name_local && (
+                <div className="text-red-500 text-sm">{formik.errors.name_local}</div>
               )}
             </div>
 
@@ -639,11 +680,6 @@ const AddCustomerSupplier = () => {
               </div>
             )}
 
-            <LocalNameInput
-              field="name"
-              value={formik.values.name_local}
-              onChange={(value) => formik.setFieldValue('name_local', value)}
-            />
 
             {settings?.data?.branch?.need_relation_info === '1' && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
@@ -652,7 +688,7 @@ const AddCustomerSupplier = () => {
                     <DropdownCommon
  id="relation_id"
  name="relation_id"
- label="Relation"
+ label={t('customerLocal.relation')}
  onChange={formik.handleChange}
  defaultValue={formik.values.relation_id}
  className="bg-transparent"
@@ -660,9 +696,11 @@ const AddCustomerSupplier = () => {
                     />
                   </div>
                   <div className="md:col-span-3">
-                    <InputElement
-                      id="father"
+                    <BilingualInput
                       name="father"
+                      localLabel={t('customerLocal.father')}
+                      localValue={formik.values.father_local}
+                      onLocalChange={(value) => formik.setFieldValue('father_local', value)}
                       placeholder="Enter relation's name"
                       label="Relation's Name"
                       value={formik.values.father}
@@ -678,9 +716,11 @@ const AddCustomerSupplier = () => {
             )}
             {settings?.data?.branch?.need_customer_mother_name === '1' && (
               <div className="text-left flex flex-col">
-                <InputElement
-                  id="mother_name"
+                <BilingualInput
                   name="mother_name"
+                  localLabel={t('customerLocal.mother_name')}
+                  localValue={formik.values.mother_name_local}
+                  onLocalChange={(value) => formik.setFieldValue('mother_name_local', value)}
                   placeholder="Enter Mother's Name"
                   label="Mother's Name"
                   value={formik.values.mother_name}
@@ -721,9 +761,11 @@ const AddCustomerSupplier = () => {
             )}
 
             {needOccupation && (
-              <InputElement
-                id="occupation"
+              <BilingualInput
                 name="occupation"
+                localLabel={t('customerLocal.occupation')}
+                localValue={formik.values.occupation_local}
+                onLocalChange={(value) => formik.setFieldValue('occupation_local', value)}
                 placeholder="Enter Occupation"
                 label="Occupation"
                 value={formik.values.occupation}
@@ -737,9 +779,11 @@ const AddCustomerSupplier = () => {
             {settings?.data?.branch?.need_customer_contact_person === '1' && (
               <>
                 <div className="text-left flex flex-col">
-                  <InputElement
-                    id="contact_person"
+                  <BilingualInput
                     name="contact_person"
+                    localLabel={t('customerLocal.contact_person')}
+                    localValue={formik.values.contact_person_local}
+                    onLocalChange={(value) => formik.setFieldValue('contact_person_local', value)}
                     placeholder="Enter Contact Person"
                     label="Contact Person"
                     value={formik.values.contact_person}
@@ -757,7 +801,7 @@ const AddCustomerSupplier = () => {
                     id="contact_number"
                     name="contact_number"
                     placeholder="Enter Contact Number"
-                    label="Contact Number"
+                    label={t('customerLocal.contact_number')}
                     value={formik.values.contact_number}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -786,7 +830,7 @@ const AddCustomerSupplier = () => {
                 id="mobile"
                 name="mobile"
                 placeholder="Enter Mobile Number"
-                label="Mobile Number"
+                label={t('customerLocal.mobile')}
                 value={formik.values.mobile}
                 onChange={handleMobileChange}
                 onBlur={handleMobileBlur}
@@ -822,13 +866,15 @@ const AddCustomerSupplier = () => {
 
             
             <div className="text-left flex flex-col">
-              <InputElement
-                id="manual_address"
+              <BilingualInput
                 name="manual_address"
+                localLabel={t('customerLocal.manual_address')}
                 autoComplete="off"
                 placeholder="Enter Present Address"
                 label="Present Address"
                 value={formik.values.manual_address}
+                localValue={formik.values.address_local}
+                onLocalChange={(value) => formik.setFieldValue('address_local', value)}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 onKeyDown={handleEnterNavigation('manual_address')}
@@ -838,19 +884,17 @@ const AddCustomerSupplier = () => {
                   {formik.errors.manual_address}
                 </div>
               )}
+              {formik.touched.address_local && formik.errors.address_local && (
+                <div className="text-red-500 text-sm">{formik.errors.address_local}</div>
+              )}
             </div>
 
-            <LocalNameInput
-              field="address"
-              value={formik.values.address_local}
-              onChange={(value) => formik.setFieldValue('address_local', value)}
-            />
             {needPermanentAddress && (
               /* The tick sits on the field's own line, level with the box it
                  fills, rather than above it -- it is a shortcut for that one
                  field and belongs against it. */
               <div className="flex items-end gap-2">
-                <Checkbox
+                <ToggleSwitch
                   id="same_as_present_address"
                   name="same_as_present_address"
                   checked={sameAsPresentAddress}
@@ -873,9 +917,11 @@ const AddCustomerSupplier = () => {
                   }
                 />
                 <div className="flex-1">
-                  <InputElement
-                    id="permanent_address"
+                  <BilingualInput
                     name="permanent_address"
+                    localLabel={t('customerLocal.permanent_address')}
+                    localValue={formik.values.permanent_address_local}
+                    onLocalChange={(value) => formik.setFieldValue('permanent_address_local', value)}
                     autoComplete="off"
                     placeholder="Enter Permanent Address"
                     label="Permanent Address"
@@ -1078,7 +1124,7 @@ const AddCustomerSupplier = () => {
                               <DropdownCommon
  id={`nominees.${index}.relation`}
  name={`nominees.${index}.relation`}
- label="Relation"
+ label={t('customerLocal.relation')}
  onChange={formik.handleChange}
  value={n.relation || ''}
  className="bg-transparent"

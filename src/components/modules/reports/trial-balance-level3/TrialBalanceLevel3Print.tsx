@@ -5,6 +5,7 @@ import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes";
 import { buildTrialBalanceNotes } from "./trialBalanceNotes";
+import { rl } from '../../../../i18n/reportLabel';
 
 type TrialBalancePrintRow = {
   key: string;
@@ -149,11 +150,11 @@ const TrialBalanceLevel3Print = React.forwardRef<
 
         <div className="mb-3 mt-3 text-center" style={{ fontSize: `${fs}px` }}>
           <h1 className="mt-1 font-bold" style={{ fontSize: `${fs + 10}px` }}>
-            Trial Balance
+            {rl("Trial Balance")}
             <NoteRef n={1} />
           </h1>
           <p>
-            Period: {startDate} to {endDate}
+            {rl("Period:")} {startDate} {rl("to")} {endDate}
           </p>
         </div>
 
@@ -177,44 +178,44 @@ const TrialBalanceLevel3Print = React.forwardRef<
                 rowSpan={2}
                 className="border border-gray-900 px-1 py-1 text-center font-semibold"
               >
-                Sl. No.
+                {rl("Sl. No.")}
               </th>
               <th
                 rowSpan={2}
                 className="border border-gray-900 px-2 py-1 text-left font-semibold whitespace-nowrap"
               >
-                Description
+                {rl("Description")}
                 <NoteRef n={3} />
               </th>
               <th colSpan={2} className="border border-gray-900 px-2 py-1 text-center font-semibold">
-                Opening
+                {rl("Opening")}
               </th>
               <th colSpan={2} className="border border-gray-900 px-2 py-1 text-center font-semibold">
-                Movement
+                {rl("Movement")}
                 <NoteRef n={2} />
               </th>
               <th colSpan={2} className="border border-gray-900 px-2 py-1 text-center font-semibold">
-                Closing
+                {rl("Closing")}
               </th>
             </tr>
             <tr>
               <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
-                Dr
+                {rl("Dr")}
               </th>
               <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
-                Cr
+                {rl("Cr")}
               </th>
               <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
-                Dr
+                {rl("Dr")}
               </th>
               <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
-                Cr
+                {rl("Cr")}
               </th>
               <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
-                Dr
+                {rl("Dr")}
               </th>
               <th className="border border-gray-900 px-1 py-1 text-center font-semibold">
-                Cr
+                {rl("Cr")}
               </th>
             </tr>
           </thead>
@@ -228,7 +229,7 @@ const TrialBalanceLevel3Print = React.forwardRef<
                     under the group it was summed into, and nothing else on the
                     row says which of the two it is. */}
                 <td className={`border border-gray-900 px-2 py-0.5 align-middle whitespace-nowrap ${row.child ? "pl-6" : ""}`}>
-                  {row.name}
+                  {rl(row.name)}
                 </td>
                 <td className="border border-gray-900 px-1 py-0.5 text-right">
                   {thousandSeparator(row.openingDebit)}
@@ -259,7 +260,7 @@ const TrialBalanceLevel3Print = React.forwardRef<
               <td colSpan={2}
                 className="border border-gray-900 px-2 py-0.5 text-right"
               >
-                Grand Total
+                {rl("Grand Total")}
                 <NoteRef n={4} />
                 <NoteRef n={5} />
                 {/* [6] exists only where stock moved outside the ledger; the note
@@ -327,15 +328,15 @@ const TrialBalanceLevel3Print = React.forwardRef<
 
             <div className="mb-3 mt-3 text-center" style={{ fontSize: `${fs}px` }}>
               <h1 className="mt-1 font-bold" style={{ fontSize: `${fs + 10}px` }}>
-                Trial Balance
+                {rl("Trial Balance")}
               </h1>
               <p>
-                Period: {startDate} to {endDate}
+                {rl("Period:")} {startDate} {rl("to")} {endDate}
               </p>
             </div>
 
             <ReportNotes
-              title="Notes to the Trial Balance"
+              title={rl("Notes to the Trial Balance")}
               notes={notes}
               fontSize={fs}
               variant="print"

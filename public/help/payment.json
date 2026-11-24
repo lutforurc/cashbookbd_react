@@ -11,7 +11,7 @@
         "heading": "পরিশোধ লেখার ধাপ",
         "menu": "Transaction → Cash Payment",
         "steps": [
-          "Select Account থেকে যে খাতে টাকা যাচ্ছে সেটি বাছুন, যেমন সরবরাহকারী বা খরচের খাত।",
+          "Select Account থেকে যে খাতে টাকা যাচ্ছে সেটি নির্বাচন করুন, যেমন সরবরাহকারী বা খরচের খাত।",
           "Enter Remarks-এ কারণ লিখুন।",
           "Amount (Tk.)-এ টাকার অঙ্ক লিখুন।",
           "Add New চেপে তালিকায় যোগ করুন, তারপর Save চাপুন।"
@@ -39,9 +39,9 @@
         "heading": "পরিশোধ লেখার ধাপ",
         "menu": "Transaction → Bank Payment",
         "steps": [
-          "Select Order (Optional) — কোনো অর্ডারের সঙ্গে যুক্ত হলে বাছুন।",
-          "Bank Payment Account থেকে ব্যাংক হিসাব বাছুন।",
-          "Select Transaction Account থেকে যে খাতে টাকা যাচ্ছে সেটি বাছুন।",
+          "Select Order (Optional) — কোনো অর্ডারের সঙ্গে যুক্ত হলে নির্বাচন করুন।",
+          "Bank Payment Account থেকে ব্যাংক হিসাব নির্বাচন করুন।",
+          "Select Transaction Account থেকে যে খাতে টাকা যাচ্ছে সেটি নির্বাচন করুন।",
           "Enter Remarks ও Amount (Tk.) পূরণ করুন।",
           "Add New চেপে তালিকায় যোগ করুন, তারপর Save চাপুন।"
         ]

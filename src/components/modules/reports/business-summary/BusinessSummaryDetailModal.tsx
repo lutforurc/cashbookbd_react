@@ -6,6 +6,7 @@ import httpService from "../../../services/httpService";
 import { API_REPORT_BUSINESS_SUMMARY_DETAIL_URL } from "../../../services/apiRoutes";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import type { BusinessGroupRow, BusinessMonthInfo } from "./businessSummaryData";
+import { rl } from '../../../../i18n/reportLabel';
 
 type DetailItem = {
   coa4_id: number | null;
@@ -44,7 +45,7 @@ const BusinessSummaryDetailModal = ({ branchId, months, group, onClose }: Props)
           year: months.find((m) => m.month === month)?.year,
           month: months.find((m) => m.month === month)?.month_no,
           side: group.side,
-          group: group.name,
+          group: (group as any).name_en ?? group.name,
         });
         const payload = response?.data;
         if (!payload?.success) throw new Error(payload?.message || "Details load failed");
@@ -82,7 +83,7 @@ const BusinessSummaryDetailModal = ({ branchId, months, group, onClose }: Props)
               {group.name}
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Accounts in this row, month by month. Opening is the previous month's closing.
+              {rl("Accounts in this row, month by month. Opening is the previous month's closing.")}
             </p>
           </div>
 
@@ -91,7 +92,7 @@ const BusinessSummaryDetailModal = ({ branchId, months, group, onClose }: Props)
               value={month}
               onChange={(e) => setMonth(e.target.value)}
               className="rounded border border-[rgb(var(--c-border))] bg-white px-2 py-1 text-sm dark:bg-gray-700"
-              aria-label="Month"
+              aria-label={rl("Month")}
             >
               {months.map((m) => (
                 <option key={m.month} value={m.month}>
@@ -118,16 +119,16 @@ const BusinessSummaryDetailModal = ({ branchId, months, group, onClose }: Props)
             <thead className="sticky top-0 bg-[rgb(var(--c-surface))]">
               <tr>
                 <th className={`${th} w-12 text-center`}>SL</th>
-                <th className={`${th} text-left`}>Account</th>
-                <th className={`${th} text-right`}>Opening</th>
-                <th className={`${th} text-right`}>Movement</th>
-                <th className={`${th} text-right`}>Closing</th>
+                <th className={`${th} text-left`}>{rl("Account")}</th>
+                <th className={`${th} text-right`}>{rl("Opening")}</th>
+                <th className={`${th} text-right`}>{rl("Movement")}</th>
+                <th className={`${th} text-right`}>{rl("Closing")}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className={`${td} py-6 text-center`}>Loading...</td>
+                  <td colSpan={5} className={`${td} py-6 text-center`}>{rl("Loading...")}</td>
                 </tr>
               ) : items.length ? (
                 items.map((item, idx) => (
@@ -141,14 +142,14 @@ const BusinessSummaryDetailModal = ({ branchId, months, group, onClose }: Props)
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className={`${td} py-6 text-center`}>No accounts found</td>
+                  <td colSpan={5} className={`${td} py-6 text-center`}>{rl("No accounts found")}</td>
                 </tr>
               )}
             </tbody>
             {!loading && items.length ? (
               <tfoot>
                 <tr className="font-bold">
-                  <td colSpan={2} className={`${td} text-left`}>Total</td>
+                  <td colSpan={2} className={`${td} text-left`}>{rl("Total")}</td>
                   <td className={`${td} text-right`}>{thousandSeparator(total.opening)}</td>
                   <td className={`${td} text-right`}>{thousandSeparator(total.movement)}</td>
                   <td className={`${td} text-right`}>{thousandSeparator(total.closing)}</td>

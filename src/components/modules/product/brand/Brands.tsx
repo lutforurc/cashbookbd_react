@@ -16,6 +16,8 @@ import SearchInput from '../../../utils/fields/SearchInput';
 import SelectOption from '../../../utils/utils-functions/SelectOption';
 import InputElement from '../../../utils/fields/InputElement';
 import ROUTES from '../../../services/appRoutes';
+import { displayName } from '../../../../i18n/displayName';
+import { useLanguage } from '../../../../i18n/useLanguage';
 
 type BrandRow = {
   id: string | number;
@@ -33,6 +35,7 @@ const Brands = () => {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
   const brandState = useSelector((state: any) => state.brand);
+  const { code: languageCode } = useLanguage();
 
   const [perPage, setPerPage] = useState(10);
   const [page, setPage] = useState(1);
@@ -180,6 +183,8 @@ const Brands = () => {
     {
       key: 'name',
       header: 'Brand',
+      // The Bangla name on a Bangla screen; English where there is none.
+      render: (row: any) => displayName(row, 'name', languageCode),
     },
     {
       key: 'email',

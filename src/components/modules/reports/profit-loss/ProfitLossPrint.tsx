@@ -5,6 +5,7 @@ import PrintFooter from "../../../utils/utils-functions/PrintFooter";
 import PrintStyles from "../../../utils/utils-functions/PrintStyles";
 import ReportNotes, { NoteRef } from "../../../utils/utils-functions/ReportNotes";
 import { buildProfitLossNotes, profitLossNoteIndex } from "./profitLossNotes";
+import { rl } from '../../../../i18n/reportLabel';
 
 const fmtZero = (n: number) => thousandSeparator(n || 0);
 const fmtEmptyIfZero = (n: number) => (n ? thousandSeparator(n) : "");
@@ -20,7 +21,7 @@ type Props = {
 
 const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
   (
-    { report, title = "Profit & Loss Account", startDate = "-", endDate = "-", fontSize },
+    { report, title = rl("Profit & Loss Account"), startDate = "-", endDate = "-", fontSize },
     ref
   ) => {
     const fs = Number.isFinite(fontSize) ? (fontSize as number) : 11;
@@ -48,10 +49,10 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
 
             {/* Per-page header (CashBookPrint style) */}
             <div className="mb-2">
-              <h1 style={{ fontSize: (fs + 3) }} className="font-bold text-center uppercase">{title}</h1>
+              <h1 style={{ fontSize: (fs + 3) }} className="font-bold text-center uppercase">{rl(title)}</h1>
               <div className="mt-1 grid grid-cols-1 gap-1 text-xs">
                 <div>
-                  <span className="font-semibold">Report Date:</span>{" "}
+                  <span className="font-semibold">{rl("Report Date:")}</span>{" "}
                   {startDate} to {endDate}
                 </div>
               </div>
@@ -59,7 +60,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
 
             {/* ===== TRADING ===== */}
             <div style={{ fontSize: (fs + 1) }} className="mb-2 text-center font-semibold">
-              TRADING ACCOUNT
+              {rl("TRADING ACCOUNT")}
               <NoteRef n={noteIndex.basis} />
             </div>
 
@@ -71,7 +72,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border-l-0 border-t border-b border-gray-900 border-r-0 px-2 ${cellPy} text-left`}
                     >
-                      Particulars
+                      {rl("Particulars")}
                     </th>
 
                     {/* Amount column (no left/right border) */}
@@ -86,14 +87,14 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-gray-900 px-2 ${cellPy} w-[100px] text-right`}
                     >
-                      Debit (Tk.)
+                      {rl("Debit (Tk.)")}
                     </th>
 
                     <th
                       style={{ fontSize: fs }}
                       className={`border border-r-0 border-gray-900 px-2 ${cellPy} w-[100px] text-right`}
                     >
-                      Credit (Tk.)
+                      {rl("Credit (Tk.)")}
                     </th>
                   </tr>
                 </thead>
@@ -104,7 +105,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
-                      Opening Stock
+                      {rl("Opening Stock")}
                       <NoteRef n={noteIndex.stock} />
                     </td>
 
@@ -133,7 +134,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
-                      Closing Stock
+                      {rl("Closing Stock")}
                       <NoteRef n={noteIndex.stock} />
                     </td>
 
@@ -163,7 +164,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
                     >
-                      Purchase
+                      {rl("Purchase")}
                     </td>
 
                     <td
@@ -250,7 +251,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
-                      Net Purchase
+                      {rl("Net Purchase")}
                     </td>
 
                     <td
@@ -279,7 +280,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy} pl-6`}
                     >
-                      Sales
+                      {rl("Sales")}
                     </td>
 
                     <td
@@ -361,7 +362,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
-                      Net Sales
+                      {rl("Net Sales")}
                     </td>
 
                     <td
@@ -389,7 +390,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                   {Number(report?.trading?.goodsReceived || 0) > 0 ? (
                     <tr className="avoid-break font-bold">
                       <td style={{ fontSize: fs }} className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}>
-                        Goods Received from Branch
+                        {rl("Goods Received from Branch")}
                       </td>
                       <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 ${cellPy} text-right`}></td>
                       <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 ${cellPy} text-right`}>
@@ -404,7 +405,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                   {Number(report?.trading?.goodsIssued || 0) > 0 ? (
                     <tr className="avoid-break font-bold">
                       <td style={{ fontSize: fs }} className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}>
-                        Goods Issued to Branch
+                        {rl("Goods Issued to Branch")}
                       </td>
                       <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 ${cellPy} text-right`}></td>
                       <td style={{ fontSize: fs }} className={`border border-gray-900 px-2 ${cellPy} text-right`}>
@@ -422,8 +423,8 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
                       {Number(report?.trading?.grossProfit || 0) > 0
-                        ? "Gross Profit"
-                        : "Gross Loss"}
+                        ? rl("Gross Profit")
+                        : rl("Gross Loss")}
                     </td>
 
                     <td
@@ -459,7 +460,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
-                      Total
+                      {rl("Total")}
                     </td>
 
                     <td
@@ -492,17 +493,17 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                 what they come to. It is in no total -- the trading account's
                 debit side already IS the first two lines of it. */}
             <div style={{ fontSize: fs + 1 }} className="mt-3 mb-2 text-center font-semibold">
-              COST OF GOODS SOLD
+              {rl("COST OF GOODS SOLD")}
             </div>
 
             <div className="w-full overflow-hidden">
               <table className="w-full table-fixed border-collapse">
                 <tbody>
                   {[
-                    { label: "Opening Stock", value: report?.cogs?.opening, sign: "" },
-                    { label: "Net Purchase", value: report?.cogs?.netPurchase, sign: "+" },
+                    { label: rl("Opening Stock"), value: report?.cogs?.opening, sign: "" },
+                    { label: rl("Net Purchase"), value: report?.cogs?.netPurchase, sign: "+" },
                     {
-                      label: "Direct Acquisition Costs",
+                      label: rl("Direct Acquisition Costs"),
                       value: report?.cogs?.directAcquisitionCosts,
                       sign: "+",
                       note: String(noteIndex.acquisition),
@@ -513,7 +514,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                     // one of them alone would print the row's pointer on only
                     // half the periods that have the note.
                     {
-                      label: "Closing Stock",
+                      label: rl("Closing Stock"),
                       value: report?.cogs?.closing,
                       sign: "-",
                       note: noteIndex.stockMovement
@@ -521,13 +522,13 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                         : undefined,
                     },
                   ].map((line: any) => (
-                    <tr key={line.label} className="avoid-break">
+                    <tr key={rl(line.label)} className="avoid-break">
                       <td
                         style={{ fontSize: fs }}
                         className={`border border-l-0 border-r-0 border-gray-900 px-2 pl-6 ${cellPy}`}
                       >
                         {line.sign ? `${line.sign} ` : ""}
-                        {line.label}
+                        {rl(line.label)}
                         {line.note ? <NoteRef n={line.note} /> : null}
                       </td>
                       <td
@@ -576,7 +577,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
 
             {/* ===== NET PROFIT/LOSS ===== */}
             <div style={{ fontSize: fs + 1 }} className="mt-3 mb-2 text-center font-semibold">
-              NET PROFIT OR LOSS ACCOUNT
+              {rl("NET PROFIT OR LOSS ACCOUNT")}
             </div>
 
             <div className="w-full overflow-hidden">
@@ -587,7 +588,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-l-0 border-gray-900 px-2 ${cellPy} text-left border-r-0`}
                     >
-                      Particulars
+                      {rl("Particulars")}
                     </th>
 
                     <th
@@ -599,14 +600,14 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-gray-900 px-2 ${cellPy} w-[100px] text-right`}
                     >
-                      Debit (Tk.)
+                      {rl("Debit (Tk.)")}
                     </th>
 
                     <th
                       style={{ fontSize: fs }}
                       className={`border border-r-0 border-gray-900 px-2 ${cellPy} w-[100px] text-right`}
                     >
-                      Credit (Tk.)
+                      {rl("Credit (Tk.)")}
                     </th>
                   </tr>
                 </thead>
@@ -618,8 +619,8 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
                       {Number(report?.net?.grossProfit || 0) > 0
-                        ? "Gross Profit B/F"
-                        : "Gross Loss B/F"}
+                        ? rl("Gross Profit B/F")
+                        : rl("Gross Loss B/F")}
                     </td>
 
                     <th
@@ -684,7 +685,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
-                      Total Expense
+                      {rl("Total Expense")}
                     </td>
 
                     <th
@@ -777,7 +778,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                           style={{ fontSize: fs }}
                           className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                         >
-                          Total Income
+                          {rl("Total Income")}
                         </td>
 
                         <th
@@ -806,8 +807,8 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
                       {Number(report?.net?.netProfit || 0) > 0
-                        ? "Net Profit"
-                        : "Net Loss"}
+                        ? rl("Net Profit")
+                        : rl("Net Loss")}
                     </td>
 
                     <th
@@ -843,7 +844,7 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
                       style={{ fontSize: fs }}
                       className={`border border-l-0 border-r-0 border-gray-900 px-2 ${cellPy}`}
                     >
-                      Total
+                      {rl("Total")}
                     </td>
 
                     <th
@@ -883,14 +884,14 @@ const ProfitLossPrint = forwardRef<HTMLDivElement, Props>(
               <PadPrinting />
 
               <div className="mb-3 text-center" style={{ fontSize: fs }}>
-                <p className="font-semibold">{title}</p>
+                <p className="font-semibold">{rl(title)}</p>
                 <p>
                   {startDate} to {endDate}
                 </p>
               </div>
 
               <ReportNotes
-                title="Notes to the Profit & Loss Account"
+                title={rl("Notes to the Profit & Loss Account")}
                 notes={notes}
                 fontSize={fs}
                 variant="print"

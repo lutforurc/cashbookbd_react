@@ -11,8 +11,12 @@ import { deleteProductGroup, getProductGroup, storeProductGroup } from './produc
 import Table from '../../utils/others/Table';
 import InputElement from '../../utils/fields/InputElement';
 import { toast } from 'react-toastify';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { useTranslation } from 'react-i18next';
+import BilingualInput from '../../utils/fields/BilingualInput';
+import { displayName } from '../../../i18n/displayName';
 
-const emptyEditForm = { id: '', group_name: '', description: '' };
+const emptyEditForm = { id: '', group_name: '', name_local: '', description: '' };
 
 /**
  * Product Group list -- Category List's own shape, with one difference: the
@@ -32,6 +36,8 @@ const ProductGroup = () => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [editForm, setEditForm] = useState<any>(emptyEditForm);
+  const { code: languageCode, localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
   const [editOpen, setEditOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [deleteRow, setDeleteRow] = useState<any>(null);
@@ -96,6 +102,7 @@ const ProductGroup = () => {
     setEditForm({
       id: row.id,
       group_name: row.name || '',
+      name_local: row.name_local || '',
       description: row.description || '',
     });
     setEditOpen(true);
@@ -112,6 +119,11 @@ const ProductGroup = () => {
   };
 
   const handleEditSave = () => {
+    if (localCode && !(editForm.name_local || '').trim()) {
+      // "Enable Bangla" on: the Bangla name is required too.
+      toast.info(t('data.localRequired', { field: 'Group Name', language: localName }));
+      return;
+    }
     if (!editForm.group_name.trim()) {
       toast.info('Group name is required');
       return;
@@ -167,6 +179,8 @@ const ProductGroup = () => {
     {
       key: 'name',
       header: 'Group Name',
+      // The Bangla name on a Bangla screen; English where there is none.
+      render: (row: any) => displayName(row, 'name', languageCode),
     },
     {
       key: 'description',
@@ -260,13 +274,15 @@ const ProductGroup = () => {
 
             <div className="space-y-3 p-5">
               <div>
-                <InputElement
-                  id="group_name"
+                <BilingualInput
                   name="group_name"
+                  kind="name"
                   label="Group Name"
                   placeholder="Group Name"
                   value={editForm.group_name}
+                  localValue={editForm.name_local || ''}
                   onChange={handleEditChange}
+                  onLocalChange={(value) => setEditForm((prev: any) => ({ ...prev, name_local: value }))}
                 />
               </div>
               <div>

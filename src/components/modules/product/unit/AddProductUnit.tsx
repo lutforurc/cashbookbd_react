@@ -16,12 +16,16 @@ import {
   saveProductUnit,
   updateProductUnit,
 } from './unitSlice';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { useTranslation } from 'react-i18next';
+import BilingualInput from '../../../utils/fields/BilingualInput';
 
 interface ProductUnitForm {
   id: string | number;
   name: string;
   short_name: string;
   description: string;
+  name_local?: string;
 }
 
 const AddProductUnit = () => {
@@ -33,12 +37,15 @@ const AddProductUnit = () => {
   const initialFormData: ProductUnitForm = {
     id: '',
     name: '',
+    name_local: '',
     short_name: '',
     description: '',
   };
 
   const [formData, setFormData] = useState<ProductUnitForm>(initialFormData);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const { localCode, localName } = useLanguage();
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     if (id) {
@@ -56,6 +63,7 @@ const AddProductUnit = () => {
     setFormData({
       id: productUnit.editData?.id ?? '',
       name: productUnit.editData?.name ?? '',
+      name_local: productUnit.editData?.name_local ?? '',
       short_name: productUnit.editData?.short_name ?? '',
       description: productUnit.editData?.description ?? '',
     });
@@ -72,6 +80,11 @@ const AddProductUnit = () => {
   const validate = () => {
     if (!(formData.name || '').trim()) {
       toast.error('Please enter unit name.');
+      return false;
+    }
+    // "Enable Bangla" on: the Bangla name is required too.
+    if (localCode && !(formData.name_local || '').trim()) {
+      toast.error(t('data.localRequired', { field: 'Unit Name', language: localName }));
       return false;
     }
 
@@ -131,13 +144,15 @@ const AddProductUnit = () => {
       {productUnit?.isLoading === true ? <Loader /> : null}
 
       <div className="grid grid-cols-1 md:grid-cols-1 gap-4 md:w-[500px] text-center mx-auto">
-        <InputElement
-          id="name"
-          value={formData.name}
+        <BilingualInput
           name="name"
+          kind="name"
+          value={formData.name}
+          localValue={formData.name_local || ''}
           placeholder="Enter Unit Name"
           label="Unit Name"
           onChange={handleOnChange}
+          onLocalChange={(value) => setFormData((prev) => ({ ...prev, name_local: value }))}
         />
 
         <InputElement

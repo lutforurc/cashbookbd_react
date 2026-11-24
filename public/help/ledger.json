@@ -12,8 +12,8 @@
         "menu": "Financial Statement → Final Accounts → General Ledger",
         "steps": [
           "ফিল্টার আইকনে চাপুন (ফিল্টার মেনু চালু থাকলে এটি আলাদা বাক্সে খোলে)।",
-          "Select Branch থেকে শাখা বাছুন।",
-          "Accounts Head থেকে একটি হিসাব বাছুন, অথবা “All Accounts” রাখুন।",
+          "Select Branch থেকে শাখা নির্বাচন করুন।",
+          "Accounts Head থেকে একটি হিসাব নির্বাচন করুন, অথবা “All Accounts” রাখুন।",
           "Start Date ও End Date দিন।",
           "Apply চাপুন।"
         ]
