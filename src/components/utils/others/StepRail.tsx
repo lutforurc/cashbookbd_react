@@ -18,25 +18,32 @@ import { FiCheck } from 'react-icons/fi';
  */
 
 /** What makes a step tall. The one place this rail's height is decided. */
-const ITEM_PADDING = 'px-3 py-2.5';
+const ITEM_PADDING = 'px-2 py-1.5';
 
 /** The disc carrying the step number, or a tick once the step is behind you. */
-const DISC = 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold';
+const DISC = 'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-semibold';
 
 type StepState = 'active' | 'completed' | 'todo';
 
+// A pill per step: the open one lit blue with a soft glow beneath it.
 const CARD: Record<StepState, string> = {
-  active: 'border-blue-600 bg-blue-50 text-gray-900 dark:bg-blue-500/10 dark:text-[rgb(var(--c-text))]',
+  active:
+    'border-blue-500 bg-gradient-to-r from-blue-50 via-white to-white text-blue-700 ' +
+    'shadow-[0_8px_18px_-8px_rgba(37,99,235,0.6)] md:translate-x-1 ' +
+    'dark:from-blue-500/20 dark:via-blue-500/10 dark:to-transparent dark:text-blue-300',
   completed: 'border-green-500 text-green-700 dark:text-green-400',
   todo:
-    'border-gray-300 text-gray-600 hover:border-gray-400 ' +
+    'border-gray-200 bg-white text-gray-600 hover:-translate-y-px hover:border-blue-300 ' +
+    'hover:text-blue-700 hover:shadow-sm ' +
     'dark:border-gray-700 dark:bg-transparent dark:text-gray-300',
 };
 
 const DISC_STATE: Record<StepState, string> = {
-  active: 'border-blue-600 bg-blue-600 text-white',
+  active:
+    'border-transparent bg-gradient-to-br from-blue-500 to-blue-700 text-white ' +
+    'ring-4 ring-blue-100 dark:ring-blue-500/20',
   completed: 'border-green-500 text-green-600 dark:text-green-400',
-  todo: 'border-gray-300 text-gray-500 dark:border-gray-600 dark:text-gray-400',
+  todo: 'border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-600 dark:bg-transparent dark:text-gray-400',
 };
 
 interface StepRailProps {
@@ -66,16 +73,13 @@ const StepRail: React.FC<StepRailProps> = ({ steps, current, onSelect, className
           type="button"
           onClick={() => onSelect(index)}
           aria-current={state === 'active' ? 'step' : undefined}
-          className={`flex w-52 shrink-0 items-center gap-3 rounded border text-left transition md:w-full ${ITEM_PADDING} ${CARD[state]}`}
+          className={`flex w-52 shrink-0 items-center gap-3 rounded-lg border text-left transition-all duration-200 md:w-full ${ITEM_PADDING} ${CARD[state]}`}
         >
           <span className={`${DISC} ${DISC_STATE[state]}`}>
             {state === 'completed' ? <FiCheck /> : index + 1}
           </span>
-          <span className="min-w-0">
-            <span className="block text-[11px] font-semibold uppercase tracking-wide opacity-70">
-              Step {index + 1}
-            </span>
-            <span className="block text-sm font-medium leading-tight">{step}</span>
+          <span className={`min-w-0 truncate text-sm leading-tight ${state === 'active' ? 'font-bold' : 'font-medium'}`}>
+            {step}
           </span>
         </button>
       );
