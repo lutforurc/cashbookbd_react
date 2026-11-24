@@ -1,7 +1,7 @@
 # ধাপ ১ — Multi-language Foundation (Implementation Plan)
 
 **সোর্স:** `docs/mult-language/multi-language-plan.md` — ধাপ ১ (ভিত্তি)
-**স্কোপ:** i18n ভিত্তি + ভাষা বদলানো। **কোনো লেবেল এখনো অনুবাদ হবে না** — সব স্ক্রিন আজকের মতো ইংরেজিতেই চলবে।
+**স্কোপ:** i18n ভিত্তি + **ভাষা সেটিংস পেজ** (বাংলা চালু/বন্ধ, সোর্স plan §২.৪) + হেডারে ভাষা বদলানো। **কোনো লেবেল এখনো অনুবাদ হবে না** — সব স্ক্রিন আজকের মতো ইংরেজিতেই চলবে।
 **বাদ:** ধাপ ১ক (ফন্ট/fonts টেবিল/NikoshBAN), `name_local` কলাম, প্রিন্ট, SMS, HRM বাংলা বেতন শীট (সোর্স plan §১৪) — এগুলো আলাদা plan।
 **অবস্থা (24/11/2026):** এখনো শুরু হয়নি — `src/i18n`, `src/locales`, i18next dependency, `runMultiLanguage…` মেথড কোনোটাই নেই।
 
@@ -16,11 +16,13 @@
 | ভাষা নির্ধারণের ক্রম | ইউজার → শাখার `ui_language` → English | সোর্স plan §২.৩ |
 | স্বিচার UI | হেডারে ছোট segmented pill: `EN \| বাংলা` | কোম্পানিতে সর্বোচ্চ English + ১টি local, তাই ড্রপডাউন দরকার নেই |
 | স্বিচার কখন দেখাবে | `company.local_language` null হলে **কিছুই render হবে না** | সোর্স plan §৪.২ |
+| বাংলা কোথা থেকে চালু হয় | **ভাষা সেটিংস পেজ** — Admin → Settings → Language, `/settings/language`, permission `language.settings` | একটা জায়গা থেকে চালু/বন্ধ; Branch Settings-এ ভাষার ঘর নয় (সোর্স plan §২.৪) |
+| পেজের ঘর (ধাপ ১) | বাংলা চালু (কোম্পানি) + শাখা বাছাই করে ডিফল্ট ভাষা, প্রিন্টের ভাষা, অঙ্ক | ফন্ট (১ক) আর "ফর্মে বাংলা নামের ঘর" (ধাপ ৩–৪) পরে একই পেজে যোগ হবে |
 | অনুবাদ ফাইল | `en` = `src/locales/en/` (bundled, বাধ্যতামূলক); `bn` = `public/locales/bn/` (runtime fetch) | সোর্স plan §৫.১ — অনুবাদ rebuild ছাড়া বদলানো যাবে |
 | Pre-paint | `index.html`-এর inline script-এ `localStorage['ui-lang']` পড়ে `<html lang>` সেট | ভুল ভাষার ফ্ল্যাশ এড়াতে (theme script-এর মতোই) |
 | ভাষা state | ছোট redux slice + optimistic update | কোডবেসে সবকিছু redux; API ব্যর্থ হলে rollback |
 
-**ধাপ ১-এর সফলতার মাপকাঠি:** ভাষা বদলানো যায়, `<html lang>`/`dir` বদলায়, reload ও পরের লগইনে থাকে, প্রতিটা request-এ `Accept-Language` যায় — এবং ইংরেজি বেছে নিলে অ্যাপ হুবহু আজকের মতো।
+**ধাপ ১-এর সফলতার মাপকাঠি:** ভাষা সেটিংস থেকে বাংলা চালু/বন্ধ করা যায়; চালু থাকলে ভাষা বদলানো যায়, `<html lang>`/`dir` বদলায়, reload ও পরের লগইনে থাকে, প্রতিটা request-এ `Accept-Language` যায় — এবং ইংরেজি বেছে নিলে অ্যাপ হুবহু আজকের মতো।
 
 ---
 
@@ -83,9 +85,12 @@ if ($lang && Language::where('code', $lang)->where('is_active', 1)->exists()) {
       { "code": "bn", "name": "Bangla", "native_name": "বাংলা",  "direction": "ltr", "digits": "native" }
     ]
   },
+  "branch": { "ui_language": "en", "print_language": "en", "digit_style": "auto" },
   "user": { "lang": null }
 }
 ```
+
+`branch` = বর্তমান শাখার meta (`ui_language`, `print_language`, `digit_style`); না থাকলে ডিফল্ট `en` / `en` / `auto`।
 
 `languages` = শুধু `is_active`, এবং English সবসময় প্রথমে। `users.lang` আগেই `/api/me` ও `/api/settings`-এ user object-এ আছে — নতুন কিছু লাগবে না।
 
@@ -101,7 +106,32 @@ Response: { "success": true, "data": { "lang": "local" } }
 - নিজের `users.lang` আপডেট; permission চেক লাগবে না।
 - **`/user/user-update` ব্যবহার করবেন না** — সেটা পুরো ইউজার payload আশা করে।
 
-## A7. Deploy ধাপ
+## A7. ভাষা সেটিংস API
+
+```
+GET  /api/settings/language?branch_id=5
+→ { "local_language": "bn" | null,
+    "languages": [ …active, English প্রথমে… ],
+    "branch_id": 5,
+    "ui_language": "en", "print_language": "en", "digit_style": "auto",
+    "has_local_names": false }
+
+POST /api/settings/language
+Body: { "local_language": "bn" | null,
+        "branch_id": 5,
+        "ui_language": "en" | "local",
+        "print_language": "en" | "local",
+        "digit_style": "auto" | "latin" | "native" }
+```
+
+- দুটোই permission `language.settings` চায় (`denyUnlessPermitted`); না থাকলে 403।
+- `local_language` → কোম্পানির `local_language`; বাকি তিনটা → `meta($companyId, $branchId, …)`। `branch_id` অবশ্যই নিজের কোম্পানির শাখা।
+- `local_language` শুধু active `languages.code` অথবা null; `en` গ্রহণযোগ্য নয় (ইংরেজি সবসময় আছে)।
+- বাংলা বন্ধ (`null`) করলে কোনো ডাটা মুছবে না; শাখার meta-ও যেমন আছে থাকবে।
+- `has_local_names`: কোনো `name_local` লেখা আছে কি না — ধাপ ১-এ সবসময় `false` (কলাম নেই); পরের ধাপে Local Language বদলানো আটকাতে লাগবে (সোর্স plan §২.৫)।
+- **Permission:** `language.settings` যোগ হবে `runMultiLanguagePermissionSchema()`-এ, প্যাচ কমান্ডের বাকি permission যেভাবে যোগ হয় সেই ঘরানায় (আগে আছে কি না দেখে)। শুধু Admin role-এ ডিফল্ট দেওয়া হবে।
+
+## A8. Deploy ধাপ
 
 `php artisan patch:add-unit-type` → সব টেন্যান্ট ডাটাবেসে। দুইবার চালালে সব `skipped … already present`। ছোট/পুরনো ডাটাবেসে টেবিল না থাকলে `warn` দিয়ে এগোবে, থামবে না।
 
@@ -126,6 +156,7 @@ npm i i18next@^24 react-i18next@^15 i18next-http-backend@^3
 | `src/i18n/useLanguage.ts` | redux → resolved code; `setLanguage(choice)` রিটার্ন করে |
 | `src/i18n/languageSlice.ts` | `{ choice: 'en' \| 'local' \| null \| undefined }` + `saveLanguage` thunk (POST, ব্যর্থ হলে rollback + toast) |
 | `src/components/Header/LanguageSwitcher.tsx` | `EN \| বাংলা` pill |
+| `src/components/modules/settings/LanguageSettings.tsx` | ভাষা সেটিংস পেজ (B4ক) |
 | `src/locales/en/common.json` | শুরুর key-set (নিচে) |
 | `public/locales/bn/common.json` | একই key, বাংলা মান |
 | `scripts/check-i18n.mjs` | `npm run i18n:check` |
@@ -199,7 +230,11 @@ export const applyLanguage = (code: string, info?: LanguageInfo) => {
 | `index.html` | inline script-এ যোগ: `localStorage['ui-lang']` / `['ui-dir']` পড়ে `document.documentElement.lang` ও `dir` সেট (theme script-এর ভেতরেই) |
 | `src/App.tsx` | `useLanguage()` কল — `useUserTheme(...)`-এর ঠিক পরে, শুধু side-effect বসানোর জন্য |
 | `src/components/services/httpService.tsx` | request interceptor-এ `config.headers['Accept-Language'] = getCurrentLanguage();` |
-| `src/components/services/apiRoutes.tsx` | `export const API_USER_LANGUAGE_URL = \`${API_BASE_URL}/user/language\`;` |
+| `src/components/services/apiRoutes.tsx` | `export const API_USER_LANGUAGE_URL = \`${API_BASE_URL}/user/language\`;` ও `API_LANGUAGE_SETTINGS_URL = \`${API_BASE_URL}/settings/language\`` |
+| `src/components/services/appRoutes.tsx` | `language_settings: '/settings/language'` |
+| `src/components/services/tabGroups.ts` | `ADMIN_SETTINGS_TABS`-এ `{ label: 'Language', path: routes.language_settings, permission: 'language.settings' }` |
+| `src/App.tsx` | ADMIN_SETTINGS_TABS-এর `RouteTabs`-এর ভিতরে `RequirePermission anyOf={['language.settings']}` দিয়ে route |
+| `public/help/settings.json` | ভাষা সেটিংস পেজের হেল্প টপিক; তারপর `npm run help:check` (প্রজেক্টের নিয়ম) |
 | `src/store.tsx` | `language: languageReducer` যোগ |
 | `src/components/Header/index.tsx` | `<ul>`-এ `<li><LanguageSwitcher /></li>` — `DropdownNotification`-এর **আগে** |
 | `package.json` | `"i18n:check": "node scripts/check-i18n.mjs"` |
@@ -215,6 +250,28 @@ export const applyLanguage = (code: string, info?: LanguageInfo) => {
 - ক্লিক: `setLanguage('en' | 'local')` → optimistic redux → `applyLanguage` তাৎক্ষণিক → background-এ `POST /api/user/language`; ব্যর্থ হলে আগের মান ফিরে আসে + toast।
 - Active option হাইলাইট (`bg-[rgb(var(--c-primary))] text-white`), inactive `text-[rgb(var(--c-text-muted))]` — হেডারের বিদ্যমান pill/button ঘরানায়।
 - `aria-pressed` + `aria-label` `t('language.label')` থেকে (এটাই `t()`-এর প্রথম ব্যবহার)।
+
+## B4ক. ভাষা সেটিংস পেজ (`LanguageSettings.tsx`)
+
+```
+ভাষা সেটিংস
+─────────────────────────────────────────────
+[■] বাংলা চালু                      ← কোম্পানি (local_language = bn / null)
+    বন্ধ থাকলে পুরো সফটওয়্যার ইংরেজিতে চলে।
+
+শাখা: [ PGCB Thakurgaon Sadar ▾ ]   ← শুধু বাংলা চালু থাকলে দেখাবে
+সফটওয়্যারের ডিফল্ট ভাষা   ( ) English  ( ) বাংলা
+প্রিন্টের ডিফল্ট ভাষা      ( ) English  ( ) বাংলা
+অঙ্ক                       ( ) ভাষা অনুযায়ী  ( ) 123  ( ) ১২৩
+
+                                            [ Save ]
+```
+
+- লোডে `GET /api/settings/language?branch_id=<বর্তমান শাখা>`; শাখা বদলালে আবার GET।
+- Save → `POST`; সফল হলে `settings` (redux) আবার আনা, যাতে হেডারের বোতাম সাথে সাথে আসে/যায় — পেজ reload নয়।
+- বাংলা **বন্ধ** করার আগে নিশ্চিতকরণ: "সফটওয়্যার ইংরেজিতে চলবে। কোনো ডাটা মুছবে না।"
+- পেজের লেবেল এখনই `t()` দিয়ে, `language.settings.*` key — en ও bn দুটো ফাইলেই (এটা অনুবাদের প্রথম আসল পেজ)।
+- স্টাইল বাকি Settings ট্যাবগুলোর মতো (`FormToggleField`, Save বাটন প্যানেলের নিচে)।
 
 ## B5. শুরুর locale ফাইল
 
@@ -249,7 +306,8 @@ export const applyLanguage = (code: string, info?: LanguageInfo) => {
 3. `main.tsx` / `index.html` / `store.tsx` / `App.tsx` wiring
 4. `httpService` Accept-Language + `apiRoutes` constant
 5. `LanguageSwitcher` + Header-এ বসানো
-6. `scripts/check-i18n.mjs` + `CLAUDE.md` নিয়ম
+6. ভাষা সেটিংস পেজ (B4ক) + route + Settings ট্যাব + হেল্প টপিক
+7. `scripts/check-i18n.mjs` + `CLAUDE.md` নিয়ম
 
 প্রতিটা ধাপের পর অ্যাপ চালু থাকবে; কোনো স্ক্রিনের লেখা বদলাবে না।
 
@@ -261,6 +319,11 @@ export const applyLanguage = (code: string, info?: LanguageInfo) => {
 
 - [ ] `npm run build` — কোনো TS/ESLint ভুল নেই
 - [ ] `local_language` null কোম্পানিতে হেডারে কোনো ভাষার বাটন নেই
+- [ ] ভাষা সেটিংসে "বাংলা চালু" দিয়ে Save → reload ছাড়াই হেডারে `EN | বাংলা` আসে; বন্ধ করলে চলে যায়
+- [ ] বাংলা বন্ধ থাকলে পেজে শুধু মূল সুইচ দেখায়, শাখার ঘরগুলো লুকানো
+- [ ] শাখার ডিফল্ট "বাংলা" দিলে নিজে কিছু না বাছা ইউজার (`users.lang` null) লগইনে `lang="bn"` পায়; নিজে English বাছা ইউজার English-এই থাকে
+- [ ] অন্য শাখা বাছলে সেই শাখার মান লোড হয়, সেভ শুধু সেই শাখায় যায়
+- [ ] `language.settings` permission ছাড়া Settings-এ Language ট্যাব নেই, URL-এ গেলে ঢোকা যায় না
 - [ ] বাংলা বাছলে `<html lang="bn">`, English বাছলে `lang="en"`; `dir` সঠিক
 - [ ] বদলানোর সাথে সাথে বাটনের active state বদলায়, **পেজ reload হয় না**
 - [ ] reload করার পর ভাষা আগের মতোই থাকে (pre-paint script)
@@ -278,6 +341,9 @@ export const applyLanguage = (code: string, info?: LanguageInfo) => {
 - [ ] deploy-এর পর কোনো ইউজারের `users.lang` নিজে থেকে বদলায় না (`null` হয় একবারই)
 - [ ] `get-settings` payload-এ `company.local_language`, `company.languages`, `user.lang` আসে
 - [ ] `POST /api/user/language` — `en`/`local`/null গ্রহণ করে, বাকিতে 422
+- [ ] `GET/POST /api/settings/language` — permission ছাড়া 403; অন্য কোম্পানির `branch_id`-তে refuse; `local_language: "en"` বা অচেনা কোডে 422
+- [ ] বাংলা বন্ধ করলে কোনো টেবিলের ডাটা বা শাখার meta মোছে না
+- [ ] `language.settings` permission patch দুইবার চালালেও একটাই সারি
 - [ ] `Accept-Language: bn` পাঠালে middlewares `App::getLocale()` = `bn`; অচেনা কোডে exception নয়
 
 ---
