@@ -219,13 +219,15 @@ const BusinessSummary = () => {
     <div>
       <HelmetTitle title="Business Summary" />
 
-      <div className="py-3">
-        <div className="flex flex-wrap items-end gap-3">
-          {/* ⚠️ `min-w-0` here and on each cell. The columns were fixed pixel
-              minimums (240px / 170px / 170px), which cannot shrink -- in a flex
-              row they kept their width and painted over the action bar beside
-              them. A column may now narrow to whatever the row leaves. */}
-          <div className="grid min-w-0 flex-1 grid-cols-1 items-end gap-3 md:grid-cols-3">
+      {/* `@container`: the row follows the panel's own width, not the
+          screen's -- inside the tab page the panel is far narrower than the
+          viewport. One column on a phone; the three fields side by side from
+          @xl with the actions in a full row beneath them; and from @6xl, where
+          the fields still keep ~200px each, the actions join them on one row.
+          ⚠️ `min-w-0` on each cell: a column may narrow to whatever the row
+          leaves instead of painting over the actions beside it. */}
+      <div className="@container py-3">
+          <div className="grid min-w-0 grid-cols-1 items-end gap-3 @xl:grid-cols-3 @6xl:grid-cols-[repeat(3,minmax(0,1fr))_auto]">
             <div className="min-w-0">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
                 Select Branch <span className="text-red-500">*</span>
@@ -260,21 +262,19 @@ const BusinessSummary = () => {
                 className="w-full text-sm"
               />
             </div>
-          </div>
 
-          {/* The actions share the filters' row, the way the trial balances and
-              Product Profit Loss lay theirs out -- a second row of buttons was
-              the one difference between these sibling screens.
-              ⚠️ WRAPPING, never nowrap: a row that no longer fits breaks onto
-              the next line instead of running off the edge, and below `sm`
-              each action keeps its full width. */}
-          <div className="flex w-full flex-wrap items-end justify-end gap-2 sm:w-auto">
+          {/* On a phone the actions are a two-column grid -- Apply across the
+              full width, then All beside the font size and Print beside Home --
+              so no box is left half-width. From @md they are one wrapping row,
+              never nowrap: a row that no longer fits breaks onto the next line
+              instead of running off the edge. */}
+          <div className="grid grid-cols-2 items-end gap-2 @md:flex @md:flex-wrap @md:justify-end @xl:col-span-3 @6xl:col-span-1">
             <ButtonLoading
               onClick={runReport}
               buttonLoading={loading}
               label="Apply"
               icon={<FiCheckSquare />}
-              className="w-full px-6 sm:w-auto"
+              className="col-span-2 w-full px-6 @md:w-auto"
             />
             <PrintRowsInput
               id="businessSummaryRowsPerPage"
@@ -283,7 +283,7 @@ const BusinessSummary = () => {
               value={rowsPerPage.toString()}
               onChange={handleRowsPerPageChange}
               type="text"
-              className="w-full! text-center text-sm font-medium sm:w-20!"
+              className="w-full! text-center text-sm font-medium @md:w-20!"
             />
             <PrintFontInput
               id="businessSummaryFontSize"
@@ -292,18 +292,18 @@ const BusinessSummary = () => {
               value={fontSize.toString()}
               onChange={handleFontSizeChange}
               type="text"
-              className="w-full! text-center text-sm font-medium sm:w-20!"
+              className="w-full! text-center text-sm font-medium @md:w-20!"
             />
             <Button type="button" onClick={handlePrint} disabled={!hasReport} variant="default"
-              className="inline-flex w-full items-center justify-center gap-2 px-5 text-center text-sm font-medium focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
+              className="inline-flex w-full items-center justify-center gap-2 px-5 text-center text-sm font-medium focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 @md:w-auto">
               <FaPrint /> Print
             </Button>
             <Button type="button" onClick={() => navigate('/dashboard')} variant="default"
-              className="inline-flex w-full items-center justify-center gap-2 px-5 text-center text-sm font-medium focus:outline-none sm:w-auto">
+              className="inline-flex w-full items-center justify-center gap-2 px-5 text-center text-sm font-medium focus:outline-none @md:w-auto">
               <FaHouse /> Home
             </Button>
           </div>
-        </div>
+          </div>
       </div>
 
       {loading ? <Loader /> : null}

@@ -671,9 +671,14 @@ const ProfitLoss = (user: any) => {
     <div>
       <HelmetTitle title={"Profit & Loss Account"} />
 
-      <div className="pl-0 pr-1 py-3 ">
+      {/* `@container`: the filter row follows the panel's own width, not the
+          screen's -- inside the tab page the panel is far narrower than the
+          viewport. One column on a phone; the three fields side by side from
+          @xl with the actions in a full row beneath; and from @7xl, where the
+          fields still keep ~200px each, the actions join them on one row. */}
+      <div className="@container pl-0 pr-1 py-3 ">
         <div className={`gap-3 ${useFilterMenuEnabled ? "flex flex-wrap items-center gap-3" : "flex flex-wrap items-end"}`}>
-          <div className={useFilterMenuEnabled ? "relative shrink-0" : "min-w-[320px] flex-1 md:max-xl:w-full md:max-xl:min-w-0 md:max-xl:flex-none xl:max-[1880px]:w-full xl:max-[1880px]:min-w-0 xl:max-[1880px]:flex-none"}>
+          <div className={useFilterMenuEnabled ? "relative shrink-0" : "w-full min-w-0"}>
             {useFilterMenuEnabled && (
               <Button
                 type="button"
@@ -700,7 +705,7 @@ const ProfitLoss = (user: any) => {
                   className={
                     useFilterMenuEnabled
                       ? "space-y-3"
-                      : "grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4 min-[1881px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]"
+                      : "grid grid-cols-1 items-end gap-3 @xl:grid-cols-3 @7xl:grid-cols-[repeat(3,minmax(0,1fr))_auto]"
                   }
                 >
                   <div>
@@ -757,6 +762,66 @@ const ProfitLoss = (user: any) => {
                       className="px-4"
                     />
                   </div>
+                  {/* The actions sit in the grid: a full row under the fields,
+                      or the fourth column once the panel is wide. Each group
+                      stays on one line; only on a phone does the print group
+                      drop under Apply. */}
+                  {!useFilterMenuEnabled && (
+                    <div className="flex flex-wrap items-end justify-between gap-2 @xl:col-span-3 @7xl:col-span-1">
+                      <div className="flex flex-nowrap items-end gap-2">
+                        <ButtonLoading
+                          onClick={handleActionButtonClick}
+                          buttonLoading={buttonLoading}
+                          label="Apply"
+                          icon={<FiCheckSquare />}
+                          className="px-6"
+                        />
+                        <ButtonLoading
+                          onClick={handleResetFilters}
+                          buttonLoading={false}
+                          label="Reset"
+                          icon={<FiRotateCcw />}
+                          className="px-4"
+                        />
+                      </div>
+
+                      <div className="flex flex-wrap items-end gap-2">
+                        <PrintRowsInput
+         id="perPage"
+         name="perPage"
+         label=""
+         value={perPage.toString()}
+         onChange={handlePerPageChange}
+         type="text"
+         className="font-medium text-sm w-20! text-center"
+                        />
+
+                        <PrintFontInput
+         id="fontSize"
+         name="fontSize"
+         label=""
+         value={fontSize.toString()}
+         onChange={handleFontSizeChange}
+         type="text"
+         className="font-medium text-sm w-20! text-center"
+                        />
+
+                        <PrintButton
+                          onClick={handlePrint}
+                          label="Print"
+                          className="px-6"
+                          disabled={!hasReportData}
+                        />
+
+                        <PrintButton
+                          onClick={handleItemPrintButtonClick}
+                          label="Item"
+                          className="px-6"
+                          disabled={!hasReportData || itemPrintLoading}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -808,62 +873,7 @@ const ProfitLoss = (user: any) => {
                 disabled={!hasReportData || itemPrintLoading}
               />
             </div>
-          ) : (
-            <div className="flex flex-nowrap items-end justify-between gap-3 overflow-x-auto xl:ml-auto">
-              <div className="flex flex-nowrap items-end gap-2">
-                <ButtonLoading
-                  onClick={handleActionButtonClick}
-                  buttonLoading={buttonLoading}
-                  label="Apply"
-                  icon={<FiCheckSquare />}
-                  className="px-6"
-                />
-                <ButtonLoading
-                  onClick={handleResetFilters}
-                  buttonLoading={false}
-                  label="Reset"
-                  icon={<FiRotateCcw />}
-                  className="px-4"
-                />
-              </div>
-
-              <div className="flex flex-nowrap items-end gap-2">
-                <PrintRowsInput
- id="perPage"
- name="perPage"
- label=""
- value={perPage.toString()}
- onChange={handlePerPageChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
-                />
-
-                <PrintFontInput
- id="fontSize"
- name="fontSize"
- label=""
- value={fontSize.toString()}
- onChange={handleFontSizeChange}
- type="text"
- className="font-medium text-sm w-20! text-center"
-                />
-
-                <PrintButton
-                  onClick={handlePrint}
-                  label="Print"
-                  className="px-6"
-                  disabled={!hasReportData}
-                />
-
-                <PrintButton
-                  onClick={handleItemPrintButtonClick}
-                  label="Item"
-                  className="px-6"
-                  disabled={!hasReportData || itemPrintLoading}
-                />
-              </div>
-            </div>
-          )}
+          ) : null}
         </div>
       </div>
       {/* ===== Report ===== */}
