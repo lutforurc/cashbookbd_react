@@ -120,25 +120,14 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'reports/product/stock', title: "Stock" },
     { id: 'reports/purchase-ledger', title: "Purchase & Sales" },
   ],
-  // The financial statements, in the order the owner reads them: the product
-  // reports first, then the dated statements, the trial balances, and the
-  // period-end accounts. Any one of them opens the menu; each entry is gated
-  // on its own permission below.
+  // The statements render as tabs in four groups, the way Reports does, so the
+  // menu offers each group rather than each screen. This list must name what
+  // the sidebar draws.
   'financial_statement': [
-    { id: 'product_profit_loss', title: "Product Profit Loss" },
-    { id: 'product_profit_summary', title: "Product Profit Summary" },
-    { id: 'invoice_wise_profit', title: "Invoice Wise Profit" },
-    { id: 'profit_loss_date_wise', title: "Profit Loss (Date Wise)" },
-    { id: 'monthly_statement', title: "Monthly Statement" },
-    { id: 'trial_balance_level4', title: "Trial Balance Details" },
-    { id: 'trial_balance_level3', title: "Trial Balance Group" },
-    { id: 'trial_balance', title: "Trial Balance" },
-    { id: 'expense_report', title: "Expense Report" },
-    { id: 'profit_loss', title: "Profit Loss" },
-    { id: 'balance_sheet', title: "Balance Sheet" },
-    { id: 'business_summary', title: "Business Summary" },
-    { id: 'cash_flow_statement', title: "Cash Flow Statement" },
-    { id: 'general_ledger', title: "General Ledger" },
+    { id: 'product_profit_loss', title: "Profit Analysis" },
+    { id: 'profit_loss_date_wise', title: "Periodic Statements" },
+    { id: 'trial_balance_level4', title: "Trial Balance" },
+    { id: 'profit_loss', title: "Final Accounts" },
   ],
   'legacy': [
     { id: 'legacy/records', title: "Old ERP Record" },
@@ -284,7 +273,7 @@ import {
 import { FaBluetooth, FaRegStar } from 'react-icons/fa6';
 import { hasPermission } from '../utils/permissionChecker';
 import { inTabGroup, tabsFor, useTabOrder } from '../utils/others/RouteTabs';
-import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, DAILY_CONTROL_TABS, ORDER_TABS, UPLOAD_TABS, COMPANY_BRANCH_TABS, USER_TABS, ROLE_TABS, ADMIN_SETTINGS_TABS, PLATFORM_TABS, SMS_TABS, PRODUCT_TABS, CLASSIFICATION_TABS, STOCK_ALERT_TABS, VR_CORRECTION_TABS, VR_AUDIT_TABS, PARTY_TABS, COA_TABS, REPORT_CASH_BANK_TABS, REPORT_LEDGER_TABS, REPORT_SALES_TABS, REPORT_STOCK_TABS, REPORT_INSTALLMENT_TABS } from '../services/tabGroups';
+import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, DAILY_CONTROL_TABS, ORDER_TABS, UPLOAD_TABS, COMPANY_BRANCH_TABS, USER_TABS, ROLE_TABS, ADMIN_SETTINGS_TABS, PLATFORM_TABS, SMS_TABS, PRODUCT_TABS, CLASSIFICATION_TABS, STOCK_ALERT_TABS, VR_CORRECTION_TABS, VR_AUDIT_TABS, PARTY_TABS, COA_TABS, REPORT_CASH_BANK_TABS, REPORT_LEDGER_TABS, REPORT_SALES_TABS, REPORT_STOCK_TABS, REPORT_INSTALLMENT_TABS, FIN_PROFIT_TABS, FIN_PERIODIC_TABS, FIN_TRIAL_BALANCE_TABS, FIN_FINAL_ACCOUNTS_TABS } from '../services/tabGroups';
 import { branchFormVariant, branchInvoiceVariant, separateEntriesShown, unifiedEntryShown } from '../utils/userFeatureSettings';
 import { useSelector } from 'react-redux';
 import './Sidebar.css';
@@ -1630,143 +1619,43 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
                             </li>
                           ))}
-                          {hasPermission(permissions, 'productwise.profit') && (
+                          {tabsFor(FIN_PROFIT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('financial_statement', 'product_profit_loss')}>
                               <NavLink
-                                to={routes.product_profit_loss}
-                                className={subMenuLinkClass}
+                                to={tabsFor(sortTabs(FIN_PROFIT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(FIN_PROFIT_TABS, pathname) })}
                               >
-                                Product Profit Loss
+                                Profit Analysis
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'productwise.profit.summary') && (
-                            <li style={subSlot('financial_statement', 'product_profit_summary')}>
-                              <NavLink
-                                to={routes.product_profit_summary}
-                                className={subMenuLinkClass}
-                              >
-                                Product Profit Summary
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'invoice.wise.profit') && (
-                            <li style={subSlot('financial_statement', 'invoice_wise_profit')}>
-                              <NavLink
-                                to={routes.invoice_wise_profit}
-                                className={subMenuLinkClass}
-                              >
-                                Invoice Wise Profit
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'profit.loss.date.wise') && (
+                          {tabsFor(FIN_PERIODIC_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('financial_statement', 'profit_loss_date_wise')}>
                               <NavLink
-                                to={routes.profit_loss_date_wise}
-                                className={subMenuLinkClass}
+                                to={tabsFor(sortTabs(FIN_PERIODIC_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(FIN_PERIODIC_TABS, pathname) })}
                               >
-                                Profit Loss (Date Wise)
+                                Periodic Statements
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'monthly.statement') && (
-                            <li style={subSlot('financial_statement', 'monthly_statement')}>
-                              <NavLink
-                                to={routes.monthly_statement}
-                                className={subMenuLinkClass}
-                              >
-                                Monthly Statement
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'trial.balance.l4') && (
+                          {tabsFor(FIN_TRIAL_BALANCE_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('financial_statement', 'trial_balance_level4')}>
                               <NavLink
-                                to={routes.trial_balance_level4}
-                                className={subMenuLinkClass}
-                              >
-                                Trial Balance Details
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'trial.balance.l3') && (
-                            <li style={subSlot('financial_statement', 'trial_balance_level3')}>
-                              <NavLink
-                                to={routes.trial_balance_level3}
-                                className={subMenuLinkClass}
+                                to={tabsFor(sortTabs(FIN_TRIAL_BALANCE_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(FIN_TRIAL_BALANCE_TABS, pathname) })}
                               >
                                 Trial Balance
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'trial.balance') && (
-                            <li style={subSlot('financial_statement', 'trial_balance')}>
-                              <NavLink
-                                to={routes.trial_balance}
-                                className={subMenuLinkClass}
-                              >
-                                Trial Balance Details
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'expense.report') && (
-                            <li style={subSlot('financial_statement', 'expense_report')}>
-                              <NavLink
-                                to={routes.expense_report}
-                                className={subMenuLinkClass}
-                              >
-                                Expense Report
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'profit.loss') && (
+                          {tabsFor(FIN_FINAL_ACCOUNTS_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('financial_statement', 'profit_loss')}>
                               <NavLink
-                                to={routes.profit_loss}
-                                className={subMenuLinkClass}
+                                to={tabsFor(sortTabs(FIN_FINAL_ACCOUNTS_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(FIN_FINAL_ACCOUNTS_TABS, pathname) })}
                               >
-                                Profit Loss
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'balancesheet.view') && (
-                            <li style={subSlot('financial_statement', 'balance_sheet')}>
-                              <NavLink
-                                to={routes.balance_sheet}
-                                className={subMenuLinkClass}
-                              >
-                                Balance Sheet
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'business.summary') && (
-                            <li style={subSlot('financial_statement', 'business_summary')}>
-                              <NavLink
-                                to={routes.business_summary}
-                                className={subMenuLinkClass}
-                              >
-                                Business Summary
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'cash.flow.statement') && (
-                            <li style={subSlot('financial_statement', 'cash_flow_statement')}>
-                              <NavLink
-                                to={routes.cash_flow_statement}
-                                className={subMenuLinkClass}
-                              >
-                                Cash Flow Statement
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'general.ledger') && (
-                            <li style={subSlot('financial_statement', 'general_ledger')}>
-                              <NavLink
-                                to={routes.general_ledger}
-                                className={subMenuLinkClass}
-                              >
-                                General Ledger
+                                Final Accounts
                               </NavLink>
                             </li>
                           )}

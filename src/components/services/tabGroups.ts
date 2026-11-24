@@ -226,3 +226,38 @@ export const REPORT_INSTALLMENT_TABS: RouteTab[] = [
   { label: 'Collection Sheet', path: routes.somity_collection_sheet, permission: 'collection.sheet' },
   { label: 'Monthly Report', path: routes.somity_monthly_report, permission: 'monthly.report' },
 ];
+
+// ---- Financial Statement
+// Four groups, in the order the owner reads them: the profit reports, the dated
+// statements, the trial balances, then the period-end accounts. Each statement
+// keeps its own route and its own permission, so a role holding one of them
+// opens that one tab and no more; a group with no permitted tab is not offered.
+//
+// ⚠️ `trial_balance_level4` and `trial_balance` are two names for ONE screen:
+// both routes render TrialBalanceLevel4 under separate keys, so a role may hold
+// either without the other. They stay two tabs for that reason.
+export const FIN_PROFIT_TABS: RouteTab[] = [
+  { label: 'Product Profit Loss', path: routes.product_profit_loss, permission: 'productwise.profit' },
+  { label: 'Product Profit Summary', path: routes.product_profit_summary, permission: 'productwise.profit.summary' },
+  { label: 'Invoice Wise Profit', path: routes.invoice_wise_profit, permission: 'invoice.wise.profit' },
+];
+
+export const FIN_PERIODIC_TABS: RouteTab[] = [
+  { label: 'Profit Loss (Date Wise)', path: routes.profit_loss_date_wise, permission: 'profit.loss.date.wise' },
+  { label: 'Monthly Statement', path: routes.monthly_statement, permission: 'monthly.statement' },
+  { label: 'Expense Report', path: routes.expense_report, permission: 'expense.report' },
+];
+
+export const FIN_TRIAL_BALANCE_TABS: RouteTab[] = [
+  { label: 'Trial Balance Details', path: routes.trial_balance_level4, permission: 'trial.balance.l4' },
+  { label: 'Trial Balance Group', path: routes.trial_balance_level3, permission: 'trial.balance.l3' },
+  { label: 'Trial Balance', path: routes.trial_balance, permission: 'trial.balance' },
+];
+
+export const FIN_FINAL_ACCOUNTS_TABS: RouteTab[] = [
+  { label: 'Profit Loss', path: routes.profit_loss, permission: 'profit.loss' },
+  { label: 'Balance Sheet', path: routes.balance_sheet, permission: 'balancesheet.view' },
+  { label: 'Business Summary', path: routes.business_summary, permission: 'business.summary' },
+  { label: 'Cash Flow Statement', path: routes.cash_flow_statement, permission: 'cash.flow.statement' },
+  { label: 'General Ledger', path: routes.general_ledger, permission: 'general.ledger' },
+];

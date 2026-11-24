@@ -9,7 +9,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট খোলার ধাপ",
-        "menu": "Reports → General Ledger",
+        "menu": "Financial Statement → Final Accounts → General Ledger",
         "steps": [
           "ফিল্টার আইকনে চাপুন (ফিল্টার মেনু চালু থাকলে এটি আলাদা বাক্সে খোলে)।",
           "Select Branch থেকে শাখা বাছুন।",

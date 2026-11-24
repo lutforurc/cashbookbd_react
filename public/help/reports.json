@@ -10,7 +10,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["Trial Balance মেনু দেখা যায় শুধু Roles-এ trial.balance permission থাকলে।", "Trial Balance L4 মেনু দেখা যায় শুধু Roles-এ trial.balance.l4 permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখার ধাপ",
-        "menu": "Reports → Trial Balance",
+        "menu": "Financial Statement → Trial Balance → Trial Balance",
         "steps": [
           "Select Branch থেকে শাখা বাছুন।",
           "Start Date ও End Date দিন।",
@@ -37,7 +37,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট দেখার ধাপ",
-        "menu": "Reports → Balance Sheet",
+        "menu": "Financial Statement → Final Accounts → Balance Sheet",
         "steps": [
           "Select Branch থেকে শাখা বাছুন।",
           "Start Date ও End Date দিন।",
@@ -73,7 +73,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট দেখার ধাপ",
-        "menu": "Reports → Profit & Loss",
+        "menu": "Financial Statement → Final Accounts → Profit Loss",
         "steps": [
           "Select Branch থেকে শাখা বাছুন।",
           "Start Date ও End Date দিন।",
@@ -423,7 +423,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট দেখার ধাপ",
-        "menu": "Reports → Cash Flow",
+        "menu": "Financial Statement → Final Accounts → Cash Flow Statement",
         "steps": [
           "Select Branch থেকে শাখা বাছুন।",
           "Start Date ও End Date দিন।",
@@ -504,7 +504,7 @@
     "video": "",
     "intro": "মাস ধরে সম্পদ, দায় ও মূলধনের খোলা ও শেষের অঙ্ক দেখা যায়; প্রতিটি দল খুলে তার হিসাবগুলোও দেখা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Business Summary", "steps": ["Select Branch, Start Month ও End Month বাছুন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Financial Statement → Final Accounts → Business Summary", "steps": ["Select Branch, Start Month ও End Month বাছুন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Assets, Liabilities ও Equity ভাগে Opening ও Closing থাকে।", "Total Assets, Total Liabilities, Total Equity ও Difference দেখা যায়।", "দলের নামে চাপলে তার হিসাবগুলো খোলে।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "Difference শূন্য না হলে কোনো হিসাব মিলছে না — আগে সেটি খুঁজুন।" }
     ]
@@ -627,7 +627,7 @@
     "video": "",
     "intro": "খরচের খাতগুলোর খোলা, চলাচল ও শেষের অঙ্ক দল ধরে বা হিসাব ধরে দেখা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Expense Report", "steps": ["Select Branch, Start Date ও End Date দিন।", "Report Type থেকে Group Report বা Details Report বাছুন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Financial Statement → Periodic Statements → Expense Report", "steps": ["Select Branch, Start Date ও End Date দিন।", "Report Type থেকে Group Report বা Details Report বাছুন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Description, Opening (Dr/Cr), Movement (Dr/Cr) ও Closing (Dr/Cr) দেখা যায়।", "Details Report-এ Group কলামও থাকে।", "নিচে Grand Total; উপরে Rows ও Accounts সংখ্যা।"] },
       { "heading": "সতর্কতা", "warning": "Group Report-এ দল ধরে মোট দেখায়; হিসাব ধরে দেখতে Details Report বাছুন।" }
     ]
@@ -748,7 +748,7 @@
     "video": "",
     "intro": "এক মাসের ক্যাশ, বাকি লেনদেন, ব্যাংক ও লাভ-ক্ষতি এক কাগজে দেখা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Monthly Statement", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Financial Statement → Periodic Statements → Monthly Statement", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Cash in Hand (Opening), Cash Receipts, Cash Payments ও Cash in Hand (Closing) দেখা যায়।", "Credit Transactions, Bank Accounts (Opening/Deposit/Withdraw/Closing), Gross Profit, Other Income, Expenses ও Net Profit/Loss থাকে।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "তারিখের পরিসর মাসের বাইরে গেলে মাসিক তুলনা মিলবে না।" }
     ]
@@ -788,7 +788,7 @@
     "video": "",
     "intro": "পণ্য ধরে কোনটি কত দামে কেনা ও কত দামে বেচা হলো, এবং লাভে না ক্ষতিতে পড়ল, তা দেখা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Product Profit/Loss", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Financial Statement → Profit Analysis → Product Profit Loss", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Product Name, Pur./Sal. Invoice, Sold Qty, Unit Purchase, Purchase Total, Unit Sale, Sale Total ও Effect দেখা যায়।", "নিচে Summary-তে Profit বা Loss লেখা থাকে; Qty, Purchase ও Sales বাক্সও থাকে।"] },
       { "heading": "সতর্কতা", "warning": "Unit Purchase বা Unit Sale খালি হলে Effect বিভ্রান্তিকর দেখাতে পারে — আগে দাম মিলিয়ে নিন।" }
     ]
@@ -802,7 +802,7 @@
     "intro": "প্রতিটি পণ্যের বিক্রি, খরচ ও লাভ এক সারিতে দেখা যায়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ productwise.profit.summary permission থাকলে।"] },
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Product Profit Summary", "steps": ["Select Branch, Category, Brand ও Group বাছুন।", "Start Date ও End Date দিন, Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Financial Statement → Profit Analysis → Product Profit Summary", "steps": ["Select Branch, Category, Brand ও Group বাছুন।", "Start Date ও End Date দিন, Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Code - Product Name, Unit, Qty, Sales Amount, Cost Amount ও Profit Amount দেখা যায়।", "উপরে Qty, Sales ও Cost বাক্স থাকে।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "Category, Brand বা Group ভুল বাছলে পণ্য বাদ পড়বে।" }
     ]
@@ -815,7 +815,7 @@
     "video": "",
     "intro": "প্রতিটি বিক্রয় ইনভয়েসের চূড়ান্ত টাকা, দেওয়া ছাড়, আদায়, পণ্যের FIFO খরচ ও লাভ এবং কাস্টমারের নাম এক সারিতে দেখা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Financial Statement → Invoice Wise Profit", "steps": ["Select Branch, Start Date ও End Date দিন।", "একটি ইনভয়েস দেখতে চাইলে Search Invoice ঘরে তার নম্বর লিখুন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Financial Statement → Profit Analysis → Invoice Wise Profit", "steps": ["Select Branch, Start Date ও End Date দিন।", "একটি ইনভয়েস দেখতে চাইলে Search Invoice ঘরে তার নম্বর লিখুন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["#, Inv. No., Date, Customer, Inv. Amount, Received Amt, Discount ও Profit দেখা যায়; নিচের Total সারিতে সব ইনভয়েসের মোট টাকা, মোট আদায়, মোট ছাড় ও মোট লাভ থাকে — শুধু দেখানো পাতার নয়।", "Inv. Amount হলো ইনভয়েসের মোট (পোস্ট করা total) — ছাড় আলাদা Discount ঘরে থাকে, তাই এখান থেকে বাদ দেওয়া হয় না।", "Discount হলো ওই ইনভয়েসের সব ছাড় একবার করে — লাইনভিত্তিক ছাড় ও ইনভয়েসভিত্তিক ছাড় দুটোই।", "Received Amt হলো ইনভয়েসের নিজের ভাউচারে ক্যাশ বা ব্যাংকে যে টাকা নেওয়া হয়েছে; বাকিতে বিক্রি হলে 0.00 দেখায়। পরে আলাদা রিসিভ ভাউচার এলে সেটি এই ঘরে যোগ হয় না — সেটি কাস্টমারের হিসাবে আলাদা থাকে।", "Profit = (Inv. Amount − Discount) − FIFO পদ্ধতিতে বিক্রীত পণ্যের আসল খরচ (সবচেয়ে পুরোনো স্টক আগে); কাস্টমার কত টাকা দিয়েছে তা Profit-এ কোনো প্রভাব ফেলে না।", "Action-এর পেন্সিল ওই ইনভয়েসটি Sales স্ক্রিনে খোলে, প্রিন্টার ইনভয়েসটি প্রিন্ট করে; Rows ও Font ঠিক করে Print চাপুন — ছাপা কাগজে সব সারি ও মোট আসে।"] },
       { "heading": "পাতা বদল", "steps": ["সারিগুলো প্রতি পাতায় ১০টি করে দেখায়; নিচের পেজ নম্বরে চাপ দিয়ে পরের/আগের পাতায় যাওয়া যায়।", "নতুন তারিখের ইনভয়েস আগে থাকে; একই তারিখের হলে পরে তৈরি হওয়া (বড় ইনভয়েস আইডি) আগে — তাই কোনো সারি বাদ পড়ে না বা দুইবার আসে না।", "# নম্বর পরের পাতাতেও চলতে থাকে (১১, ১২ …)।", "Total সারি সব ফিল্টার করা ইনভয়েস মিলিয়ে হিসাব হয়; নতুন করে Apply চাপলে তালিকা আবার প্রথম পাতা থেকে শুরু হয়।"] },
       { "heading": "সতর্কতা", "warning": "ইনভয়েস নম্বর ভুল হলে বা ইনভয়েসটি বাছা তারিখের বাইরে হলে কোনো সারি আসবে না — আগে তারিখের সীমা ঠিক করুন, তারপর সার্চ করুন।" }
@@ -843,7 +843,7 @@
     "video": "",
     "intro": "প্রতিটি তারিখের মোট ক্রয়, মোট বিক্রি এবং সেই দিনের লাভ বা ক্ষতি দেখা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Profit & Loss (Date Wise)", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Financial Statement → Periodic Statements → Profit Loss (Date Wise)", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Date, Total Purchase, Total Sales ও Profit or Loss দেখা যায়।", "যে দিনে ক্রয় বা বিক্রি নেই সেই দিন তালিকায় আসে না।", "Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "দিনভিত্তিক অঙ্ক মাসিক P&L-এর সঙ্গে ছোট পার্থক্য দেখাতে পারে; মাসিকটাই চূড়ান্ত।" }
     ]

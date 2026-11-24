@@ -14,6 +14,7 @@ import httpService from '../../../services/httpService';
 import routes from '../../../services/appRoutes';
 import { API_REPORT_STOCK_IMEI_DATA_URL } from '../../../services/apiRoutes';
 import { Select } from '../../../utils/fields/FormControls';
+import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 
 type ProductOption = {
   value: string;
@@ -94,8 +95,9 @@ const ImeiStock = () => {
   });
 
   const labelClass = 'mb-1 block text-xs font-bold text-slate-950 dark:text-[rgb(var(--c-text))]';
-  const controlClass =
-    'h-10 w-full rounded-none border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none focus:border-primary dark:border-[rgb(var(--c-gray-600))] dark:bg-[rgb(var(--c-boxdark))] dark:text-[rgb(var(--c-text))] dark:focus:border-slate-300';
+  // The shared field height, as the other stock reports use it -- a hand-set
+  // `h-10` here stood 40px tall against the product dropdown's 34px.
+  const controlClass = `${FIELD_SELECT} w-full px-2 text-sm font-medium`;
 
   return (
     <div className="min-h-screen bg-slate-100 px-2 py-3 text-slate-900 dark:bg-[rgb(var(--c-gray-900))] dark:text-[rgb(var(--c-text))]">

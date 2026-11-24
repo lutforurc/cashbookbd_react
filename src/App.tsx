@@ -186,7 +186,7 @@ import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetu
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
 import RouteTabs from './components/utils/others/RouteTabs';
-import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, DAILY_CONTROL_TABS, ORDER_TABS, UPLOAD_TABS, COMPANY_BRANCH_TABS, USER_TABS, ROLE_TABS, ADMIN_SETTINGS_TABS, PLATFORM_TABS, SMS_TABS, PRODUCT_TABS, CLASSIFICATION_TABS, STOCK_ALERT_TABS, VR_CORRECTION_TABS, VR_AUDIT_TABS, PARTY_TABS, COA_TABS, REPORT_CASH_BANK_TABS, REPORT_LEDGER_TABS, REPORT_SALES_TABS, REPORT_STOCK_TABS, REPORT_INSTALLMENT_TABS } from './components/services/tabGroups';
+import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, DAILY_CONTROL_TABS, ORDER_TABS, UPLOAD_TABS, COMPANY_BRANCH_TABS, USER_TABS, ROLE_TABS, ADMIN_SETTINGS_TABS, PLATFORM_TABS, SMS_TABS, PRODUCT_TABS, CLASSIFICATION_TABS, STOCK_ALERT_TABS, VR_CORRECTION_TABS, VR_AUDIT_TABS, PARTY_TABS, COA_TABS, REPORT_CASH_BANK_TABS, REPORT_LEDGER_TABS, REPORT_SALES_TABS, REPORT_STOCK_TABS, REPORT_INSTALLMENT_TABS, FIN_PROFIT_TABS, FIN_PERIODIC_TABS, FIN_TRIAL_BALANCE_TABS, FIN_FINAL_ACCOUNTS_TABS } from './components/services/tabGroups';
 import AttendanceAuditHistory from './components/modules/hrms/attendance/AttendanceAuditHistory';
 import AttendanceDevices from './components/modules/hrms/attendance/AttendanceDevices';
 import UnmatchedPunches from './components/modules/hrms/attendance/UnmatchedPunches';
@@ -1224,61 +1224,63 @@ function App() {
             {/* The day's paper day book. Its own key, daily.accounts.book. */}
             {/* Who recommended a sale. Its own permission, because the shop
                 keeps this list and the customer is never shown it. */}
-            {/* Each of these is offered by its own sidebar permission. Guarded
-                separately so 'bank.book' opens the bank book and nothing else. */}
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['profit.loss']} loading={permissionsLoading} />}>
-              <Route path={routes.profit_loss} element={<ProfitLoss user={me} />} />
-            </Route>
-            {/* Each on its own key, granted to nobody by default: a company
-                switches them on by assigning the key to a role. */}
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['profit.loss.date.wise']} loading={permissionsLoading} />}>
-              <Route path={routes.profit_loss_date_wise} element={<ProfitLossDateWise user={me} />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['monthly.statement']} loading={permissionsLoading} />}>
-              <Route path={routes.monthly_statement} element={<MonthlyStatement user={me} />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['balancesheet.view']} loading={permissionsLoading} />}>
-              <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['business.summary']} loading={permissionsLoading} />}>
-              <Route path={routes.business_summary} element={<BusinessSummary user={me} />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['trial.balance.l3']} loading={permissionsLoading} />}>
-              <Route path={routes.trial_balance_level3} element={<TrialBalanceLevel3 user={me} />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['trial.balance.l4']} loading={permissionsLoading} />}>
-              <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />
-              {/* The standard Trial Balance URL. Same report and same key as
-                  Details, offered under the name the legacy menu used. */}
-              </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['trial.balance']} loading={permissionsLoading} />}>
-                <Route path={routes.trial_balance} element={<TrialBalanceLevel4 user={me} />} />
-              </Route>
-            {/* The two statements below Trial Balance Details. Each on its own
-                key, granted to nobody by default: a company switches them on by
-                assigning the key to a role, exactly like the monthly statement. */}
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['cash.flow.statement']} loading={permissionsLoading} />}>
-              <Route path={routes.cash_flow_statement} element={<CashFlowStatement user={me} />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['general.ledger']} loading={permissionsLoading} />}>
-              <Route path={routes.general_ledger} element={<GeneralLedger user={me} />} />
-            </Route>
-            {/* The Expense Report reads the trial balance shape narrowed to the
-                expense heads. Offered on its own 'expense.report' permission, the
-                same name the sidebar entry tests, so the menu and the guard agree. */}
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['expense.report']} loading={permissionsLoading} />}>
-              <Route path={routes.expense_report} element={<ExpenseReport user={me} />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['productwise.profit']} loading={permissionsLoading} />}>
-              <Route path={routes.product_profit_loss} element={<ProductProfitLoss user={me} />} />
+            {/* Financial Statement as four tab groups. Every statement keeps
+                the route and the permission guard it had; each group's tab
+                bar only puts its statements on one page. The order is the
+                group's order in tabGroups, and the user's drag order overrides it. */}
+            {/* Profit Analysis */}
+            <Route element={<RouteTabs tabs={FIN_PROFIT_TABS} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['productwise.profit']} loading={permissionsLoading} />}>
+                <Route path={routes.product_profit_loss} element={<ProductProfitLoss user={me} />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['productwise.profit.summary']} loading={permissionsLoading} />}>
                 <Route path={routes.product_profit_summary} element={<ProductProfitSummary user={me} />} />
               </Route>
-            {/* Its own key, granted to nobody by default like the other new
-                statements: a company switches it on by assigning it to a role. */}
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['invoice.wise.profit']} loading={permissionsLoading} />}>
-              <Route path={routes.invoice_wise_profit} element={<InvoiceWiseProfit user={me} />} />
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['invoice.wise.profit']} loading={permissionsLoading} />}>
+                <Route path={routes.invoice_wise_profit} element={<InvoiceWiseProfit user={me} />} />
+              </Route>
+            </Route>
+            {/* Periodic Statements */}
+            <Route element={<RouteTabs tabs={FIN_PERIODIC_TABS} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['profit.loss.date.wise']} loading={permissionsLoading} />}>
+                <Route path={routes.profit_loss_date_wise} element={<ProfitLossDateWise user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['monthly.statement']} loading={permissionsLoading} />}>
+                <Route path={routes.monthly_statement} element={<MonthlyStatement user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['expense.report']} loading={permissionsLoading} />}>
+                <Route path={routes.expense_report} element={<ExpenseReport user={me} />} />
+              </Route>
+            </Route>
+            {/* Trial Balance */}
+            <Route element={<RouteTabs tabs={FIN_TRIAL_BALANCE_TABS} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['trial.balance.l4']} loading={permissionsLoading} />}>
+                <Route path={routes.trial_balance_level4} element={<TrialBalanceLevel4 user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['trial.balance.l3']} loading={permissionsLoading} />}>
+                <Route path={routes.trial_balance_level3} element={<TrialBalanceLevel3 user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['trial.balance']} loading={permissionsLoading} />}>
+                <Route path={routes.trial_balance} element={<TrialBalanceLevel4 user={me} />} />
+              </Route>
+            </Route>
+            {/* Final Accounts */}
+            <Route element={<RouteTabs tabs={FIN_FINAL_ACCOUNTS_TABS} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['profit.loss']} loading={permissionsLoading} />}>
+                <Route path={routes.profit_loss} element={<ProfitLoss user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['balancesheet.view']} loading={permissionsLoading} />}>
+                <Route path={routes.balance_sheet} element={<BalanceSheet user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['business.summary']} loading={permissionsLoading} />}>
+                <Route path={routes.business_summary} element={<BusinessSummary user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['cash.flow.statement']} loading={permissionsLoading} />}>
+                <Route path={routes.cash_flow_statement} element={<CashFlowStatement user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['general.ledger']} loading={permissionsLoading} />}>
+                <Route path={routes.general_ledger} element={<GeneralLedger user={me} />} />
+              </Route>
             </Route>
             {/* Both names are real permissions. The sidebar offers this screen on
                 'ledger.details' (the one named for it), so the guard has to admit
