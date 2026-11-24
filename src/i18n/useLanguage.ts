@@ -46,6 +46,17 @@ export const useLanguage = () => {
 
   const code = resolveLanguageCode(choice, branchDefault, localCode);
   const info = languages.find((language) => language.code === code);
+  const localInfo = localCode
+    ? languages.find((language) => language.code === localCode)
+    : undefined;
+
+  // The local language's name as the current screen should print it:
+  // "Bangla" on an English screen, "বাংলা" on a Bangla one.
+  const localName = localCode
+    ? code === 'en'
+      ? localInfo?.name || localCode
+      : localInfo?.native_name || localInfo?.name || localCode
+    : '';
 
   const settingsReady = Boolean(company);
 
@@ -61,7 +72,7 @@ export const useLanguage = () => {
     // Nothing to switch between until the company turns a local language on.
     if (!localCode) return [];
 
-    const local = languages.find((language) => language.code === localCode);
+    const local = localInfo;
 
     return [
       // The English option always says "English": it is the one label that must
@@ -73,7 +84,7 @@ export const useLanguage = () => {
         label: local?.native_name || local?.name || localCode,
       },
     ];
-  }, [languages, localCode]);
+  }, [languages, localCode, localInfo]);
 
   const setLanguage = useCallback(
     (next: 'en' | 'local') => {
@@ -86,5 +97,5 @@ export const useLanguage = () => {
     [dispatch, branchDefault, localCode, languages],
   );
 
-  return { code, setLanguage, options, localCode };
+  return { code, setLanguage, options, localCode, localInfo, localName };
 };

@@ -28,6 +28,8 @@ import PartyLedgerModal from "./PartyLedgerModal";
 import { formatMobile, useMobileFormat } from "../../utils/utils-functions/mobileFormat";
 import { Button } from '../../../pages/UiElements/CustomButtons';
 import { isBranchSettingOn } from "../../utils/userFeatureSettings";
+import { useLanguage } from "../../../i18n/useLanguage";
+import { displayName } from "../../../i18n/displayName";
 // The branch's own staff, for the "handled by" filter. The DDL endpoint is the
 // one the Installment screens already pick a field officer from.
 import { getEmployeesDDL } from "../hrms/employee/employeeSlice";
@@ -58,6 +60,7 @@ const CustomerSupplier = () => {
   const settings = useSelector((state: any) => state.settings);
   const mobileFormat = useMobileFormat();
   const dispatch = useDispatch();
+  const { code } = useLanguage();
 
   /**
    * Where the list is -- in the address bar, not only in this component.
@@ -1041,6 +1044,7 @@ const CustomerSupplier = () => {
     {
       key: "name",
       header: "Name",
+      render: (row: any) => displayName(row, 'name', code),
     },
     {
       key: "national_id",
@@ -1055,6 +1059,8 @@ const CustomerSupplier = () => {
     {
       key: "manual_address",
       header: "Address",
+      render: (row: any) =>
+        displayName(row, 'manual_address', code, 'address_local'),
     },
     /**
      * Who looks after this customer, beside the address -- which is where a

@@ -29,6 +29,11 @@
     },
     "saveFailed": "Could not save the language."
   },
+  "data": {
+    "nameInLanguage": "Name ({{language}})",
+    "addressInLanguage": "Address ({{language}})",
+    "missingLocalName": "{{language}} name missing"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",

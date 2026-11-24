@@ -173,7 +173,7 @@
   "employee-form": {
     "title": "কর্মচারীর তথ্য",
     "module": "HRM",
-    "updated": "06/11/2026",
+    "updated": "21/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একজন কর্মচারীর ব্যক্তিগত তথ্য, বেতনের খাত এবং হাজিরার নিয়ম এই ফর্মে লেখা হয়। বেতন শিট এই তথ্য ধরেই তৈরি হয়।",
@@ -190,19 +190,30 @@
         "heading": "ফর্ম পূরণ",
         "menu": "HRM → Employee → Employee",
         "steps": [
-          "Name, Father's Name, National ID, Mobile Number, Present ও Permanent Address দিন।",
-          "Date of Birth, Joining Date ও Qualification লিখুন।",
-          "Basic Salary, House Rent, Medical Allowance, Others Allowance, Loan Deduction ও Others Deduction দিন।",
-          "Select Designation ও Select Branch বাছুন; Gender, Is Payable?, Attendance Type ও Attendance Policy দিন।",
-          "Default Shift, Overtime Eligible, Show in Manual Attendance, Daily Wage, OT Rate ও Standard Work Minutes ঠিক করুন।",
-          "Salary Sheet Serial Number ও Status দিয়ে Save চাপুন।"
+          "ফর্মটি তিন ধাপে — উপরের ধাপের বোতাম চেপে যেকোনো ধাপে যাওয়া যায়, নিচে Back ও Next।",
+          "১. Personal Information: Name, Father's Name, National ID, Date of Birth, Gender, Mobile Number, Present ও Permanent Address এবং Qualification।",
+          "২. Employment & Attendance: Joining Date, Select Designation, Select Branch, Status, Attendance Type, Attendance Policy, Default Shift, Show in Manual Attendance, Overtime Eligible, Standard Work Minutes ও Device Code।",
+          "৩. Salary & Payroll: Is Payable?, Basic Salary, House Rent, Medical ও Others Allowance, Daily Wage, OT Rate, Loan ও Others Deduction এবং Salary Sheet Serial Number।",
+          "শেষ ধাপে Save চাপুন। কোনো জরুরি ঘর ফাঁকা থাকলে ফর্ম নিজেই সেই ধাপে ফিরে যায়।"
         ]
+      },
+      {
+        "heading": "বেতনের খাত (Salary Revision)",
+        "steps": [
+          "Salary & Payroll ধাপে নিচে বেতনের খাতের প্যানেল আছে — এটি শুধু Edit স্ক্রিনে আসে, কারণ revision একটি তৈরি হওয়া কর্মচারীর সঙ্গে যুক্ত।",
+          "Structure বাছলে তার খাতগুলো নিচে বসে যায়; অথবা Available pay heads থেকে একটি একটি করে যোগ করুন।",
+          "Effective From শুধু মাস বাছা যায় — revision সবসময় মাসের ১ তারিখ থেকে শুরু হয়।",
+          "Monthly Gross নিজে হিসাব হয়। Save Revision চাপলে নতুন revision তৈরি হয় এবং পুরোনোটির শেষ তারিখ আগের দিন হয়ে বন্ধ হয়।",
+          "নিচে Salary history-তে কে কোন মাস থেকে কত পেয়েছে তা দেখা যায়।"
+        ],
+        "warning": "পুরোনো revision বদলানো যায় না — বেতন বাড়াতে নতুন revision দিন। এতে পুরোনো মাসের বেতন শিট অঙ্কে অপরিবর্তিত থাকে।"
       },
       {
         "heading": "যা মনে রাখবেন",
         "steps": [
-          "Edit স্ক্রিনে Gender ঘরটির নাম Select Sex; বদল শেষে Update চাপুন।",
-          "বেতনের অঙ্কে ভুল থাকলে পরের মাসের Salary Generate ভুল হবে।"
+          "Edit স্ক্রিনে Gender ঘরটির নাম Select Sex। Update বোতাম সব ধাপেই থাকে, তাই এক ঘর বদলে সরাসরি Update চাপা যায়; তালিকায় ফিরতে Employee List।",
+          "বেতনের অঙ্কে ভুল থাকলে পরের মাসের Salary Generate ভুল হবে।",
+          "Salary Revision থেকে Save করলে Basic ও Others Allowance ঘর দুটিও সেই অঙ্কে ভরে যায়, যাতে পুরোনো ও নতুন হিসাব এক থাকে।"
         ],
         "warning": "Attendance Type ভুল দিলে কর্মচারী হাজিরার হিসাবে ভুলভাবে পড়বে — Monthly, Daily Labour ও Shift Based-এর নিয়ম আলাদা।"
       }
@@ -219,7 +230,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.designation.view permission থাকলে।"] },
       {
         "heading": "তালিকা ও নতুন পদবি",
-        "menu": "HRM → Designation",
+        "menu": "HRM → Designations → Designations",
         "steps": [
           "Search দিয়ে পদবি খুঁজুন।",
           "New Designation চাপলে ফর্ম খোলে।",
@@ -239,7 +250,7 @@
     "sections": [
       {
         "heading": "ফর্ম",
-        "menu": "HRM → Designation → New Designation",
+        "menu": "HRM → Designations → Designations → New Designation",
         "steps": [
           "Designation Level বাছুন।",
           "Designation Name, Sequence ও Description লিখুন।",
@@ -261,7 +272,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.designation.level.view permission থাকলে।"] },
       {
         "heading": "তালিকা",
-        "menu": "HRM → Designation Level",
+        "menu": "HRM → Designations → Designation Levels",
         "steps": [
           "Search দিয়ে স্তর খুঁজুন।",
           "New Level চাপলে নতুন স্তরের ফর্ম খোলে।",
@@ -281,7 +292,7 @@
     "sections": [
       {
         "heading": "ফর্ম",
-        "menu": "HRM → Designation Level → New Level",
+        "menu": "HRM → Designations → Designation Levels → New Level",
         "steps": [
           "Level Name লিখুন।",
           "Description লিখুন।",
@@ -294,38 +305,182 @@
   "attendance-setup": {
     "title": "হাজিরার সেটআপ",
     "module": "HRM",
-    "updated": "11/11/2026",
+    "updated": "22/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "হাজিরার পেছনের নিয়ম এখানে ঠিক করা হয় — শিফট, পলিসি, রোস্টার, সাপ্তাহিক ছুটি, ছুটির দিন ও ছুটির ধরন।",
+    "intro": "হাজিরার পেছনের নিয়ম এখানে ঠিক করা হয় — শিফট, পলিসি, রোস্টার, সাপ্তাহিক ছুটি, ছুটির দিন, ছুটির ধরন, আর ওভারটাইম ও বেতন কাটার নিয়ম।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.setup.view permission থাকলে।"] },
       {
         "heading": "ট্যাবগুলো",
-        "menu": "HRM → Attendance → Setup",
+        "menu": "HRM → Attendance Settings → Attendance Setup",
         "steps": [
-          "Shift — Shift Name, Code, Start Time, End Time, Grace Minutes, Half Day Minutes, Early Out Minutes ও Night Shift দিয়ে Save করুন।",
+          "Shift — Shift Name, Code, Start Time, End Time, Grace Minutes, Half Day Minutes, Early Out Minutes, Night Shift, After-midnight Cut-off ও Break Start/End দিয়ে Save করুন।",
           "Policy — Policy Name, Employee Type, Branch, Default Shift, Standard/Minimum/Half Day/Grace/Early Out Minutes, Overtime, OT After Minutes, Late ও Early Out Deduction Count দিন।",
           "Roster — Employee, Branch, Shift, Duty Date, Status ও Remarks দিয়ে সারি যোগ করুন; Load Roster দিয়ে ভরাও যায়।",
           "Weekly Holiday — Branch, Day, Enabled ও Effective From/To দিন।",
           "Holiday — Holiday Date, Holiday Name, Holiday Type, Paid, Optional ও Remarks দিন।",
-          "Leave Type — Leave Type, Code, Yearly Quota, Sort Order, Paid, Allow Half Day, Allow Backdated ও Attachment দিন।"
+          "Leave Type — Leave Type, Code, Yearly Quota, Sort Order, Paid, Allow Half Day, Allow Backdated ও Attachment দিন।",
+          "OT & Pay Rules — শাখা বেছে ওভারটাইম কীভাবে গোনা ও গোল হবে, ছুটির দিনের কাজ ও রেট, আর দেরি/অনুপস্থিতিতে বেতন কাটা হবে কিনা ঠিক করে Save Rules চাপুন।"
+        ]
+      },
+      {
+        "heading": "ওভারটাইম ও বেতনের নিয়ম",
+        "menu": "HRM → Attendance Settings → Attendance Setup → OT & Pay Rules",
+        "steps": [
+          "Overtime Counted — \"Worked time minus shift length\" দিলে মোট কাজের সময় থেকে শিফটের সময় বাদ দিয়ে ওভারটাইম; \"Only after shift end\" দিলে শুধু শিফট শেষের পরের সময়।",
+          "Early Arrival is Overtime — No দিলে শিফট শুরুর আগে এলে সেই সময় ওভারটাইম হয় না।",
+          "Overtime Rounding ও Round Up After — Whole hour আর 30 দিলে ৫:৪০-এ গেলে ১ ঘণ্টা, ৫:২৫-এ গেলে ০। Exactly at Threshold-এ Round up দিলে ঠিক ৩০ মিনিটও ১ ঘণ্টা।",
+          "Holiday Work is All Overtime — Yes দিলে শুক্রবার বা ছুটির তালিকার দিনে যত সময় কাজ, সবটাই ওভারটাইম; Holiday OT Rate (x) দিয়ে রেট গুণ হয় (যেমন 1.5 বা 2)।",
+          "Deduct Pay for Late / Early Out — No দিলে দেরি বা আগে যাওয়া শুধু রিপোর্টে দেখায়, বেতন কাটে না।",
+          "Deduct Pay for Absence — No দিলে অনুপস্থিত দিনও বেতনে ধরা হয়; রিপোর্টে অনুপস্থিত হিসেবেই দেখায়।",
+          "কর্মচারীর প্রোফাইলে Overtime Eligible ও OT Rate না থাকলে কোনো ওভারটাইম হয় না।"
+        ]
+      },
+      {
+        "heading": "মাঝরাতের পরের পাঞ্চ",
+        "menu": "HRM → Attendance Settings → Attendance Setup → Shift",
+        "steps": [
+          "After-midnight Cut-off-এ মিনিট দিলে শিফট শুরুর এত মিনিট আগের পাঞ্চ আগের দিনের বের হওয়া ধরা হয়।",
+          "08:00 শিফটে 60 দিলে রাত ১টার পাঞ্চ আগের দিনের বের হওয়া (ওভারটাইমও আগের দিনের), সকাল ৭:৫০-এর পাঞ্চ আজকের ঢোকা।",
+          "ঘরটা খালি রাখলে নিয়মটা বন্ধ — মাঝরাতের পরের পাঞ্চ ক্যালেন্ডারের দিনেই থাকে।"
+        ]
+      },
+      {
+        "heading": "দুপুরের বিরতি (লাঞ্চ)",
+        "menu": "HRM → Attendance Settings → Attendance Setup → Shift",
+        "steps": [
+          "Break Start ও Break End দিন, যেমন 13:00 ও 14:00।",
+          "কর্মী বিরতির যতটুকু সময় উপস্থিত ছিল, শুধু ততটুকু কাজের সময় থেকে বাদ যায়। ১২টায় চলে গেলে কিছুই কাটে না।",
+          "৮টা–৫টা শিফটে ১ ঘণ্টা বিরতি দিলে শুক্রবার পুরো দিন কাজ করলে ওভারটাইম ৮ ঘণ্টা হয়, ৯ নয়।",
+          "খালি রাখলে কিছুই বাদ যায় না — আগের মতো।"
         ]
       },
       {
         "heading": "যা মনে রাখবেন",
         "steps": [
           "প্রতিটি ট্যাবে Save ও Reset আছে; সারি বদলালে Save বাটন Update হয়ে যায়।",
-          "Policy-র Standard Work Minutes ও Grace Minutes ঠিক না থাকলে দেরি ও আধা দিনের হিসাব ভুল হবে।"
+          "Policy-র Standard Work Minutes ও Grace Minutes ঠিক না থাকলে দেরি ও আধা দিনের হিসাব ভুল হবে।",
+          "নিয়ম বদলালে আগের দিনগুলো নিজে থেকে বদলায় না; ফেস ডিভাইসের দিন বদলাতে Devices স্ক্রিনের Rebuild Days চালান।"
         ],
         "warning": "Holiday-তে Paid বন্ধ থাকলে ওই দিনের বেতন কাটবে। ছুটির ধরন ও Paid একবার মিলিয়ে নিন।"
+      }
+    ]
+  },
+  "attendance-devices": {
+    "title": "হাজিরার ডিভাইস (ফেস টার্মিনাল)",
+    "module": "HRM",
+    "updated": "19/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "ব্রাঞ্চের ফেস রিকগনিশন টার্মিনাল (যেমন ZKTeco SenseFace 7B) এখানে নিবন্ধন করা হয়। মুখ চেনা ও liveness ডিভাইস নিজেই করে, এবং পাঞ্চ সরাসরি আমাদের API-তে পাঠায় — মুখের ছবি বা টেমপ্লেট সার্ভারে আসে না।",
+    "sections": [
+      {
+        "heading": "কে দেখতে পায়",
+        "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.device.manage permission থাকলে।"]
+      },
+      {
+        "heading": "ডিভাইস নিবন্ধন",
+        "menu": "HRM → Attendance Settings → Attendance Devices",
+        "steps": [
+          "Register Device চাপুন। Device Name ও Serial Number দিন — সিরিয়াল ডিভাইসের Menu → About-এ যা লেখা, হুবহু তাই।",
+          "Branch বাছুন; Device Code, Local IP ও Comm Key ঐচ্ছিক।",
+          "Save Device চাপুন। তালিকায় Last Contact দেখা যায় — ডিভাইস যোগাযোগ করলে সময়টা বদলায়।"
+        ]
+      },
+      {
+        "heading": "ডিভাইসে সার্ভার বসানো",
+        "steps": [
+          "ডিভাইসে যান: Menu → Comm → Cloud Server / ADMS।",
+          "Server Address-এ এই অফিসের API ঠিকানা দিন (যেমন https://client.example.com/api/iclock/cdata) এবং Port দিন।",
+          "HTTPS ব্যবহার করলে সার্টিফিকেট বৈধ হতে হবে; অনেক পুরনো ফার্মওয়্যার শুধু HTTP পাঠায় — কেনার আগে দেখে নিন।"
+        ]
+      },
+      {
+        "heading": "কর্মচারী ম্যাপিং",
+        "steps": [
+          "তালিকায় ডিভাইসের পাশে Users আইকনে চাপুন।",
+          "Device Code (ডিভাইসে যেই আইডি দিয়ে মুখ enroll করা) ও Employee বাছুন, তারপর Map চাপুন।",
+          "ম্যাপ করার সাথে সাথে সেই কোডের আগের সব পাঞ্চ থেকেও দিনের হাজিরা তৈরি হয় — কত দিন তৈরি হলো তা বার্তায় দেখা যায়।"
+        ]
+      },
+      {
+        "heading": "পাঞ্চ দেখা ও ডিভাইসের ঘড়ি",
+        "steps": [
+          "Devices তালিকায় ঘড়ির আইকনে (Punches) চাপুন — From/To তারিখ দিয়ে ওই ডিভাইসের কাঁচা পাঞ্চ দেখা যায়: ডিভাইসের সময় ও সার্ভারে পৌঁছানোর সময় পাশাপাশি।",
+          "Sync Clock চাপুন — ডিভাইস পরের বার যোগাযোগ করলে সার্ভারের সময় নিয়ে নিজের ঘড়ি ঠিক করে নেবে।",
+          "Pull Punches চাপুন — ডিভাইসে জমে থাকা পুরনো পাঞ্চ (দেওয়া তারিখ পরিসরের) আবার পাঠাতে বলবে।",
+          "Rebuild Days চাপুন — দেওয়া তারিখ পরিসরের দিনের হাজিরা জমা থাকা পাঞ্চ থেকেই নতুন করে তৈরি হবে; ডিভাইসে কিছু পাঠানো হয় না।",
+          "নিচের Command History-তে দেখা যায় কমান্ড কখন পাঠানো হলো, ডিভাইস কী উত্তর দিল।"
+        ],
+        "warning": "ডিভাইসে সরাসরি কমান্ড পাঠানো যায় না — কমান্ড জমা থাকে, ডিভাইস পরের বার যোগাযোগ করলেই কার্যকর হয়। Last Contact-এ লাল করে \"Offline\" দেখালে ডিভাইস ১৫ মিনিটের বেশি যোগাযোগ করেনি; \"Clock … behind/ahead\" দেখালে ঘড়ি মিলছে না — Sync Clock চাপুন।"
+      },
+      {
+        "heading": "ডিভাইস সেটিংস",
+        "steps": [
+          "Attendance Devices স্ক্রিনে উপরে দুটো ট্যাব: Devices ও Device Settings।",
+          "Auto-approve device punches — হ্যাঁ করলে টার্মিনালের পাঠানো পাঞ্চই সাথে সাথে অনুমোদিত হয়ে যায় (দেরি/আধা দিন থাকলে সেই অবস্থাসহ); না থাকলে সারি pending থেকে যায়, Manual Attendance-এ অনুমোদন করতে হয়।",
+          "Keep punches for (days) — ০ মানে সব পাঞ্চ চিরকাল থাকবে; সংখ্যা দিলে তার চেয়ে পুরনো কাঁচা পাঞ্চ রাতে মুছে যাবে (দিনের হাজিরা বা রিপোর্ট মুছবে না)।",
+          "সেটিংস যে ব্রাঞ্চে বাছা আছে তার জন্য প্রযোজ্য; All Branches-এ রাখলে পুরো কোম্পানির।"
+        ],
+        "warning": "Checklist অনুযায়ী সব ঠিক থাকলেও টার্মিনালের ঘড়ি আলাদা সেটিং — উপরের Last Contact-এর Clock সতর্কতা দেখুন।"
+      },
+      {
+        "heading": "ডিভাইস থেকে মুখ মোছা",
+        "steps": [
+          "কর্মচারী ম্যাপিং তালিকায় Edit চাপলে উপরের ফর্মে সেই কোড ও কর্মচারী ভরে আসে — কোড বা কর্মচারী বদলে Update চাপুন।",
+          "⚠️ Edit হলো সংশোধন: সেই কোডের আগের পাঞ্চগুলোও নতুন কর্মচারীর নামে চলে যায় এবং তাঁর দিনগুলো আবার তৈরি হয়; পুরনো কর্মচারীর যে সারির আর কোনো প্রমাণ থাকে না, সেটি (pending থাকলে) মুছে যায়।",
+          "Unmap চাপলে সফটওয়্যারে ম্যাপিংটি বন্ধ হয়, ডিভাইসে মুখটি থাকে।",
+          "Delete on Device চাপলে ডিভাইসে সেই কোডের মুখ মোছার কমান্ড জমা হয় — ডিভাইস পরের বার যোগাযোগ করলে কার্যকর হবে।",
+          "মোছার পরেও আগের হাজিরা ও পাঞ্চ থেকে যায়; নতুন পাঞ্চ আর আসবে না।"
+        ]
+      },
+      {
+        "heading": "যা মনে রাখবেন",
+        "steps": [
+          "সিরিয়াল ভুল হলে ডিভাইসের পাঞ্চ প্রত্যাখ্যাত হবে; তখন ডিভাইস বারবার চেষ্টা করবে।",
+          "ডিভাইস বন্ধ (Off) করলে নতুন পাঞ্চ নেওয়া বন্ধ হয়, কিন্তু পুরনো পাঞ্চ ও হাজিরা থেকে যায়।",
+          "ডিভাইস কখনো মুছে ফেলা হয় না, শুধু বন্ধ করা হয় — পুরনো হাজিরা যেন তার আইডি না হারায়।"
+        ],
+        "warning": "বায়োমেট্রিক তথ্য ডিভাইসেই থাকে। সার্ভারে কোনো মুখের ছবি বা টেমপ্লেট রাখা হয় না।"
+      }
+    ]
+  },
+  "unmatched-punches": {
+    "title": "মেলানো হয়নি এমন পাঞ্চ",
+    "module": "HRM",
+    "updated": "19/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "টার্মিনালে যে কোড আছে কিন্তু কোনো কর্মচারীর সাথে মেলানো হয়নি, তার পাঞ্চ এখানে জমা থাকে। কোডটি ম্যাপ করলে পুরনো দিনগুলোও হিসাব হয়ে যায়।",
+    "sections": [
+      {
+        "heading": "কে দেখতে পায়",
+        "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.view permission থাকলে।"]
+      },
+      {
+        "heading": "কীভাবে মেলাবেন",
+        "menu": "HRM → Attendance → Unmatched Punches",
+        "steps": [
+          "প্রতিটি সারিতে Device Code, ডিভাইস, কত পাঞ্চ জমেছে ও প্রথম-শেষ পাঞ্চের সময় দেখা যায়।",
+          "Match To Employee ঘরে নাম লিখে কর্মচারী বাছুন, তারপর Map চাপুন।",
+          "ম্যাপ হলে সেই কোডের সব পাঞ্চ ওই কর্মচারীর হয়ে যায় এবং দিনের হাজিরা নতুন করে তৈরি হয়।"
+        ]
+      },
+      {
+        "heading": "যা মনে রাখবেন",
+        "steps": [
+          "পাঞ্চ ফেলে দেওয়া হয় না — ম্যাপ না করা পর্যন্ত এখানে জমা থাকে।",
+          "একই কোড দুই কর্মচারীকে দেওয়া যাবে না; ভুল হলে Devices স্ক্রিন থেকে ম্যাপিং সরিয়ে আবার দিন।"
+        ],
+        "warning": "কর্মচারীর নিজের ফর্মে Device Code দিয়েও মেলানো যায় — HRM → Employees → Edit।"
       }
     ]
   },
   "manual-attendance": {
     "title": "হাতের হাজিরা",
     "module": "HRM",
-    "updated": "11/11/2026",
+    "updated": "21/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "এক দিনের হাজিরা হাতে লেখা হয় — একজন কর্মচারীর জন্য একবারে, অথবা অনেকের জন্য একসাথে।",
@@ -335,6 +490,7 @@
         "heading": "একজনের হাজিরা",
         "menu": "HRM → Attendance → Manual Attendance",
         "steps": [
+          "Attendance List-এর উপরে + Attendance Entry চাপুন — ডান পাশে একটি প্যানেল খোলে। তালিকার Edit চাপলেও এই প্যানেলেই সারিটি খোলে।",
           "Employee বাছুন, Branch, Shift ও Attendance Type ঠিক করুন।",
           "Date, In Time, Out Time, Status ও Remarks দিন।",
           "Save Single চাপুন। আগের সারি খুললে বাটন Update Single হয়।"
@@ -343,7 +499,8 @@
       {
         "heading": "অনেকের হাজিরা",
         "steps": [
-          "Fill From ও Fill To দিন, Fill Range চাপুন।",
+          "Bulk Entry ও Load বাটন Attendance Entry প্যানেলে আছে। Load চাপলে প্যানেল বন্ধ হয়ে তালিকা দেখায়।",
+          "একটানা কয়েক দিনের জন্য তালিকার উপরে Advanced চাপুন। Fill From ও Fill To দিন, Fill Range চাপুন। Attendance Type, Shift, সময় ও Status আসে Attendance Entry প্যানেল থেকে।",
           "সর্বোচ্চ ৩১ দিন এবং আজকের পরে নয়। ছুটির দিন ছুটি হিসেবে লেখে, আগের এন্ট্রি অপরিবর্তিত থাকে।",
           "Bulk Entry, Bulk Approve ও Bulk Clear দিয়ে তালিকা সামলান।"
         ]
@@ -366,10 +523,10 @@
     "video": "",
     "intro": "একই রিপোর্টের চারটি রূপ — Daily Attendance, Absent, Late ও Early Out। তারিখের পরিসরে প্রতি কর্মচারীর প্রতিদিনের হাজিরা ও সারসংক্ষেপ দেখা যায়।",
     "sections": [
-      { "heading": "কে দেখতে পায়", "steps": ["Attendance Report মেনু দেখা যায় শুধু Roles-এ hrm.attendance.report.view permission থাকলে।", "Attendance Alerts (Absent / Late / Early Out) মেনু দেখা যায় শুধু Roles-এ hrm.attendance.exception.view permission থাকলে।"] },
+      { "heading": "কে দেখতে পায়", "steps": ["HRM → Attendance Reports একটাই মেনু; ভেতরে Daily, Monthly, Overtime, Employee, Branch, Alerts ও Holiday Calendar ট্যাব। যার যে রিপোর্টের permission আছে, শুধু সেই ট্যাবই দেখা যায় — Daily ট্যাবের জন্য hrm.attendance.report.view লাগে।", "Attendance Alerts (Absent / Late / Early Out) মেনু দেখা যায় শুধু Roles-এ hrm.attendance.exception.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "HRM → Attendance → Report / Absent / Late / Early Out",
+        "menu": "HRM → Attendance Reports → Daily / Alerts",
         "steps": [
           "From ও To দিন, Branch বাছুন।",
           "Status ও Approval দিয়ে ফল ছোট করুন।",
@@ -381,7 +538,8 @@
         "steps": [
           "উপরে Active Employee, Attendance Entry, Absent/Missing, Present, Half Day, Leave, Late, Early Out ও Approval-এর সংখ্যা দেখা যায়।",
           "Late রিপোর্টে Late Deduction Days, Early Out রিপোর্টে Early Out Deduction Days বাড়তি থাকে।",
-          "নিচের তালিকায় Date, ID, Employee, Branch, Shift, In, Out, Minutes, Status ও Approval থাকে।"
+          "নিচের তালিকায় Date, ID, Employee, Branch, Shift, In, Out, Hour, Status ও Approval থাকে।",
+          "Hour কলামে কাজের সময় ঘণ্টা-মিনিটে দেখায়, যেমন 8h 25m।"
         ],
         "warning": "Absent/Missing মানে ওই দিনের কোনো এন্ট্রি নেই — ছুটি বা ছুটির দিন আলাদা Status-এ গোনা হয়।"
       }
@@ -398,7 +556,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.overtime.report.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "HRM → Attendance → Overtime Report",
+        "menu": "HRM → Attendance Reports → Overtime",
         "steps": [
           "From, To ও Branch দিন; Status ও Approval দিয়ে ছোট করুন।",
           "Load চাপুন।"
@@ -426,7 +584,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.employee.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "HRM → Attendance → Employee Report",
+        "menu": "HRM → Attendance Reports → Employee",
         "steps": [
           "Employee বাছুন, From, To ও Branch দিন।",
           "Status দিয়ে ফল ছোট করুন, Load চাপুন।"
@@ -453,7 +611,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.branch.summary.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "HRM → Attendance → Branch Summary",
+        "menu": "HRM → Attendance Reports → Branch",
         "steps": [
           "Branch/Project, Month ও Year বাছুন।",
           "Load চাপুন।"
@@ -480,7 +638,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.holiday.calendar.view permission থাকলে।"] },
       {
         "heading": "ক্যালেন্ডার দেখা",
-        "menu": "HRM → Attendance → Holiday Calendar",
+        "menu": "HRM → Attendance Reports → Holiday Calendar",
         "steps": [
           "Month, Year ও Branch/Project বাছুন।",
           "Type থেকে Holiday বা Weekly Holiday বাছুন।",
@@ -508,7 +666,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.monthly.view permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখা",
-        "menu": "HRM → Attendance → Monthly Report",
+        "menu": "HRM → Attendance Reports → Monthly",
         "steps": [
           "Select Branch, Month ও Year বাছুন।",
           "Load চাপুন।"
@@ -565,7 +723,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.attendance.audit.view permission থাকলে।"] },
       {
         "heading": "ইতিহাস দেখা",
-        "menu": "HRM → Attendance → Audit History",
+        "menu": "HRM → Attendance Settings → Audit History",
         "steps": [
           "From, To ও Branch/Project বাছুন।",
           "Action (Submitted, Corrected, Approved, Rejected, Cleared/Cancelled) ও Employee দিয়ে ছোট করুন।",
@@ -582,6 +740,109 @@
       }
     ]
   },
+  "salary-components": {
+    "title": "বেতনের খাত",
+    "module": "HRM",
+    "updated": "23/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "প্রতিষ্ঠান নিজের বেতন-ভাতার খাত তৈরি করে — Basic, House Rent, Mobile Bill, Lunch Bill, Attendance Bonus যেটাই হোক। খাতগুলো ডাটা হিসেবে থাকে, তাই নতুন খাতের জন্য সফটওয়্যার বদলাতে হয় না।",
+    "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ salary.component.manage permission থাকলে।"] },
+      {
+        "heading": "তালিকা",
+        "menu": "HRM → Salary Setup → Salary Components",
+        "steps": [
+          "Search দিয়ে নাম, ছোট নাম বা code খুঁজুন।",
+          "প্রতিটি খাতের Name, Code, Earning/Deduction, হিসাবের ধরন, Prorate, ক্রম ও Status দেখা যায়।",
+          "New Pay Head চাপলে নতুন খাতের ফর্ম খোলে।",
+          "Action থেকে Edit করুন, অথবা Disable/Enable দিয়ে চালু-বন্ধ করুন।"
+        ],
+        "warning": "খাত মোছা যায় না — শুধু বন্ধ করা যায়। কারণ পুরোনো বেতন শিট ও revision-এ খাতটির নাম লেখা থাকে।"
+      },
+      {
+        "heading": "হিসাবের ধরন",
+        "steps": [
+          "Fixed: নির্দিষ্ট টাকা; Prorate চালু থাকলে কর্মদিবস অনুযায়ী ভাগ হয়।",
+          "Percent of Basic/Gross: বেতনের শতাংশ হিসেবে হিসাব হয়।",
+          "Per day: বর্তমানে হিসাব হয় না — পরে চালু হবে।",
+          "System: Basic, Overtime, Loan Deduction, Attendance Deduction — এগুলোর code ও type বদলানো যায় না।"
+        ]
+      }
+    ]
+  },
+  "salary-component-form": {
+    "title": "বেতনের খাত তৈরি",
+    "module": "HRM",
+    "updated": "23/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নতুন বেতন খাত তৈরি বা বদলানো হয়।",
+    "sections": [
+      {
+        "heading": "ফর্ম",
+        "menu": "HRM → Salary Setup → Salary Components → New Pay Head",
+        "steps": [
+          "Pay Head Name লিখুন (যেমন Mobile Bill)।",
+          "Short Name দিন — বেতন শিটে কলামের শিরোনাম হিসেবে এটাই দেখাবে।",
+          "Code দিন (যেমন mobile_bill) — ছোট হাতের ইংরেজি, সংখ্যা ও আন্ডারস্কোর। একবার Save করলে আর বদলায় না।",
+          "Type (Earning/Deduction) ও Calculation বাছুন।",
+          "Prorate, Rounding, Include in Gross ও Order ঠিক করুন।",
+          "Save চাপুন; বদলাতে Update চাপুন।"
+        ],
+        "warning": "যে code ইতিমধ্যে আছে সেটি আবার দিলে সংরক্ষণ হবে না।"
+      }
+    ]
+  },
+  "salary-structures": {
+    "title": "বেতনের কাঠামো",
+    "module": "HRM",
+    "updated": "23/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বেতনের কাঠামো হলো একটি টেমপ্লেট — কোন কোন খাত একটি বেতনে থাকবে তার তালিকা। একই কাঠামো অনেক কর্মচারী পেতে পারেন।",
+    "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ salary.structure.manage permission থাকলে।"] },
+      {
+        "heading": "তালিকা",
+        "menu": "HRM → Salary Setup → Salary Structures",
+        "steps": [
+          "Search দিয়ে কাঠামোর নাম বা code খুঁজুন।",
+          "প্রতিটি কাঠামোর Pay Heads সংখ্যা ও Status দেখা যায়।",
+          "New Structure চাপলে নতুন কাঠামোর বিল্ডার খোলে।"
+        ]
+      },
+      {
+        "heading": "গুরুত্বপূর্ণ",
+        "steps": [
+          "কাঠামো বদলালে কারো বর্তমান বেতন বদলায় না — শুধু নতুন কর্মচারী এই কাঠামো থেকে যা পাবে তা বদলায়।",
+          "কোনো কাঠামো মোছা যায় না, শুধু বন্ধ করা যায়।"
+        ]
+      }
+    ]
+  },
+  "salary-structure-form": {
+    "title": "বেতনের কাঠামো তৈরি",
+    "module": "HRM",
+    "updated": "23/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "বাঁ পাশের খাত থেকে ডান পাশে নিয়ে একটি বেতনের কাঠামো তৈরি হয়।",
+    "sections": [
+      {
+        "heading": "ফর্ম",
+        "menu": "HRM → Salary Setup → Salary Structures → New Structure",
+        "steps": [
+          "Structure Name ও Code দিন। Code একবার Save হলে আর বদলায় না।",
+          "বাঁ পাশের Available pay heads থেকে + চেপে খাত যোগ করুন।",
+          "ডান পাশে প্রতিটি খাতের ডিফল্ট Amount, Prorate ও Required ঠিক করুন।",
+          "তীর চিহ্ন দিয়ে খাতের ক্রম বদলান — শিটে এই ক্রমেই কলাম আসবে।",
+          "Save চাপুন; বদলাতে Update চাপুন।"
+        ],
+        "warning": "একটি কাঠামোয় অন্তত একটি খাত থাকতে হবে। Basic ছাড়া কাঠামো বেতন হিসাবে সমস্যা করবে।"
+      }
+    ]
+  },
   "salary-generate": {
     "title": "বেতন তৈরি",
     "module": "HRM",
@@ -592,7 +853,7 @@
     "sections": [
       {
         "heading": "শিট তৈরি",
-        "menu": "HRM → Salary → Salary Generate",
+        "menu": "HRM → Salary & Bonus Generate → Salary Generate",
         "steps": [
           "Branch ও Designation Level বাছুন।",
           "Monthly Salary বা Overtime Salary বাছুন।",
@@ -609,6 +870,17 @@
           "Action থেকে কোনো কর্মচারীকে এই শিট থেকে সরানো যায়।"
         ],
         "warning": "একই মাসের শিট দুবার Generate করলে বেতন দ্বিগুণ হবে। আগে Salary Sheet-এ মাসটি আছে কি না দেখুন।"
+      },
+      {
+        "heading": "বেতনের খাত ইঞ্জিন (নতুন)",
+        "steps": [
+          "Branch-টি নতুন বেতন-খাত ইঞ্জিনে চালু থাকলে এই স্ক্রিন কিছুটা বদলায়: প্রতিটি খাতের (Basic, House Rent, Mobile Bill...) আলাদা কলাম আসে।",
+          "সব অঙ্ক সার্ভার হিসাব করে — স্ক্রিন শুধু Loan, Other Deduction এবং বাদ দেওয়া কর্মচারী পাঠায়।",
+          "Loan Ded. ও Other Ded. ঘরে টাইপ করলে নিচের Net Total সঙ্গে সঙ্গে বদলায়।",
+          "Action থেকে কোনো কর্মচারীকে এই শিট থেকে সরানো যায়; নিশ্চিত করার পর Generate চাপুন।",
+          "Overtime Salary শিটে শুধু ওভারটাইমের টাকা আসে — Basic মাসিক শিটেই একবার দেওয়া হয়।"
+        ],
+        "warning": "Branch নতুন ইঞ্জিনে চালু না থাকলে আগের মতোই সব কিছু চলে — কোনো পরিবর্তন নেই।"
       }
     ]
   },
@@ -622,10 +894,11 @@
     "sections": [
       {
         "heading": "তালিকা দেখা",
-        "menu": "HRM → Salary → Salary Sheet",
+        "menu": "HRM → Salary Reports → Salary Reports",
         "steps": [
           "Branch ও Year বাছুন, Search চাপুন।",
-          "Payment Month, Employees, Gross Salary, Net Salary, Loan Ded., Payment Amount ও Due দেখা যায়।",
+          "Payment Month, Employees, Gross Salary, OT Amount, Net Salary, Loan Ded., Payment Amount ও Due দেখা যায়।",
+          "OT Amount-এ থাকে Overtime শিটের টাকা; মাসিক শিটের সারিতে এটি \"-\" দেখায়।",
           "Rows per page ও Font ঠিক করে প্রিন্ট করা যায়।"
         ]
       },
@@ -638,6 +911,14 @@
           "Payment Month-এ চাপলে বেতন শিট ছাপা হয়।"
         ],
         "warning": "শিটে Payment হয়ে গেলে পরে দিন বা অঙ্ক বদলাবেন না — পরিশোধের হিসাব মিলবে না।"
+      },
+      {
+        "heading": "বেতনের খাত ইঞ্জিনে তৈরি শিট",
+        "steps": [
+          "নতুন ইঞ্জিনে তৈরি শিটও এই তালিকাতেই আসে — পুরোনো শিটের সঙ্গে কোনো পার্থক্য নেই।",
+          "শিটের ভেতরে প্রতিটি খাতের (Basic, Mobile Bill...) আলাদা লাইন সংরক্ষিত থাকে, তাই পরে খাতের নাম বদলালেও পুরোনো পে-স্লিপ বদলায় না।",
+          "Update, Excel, Payment ও Print আগের মতোই কাজ করে।"
+        ]
       }
     ]
   },
@@ -652,7 +933,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ festival.bonus.view permission থাকলে।"] },
       {
         "heading": "তালিকা দেখা",
-        "menu": "HRM → Bonus → Bonus Reports",
+        "menu": "HRM → Salary Reports → Bonus Reports",
         "steps": [
           "ফিল্টার আইকন বা Use the filter চেপে Select Branch ও Select Year বাছুন, Apply চাপুন।",
           "Bonus Title, Month, Employees, Bonus Amount, Paid ও Due দেখা যায়।"
@@ -680,7 +961,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ festival.bonus.generate permission থাকলে।"] },
       {
         "heading": "বোনাস তৈরি",
-        "menu": "HRM → Bonus → Bonus Generate",
+        "menu": "HRM → Salary & Bonus Generate → Bonus Generate",
         "steps": [
           "Bonus % of Basic, Branch ও Bonus Month দিন।",
           "Bonus Title বাছুন; Other হলে Custom Bonus Title লিখুন।",

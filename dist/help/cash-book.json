@@ -9,7 +9,7 @@
     "sections": [
       {
         "heading": "রিপোর্ট দেখার ধাপ",
-        "menu": "Reports → Cash Book",
+        "menu": "Reports → Cash & Bank → Cash Book",
         "steps": [
           "Select Branch থেকে শাখা বাছুন।",
           "Start Date ও End Date দিন।",
@@ -37,7 +37,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ bank.book permission থাকলে।"] },
       {
         "heading": "রিপোর্ট দেখার ধাপ",
-        "menu": "Reports → Bank Book",
+        "menu": "Reports → Cash & Bank → Bank Book",
         "steps": [
           "Select Branch থেকে শাখা বাছুন।",
           "Start Date ও End Date দিন।",

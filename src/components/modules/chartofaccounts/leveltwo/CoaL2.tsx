@@ -10,17 +10,22 @@ import Loader from '../../../../common/Loader';
 import { getCoal2 } from './coal2Sliders';
 import { getCoal1 } from '../levelone/coal1Sliders';
 import SearchInput from '../../../utils/fields/SearchInput';
+import LocalNameMissingFilter from '../../../utils/fields/LocalNameMissingFilter';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { displayName } from '../../../../i18n/displayName';
 import { Select } from '../../../utils/fields/FormControls';
 import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import { useNavigate } from 'react-router-dom';
 
 const CoaL2 = () => {
     const navigate = useNavigate();
+    const { code } = useLanguage();
     const coal2 = useSelector((state) => state.coal2);
     // The first level's own list and store, read here for the filter's options.
     const coal1 = useSelector((state: any) => state.coal1);
     const dispatch = useDispatch();
     const [search, setSearchValue] = useState('');
+    const [missingLocal, setMissingLocal] = useState(false);
     const [page, setPage] = useState(0);
     const [perPage, setPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
@@ -45,11 +50,11 @@ const CoaL2 = () => {
 
 
     useEffect(() => {
-        dispatch(getCoal2({ page, perPage, search, coal1Id })); //.finally(() => setIsDataLoading(false));
+        dispatch(getCoal2({ page, perPage, search, coal1Id, missingLocal })); //.finally(() => setIsDataLoading(false));
         setTotalPages(Math.ceil(coal2?.data?.last_page) || 0);
         setTableData(coal2?.data?.data);
         setCurrentPage(page);
-    }, [page, perPage, search, coal1Id]);
+    }, [page, perPage, search, coal1Id, missingLocal]);
 
     useEffect(() => {
         if (coal2?.data?.data) {
@@ -64,7 +69,7 @@ const CoaL2 = () => {
         setPage(1);
         // The selection rides along, so searching looks through the chosen head
         // rather than quietly falling back to the whole chart.
-        dispatch(getCoal2({ page, perPage, search, coal1Id }));
+        dispatch(getCoal2({ page, perPage, search, coal1Id, missingLocal }));
         if (coal2?.data?.total >= 0) {
             setTotalPages(Math.ceil(coal2?.data?.total / perPage));
             setTableData(coal2?.data?.data);
@@ -111,10 +116,12 @@ const CoaL2 = () => {
         {
             key: 'name',
             header: 'Chart of Account L2', 
+            render: (row: any) => displayName(row, 'name', code),
         },
         {
             key: 'l1_name',
             header: 'Chart of Account L1', 
+            render: (row: any) => displayName(row, 'l1_name', code),
         },
         {
             key: 'action',
@@ -160,7 +167,7 @@ const CoaL2 = () => {
                         ) : null}
                         {coal1Rows.map((item: any) => (
                             <option key={item.id} value={item.id}>
-                                {item.name}
+                                {displayName(item, 'name', code)}
                             </option>
                         ))}
                     </Select>
@@ -172,6 +179,11 @@ const CoaL2 = () => {
                         search={search}
                         setSearchValue={setSearchValue}
                         className="text-nowrap"
+                    />
+                    <LocalNameMissingFilter
+                        checked={missingLocal}
+                        onChange={setMissingLocal}
+                        className="ml-1 md:ml-2"
                     />
                     <ButtonLoading
                         onClick={handleSearchButton}

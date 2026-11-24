@@ -6,7 +6,10 @@ import { toast } from 'react-toastify';
 import Loader from '../../../../common/Loader';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import InputElement from '../../../utils/fields/InputElement';
+import LocalNameInput from '../../../utils/fields/LocalNameInput';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { displayName } from '../../../../i18n/displayName';
 import httpService from '../../../services/httpService';
 import {
   API_CHART_OF_ACCOUNTS_BY_ID_L3_URL,
@@ -30,6 +33,7 @@ const normalizePayloadData = (response: any) => response?.data?.data?.data || re
 const AddCoaL3 = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { code } = useLanguage();
   const isEditMode = Boolean(id);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [isEditLoading, setIsEditLoading] = useState(false);
@@ -39,6 +43,7 @@ const AddCoaL3 = () => {
     coal2_id: '',
     source_id: '',
     name: '',
+    name_local: '',
   });
 
   useEffect(() => {
@@ -94,6 +99,7 @@ const AddCoaL3 = () => {
           coal2_id: data?.acc_coa_level2_id ? String(data.acc_coa_level2_id) : '',
           source_id: data?.acc_source_id ? String(data.acc_source_id) : '',
           name: data?.name || '',
+          name_local: data?.name_local || '',
         });
       } catch (error: any) {
         toast.error(error?.response?.data?.message || error?.message || 'Unable to load COA L3.');
@@ -115,7 +121,7 @@ const AddCoaL3 = () => {
     }
   }, [formData.source_id, sourceOptions]);
 
-  const handleInputChange = (field: 'name') => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (field: 'name' | 'name_local') => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [field]: e.target.value,
@@ -151,6 +157,7 @@ const AddCoaL3 = () => {
       acc_source_id: formData.source_id || null,
       code: normalizedName,
       name: normalizedName,
+      name_local: formData.name_local.trim() || null,
     };
 
     try {
@@ -201,7 +208,7 @@ const AddCoaL3 = () => {
               <option value="">Select COA L2</option>
               {coaL2Options.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.name}
+                  {displayName(item, 'name', code)}
                 </option>
               ))}
             </Select>
@@ -241,6 +248,12 @@ const AddCoaL3 = () => {
               placeholder="Accounts Group Head"
             />
           </div>
+
+          <LocalNameInput
+            field="name"
+            value={formData.name_local}
+            onChange={(value) => setFormData((prev) => ({ ...prev, name_local: value }))}
+          />
 
           <div className="flex items-center gap-1 pt-2">
             <ButtonLoading

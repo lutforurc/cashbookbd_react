@@ -16,6 +16,8 @@ interface coal3Param {
   coal1Id?: string | number | null;
   /** The level-2 head, or empty for every level 2 under the level 1. */
   coal2Id?: string | number | null;
+  /** Only rows whose local name is still empty. */
+  missingLocal?: boolean;
 }
 interface coal3Param {
   name: string | null;
@@ -33,7 +35,7 @@ interface coal3Param {
  */
 let latestRequestId = 0;
 
-export const getCoal3 = ({ page, perPage, search = '', coal1Id = '', coal2Id = '' }: coal3Param) => (dispatch: any) => {
+export const getCoal3 = ({ page, perPage, search = '', coal1Id = '', coal2Id = '', missingLocal = false }: coal3Param) => (dispatch: any) => {
   const requestId = ++latestRequestId;
 
   dispatch({ type: COAL3_LIST_PENDING });
@@ -42,7 +44,7 @@ export const getCoal3 = ({ page, perPage, search = '', coal1Id = '', coal2Id = '
   // describe the same selection.
   httpService.get(
     API_CHART_OF_ACCOUNTS_L3_URL
-      + `?page=${page}&per_page=${perPage}&search=${search}&coal1_id=${coal1Id ?? ''}&coal2_id=${coal2Id ?? ''}`,
+      + `?page=${page}&per_page=${perPage}&search=${search}&coal1_id=${coal1Id ?? ''}&coal2_id=${coal2Id ?? ''}${missingLocal ? '&missing_local=1' : ''}`,
   )
     .then((res) => {
       // A newer request has already been sent; its answer is the one to keep.

@@ -11,6 +11,9 @@ import { getCoal4, getCoal4Ddl } from './coal4Sliders';
 import { getCoal1 } from '../levelone/coal1Sliders';
 import { getCoal2DdlByCoal1 } from '../leveltwo/coal2Sliders';
 import SearchInput from '../../../utils/fields/SearchInput';
+import LocalNameMissingFilter from '../../../utils/fields/LocalNameMissingFilter';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { displayName } from '../../../../i18n/displayName';
 import { Select } from '../../../utils/fields/FormControls';
 import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import routes from '../../../services/appRoutes';
@@ -27,7 +30,9 @@ const CoaL4 = () => {
     const coal1 = useSelector((state: any) => state.coal1);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { code } = useLanguage();
     const [search, setSearchValue] = useState('');
+    const [missingLocal, setMissingLocal] = useState(false);
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
@@ -74,8 +79,8 @@ const CoaL4 = () => {
     // button, so leaving it in made the request chase every keystroke and then
     // run again on the press that was meant to send it.
     useEffect(() => {
-        dispatch(getCoal4({ page, perPage, search, coal1Id, coal2Id }));
-    }, [page, perPage, coal1Id, coal2Id, searchRun]);
+        dispatch(getCoal4({ page, perPage, search, coal1Id, coal2Id, missingLocal }));
+    }, [page, perPage, coal1Id, coal2Id, missingLocal, searchRun]);
 
 
 
@@ -125,7 +130,14 @@ const CoaL4 = () => {
             const rows = await dispatch(getCoal2DdlByCoal1(nextCoal1Id) as any);
             // A newer head has been chosen; its options are the ones to keep.
             if (requestId !== coal2RequestId.current) return;
-            setCoal2Options(Array.isArray(rows) ? rows : []);
+            setCoal2Options(
+                Array.isArray(rows)
+                    ? rows.map((row: any) => ({
+                        id: row.id,
+                        name: displayName(row, 'name', code),
+                    }))
+                    : [],
+            );
         } catch (error) {
             if (requestId !== coal2RequestId.current) return;
             setCoal2Options([]);
@@ -169,10 +181,12 @@ const CoaL4 = () => {
         {
             key: 'name',
             header: 'Accounts Head', 
+            render: (row: any) => displayName(row, 'name', code),
         },
         {
             key: 'l3_name',
             header: 'Group Head', 
+            render: (row: any) => displayName(row, 'l3_name', code),
         },
         // {
         //     key: 'l2_name',
@@ -241,7 +255,7 @@ const CoaL4 = () => {
                         ) : null}
                         {coal1Rows.map((item: any) => (
                             <option key={item.id} value={item.id}>
-                                {item.name}
+                                {displayName(item, 'name', code)}
                             </option>
                         ))}
                     </Select>
@@ -280,6 +294,11 @@ const CoaL4 = () => {
                         setSearchValue={setSearchValue}
                         className="text-nowrap"
                         onEnter={handleSearchButton}
+                    />
+                    <LocalNameMissingFilter
+                        checked={missingLocal}
+                        onChange={setMissingLocal}
+                        className="ml-1 md:ml-2"
                     />
                     <ButtonLoading
                         onClick={handleSearchButton}

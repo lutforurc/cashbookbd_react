@@ -29,6 +29,11 @@
     },
     "saveFailed": "ভাষা সেভ করা যায়নি।"
   },
+  "data": {
+    "nameInLanguage": "নাম ({{language}})",
+    "addressInLanguage": "ঠিকানা ({{language}})",
+    "missingLocalName": "{{language}} নাম নেই"
+  },
   "common": {
     "save": "সেভ",
     "cancel": "বাতিল",
