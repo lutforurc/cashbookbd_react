@@ -310,7 +310,7 @@
   "branch-form": {
     "title": "শাখা তৈরি ও সম্পাদনা",
     "module": "Company",
-    "updated": "19/11/2026",
+    "updated": "24/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "একটি শাখার ধরন, ছাপা, ফর্ম, গ্রাহক, পণ্য ও ফেস টার্মিনালের নিয়ম ধাপে ধাপে ঠিক করা হয়।",
@@ -319,6 +319,8 @@
       { "heading": "প্যাডে লোগো", "menu": "Admin → Company & Branch → Branch Settings → Add/Edit Branch → Print Setup", "steps": ["Pad Logo-তে Show Company Logo on Pad চালু করুন; ডিফল্টে এটি বন্ধ থাকে, তাই চালু না করলে প্যাড আগের মতোই ছাপে।", "Logo Position থেকে ডান পাশ, বাম পাশ বা উপরে বাছুন। প্যাডের নাম-ঠিকানা সব সময় পাতার মাঝখানে থাকে; লোগো নিজের আলাদা ঘরে মার্জিন অনুযায়ী বসে, তাই লোগো ছোট-বড় করলে বা সরালে প্যাড নড়ে না। লোগো নামের ওপর পড়লে লোগো ছোট করুন বা মার্জিন বদলান।", "Logo Size-এর স্লাইডার টেনে বা − / + চেপে পুরো লোগো ছোট-বড় করুন; আকৃতি একই থাকে। নির্দিষ্ট মাপ লাগলে Logo Width ও Logo Height (px) সরাসরি লিখুন; ছবিটি নিজের আকৃতি ধরে রাখবে।", "Top Margin, Right Margin ও Left Margin (px) দিয়ে প্যাডের কিনারা থেকে দূরত্ব ঠিক করুন। যে পাশে লোগো বসবে সেই পাশের মার্জিনটিই কাজ করে; Top Margin সব সময়েই। মাইনাস মান (যেমন -10) দেওয়া যায়: Top Margin মাইনাস দিলে লোগো ওপরে ওঠে, Right বা Left Margin মাইনাস দিলে লোগো কাগজের কিনারার দিকে আরও সরে যায়।", "Pad Logo Preview-তে অবস্থান মিলিয়ে নিন, তারপর Save / Update চাপুন।"] },
       { "heading": "লোগো কোথা থেকে আসে", "steps": ["লোগোর ছবি একবার আপলোড হয় Setup → Company List → Edit → Company Logo-তে; ব্রাঞ্চ স্ক্রিনে শুধু তার স্থান, মাপ ও মার্জিন ঠিক হয়।", "Pre-printed Pad বা Custom Image Pad বাছা থাকলে লোগো ছাপা হয় না, কারণ ওই কাগজেই হেডার থাকে।", "লোগো ব্রাঞ্চ প্যাড ও কোম্পানি প্যাড — দুই হেডারেই ছাপে, প্রতিটি পৃষ্ঠায়।"] },
       { "heading": "সতর্কতা", "warning": "Stock With Zero, Multiple Warehouse, Opening ongoing ও Block Negative Stock Sale-এর মতো সুইচ পরে বদলালে পুরনো লেনদেনে প্রভাব পড়তে পারে। SMS Service বন্ধ থাকলে এসএমএস যাবে না। Feature Controls → SMS Services-এর Hotel Booking SMS চালু থাকলে হোটেল বুকিং সেভ হওয়ার সাথে সাথে বুকারকে এসএমএস যায়; এটি বদলাতে Sales SMS-এর permission লাগে।" },
+      { "heading": "Language Settings (বাংলা চালু)", "menu": "Admin → Company & Branch → Branch Settings → Edit → Language Settings", "steps": ["ধাপটি দেখা যায় শুধু Roles-এ language.settings permission থাকলে, আর শাখা সেভ হওয়ার পরে (Edit-এ)।", "“Enable Bangla” চালু করলে পুরো কোম্পানির জন্য বাংলা চালু হয়; হেডারে English | বাংলা বোতাম আসে, প্রতিটি ইউজার নিজের ভাষা বদলাতে পারে। বন্ধ থাকলে সব ইংরেজিতে।", "চালু থাকলে এই শাখার সফটওয়্যারের ডিফল্ট ভাষা, প্রিন্টের ডিফল্ট ভাষা ও অঙ্ক বাছুন। নিজে কিছু না বাছা ইউজার এই ডিফল্ট পায়।", "এই ধাপের নিজের Save language settings বাটনে সেভ হয় — শাখার Update এগুলো সেভ করে না।"] },
+      { "heading": "বাংলা বন্ধ করা", "warning": "বাংলা বন্ধ করলেও কোনো ডাটা বা শাখার ভাষার সেটিং মোছে না। আবার চালু করলে আগের বাছাই ফিরে আসে।" },
       { "heading": "হোটেলের Income Setup", "steps": ["Hotel Setup ধাপে Income Setup থেকে ঠিক করুন আয় কখন হিসাবে উঠবে।", "Income at Bill: বিল হলেই Income ও VAT ওঠে। এটি ডিফল্ট।", "Income at Settlement: সেটেলের টাকা রিসিট ভাউচারে আগে পুরো VAT-এ, বাকিটা Income-এ ওঠে। অ্যাডভান্সের অংশ আলাদা জার্নালে সমন্বয় হয়। বাকি থাকলে টাকা Guest Receivable হেডে যায়।", "Income at Settlement বাছতে Guest Receivable হেড থাকতে হবে।", "সেটিং বদলালে শুধু নতুন বিলে প্রভাব পড়ে। Guest Receivable-এ আগের বাকি ওই হেড থেকেই আদায় হয়।"] }
     ]
   }

@@ -22,8 +22,28 @@
         if (stored && stored.replace(/^"|"$/g, '') === 'dark') {
           document.documentElement.classList.add('dark');
         }
+
+        /* The language, before the first frame is painted. The app writes
+         * these two keys when the user switches; reading them here stops a
+         * Bangla session from opening in English for a frame. */
+        var lang = window.localStorage.getItem('ui-lang');
+        if (lang) {
+          lang = lang.replace(/^"|"$/g, '');
+          if (lang) {
+            document.documentElement.lang = lang;
+            document.documentElement.setAttribute('data-lang', lang);
+          }
+        }
+
+        var dir = window.localStorage.getItem('ui-dir');
+        if (dir) {
+          dir = dir.replace(/^"|"$/g, '');
+          if (dir === 'rtl' || dir === 'ltr') {
+            document.documentElement.dir = dir;
+          }
+        }
       } catch (e) {
-        /* Private mode, storage disabled -- light is a fine answer. */
+        /* Private mode, storage disabled -- light and English are fine answers. */
       }
     })();
   </script>

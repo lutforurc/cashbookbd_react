@@ -18,6 +18,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import HelmetTitle from "../../utils/others/HelmetTitle";
 import InputElement from "../../utils/fields/InputElement";
+import LocalNameInput from "../../utils/fields/LocalNameInput";
 import DropdownCommon from "../../utils/utils-functions/DropdownCommon";
 import {
   ClientType,
@@ -27,6 +28,7 @@ import {
   TrueFalse,
 } from "../../utils/fields/DataConstant";
 import DdlDynamicMultiline from "../../utils/utils-functions/DdlDynamicMultiline";
+import { useLanguage } from "../../../i18n/useLanguage";
 import InputDatePicker from "../../utils/fields/DatePicker";
 import PhotoInput from "../../utils/fields/PhotoInput";
 import { getDdlArea } from "../area/areaSlice";
@@ -122,8 +124,9 @@ const EditCustomerSupplier = () => {
    * same switch for its own filter and column.
    */
   const needHandleByEmployee = String(branchSettings?.need_customer_handle_by_employee) === '1';
-  // The same switch the Add page and the customer list read.
+  // Same switch the Add page and the customer list read.
   const isOpeningEnabled = String(branchSettings?.is_opening) === '1';
+  const { localCode } = useLanguage();
 
   /**
    * An opening balance is a one-time entry: the API posts a journal voucher
@@ -346,6 +349,7 @@ const EditCustomerSupplier = () => {
     initialValues: {
       // ----- keep same fields as Add page -----
       name: editCustomer?.name ?? "",
+      name_local: editCustomer?.name_local ?? "",
       bangla: editCustomer?.bangla ?? "",
       father: editCustomer?.father ?? "",
       mother_name: editCustomer?.mother_name ?? "",
@@ -357,6 +361,7 @@ const EditCustomerSupplier = () => {
       contact_number: editCustomer?.contact_number ?? "",
       relation_id: editCustomer?.relation_id ?? "",
       manual_address: editCustomer?.manual_address ?? "",
+      address_local: editCustomer?.address_local ?? "",
       permanent_address: editCustomer?.permanent_address ?? "",
       mobile: editCustomer?.mobile ?? "",
       ledger_page: editCustomer?.ledger_page ?? "",
@@ -392,7 +397,8 @@ const EditCustomerSupplier = () => {
          * a customer fail. An empty string is dropped for the same reason —
          * the API reads it as a non-numeric opening rather than as "no value".
          */
-        const { openingbalance, handle_by_employee_id, ...rest } = values as any;
+        const { openingbalance, handle_by_employee_id, name_local, address_local, ...rest } =
+          values as any;
         const sendsOpening =
           isOpeningEnabled && !openingLocked && String(openingbalance ?? "").trim() !== "";
 
@@ -411,6 +417,10 @@ const EditCustomerSupplier = () => {
             id: Number(id),
             data: {
               ...rest,
+              // Only where the company has a local language. Sent on an
+              // English-only company, an untouched blank would clear a name
+              // written while Bangla was on.
+              ...(localCode ? { name_local, address_local } : {}),
               ...(sendsOpening ? { openingbalance } : {}),
               ...(sendsHandleByEmployee ? { handle_by_employee_id } : {}),
             },
@@ -587,8 +597,9 @@ const EditCustomerSupplier = () => {
             </div>
             {/* The branch keeps its ledgers in Bangla, so the name is written
                 twice -- the English one for the software, this one for what is
-                read out at the counter. */}
-            {usesBangla && (
+                read out at the counter. Hidden while the company's own local
+                language is on, where the field below takes its place. */}
+            {!localCode && usesBangla && (
               <div className="text-left flex flex-col">
                 <InputElement
                   id="bangla"
@@ -601,6 +612,12 @@ const EditCustomerSupplier = () => {
                 />
               </div>
             )}
+
+            <LocalNameInput
+              field="name"
+              value={formik.values.name_local}
+              onChange={(value) => formik.setFieldValue('name_local', value)}
+            />
             {settings?.data?.branch?.need_relation_info === '1' && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                 <>
@@ -767,6 +784,12 @@ const EditCustomerSupplier = () => {
                 </div>
               )}
             </div>
+
+            <LocalNameInput
+              field="address"
+              value={formik.values.address_local}
+              onChange={(value) => formik.setFieldValue('address_local', value)}
+            />
 
             {needPermanentAddress && (
               <InputElement

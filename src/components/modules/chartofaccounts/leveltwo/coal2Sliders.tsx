@@ -10,14 +10,16 @@ interface coal2Param {
   search: string;
   /** The level-1 head the list is narrowed to, or empty for the whole chart. */
   coal1Id?: string | number | null;
+  /** Only rows whose local name is still empty. */
+  missingLocal?: boolean;
 }
 
-export const getCoal2 = ({ page, perPage, search = '', coal1Id = '' }: coal2Param) => (dispatch: any) => {
+export const getCoal2 = ({ page, perPage, search = '', coal1Id = '', missingLocal = false }: coal2Param) => (dispatch: any) => {
   dispatch({ type: COAL2_LIST_PENDING });
   // `coal1_id` rides on the list call rather than a call of its own: the server
   // narrows the query with it and paginates the narrowed set, so the page count
   // and the rows always describe the same selection.
-  httpService.get(API_CHART_OF_ACCOUNTS_L2_URL + `?page=${page}&per_page=${perPage}&search=${search}&coal1_id=${coal1Id ?? ''}`)
+  httpService.get(API_CHART_OF_ACCOUNTS_L2_URL + `?page=${page}&per_page=${perPage}&search=${search}&coal1_id=${coal1Id ?? ''}${missingLocal ? '&missing_local=1' : ''}`)
     .then((res) => {
       let _data = res.data;
       if (_data.success) {

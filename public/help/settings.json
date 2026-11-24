@@ -8,7 +8,7 @@
     "intro": "চালান, অর্ডার, হোটেল রিসিভ ও বিলের কাগজে কোন অংশ কোথায় বসবে তা সাজানো হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ print.template.view permission থাকলে।"] },
-      { "heading": "নকশা সাজানো", "menu": "Admin → Company & Branch → Challan Layout", "steps": ["Branch, Paper, Start from, Text size ও Rows per page বাছুন।", "Parts of the paper থেকে অংশ যোগ করুন; বাঁ প্যানেলে সেটিংস, মাঝে ব্যান্ড, ডানে What it will look like দেখুন।", "Left margin, Right margin, Print sideways, Half page ও Print the page foot ঠিক করুন।", "Name of this layout লিখে Save; Test Print দিয়ে পরীক্ষা করুন।"] },
+      { "heading": "নকশা সাজানো", "menu": "Admin → Company & Branch → Paper Layout", "steps": ["Branch, Paper, Start from, Text size ও Rows per page বাছুন।", "Parts of the paper থেকে অংশ যোগ করুন; বাঁ প্যানেলে সেটিংস, মাঝে ব্যান্ড, ডানে What it will look like দেখুন।", "Left margin, Right margin, Print sideways, Half page ও Print the page foot ঠিক করুন।", "Name of this layout লিখে Save; Test Print দিয়ে পরীক্ষা করুন।"] },
       { "heading": "সতর্কতা", "warning": "শুধু 'prints' চিহ্নিত নকশাই প্রিন্টারে যায়। কিছু না থাকলে built-in নকশা ছাপে। উপরে-নিচের মার্জিন সব রিপোর্টের জন্য এক — আলাদা করতে Blank Space অংশ বসান।" }
     ]
   },

@@ -7,6 +7,7 @@ import { FiHome, FiPlus, FiRefreshCcw, FiSave, FiTrash2, FiArrowLeft } from 'rea
 
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import InputElement from '../../utils/fields/InputElement';
+import LocalNameInput from '../../utils/fields/LocalNameInput';
 import DropdownCommon from '../../utils/utils-functions/DropdownCommon';
 import { ClientType, nomineeRelationType, relationType, sexType, TrueFalse } from '../../utils/fields/DataConstant';
 import DdlDynamicMultiline from '../../utils/utils-functions/DdlDynamicMultiline';
@@ -22,6 +23,7 @@ import httpService from '../../services/httpService';
 import { API_CUSTOMER_MOBILE_CHECK_URL } from '../../services/apiRoutes';
 import { formatMobile, useMobileFormat } from '../../utils/utils-functions/mobileFormat';
 import useCtrlS from '../../utils/hooks/useCtrlS';
+import { useLanguage } from '../../../i18n/useLanguage';
 
 type DuplicateWarning = {
   mobile: string;
@@ -47,6 +49,7 @@ const AddCustomerSupplier = () => {
   const area = useSelector((state: any) => state.area);
   const settings = useSelector((state: any) => state.settings);
   const employees = useSelector((state: any) => state.employees);
+  const { localCode } = useLanguage();
 
   // Branch switches from Branch > Customer & Supplier Setup.
   const branchSettings = settings?.data?.branch;
@@ -220,6 +223,7 @@ const AddCustomerSupplier = () => {
 
   const initialCustomerValues = {
     name: '',
+    name_local: '',
     bangla: '',
     father: '',
     mother_name: '',
@@ -231,6 +235,7 @@ const AddCustomerSupplier = () => {
     contact_number: '',
     relation_id: '',
     manual_address: '',
+    address_local: '',
     permanent_address: '',
     mobile: '',
     ledger_page: '',
@@ -252,7 +257,13 @@ const AddCustomerSupplier = () => {
   const saveCustomer = async (values: any, resetForm: (nextState?: any) => void) => {
     setButtonLoading(true);
     try {
-      const res = await dispatch(storeCustomer(values) as any).unwrap();
+      // The local columns belong to the local-language mode. Left in the
+      // payload on a company that has it off, an untouched blank would clear a
+      // name somebody had written when the company still had Bangla on.
+      const { name_local, address_local, ...rest } = values;
+      const payload = localCode ? { ...rest, name_local, address_local } : rest;
+
+      const res = await dispatch(storeCustomer(payload as any) as any).unwrap();
       toast.success(res?.message || 'Customer saved successfully!');
 
       setTimeout(() => {
@@ -611,8 +622,9 @@ const AddCustomerSupplier = () => {
 
             {/* The branch keeps its ledgers in Bangla, so the name is written
                 twice -- the English one for the software, this one for what is
-                read out at the counter. */}
-            {usesBangla && (
+                read out at the counter. Hidden while the company's own local
+                language is on, where the field below takes its place. */}
+            {!localCode && usesBangla && (
               <div className="text-left flex flex-col">
                 <InputElement
                   id="bangla"
@@ -626,6 +638,12 @@ const AddCustomerSupplier = () => {
                 />
               </div>
             )}
+
+            <LocalNameInput
+              field="name"
+              value={formik.values.name_local}
+              onChange={(value) => formik.setFieldValue('name_local', value)}
+            />
 
             {settings?.data?.branch?.need_relation_info === '1' && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
@@ -821,6 +839,12 @@ const AddCustomerSupplier = () => {
                 </div>
               )}
             </div>
+
+            <LocalNameInput
+              field="address"
+              value={formik.values.address_local}
+              onChange={(value) => formik.setFieldValue('address_local', value)}
+            />
             {needPermanentAddress && (
               /* The tick sits on the field's own line, level with the box it
                  fills, rather than above it -- it is a shortcut for that one

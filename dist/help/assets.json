@@ -118,7 +118,7 @@
     "sections": [
       {
         "heading": "ধাপ ১: গ্রুপ হেড তৈরি",
-        "menu": "Customers → CoA L3 → New COA L3",
+        "menu": "Customer & Supplier → Chart of Accounts → CoA L3 → New COA L3",
         "steps": [
           "সবচেয়ে সহজ পথ: ক্যাটাগরির হেডের ঘরগুলো “Made on save” রেখে সেভ করুন — নিচের চারটি গ্রুপ, দুটি শেয়ার্ড হেড আর এই ক্যাটাগরির নিজের দুটি হেড সার্ভার নিজেই তৈরি করে নেয়।",
           "আগে থেকে থাকা ক্যাটাগরিগুলো হেড ছাড়া সেভ হয়েছিল? Assets → Setup ট্যাবে “Create what is missing” চাপুন।",
@@ -158,7 +158,7 @@
       },
       {
         "heading": "ধাপ ২: চারটি অ্যাকাউন্ট হেড তৈরি",
-        "menu": "Customers → Accounts Head List → New Head Entry",
+        "menu": "Customer & Supplier → Chart of Accounts → Accounts Head List → New Head Entry",
         "steps": [
           "প্রতিটি হেডের জন্য Accounts Group Head, Reporting To ও Accounts Head Name পূরণ করে SAVE চাপুন।",
           "Accounts Group Head ঘরে কমপক্ষে ৩ অক্ষর লিখলে তালিকা আসবে।",

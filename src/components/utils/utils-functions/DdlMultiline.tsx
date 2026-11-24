@@ -8,10 +8,13 @@ import useLocalStorage from '../../../hooks/useLocalStorage';
 import { StylesConfig } from 'react-select';
 import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
 import { nomineeRelationType } from '../fields/DataConstant';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { displayName } from '../../../i18n/displayName';
 
 interface OptionType {
   value: string;
   label: string;
+  name_local?: string;
   label_2?: string;
   label_3?: string;
   label_4?: string;
@@ -114,6 +117,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
     document.documentElement.classList.contains('dark')
   );
   const dispatch = useDispatch();
+  const { code } = useLanguage();
 
   // Branch Setup -> Customer / Supplier Dropdown: how many lines each party
   // takes in this box, and which of them the branch wants shown.
@@ -234,6 +238,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
             (item: any) => ({
               value: item?.value?.toString?.() || '',
               label: item.label,
+              name_local: item.name_local,
               label_2: item.label_2,
               label_3: item.label_3,
               label_4: item.label_4,
@@ -413,8 +418,13 @@ const DdlMultiline: React.FC<DropdownProps> = ({
         onFocus={() => setIsControlFocused(true)}
         onBlur={() => setIsControlFocused(false)}
         onKeyDown={onKeyDown}
-        getOptionLabel={(option) => option.label}
+        getOptionLabel={(option) => displayName({ name: option.label, name_local: option.name_local }, 'name', code)}
         formatOptionLabel={(option) => {
+          const optionLabel = displayName(
+            { name: option.label, name_local: option.name_local },
+            'name',
+            code,
+          );
           // Single Line spends the party's one line on everything the branch
           // asked for, so it is drawn on its own: the markup below puts a colour
           // on the code and cannot be packed into a string. Nothing is added
@@ -422,7 +432,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
           // packed line overflows it.
           if (singleLine) {
             const code = partyCode(option);
-            const head = code ? `${option.label} (${code})` : option.label;
+            const head = code ? `${optionLabel} (${code})` : optionLabel;
 
             return (
               <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
@@ -436,7 +446,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
           return (
             <div>
               <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))] focus:border-blue-500">
-                {option.label}
+                {optionLabel}
                 {option.isAction ? null : (
                   <>
                     {partyCode(option) && (

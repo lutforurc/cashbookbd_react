@@ -9,13 +9,18 @@ import Table from '../../../utils/others/Table';
 import Loader from '../../../../common/Loader';
 import { getCoal1 } from './coal1Sliders';
 import SearchInput from '../../../utils/fields/SearchInput';
+import LocalNameMissingFilter from '../../../utils/fields/LocalNameMissingFilter';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { displayName } from '../../../../i18n/displayName';
 import { useNavigate } from 'react-router-dom';
 
 const CoaL1 = () => {
     const navigate = useNavigate();
+    const { code } = useLanguage();
     const coal1 = useSelector((state) => state.coal1);
     const dispatch = useDispatch();
     const [search, setSearchValue] = useState('');
+    const [missingLocal, setMissingLocal] = useState(false);
     const [page, setPage] = useState(0);
     const [perPage, setPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
@@ -25,11 +30,11 @@ const CoaL1 = () => {
 
 
     useEffect(() => {
-        dispatch(getCoal1({ page, perPage, search })); //.finally(() => setIsDataLoading(false));
+        dispatch(getCoal1({ page, perPage, search, missingLocal })); //.finally(() => setIsDataLoading(false));
         setTotalPages(Math.ceil(coal1?.data?.last_page) || 0);
         setTableData(coal1?.data?.data);
         setCurrentPage(page);
-    }, [page, perPage, search]);
+    }, [page, perPage, search, missingLocal]);
 
     useEffect(() => {
         if (coal1?.data?.data) {
@@ -42,7 +47,7 @@ const CoaL1 = () => {
     const handleSearchButton = (e: any) => {
         setCurrentPage(1);
         setPage(1);
-        dispatch(getCoal1({ page, perPage, search }));
+        dispatch(getCoal1({ page, perPage, search, missingLocal }));
         if (coal1?.data?.total >= 0) {
             setTotalPages(Math.ceil(coal1?.data?.total / perPage));
             setTableData(coal1?.data?.data);
@@ -74,6 +79,7 @@ const CoaL1 = () => {
         {
             key: 'name',
             header: 'Chart of Account L1',
+            render: (row: any) => displayName(row, 'name', code),
         },
         {
             key: 'action',
@@ -118,6 +124,11 @@ const CoaL1 = () => {
                         search={search}
                         setSearchValue={setSearchValue}
                         className="text-nowrap"
+                    />
+                    <LocalNameMissingFilter
+                        checked={missingLocal}
+                        onChange={setMissingLocal}
+                        className="ml-1 md:ml-2"
                     />
                     <ButtonLoading
                         onClick={handleSearchButton}

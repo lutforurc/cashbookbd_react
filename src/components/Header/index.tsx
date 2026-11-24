@@ -4,6 +4,7 @@ import DropdownNotification from './DropdownNotification';
 import DropdownUser from './DropdownUser';
 import LogoIcon from '../../images/logo/logo-icon.svg';
 import GlobalSearch from './GlobalSearch';
+import LanguageSwitcher from './LanguageSwitcher';
 import { Button } from '../../pages/UiElements/CustomButtons';
 
 const Header = (props: {
@@ -64,6 +65,11 @@ const Header = (props: {
 
         <div className="flex items-center gap-3 2xsm:gap-7">
           <ul className="flex items-center gap-2 2xsm:gap-4">
+            {/* <!-- Language (only when the company has turned its local language on) --> */}
+            <li>
+              <LanguageSwitcher />
+            </li>
+
             {/* <!-- Notification Menu Area --> */}
             <DropdownNotification />
             {/* <!-- Notification Menu Area --> */}

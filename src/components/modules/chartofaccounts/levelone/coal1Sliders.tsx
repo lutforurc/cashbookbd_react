@@ -6,11 +6,13 @@ interface coal1Param {
   page: number;
   perPage: number;
   search: string;
+  /** Only rows whose local name is still empty. */
+  missingLocal?: boolean;
 }
 
-export const getCoal1 = ({ page, perPage, search = '' }: coal1Param) => (dispatch: any) => {
+export const getCoal1 = ({ page, perPage, search = '', missingLocal = false }: coal1Param) => (dispatch: any) => {
   dispatch({ type: COAL1_LIST_PENDING });
-  httpService.get(API_CHART_OF_ACCOUNTS_L1_URL + `?page=${page}&per_page=${perPage}&search=${search}`)
+  httpService.get(API_CHART_OF_ACCOUNTS_L1_URL + `?page=${page}&per_page=${perPage}&search=${search}${missingLocal ? '&missing_local=1' : ''}`)
     .then((res) => {
       let _data = res.data;
       if (_data.success) {

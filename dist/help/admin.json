@@ -32,8 +32,8 @@
     "video": "",
     "intro": "ভাউচারের সাথে কাগজের ছবি জোড়া হয় — একসাথে অনেক ভাউচারে (Bulk) বা একটি একটি করে।",
     "sections": [
-      { "heading": "একসাথে আপলোড", "menu": "Admin → Bulk Voucher Upload", "steps": ["Select Branch, Voucher Type, Attachment Type, Start Date ও End Date দিন।", "Update চেপে ভাউচার আনুন; Choose Voucher দিয়ে ফাইল বাছুন।", "ফাইল বাছা হলে আপলোড শুরু হয়; N file(s) selected দেখায়।"] },
-      { "heading": "একটি একটি করে", "menu": "Admin → Upload Voucher Image", "steps": ["Branch, Voucher Type, Attachment Type ও তারিখ দিয়ে Run চাপুন।", "প্রতিটি ভাউচার এক সারিতে আসে — SL No., Voucher No., Voucher Details, Amount ও Voucher Images।", "Voucher Details-এ প্রথম লাইনটি ভাউচারের প্রধান খাত, নিচে ছোট করে বিপরীত পাশ (যেমন Cash); Amount-এ ভাউচারের মোট টাকা।", "সেই এক সারিতে Upload / Add More দিয়ে ছবি দিন; Cancel দিয়ে বাতিল।"] },
+      { "heading": "একসাথে আপলোড", "menu": "Admin → Uploads → Bulk Upload", "steps": ["Select Branch, Voucher Type, Attachment Type, Start Date ও End Date দিন।", "Update চেপে ভাউচার আনুন; Choose Voucher দিয়ে ফাইল বাছুন।", "ফাইল বাছা হলে আপলোড শুরু হয়; N file(s) selected দেখায়।"] },
+      { "heading": "একটি একটি করে", "menu": "Admin → Uploads → Voucher Upload", "steps": ["Branch, Voucher Type, Attachment Type ও তারিখ দিয়ে Run চাপুন।", "প্রতিটি ভাউচার এক সারিতে আসে — SL No., Voucher No., Voucher Details, Amount ও Voucher Images।", "Voucher Details-এ প্রথম লাইনটি ভাউচারের প্রধান খাত, নিচে ছোট করে বিপরীত পাশ (যেমন Cash); Amount-এ ভাউচারের মোট টাকা।", "সেই এক সারিতে Upload / Add More দিয়ে ছবি দিন; Cancel দিয়ে বাতিল।"] },
       { "heading": "সতর্কতা", "warning": "খুব বড় ফাইল বাদ পড়ে যাবে — ছোট ছবি দিন। ছবি ভাউচারের তারিখের মধ্যে থাকা ভাউচারেই যুক্ত হয়।" }
     ]
   },
@@ -46,7 +46,7 @@
     "intro": "শাখা যোগ করার সময় ও নিবন্ধনে যে ব্যবসার ধরন দেখানো হয়, তার তালিকা।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ business.create permission থাকলে।"] },
-      { "heading": "ধরন যোগ ও বদল", "menu": "Admin → Business Types", "steps": ["Name, Status (Enabled/Disabled) ও Description লিখে Add করুন।", "তালিকায় #, Name, Description, Branches ও Offered দেখা যায়; Edit দিয়ে বদলান।"] },
+      { "heading": "ধরন যোগ ও বদল", "menu": "Admin → Platform → Business Types", "steps": ["Name, Status (Enabled/Disabled) ও Description লিখে Add করুন।", "তালিকায় #, Name, Description, Branches ও Offered দেখা যায়; Edit দিয়ে বদলান।"] },
       { "heading": "সতর্কতা", "warning": "Disabled করলে নতুন শাখার তালিকা থেকে সরে যায়, কিন্তু পুরনো শাখা আগের মতোই চলে; কিছু মোছে না।" }
     ]
   },
@@ -59,7 +59,7 @@
     "intro": "শাখা যে ইনভেন্টরি মডেলে চলে (যেমন সাধারণ, ট্রেডিং) তার তালিকা।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ inventory.systems.view permission থাকলে।"] },
-      { "heading": "সিস্টেম", "menu": "Admin → Inventory Systems", "steps": ["Name, Slug, Status ও Description দিয়ে Add করুন।", "তালিকায় #, Name, Slug, Status ও Description দেখা যায়; Edit দিয়ে বদলান।"] },
+      { "heading": "সিস্টেম", "menu": "Admin → Platform → Inventory Systems", "steps": ["Name, Slug, Status ও Description দিয়ে Add করুন।", "তালিকায় #, Name, Slug, Status ও Description দেখা যায়; Edit দিয়ে বদলান।"] },
       { "heading": "সতর্কতা", "warning": "Core system-এর Slug লক করা — रাউটিং এর ওপর নির্ভর করে, তাই বদলানো বা মোছা যায় না।" }
     ]
   },
@@ -72,7 +72,7 @@
     "intro": "প্রতিটি স্ক্রিনের পাশে যে ভিডিও লিংক দেখায়, তার তালিকা ও লিংক।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ tutorial.videos.manage permission থাকলে।"] },
-      { "heading": "লিংক বসানো", "menu": "Admin → Tutorial Videos", "steps": ["Add New চেপে Screen key, Title, Group, Web URL ও Mobile URL দিন।", "Save করলে তালিকায় Sl., Screen, Web URL, Mobile URL ও Show দেখা যায়।", "Edit দিয়ে বদলান, Remove দিয়ে স্ক্রিন বাদ দিন।"] },
+      { "heading": "লিংক বসানো", "menu": "Admin → Platform → Tutorial Videos", "steps": ["Add New চেপে Screen key, Title, Group, Web URL ও Mobile URL দিন।", "Save করলে তালিকায় Sl., Screen, Web URL, Mobile URL ও Show দেখা যায়।", "Edit দিয়ে বদলান, Remove দিয়ে স্ক্রিন বাদ দিন।"] },
       { "heading": "সতর্কতা", "warning": "স্ক্রিনটি অ্যাপে থাকলে আবার নিজেই তালিকায় যোগ হয়ে যাবে — Remove স্থায়ী নয়।" }
     ]
   },
@@ -85,7 +85,7 @@
     "intro": "অ্যাপের ভেতরে ব্যবহারকারীকে দেখানো প্রচার বার্তার তালিকা।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ admin.in.app.messages.view permission থাকলে।"] },
-      { "heading": "তালিকা", "menu": "Admin → In-App Messages", "steps": ["New Campaign দিয়ে নতুন বার্তা; Refresh দিয়ে তালিকা নতুন করে আনুন।", "#, Campaign, Layout / Trigger, Audience / Platform, Frequency, Schedule, Delivery ও Status দেখা যায়।", "Edit বা Delete দিয়ে বার্তা সামলান।"] },
+      { "heading": "তালিকা", "menu": "Admin → Platform → In-App Messages", "steps": ["New Campaign দিয়ে নতুন বার্তা; Refresh দিয়ে তালিকা নতুন করে আনুন।", "#, Campaign, Layout / Trigger, Audience / Platform, Frequency, Schedule, Delivery ও Status দেখা যায়।", "Edit বা Delete দিয়ে বার্তা সামলান।"] },
       { "heading": "সতর্কতা", "warning": "Status বন্ধ থাকলে বার্তা দেখাবে না; Schedule-এর বাইরে গেলেও দেখাবে না।" }
     ]
   },
@@ -97,7 +97,7 @@
     "video": "",
     "intro": "একটি ইন-অ্যাপ বার্তার লেখা, ছবি, বোতাম ও কাকে কখন দেখাবে তা ঠিক করার ফর্ম।",
     "sections": [
-      { "heading": "বার্তা", "menu": "Admin → In-App Messages → New Campaign", "steps": ["Title ও Body লিখুন; Layout, Trigger ও Image দিন।", "Primary এবং Secondary বোতামের লেখা ও কাজ দিন।", "Background, Text ও Button colour বাছুন।", "Audience, Platform, Status, Starts at, Ends at, কতবার দেখাবে, Gap ও Priority দিন।"] },
+      { "heading": "বার্তা", "menu": "Admin → Platform → In-App Messages → New Campaign", "steps": ["Title ও Body লিখুন; Layout, Trigger ও Image দিন।", "Primary এবং Secondary বোতামের লেখা ও কাজ দিন।", "Background, Text ও Button colour বাছুন।", "Audience, Platform, Status, Starts at, Ends at, কতবার দেখাবে, Gap ও Priority দিন।"] },
       { "heading": "সতর্কতা", "warning": "Priority বেশি হলে আগে দেখায়। Starts at ও Ends at-এর বাইরে বার্তা আসবে না; Preview দিয়ে দেখে নিন।" }
     ]
   },
@@ -121,7 +121,7 @@
     "video": "",
     "intro": "কাজের তারিখ পরের দিনে নিয়ে যাওয়া হয়, যাতে নতুন লেনদেন নতুন তারিখে বসে।",
     "sections": [
-      { "heading": "তারিখ বদল", "menu": "Admin → Day Close", "steps": ["Current Date (Transaction Date) দেখুন।", "Next Date (Upcoming Transaction Date) দিন।", "Update চাপুন; ভুল হলে Jump Date বা Home ব্যবহার করুন।"] },
+      { "heading": "তারিখ বদল", "menu": "Admin → Daily Control → Day Close", "steps": ["Current Date (Transaction Date) দেখুন।", "Next Date (Upcoming Transaction Date) দিন।", "Update চাপুন; ভুল হলে Jump Date বা Home ব্যবহার করুন।"] },
       { "heading": "সতর্কতা", "warning": "দিন বন্ধ করার আগে দিনের সব ভাউচার শেষ করুন — পরে পুরনো তারিখে ফেরানো ঝামেলার।" }
     ]
   },
@@ -146,7 +146,7 @@
     "intro": "সবাইকে, একটি শাখাকে বা একটি পদকে অ্যাপের ভেতরে নোটিশ পাঠানো হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ admin.notifications.view permission থাকলে।"] },
-      { "heading": "নোটিশ পাঠানো", "menu": "Admin → Admin Notifications", "steps": ["Title ও Message লিখুন।", "Tone (Info/Warning/Danger/Success) ও Audience (Global/Branch/Role) বাছুন।", "Branch বা Role, Expires at দিন; Send চাপুন।"] },
+      { "heading": "নোটিশ পাঠানো", "menu": "Admin → Platform → Admin Notifications", "steps": ["Title ও Message লিখুন।", "Tone (Info/Warning/Danger/Success) ও Audience (Global/Branch/Role) বাছুন।", "Branch বা Role, Expires at দিন; Send চাপুন।"] },
       { "heading": "পাঠানো তালিকা", "steps": ["Sent Notifications-এ Title, Tone, Audience, Read, Created, Expires ও Action দেখা যায়।", "কেউ পড়েছে কি না Read ঘরে বোঝা যায়।"] },
       { "heading": "সতর্কতা", "warning": "Expires at খালি রাখলে নোটিশের মেয়াদ শেষ হয় না; বন্ধ করতে চাইলে তারিখ দিন।" }
     ]
@@ -159,7 +159,7 @@
     "video": "",
     "intro": "একটি অনুমোদিত ভাউচারের অনুমোদন তুলে ফেলা হয়, যাতে সেটি আবার বদলানো যায়।",
     "sections": [
-      { "heading": "অনুমোদন তোলা", "menu": "Admin → Remove Voucher Approval", "steps": ["Enter Voucher Number ঘরে ভাউচার নম্বর লিখুন।", "Remove Approval চাপুন।", "লেনদেন মুছে যায় না — শুধু অনুমোদনের সিল তুলে যায়।"] },
+      { "heading": "অনুমোদন তোলা", "menu": "Admin → Daily Control → Approval Remove", "steps": ["Enter Voucher Number ঘরে ভাউচার নম্বর লিখুন।", "Remove Approval চাপুন।", "লেনদেন মুছে যায় না — শুধু অনুমোদনের সিল তুলে যায়।"] },
       { "heading": "সতর্কতা", "warning": "ভুল ভাউচার হলে টাকা নড়বে না, কিন্তু রিপোর্টে অনুমোদিত হিসেবে থাকবে না — নম্বর মিলিয়ে নিন।" }
     ]
   },
@@ -171,7 +171,7 @@
     "video": "",
     "intro": "একটি তারিখ-সীমার সব ভাউচার একসাথে অনুমোদন করা হয়।",
     "sections": [
-      { "heading": "অনুমোদন", "menu": "Admin → Voucher Approval", "steps": ["Enter Start Date for Approval ও Enter End Date for Approval দিন।", "Approved চাপুন।", "Back বা Home দিয়ে ফিরুন।"] },
+      { "heading": "অনুমোদন", "menu": "Admin → Daily Control → Voucher Approval", "steps": ["Enter Start Date for Approval ও Enter End Date for Approval দিন।", "Approved চাপুন।", "Back বা Home দিয়ে ফিরুন।"] },
       { "heading": "সতর্কতা", "warning": "সীমার ভেতরের সব ভাউচার অনুমোদিত হবে — তারিখ দুবার মিলিয়ে নিন, কারণ পরে একটি একটি করে বদলানো কষ্ট।" }
     ]
   },
@@ -184,7 +184,7 @@
     "intro": "রিসেলার অ্যাকাউন্ট, কোম্পানি বরাদ্দ ও কমিশন পরিশোধের জায়গা।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ reseller.view permission থাকলে।"] },
-      { "heading": "রিসেলার ও বরাদ্দ", "menu": "Admin → Reseller Admin", "steps": ["Name, Business Name, Phone, Email, Login Password, Commission ও Value দিয়ে Save করুন।", "Reseller List-এ Name, Contact, Companies, Commission ও Status দেখা যায়।", "Assign Company-তে Unassigned Company বেছে Assign করুন।"] },
+      { "heading": "রিসেলার ও বরাদ্দ", "menu": "Admin → Platform → Resellers", "steps": ["Name, Business Name, Phone, Email, Login Password, Commission ও Value দিয়ে Save করুন।", "Reseller List-এ Name, Contact, Companies, Commission ও Status দেখা যায়।", "Assign Company-তে Unassigned Company বেছে Assign করুন।"] },
       { "heading": "কমিশন", "steps": ["Pay Reseller Commission-এ Reseller, Amount, Payment Method, Payment Date, Paid To Account ও Reference দিয়ে Pay করুন।", "Payment Commissions ও Commission Payments-এ হিসাব মিলিয়ে নিন।"] },
       { "heading": "সতর্কতা", "warning": "রিসেলার বন্ধ করলে তার কোম্পানিগুলো মুছে যায় না; কমিশন পরিশোধ কেবল Approved Payment থেকেই হয়।" }
     ]
@@ -222,7 +222,7 @@
     "video": "",
     "intro": "একটি ভাউচার নম্বর-সীমার ভাউচার অন্য তারিখে সরানো হয়।",
     "sections": [
-      { "heading": "তারিখ বদল", "menu": "Admin → Voucher Change Date", "steps": ["Select Branch, Enter From Date ও Enter To Date দিন।", "Start Voucher Number ও End Voucher Number দিন।", "Change চাপুন।"] },
+      { "heading": "তারিখ বদল", "menu": "VR Settings → Corrections → Voucher Date Change", "steps": ["Select Branch, Enter From Date ও Enter To Date দিন।", "Start Voucher Number ও End Voucher Number দিন।", "Change চাপুন।"] },
       { "heading": "সতর্কতা", "warning": "নম্বর-সীমা উল্টো হলে Invalid voucher number range দেখাবে। বদলালে পুরনো তারিখের রিপোর্টও বদলে যাবে।" }
     ]
   },
@@ -234,7 +234,7 @@
     "video": "",
     "intro": "একটি ভাউচারকে অন্য ধরনের ভাউচারে বদলানো হয়।",
     "sections": [
-      { "heading": "ধরন বদল", "menu": "Admin → Change Voucher Type", "steps": ["Select Branch ও Enter Voucher Number দিন।", "Select Voucher Type বাছুন।", "Change চাপুন।"] },
+      { "heading": "ধরন বদল", "menu": "Admin → Daily Control → Change Voucher Type", "steps": ["Select Branch ও Enter Voucher Number দিন।", "Select Voucher Type বাছুন।", "Change চাপুন।"] },
       { "heading": "সতর্কতা", "warning": "ধরন বদলালে ভাউচারটি অন্য রেজিস্টারে যাবে — কোন রিপোর্টে দেখা উচিত তা আগে ভেবে নিন।" }
     ]
   },
@@ -247,7 +247,7 @@
     "intro": "কোম্পানিগুলোকে দেওয়া ওয়েবসাইটের নমুনা (টেমপ্লেট) তৈরি ও প্রকাশের তালিকা।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু platform admin-এর কাছে, এবং Roles-এ website.templates.manage permission থাকলে।"] },
-      { "heading": "টেমপ্লেট", "menu": "Admin → Website Templates", "steps": ["Create a template-এ Name লিখে নতুন নমুনা বানান।", "Master templates-এ Name, Pages, Status ও Published দেখা যায়।", "Edit, Duplicate, Publish / Unpublish ও Delete দিয়ে সামলান।"] },
+      { "heading": "টেমপ্লেট", "menu": "Admin → Platform → Website Templates", "steps": ["Create a template-এ Name লিখে নতুন নমুনা বানান।", "Master templates-এ Name, Pages, Status ও Published দেখা যায়।", "Edit, Duplicate, Publish / Unpublish ও Delete দিয়ে সামলান।"] },
       { "heading": "সতর্কতা", "warning": "Draft নমুনা কোম্পানির গ্যালারিতে দেখা যায় না; Publish করলে নকল তৈরি হয়, Unpublish করলে মোছে না।" }
     ]
   },
@@ -259,7 +259,7 @@
     "video": "",
     "intro": "একটি টেমপ্লেটের পৃষ্ঠা, রং ও লেখা সাজানোর পাতা।",
     "sections": [
-      { "heading": "সাজানো", "menu": "Admin → Website Templates → Edit", "steps": ["Template-এ Name ও Description লিখুন।", "Theme-এ Heading font, Body font ও Corner radius বাছুন।", "Pages-এ Title ও Slug দিয়ে পৃষ্ঠা যোগ করুন, Add a section দিয়ে অংশ বসান।", "Preview (draft)-এ দেখে নিন।"] },
+      { "heading": "সাজানো", "menu": "Admin → Platform → Website Templates → Edit", "steps": ["Template-এ Name ও Description লিখুন।", "Theme-এ Heading font, Body font ও Corner radius বাছুন।", "Pages-এ Title ও Slug দিয়ে পৃষ্ঠা যোগ করুন, Add a section দিয়ে অংশ বসান।", "Preview (draft)-এ দেখে নিন।"] },
       { "heading": "সতর্কতা", "warning": "Preview শুধু খসড়া দেখায়; প্রকাশ করতে তালিকায় Publish করতে হবে। কোনো পৃষ্ঠা না বাছলে No page selected দেখায়।" }
     ]
   }

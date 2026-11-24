@@ -22,16 +22,36 @@
         if (stored && stored.replace(/^"|"$/g, '') === 'dark') {
           document.documentElement.classList.add('dark');
         }
+
+        /* The language, before the first frame is painted. The app writes
+         * these two keys when the user switches; reading them here stops a
+         * Bangla session from opening in English for a frame. */
+        var lang = window.localStorage.getItem('ui-lang');
+        if (lang) {
+          lang = lang.replace(/^"|"$/g, '');
+          if (lang) {
+            document.documentElement.lang = lang;
+            document.documentElement.setAttribute('data-lang', lang);
+          }
+        }
+
+        var dir = window.localStorage.getItem('ui-dir');
+        if (dir) {
+          dir = dir.replace(/^"|"$/g, '');
+          if (dir === 'rtl' || dir === 'ltr') {
+            document.documentElement.dir = dir;
+          }
+        }
       } catch (e) {
-        /* Private mode, storage disabled -- light is a fine answer. */
+        /* Private mode, storage disabled -- light and English are fine answers. */
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-fg5MTIal.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-BWaJ3C7D.js">
-  <link rel="modulepreload" crossorigin href="/assets/react-vendors-BFEjnXia.js">
+  <script type="module" crossorigin src="/assets/index-By0QtK2n.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-B0Z9INg1.js">
+  <link rel="modulepreload" crossorigin href="/assets/react-vendors-BILLB-r0.js">
   <link rel="stylesheet" crossorigin href="/assets/react-vendors-9JyUD60g.css">
-  <link rel="stylesheet" crossorigin href="/assets/index-d01GfxPh.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-BNasFNla.css">
 </head>
 
 <body>

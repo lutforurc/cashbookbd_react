@@ -7,7 +7,7 @@
     "video": "",
     "intro": "হিসাবের তালিকার সবচেয়ে উপরের স্তর; নিচের স্তরগুলো এই স্তরের নিচে সাজানো হয়।",
     "sections": [
-      { "heading": "তালিকা", "menu": "Customer & Supplier → Chart of Accounts → CoA L1", "steps": ["Search বক্সে নাম লিখে Search করুন।", "Sl. No. ও Chart of Account L1 দেখা যায়; Action ঘরে অনুমতি না থাকলে Don't have permission লেখা থাকে।"] },
+      { "heading": "তালিকা", "menu": "Customer & Supplier → Chart of Accounts → CoA L1", "steps": ["Search বক্সে নাম লিখে Search করুন।", "Sl. No. ও Chart of Account L1 দেখা যায়; Action ঘরে অনুমতি না থাকলে Don't have permission লেখা থাকে।", "কোম্পানিতে বাংলা চালু থাকলে বাংলা নাম দেখায়; “বাংলা নাম নেই” টিক দিলে শুধু যেগুলোর বাংলা নাম এখনো লেখা হয়নি সেগুলো আসে।"] },
       { "heading": "সতর্কতা", "warning": "এই স্তর শুধু দেখার — নতুন হিসাব নিচের স্তরে যোগ করতে হয়।" }
     ]
   },
@@ -19,7 +19,7 @@
     "video": "",
     "intro": "প্রথম স্তরের নিচের হিসাবের দল; কোন দল কোন প্রথম স্তরের অধীনে তা এখানে দেখা যায়।",
     "sections": [
-      { "heading": "তালিকা", "menu": "Customer & Supplier → Chart of Accounts → CoA L2", "steps": ["All Chart of Accounts L1 বাছুন (অথবা সব রাখুন) এবং Search করুন।", "Sl. No., Chart of Account L2, Chart of Account L1 ও Action দেখা যায়।", "Action-এর আইকন দিয়ে Edit বা Delete; বইয়ের আইকনে সেই হিসাবের লেজার খোলে।"] },
+      { "heading": "তালিকা", "menu": "Customer & Supplier → Chart of Accounts → CoA L2", "steps": ["All Chart of Accounts L1 বাছুন (অথবা সব রাখুন) এবং Search করুন।", "Sl. No., Chart of Account L2, Chart of Account L1 ও Action দেখা যায়।", "Action-এর আইকন দিয়ে Edit বা Delete; বইয়ের আইকনে সেই হিসাবের লেজার খোলে।", "বাংলা চালু থাকলে L2 ও তার L1-এর বাংলা নাম দেখায়; “বাংলা নাম নেই” টিক দিয়ে বাকি নামগুলো খুঁজে পূরণ করুন।"] },
       { "heading": "সতর্কতা", "warning": "কোনো L1 বাছলে শুধু তার অধীনের L2 দেখায়; খালি তালিকায় বলে ওই L1-এর কোনো L2 নেই।" }
     ]
   },
@@ -31,7 +31,7 @@
     "video": "",
     "intro": "দ্বিতীয় স্তরের নিচের হিসাবের দল, যেখান থেকে Accounts Head তৈরি হয়।",
     "sections": [
-      { "heading": "তালিকা", "menu": "Customer & Supplier → Chart of Accounts → CoA L3", "steps": ["All Chart of Accounts L1 বাছুন, তারপর দ্বিতীয় বাছাইয়ে All Chart of Accounts L2।", "Search করে Sl. No., Chart of Account L3, Chart of Account L2, Source Name ও Action দেখুন।", "New COA L3 দিয়ে নতুন দল; Action-এর Ledger / Edit / Delete দিয়ে কাজ করুন।"] },
+      { "heading": "তালিকা", "menu": "Customer & Supplier → Chart of Accounts → CoA L3", "steps": ["All Chart of Accounts L1 বাছুন, তারপর দ্বিতীয় বাছাইয়ে All Chart of Accounts L2।", "Search করে Sl. No., Chart of Account L3, Chart of Account L2, Source Name ও Action দেখুন।", "New COA L3 দিয়ে নতুন দল; Action-এর Ledger / Edit / Delete দিয়ে কাজ করুন।", "বাংলা চালু থাকলে L3 ও তার L2-এর বাংলা নাম দেখায়; “বাংলা নাম নেই” টিক দিয়ে বাকিগুলো খুঁজুন।"] },
       { "heading": "সতর্কতা", "warning": "শেয়ার করা (shared) দলে Edit বা Delete থাকে না — সেটি কোম্পানির সাধারণ হিসাব।" }
     ]
   },
@@ -43,7 +43,7 @@
     "video": "",
     "intro": "নতুন তৃতীয় স্তরের হিসাব তৈরি বা বদলানোর ফর্ম।",
     "sections": [
-      { "heading": "ফর্ম", "menu": "Customer & Supplier → Chart of Accounts → CoA L3 → New COA L3", "steps": ["Chart of Accounts (Level-2) বাছুন; তালিকায় Select COA L2 লেখা থাকে।", "Source থাকলে বাছুন।", "Accounts Group Head লিখে SAVE / UPDATE করুন; Back দিয়ে ফিরুন।"] },
+      { "heading": "ফর্ম", "menu": "Customer & Supplier → Chart of Accounts → CoA L3 → New COA L3", "steps": ["Chart of Accounts (Level-2) বাছুন; তালিকায় Select COA L2 লেখা থাকে।", "Source থাকলে বাছুন।", "Accounts Group Head লিখে SAVE / UPDATE করুন; Back দিয়ে ফিরুন।", "কোম্পানিতে বাংলা চালু থাকলে Accounts Group Head-এর নিচে নাম (বাংলা) — ঐচ্ছিক; ফাঁকা রাখলে ইংরেজি নামই দেখাবে।"] },
       { "heading": "সতর্কতা", "warning": "Level-2 ও Accounts Group Head দুটোই লাগবে। Shared হিসাব হলে এই ফর্মে বদলানো যাবে না।" }
     ]
   },
@@ -55,7 +55,7 @@
     "video": "",
     "intro": "যে হিসাবগুলোতে সত্যিকার লেনদেন বসে — Accounts Head-এর তালিকা।",
     "sections": [
-      { "heading": "তালিকা", "menu": "Customer & Supplier → Chart of Accounts → Accounts Head List", "steps": ["All Chart of Accounts L1 ও L2 বাছুন, Search করুন।", "Sl. No., Accounts Head, Group Head ও Action দেখা যায়।", "New Head Entry দিয়ে নতুন হিসাব; Ledger / Edit / Delete দিয়ে কাজ করুন।"] },
+      { "heading": "তালিকা", "menu": "Customer & Supplier → Chart of Accounts → Accounts Head List", "steps": ["All Chart of Accounts L1 ও L2 বাছুন, Search করুন।", "Sl. No., Accounts Head, Group Head ও Action দেখা যায়।", "New Head Entry দিয়ে নতুন হিসাব; Ledger / Edit / Delete দিয়ে কাজ করুন।", "বাংলা চালু থাকলে Accounts Head ও Group Head-এর বাংলা নাম দেখায়; “বাংলা নাম নেই” টিক দিয়ে বাকিগুলো খুঁজুন।"] },
       { "heading": "সতর্কতা", "warning": "যে হিসাবে লেনদেন হয়েছে সেটি মোছা যায় না; বদলালে পুরনো রিপোর্টের অর্থ বদলে যেতে পারে।" }
     ]
   },
@@ -67,7 +67,7 @@
     "video": "",
     "intro": "নতুন Accounts Head তৈরি বা বদলানোর ফর্ম।",
     "sections": [
-      { "heading": "ফর্ম", "menu": "Customer & Supplier → Chart of Accounts → Accounts Head List → New Head Entry", "steps": ["Accounts Group Head ঘরে Search for a Reference দিয়ে দল খুঁজে বাছুন।", "Reporting To বাছুন।", "Accounts Head Name লিখে SAVE / UPDATE করুন।"] },
+      { "heading": "ফর্ম", "menu": "Customer & Supplier → Chart of Accounts → Accounts Head List → New Head Entry", "steps": ["Accounts Group Head ঘরে Search for a Reference দিয়ে দল খুঁজে বাছুন।", "Reporting To বাছুন।", "Accounts Head Name লিখে SAVE / UPDATE করুন।", "কোম্পানিতে বাংলা চালু থাকলে Accounts Head Name-এর নিচে নাম (বাংলা) — ঐচ্ছিক; ফাঁকা রাখলে ইংরেজি নামই দেখাবে।"] },
       { "heading": "সতর্কতা", "warning": "Group Head, Reporting To ও Accounts Head — তিনটিই লাগবে। শেয়ার করা হিসাব এখানে বদলানো যায় না।" }
     ]
   },

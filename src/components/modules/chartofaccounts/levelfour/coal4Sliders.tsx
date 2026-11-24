@@ -19,6 +19,8 @@ interface coal4Param {
   coal1Id?: string | number | null;
   /** The level-2 head under that level 1, or empty for all of its level 2s. */
   coal2Id?: string | number | null;
+  /** Only rows whose local name is still empty. */
+  missingLocal?: boolean;
 }
 
 const initialState = {
@@ -45,14 +47,14 @@ interface coal4Param {
  */
 let latestRequestId = 0;
 
-export const getCoal4 = ({ page, perPage, search = '', coal1Id = '', coal2Id = '' }: coal4Param) => (dispatch: any) => {
+export const getCoal4 = ({ page, perPage, search = '', coal1Id = '', coal2Id = '', missingLocal = false }: coal4Param) => (dispatch: any) => {
   const requestId = ++latestRequestId;
 
   dispatch({ type: COAL4_LIST_PENDING });
   // Both filters ride on the list call rather than a call of their own: the
   // server narrows the query with them and paginates the narrowed set, so the
   // page count and the rows always describe the same selection.
-  return httpService.get(API_CHART_OF_ACCOUNTS_L4_URL + `?page=${page}&per_page=${perPage}&search=${search}&coal1_id=${coal1Id ?? ''}&coal2_id=${coal2Id ?? ''}`)
+  return httpService.get(API_CHART_OF_ACCOUNTS_L4_URL + `?page=${page}&per_page=${perPage}&search=${search}&coal1_id=${coal1Id ?? ''}&coal2_id=${coal2Id ?? ''}${missingLocal ? '&missing_local=1' : ''}`)
     .then((res) => {
       // A newer request has already been sent; its answer is the one to keep.
       if (requestId !== latestRequestId) return;

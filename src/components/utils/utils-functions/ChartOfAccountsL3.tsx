@@ -5,12 +5,17 @@ import { getCoal3DdlNext } from '../../modules/chartofaccounts/levelfour/coal4Dd
 import useLocalStorage from '../../../hooks/useLocalStorage';
 import { StylesConfig } from 'react-select';
 import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { displayName } from '../../../i18n/displayName';
 
 interface OptionType {
   value: string;
   label: string;
+  name_local?: string;
   label_2?: string;
+  label_2_local?: string;
   label_3?: string;
+  label_3_local?: string;
   label_4?: string;
   label_5?: string;
 }
@@ -20,8 +25,8 @@ interface DropdownProps {
   name?: string;
   onSelect?: (selected: OptionType | null) => void;
   acType?: string;
-  defaultValue?: { value: any; label: any } | null;
-  value?: { value: any; label: any } | null;
+  defaultValue?: { value: any; label: any; name_local?: string } | null;
+  value?: { value: any; label: any; name_local?: string } | null;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   className?: string;
   placeholder?: string;
@@ -40,6 +45,7 @@ const ChartOfAccountsL3: React.FC<DropdownProps> = ({
 }) => {
   const [isSelected, setIsSelected] = React.useState(false);
   const dispatch = useDispatch();
+  const { code } = useLanguage();
 
   const themeMode = useLocalStorage('color-theme', 'light');
   const darkMode = themeMode[0] === 'dark';
@@ -59,8 +65,11 @@ const ChartOfAccountsL3: React.FC<DropdownProps> = ({
             (item: any) => ({
               value: String(item.value ?? item.id ?? ''),
               label: item.label ?? item.name ?? '',
+              name_local: item.name_local ?? '',
               label_2: item.label_2 ?? item.l2_name ?? '',
+              label_2_local: item.label_2_local ?? item.l2_name_local ?? '',
               label_3: item.label_3 ?? item.l1_name ?? '',
+              label_3_local: item.label_3_local ?? item.l1_name_local ?? '',
             }),
           );
           callback(formattedOptions);
@@ -146,30 +155,46 @@ const ChartOfAccountsL3: React.FC<DropdownProps> = ({
         onMenuOpen={() => setIsSelected(true)}
         onMenuClose={() => setIsSelected(false)}
         onKeyDown={onKeyDown}
-        getOptionLabel={(option) => option.label}
-        formatOptionLabel={(option) => (
-          <div>
-            <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))] focus:border-blue-500">
-              {option.label}
-              {option?.label_3 && Number(option.label_3) > 0 && (
-                <span className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                  {' '}({option.label_3})
-                </span>
+        getOptionLabel={(option) => displayName({ name: option.label, name_local: option.name_local }, 'name', code)}
+        formatOptionLabel={(option) => {
+          const label = displayName(
+            { name: option.label, name_local: option.name_local },
+            'name',
+            code,
+          );
+          const l2 = displayName(
+            { name: option.label_2, name_local: option.label_2_local },
+            'name',
+            code,
+          );
+          const l1 = displayName(
+            { name: option.label_3, name_local: option.label_3_local },
+            'name',
+            code,
+          );
+
+          return (
+            <div>
+              <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))] focus:border-blue-500">
+                {label}
+                {l1 && (
+                  <span className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
+                    {' '}({l1})
+                  </span>
+                )}
+              </div>
+              {isSelected && (
+                <div className="additional-info">
+                  {l2 && (
+                    <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
+                      {l2}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
-            {isSelected && (
-              <div className="additional-info">
-                
-                {option.label_2 && (
-                  <div className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                    {option.label_2}
-                  </div>
-                )}
-                
-              </div>
-            )}
-          </div>
-        )}
+          );
+        }}
         getOptionValue={(option) => option.value}
         placeholder={placeholder || 'Select an account'}
         styles={withFieldHeight(customStyles)}

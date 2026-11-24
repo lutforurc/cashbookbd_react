@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputElement from '../../../utils/fields/InputElement';
+import LocalNameInput from '../../../utils/fields/LocalNameInput';
 import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import httpService from '../../../services/httpService';
 import {
@@ -21,6 +22,7 @@ import Loader from '../../../../common/Loader';
 type SelectOption = {
   value: string | number;
   label: string;
+  name_local?: string;
 };
 
 const fieldLabelClass = 'mb-2 text-[12px] font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]';
@@ -37,9 +39,11 @@ const AddCoaL4 = () => {
   const [formData, setFormData] = useState({
     coal3_id: '',
     coal3_label: '',
+    coal3_label_local: '',
     reporting_to: DEFAULT_REPORTING_TO_ID,
     reporting_to_label: '',
     name: '',
+    name_local: '',
   });
 
   useEffect(() => {
@@ -89,11 +93,13 @@ const AddCoaL4 = () => {
         setFormData({
           coal3_id: data?.acc_coa_level3_id ? String(data.acc_coa_level3_id) : '',
           coal3_label: data?.coa3s?.name || data?.l3_name || '',
+          coal3_label_local: data?.coa3s?.name_local || data?.l3_name_local || '',
           reporting_to: data?.acc_reporting_to_id
             ? String(data.acc_reporting_to_id)
             : DEFAULT_REPORTING_TO_ID,
           reporting_to_label: data?.reporting_to?.name || '',
           name: data?.name || '',
+          name_local: data?.name_local || '',
         });
       } catch (error: any) {
         toast.error(error?.response?.data?.message || error?.message || 'Unable to load COA L4.');
@@ -133,12 +139,17 @@ const AddCoaL4 = () => {
   }, [coal4?.data?.reporttos, formData.reporting_to, reportToOptions]);
 
   const handleSelect =
-    (field: 'coal3_id' | 'reporting_to', labelField: 'coal3_label' | 'reporting_to_label') =>
+    (
+      field: 'coal3_id' | 'reporting_to',
+      labelField: 'coal3_label' | 'reporting_to_label',
+      localLabelField?: 'coal3_label_local',
+    ) =>
       (option: SelectOption | null) => {
         setFormData((prev) => ({
           ...prev,
           [field]: option?.value ? String(option.value) : '',
           [labelField]: option?.label ?? '',
+          ...(localLabelField ? { [localLabelField]: option?.name_local ?? '' } : {}),
         }));
       };
 
@@ -156,7 +167,7 @@ const AddCoaL4 = () => {
     }));
   };
 
-  const handleInputChange = (field: 'name') => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (field: 'name' | 'name_local') => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [field]: e.target.value,
@@ -189,6 +200,7 @@ const AddCoaL4 = () => {
       reporting_to: formData.reporting_to || null,  
       code: normalizedCode,
       name: formData.name.trim(),
+      name_local: formData.name_local.trim() || null,
     };
 
     try {
@@ -237,10 +249,14 @@ const AddCoaL4 = () => {
               placeholder="Search for a Reference"
               value={
                 formData.coal3_id
-                  ? { value: formData.coal3_id, label: formData.coal3_label || formData.coal3_id }
+                  ? {
+                      value: formData.coal3_id,
+                      label: formData.coal3_label || formData.coal3_id,
+                      name_local: formData.coal3_label_local,
+                    }
                   : null
               }
-              onSelect={handleSelect('coal3_id', 'coal3_label')}
+              onSelect={handleSelect('coal3_id', 'coal3_label', 'coal3_label_local')}
               className="text-sm"
             />
           </div>
@@ -268,6 +284,12 @@ const AddCoaL4 = () => {
               className={''}
             />
           </div>
+
+          <LocalNameInput
+            field="name"
+            value={formData.name_local}
+            onChange={(value) => setFormData((prev) => ({ ...prev, name_local: value }))}
+          />
 
           <div className="flex items-center gap-1 pt-2">
             <ButtonLoading

@@ -11,6 +11,9 @@ import { getCoal3 } from './coal3Sliders';
 import { getCoal1 } from '../levelone/coal1Sliders';
 import { getCoal2DdlByCoal1 } from '../leveltwo/coal2Sliders';
 import SearchInput from '../../../utils/fields/SearchInput';
+import LocalNameMissingFilter from '../../../utils/fields/LocalNameMissingFilter';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { displayName } from '../../../../i18n/displayName';
 import { Select } from '../../../utils/fields/FormControls';
 import { FIELD_SELECT } from '../../../../theme/fieldStyles';
 import routes from '../../../services/appRoutes';
@@ -28,7 +31,9 @@ const CoaL3: React.FC = () => {
     const coal1 = useSelector((state: any) => state.coal1);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { code } = useLanguage();
     const [search, setSearchValue] = useState('');
+    const [missingLocal, setMissingLocal] = useState(false);
     const [page, setPage] = useState(0);
     const [perPage, setPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
@@ -61,12 +66,12 @@ const CoaL3: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        dispatch(getCoal3({ page, perPage, search, coal1Id, coal2Id }));
+        dispatch(getCoal3({ page, perPage, search, coal1Id, coal2Id, missingLocal }));
         setTotalPages(Math.ceil(coal3?.data?.last_page) || 0);
         setTableData(coal3?.data?.data);
         setCurrentPage(page);
         setSelectedOption(tableData);
-    }, [page, perPage, search, coal1Id, coal2Id]);
+    }, [page, perPage, search, coal1Id, coal2Id, missingLocal]);
 
     useEffect(() => {
         if (coal3?.data?.data) {
@@ -82,7 +87,7 @@ const CoaL3: React.FC = () => {
         setPage(1);
         // Both selections ride along, so searching looks through the chosen
         // heads rather than quietly falling back to the whole chart.
-        dispatch(getCoal3({ page, perPage, search, coal1Id, coal2Id }));
+        dispatch(getCoal3({ page, perPage, search, coal1Id, coal2Id, missingLocal }));
         if (coal3?.data?.total >= 0) {
             setTotalPages(Math.ceil(coal3?.data?.total / perPage));
             setTableData(coal3?.data?.data);
@@ -118,7 +123,14 @@ const CoaL3: React.FC = () => {
             const rows = await dispatch(getCoal2DdlByCoal1(nextCoal1Id) as any);
             // A newer head has been chosen; its options are the ones to keep.
             if (requestId !== coal2RequestId.current) return;
-            setCoal2Options(Array.isArray(rows) ? rows : []);
+            setCoal2Options(
+                Array.isArray(rows)
+                    ? rows.map((row: any) => ({
+                        id: row.id,
+                        name: displayName(row, 'name', code),
+                    }))
+                    : [],
+            );
         } catch (error) {
             if (requestId !== coal2RequestId.current) return;
             setCoal2Options([]);
@@ -163,6 +175,7 @@ const CoaL3: React.FC = () => {
         {
             key: 'name',
             header: 'Chart of Account L3', 
+            render: (row: any) => displayName(row, 'name', code),
         },
         {
             // ⚠️ The level-2 name, not the level-1 one. The column is headed
@@ -171,6 +184,7 @@ const CoaL3: React.FC = () => {
             // dropdown is what decides the rows beneath it.
             key: 'l2_name',
             header: 'Chart of Account L2', 
+            render: (row: any) => displayName(row, 'l2_name', code),
         },
         {
             key: 'source_name',
@@ -245,7 +259,7 @@ const CoaL3: React.FC = () => {
                         ) : null}
                         {coal1Rows.map((item: any) => (
                             <option key={item.id} value={item.id}>
-                                {item.name}
+                                {displayName(item, 'name', code)}
                             </option>
                         ))}
                     </Select>
@@ -283,6 +297,11 @@ const CoaL3: React.FC = () => {
                         search={search}
                         setSearchValue={setSearchValue}
                         className="text-nowrap"
+                    />
+                    <LocalNameMissingFilter
+                        checked={missingLocal}
+                        onChange={setMissingLocal}
+                        className="ml-1 md:ml-2"
                     />
                     <ButtonLoading
                         onClick={handleSearchButton}

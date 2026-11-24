@@ -43,10 +43,12 @@ type StoreCustomerPayload = {
 type Customer = {
   serial: number;
   name: string;
+  name_local?: string | null;
   father: string;
   mobile: string;
   email: string;
   manual_address: string;
+  address_local?: string | null;
   ledger_page: string;
 };
 

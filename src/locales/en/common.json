@@ -1,0 +1,43 @@
+{
+  "language": {
+    "label": "Language",
+    "english": "English",
+    "local": "Local",
+    "settings": {
+      "title": "Language Settings",
+      "intro": "Choose whether this company also runs in a local language, and what each branch defaults to.",
+      "enableLocal": "Enable Bangla",
+      "enableLocalHint": "When off, the whole software runs in English. Nothing is deleted.",
+      "branch": "Branch",
+      "branchHint": "The defaults below are for this branch only; each branch keeps its own.",
+      "savesItself": "Saved with this Save button — the branch Update does not save these.",
+      "save": "Save language settings",
+      "uiLanguage": "Software default language",
+      "printLanguage": "Print default language",
+      "digits": "Digits",
+      "digitsAuto": "Follow the language",
+      "digitsLatin": "123",
+      "digitsNative": "১২৩",
+      "saved": "Language settings saved.",
+      "confirmOffTitle": "Turn Bangla off?",
+      "confirmOff": "The software will run in English. No data will be deleted.",
+      "confirmOffButton": "Turn off",
+      "loading": "Loading language settings...",
+      "notPermitted": "You are not permitted to change language settings.",
+      "loadFailed": "Could not load language settings.",
+      "saveFailed": "Could not save the language settings."
+    },
+    "saveFailed": "Could not save the language."
+  },
+  "data": {
+    "nameInLanguage": "Name ({{language}})",
+    "addressInLanguage": "Address ({{language}})",
+    "missingLocalName": "{{language}} name missing"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No"
+  }
+}
