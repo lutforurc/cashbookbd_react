@@ -49,6 +49,7 @@ jobs:
         with:
           name: dist-${{ matrix.site }}
           path: dist
+          if-no-files-found: error
 
       # 7) Resolve Host
       - name: Resolve host
@@ -75,11 +76,9 @@ jobs:
           chmod 600 ~/.ssh/key
           echo -e "Host *\n  IdentityFile ~/.ssh/key\n  StrictHostKeyChecking=accept-new" > ~/.ssh/config
 
-      # 10) Download artifact
-      - uses: actions/download-artifact@v8
-        with:
-          name: dist-${{ matrix.site }}
-          path: dist
+      # 10) No download: upload and deploy run in this same job, so dist/ is
+      #     already on disk. The same-job download-artifact@v8 step failed
+      #     with "Artifact not found".
 
       # 11) Deploy
       - name: Deploy
