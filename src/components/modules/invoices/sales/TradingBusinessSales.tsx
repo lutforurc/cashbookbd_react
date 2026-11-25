@@ -413,6 +413,16 @@ const TradingBusinessSales = () => {
       }
     }
 
+    // The rate on an order's invoice is the rate agreed on the order.
+    if (field === 'price' && lockedOrder) {
+      updateLineField(
+        line.id,
+        'price',
+        String(Number(orderItemFor(line.product)?.order_rate) || 0),
+      );
+      return;
+    }
+
     updateLineField(line.id, field, String(amount));
   };
 
@@ -746,7 +756,10 @@ const TradingBusinessSales = () => {
       product_name: productData.product_name || '',
       unit: productData.unit || '',
       qty: Number(productData.qty) || 0,
-      price: Number(productData.price) || 0,
+      // An order's own rate, whatever the box happened to hold.
+      price: lockedOrder
+        ? Number(orderItemFor(productData.product)?.order_rate) || 0
+        : Number(productData.price) || 0,
     };
 
     // Add the product to the formData.products array
@@ -787,7 +800,9 @@ const TradingBusinessSales = () => {
       product_code: productData.product_code || '',
       unit: productData.unit || '',
       qty: productData.qty || '',
-      price: productData.price || '',
+      price: lockedOrder
+        ? String(Number(orderItemFor(productData.product)?.order_rate) || 0)
+        : productData.price || '',
       bag: productData.bag || '',
       warehouse: productData.warehouse || '',
       variance: productData.variance || '',
@@ -1891,6 +1906,10 @@ const TradingBusinessSales = () => {
                   type="number"
                   placeholder={'Enter Price'}
                   label={'Enter Price'}
+                  disabled={Boolean(lockedOrder)}
+                  description={
+                    lockedOrder ? 'The rate is fixed by this order and cannot be changed.' : undefined
+                  }
                   className={`py-1 ${autofillHighlights.price ? autofillHighlightClass : ''}`}
                   onChange={handleProductChange}
                   onKeyDown={(e) => handleInputKeyDown(e, 'addProduct')}
@@ -2075,17 +2094,22 @@ const TradingBusinessSales = () => {
                   <td
                     className={`px-2 py-1 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
                   >
-                    <input
-                      type="number"
-                      min="0"
-                      step="any"
-                      value={row.price === '' || row.price === null || row.price === undefined ? '' : String(row.price)}
-                      onChange={(event) => updateLineField(row.id, 'price', event.target.value)}
-                      onFocus={(event) => event.currentTarget.select()}
-                      onBlur={(event) => commitLineField(row, 'price', event.target.value)}
-                      aria-label={`Rate for ${row.product_name}`}
-                      className="w-24 rounded border border-[rgb(var(--c-border))] bg-transparent px-1 py-1 text-right text-sm focus:border-blue-500 focus:outline-none"
-                    />
+                    {lockedOrder ? (
+                      // The invoice sells at the rate the order was taken at.
+                      <span title="Rate fixed by the order">{thousandSeparator(Number(row.price))}</span>
+                    ) : (
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={row.price === '' || row.price === null || row.price === undefined ? '' : String(row.price)}
+                        onChange={(event) => updateLineField(row.id, 'price', event.target.value)}
+                        onFocus={(event) => event.currentTarget.select()}
+                        onBlur={(event) => commitLineField(row, 'price', event.target.value)}
+                        aria-label={`Rate for ${row.product_name}`}
+                        className="w-24 rounded border border-[rgb(var(--c-border))] bg-transparent px-1 py-1 text-right text-sm focus:border-blue-500 focus:outline-none"
+                      />
+                    )}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
