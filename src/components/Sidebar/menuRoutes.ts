@@ -257,6 +257,8 @@ export const MENU_ROUTES: Record<string, string[]> = {
     '/order/order-list',
     routes.order_with_transaction,
     '/orders/avg-price',
+    routes.order_undelivery,
+    routes.order_delivery_history,
     routes.approval_center,
     '/admin/voucher-approval',
     '/admin/remove-approval',

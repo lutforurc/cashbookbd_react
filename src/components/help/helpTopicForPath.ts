@@ -252,6 +252,8 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
   '/orders/edit/:id': 'order-form',
   '/orders/avg-price': 'avg-price',
   '/orders/with-transaction': 'order-transactions',
+  '/orders/undelivery': 'order-list',
+  '/orders/delivery-history': 'order-transactions',
   '/profile': 'profile',
   '/my-devices': 'my-devices',
   '/my-tasks': 'my-tasks',

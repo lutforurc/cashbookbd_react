@@ -342,6 +342,8 @@ const ROUTES = {
   order_edit: '/orders/edit/:id',
   order_avg_price: '/orders/avg-price',
   order_with_transaction: '/orders/with-transaction',
+  order_undelivery: '/orders/undelivery',
+  order_delivery_history: '/orders/delivery-history',
 
   // User Management Routes
   roles: '/user-management/roles',

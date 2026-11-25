@@ -118,6 +118,8 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Orders', path: routes.order_list, group: 'Orders', permissions: ['order.view'] },
   { title: 'Average Price', path: routes.order_avg_price, group: 'Orders', permissions: ['order.avg.price'] },
   { title: 'Order With Transaction', path: routes.order_with_transaction, group: 'Orders', permissions: ['order.transaction.view'] },
+  { title: 'Pending Deliveries', path: routes.order_undelivery, group: 'Orders', permissions: ['order.view'] },
+  { title: 'Delivery History', path: routes.order_delivery_history, group: 'Orders', permissions: ['order.transaction.view'] },
 
   { title: 'Day Close', path: routes.day_close, group: 'Admin', permissions: ['dayclose.create'] },
   { title: 'Jump Date', path: routes.day_jump, group: 'Admin', permissions: ['dayclose.jumpdate'] },

@@ -204,6 +204,8 @@
 | order_avg_price | Admin → Orders → Average Price | `/orders/avg-price` | `avg-price` | done |
 | order_edit | Orders → Edit | `/orders/edit/:id` | `order-form` | done |
 | order_with_transaction | Admin → Orders → Order With Transaction | `/orders/with-transaction` | `order-transactions` | done |
+| order_undelivery | Admin → Orders → Pending Deliveries | `/orders/undelivery` | `order-list` | done |
+| order_delivery_history | Admin → Orders → Delivery History | `/orders/delivery-history` | `order-transactions` | done |
 | pack_size_list | Products → Classification → Pack Size | `/pack-size/pack-size-list` | `product-pack-size` | done |
 | product_group_list | Products → Classification → Product Group | `/product-group/product-group-list` | `product-group` | done |
 | product_unit_create | Products → Unit → New Unit | `/product-unit/unit-create` | `product-unit` | done |

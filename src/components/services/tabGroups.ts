@@ -74,6 +74,12 @@ export const ORDER_TABS: RouteTab[] = [
   { label: 'Orders', path: routes.order_list, permission: 'order.view' },
   { label: 'Order With Transaction', path: routes.order_with_transaction, permission: 'order.transaction.view' },
   { label: 'Average Price', path: routes.order_avg_price, permission: 'order.avg.price' },
+  // What is still owed on an order, and every delivery made against one. Both
+  // read endpoints that already exist: the list's own `items[]`, and the
+  // order's transaction endpoint. No new permission -- they are two views of
+  // what `order.view` and `order.transaction.view` already open.
+  { label: 'Pending Deliveries', path: routes.order_undelivery, permission: 'order.view' },
+  { label: 'Delivery History', path: routes.order_delivery_history, permission: 'order.transaction.view' },
 ];
 
 export const UPLOAD_TABS: RouteTab[] = [

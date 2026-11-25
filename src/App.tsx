@@ -80,6 +80,8 @@ import Orders from './components/modules/orders/Orders';
 import AddOrder from './components/modules/orders/AddOrder';
 import AveragePrice from './components/modules/orders/AveragePrice';
 import OrderWithProduct from './components/modules/orders/OrderWithProduct';
+import OrdersUndelivery from './components/modules/orders/OrdersUndelivery';
+import OrdersDeliveryHistory from './components/modules/orders/OrdersDeliveryHistory';
 import MitchMatch from './components/modules/reports/mitchmatch/MitchMatch';
 import HrmMismatchPayment from './components/modules/reports/hrm-mismatch-payment/HrmMismatchPayment';
 import AddBranch from './components/modules/branch/AddBranch';
@@ -1481,6 +1483,12 @@ function App() {
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['order.avg.price']} loading={permissionsLoading} />}>
                 <Route path={routes.order_avg_price} element={<AveragePrice user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['order.view']} loading={permissionsLoading} />}>
+                <Route path={routes.order_undelivery} element={<OrdersUndelivery />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['order.transaction.view']} loading={permissionsLoading} />}>
+                <Route path={routes.order_delivery_history} element={<OrdersDeliveryHistory />} />
               </Route>
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['order.view']} loading={permissionsLoading} />}>

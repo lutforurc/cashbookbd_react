@@ -1222,17 +1222,38 @@ const Orders = () => {
       //   cellClass: 'text-right',
       render: (data: any) => (
         <p>
+          {/* The order number opens that order's own Delivery History, which is
+              where its deliveries and what is left of them are read line by
+              line. It travels in the query so a refresh opens the same order.
+              An order that has linked orders keeps its green wording and the
+              modal beside it -- that is a different question. */}
+          <Button
+            type="button"
+            title="Open this order's delivery history"
+            className={`block text-left hover:underline ${
+              (data.linked_order_count ?? data.linked_orders_count ?? 0) > 0
+                ? 'font-semibold text-green-500'
+                : ''
+            }`}
+            onClick={() =>
+              navigate(
+                `/orders/delivery-history?order=${encodeURIComponent(data.id ?? '')}` +
+                  `&order_no=${encodeURIComponent(data.order_number ?? '')}`,
+              )
+            }
+          >
+            <span className="block">{data.order_number}</span>
+          </Button>
           {(data.linked_order_count ?? data.linked_orders_count ?? 0) > 0 ? (
             <Button
               type="button"
-              className="block text-left hover:underline font-semibold text-green-500 "
+              className="block text-left text-xs text-slate-500 hover:underline dark:text-slate-400"
               onClick={() => openLinkedOrdersModal(data)}
+              title="Show the orders linked to this one"
             >
-              <span className=''> {data.order_number}</span>
+              {data.linked_order_count ?? data.linked_orders_count} linked
             </Button>
-          ) : (
-            <span className="block">{data.order_number}</span>
-          )}
+          ) : null}
           <span className="block">
             {/* One rate across different products would be meaningless. */}
             {Number(data.product_count ?? 1) > 1
