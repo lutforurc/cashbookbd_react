@@ -135,21 +135,21 @@ const VoucherApproval = () => {
             buttonLoading={saveButtonLoading}
             label="Approved"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FiCheckSquare className="text-lg ml-2 mr-2" />}
+            icon={<FiCheckSquare className="text-lg mr-2" />}
           />
           <ButtonLoading
             onClick={() => navigate('/admin/remove-approval')}
             buttonLoading={false}
             label="Back"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FaArrowLeft className="text-lg ml-2 mr-2" />}
+            icon={<FaArrowLeft className="text-lg mr-2" />}
           />
           <ButtonLoading
             onClick={() => navigate('/dashboard')}
             buttonLoading={false}
             label="Home"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FaHouse className="text-lg ml-2 mr-2" />}
+            icon={<FaHouse className="text-lg mr-2" />}
           />
         </div>
       </div>

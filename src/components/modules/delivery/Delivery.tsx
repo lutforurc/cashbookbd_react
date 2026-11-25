@@ -300,7 +300,7 @@ const Delivery = () => {
               label="Load"
               responsiveLabel="xl"
               className="whitespace-nowrap"
-              icon={<FiSearch className="text-lg ml-2 mr-2" />}
+              icon={<FiSearch className="text-lg mr-2" />}
             />
           </div>
 
@@ -509,14 +509,14 @@ const Delivery = () => {
                   <td className="px-2 py-2 text-center">
                     <Button
                       onClick={() => printDelivery(row)}
-                      className="text-blue-500 ml-2"
+                      className="text-blue-500"
                     >
                       <FiPrinter className="cursor-pointer" />
                     </Button>
                     {canCancel && Number(row.status) === 1 && (
                       <Button
                         onClick={() => handleCancel(row)}
-                        className="text-red-500 ml-2"
+                        className="text-red-500"
                       >
                         <FiXCircle className="cursor-pointer" />
                       </Button>

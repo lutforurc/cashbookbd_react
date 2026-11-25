@@ -819,7 +819,7 @@ const CompanySchemeReceivable = () => {
                 buttonLoading={receiving}
                 label={`Receive ${pickedCount ? thousandSeparator(pickedTotal) : ''}`}
                 className="whitespace-nowrap"
-                icon={<FiDownload className="text-lg ml-2 mr-2" />}
+                icon={<FiDownload className="text-lg mr-2" />}
               />
               {lastReceipt ? (
                 <ButtonLoading
@@ -827,7 +827,7 @@ const CompanySchemeReceivable = () => {
                   buttonLoading={false}
                   label={`Print ${lastReceipt.vr_no}`}
                   className="whitespace-nowrap"
-                  icon={<FiPrinter className="text-lg ml-2 mr-2" />}
+                  icon={<FiPrinter className="text-lg mr-2" />}
                 />
               ) : null}
             </div>

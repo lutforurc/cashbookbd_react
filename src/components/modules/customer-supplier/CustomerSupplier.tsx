@@ -1295,7 +1295,7 @@ const CustomerSupplier = () => {
           <PrintButton
             onClick={handlePrintList}
             label="Print"
-            className="ml-2 whitespace-nowrap"
+            className="whitespace-nowrap"
             disabled={printingList}
           />
         </div>
@@ -1305,7 +1305,7 @@ const CustomerSupplier = () => {
           buttonLoading={false}
           label="Add Customer"
           className="whitespace-nowrap text-center mr-0"
-          icon={<FiPlus className="text-lg ml-2 mr-2" />}
+          icon={<FiPlus className="text-lg mr-2" />}
         />
       </div>
 

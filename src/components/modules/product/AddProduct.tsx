@@ -911,7 +911,7 @@ const AddProduct = () => {
             buttonLoading={buttonLoading}
             label="Update (Ctrl + U)"
             className="whitespace-nowrap mr-2 py-1.5"
-            icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+            icon={<FiRefreshCcw className="text-lg mr-2" />}
           />
         ) : (
           <ButtonLoading
@@ -919,14 +919,14 @@ const AddProduct = () => {
             buttonLoading={buttonLoading}
             label="Save"
             className="whitespace-nowrap mr-2 py-1.5"
-            icon={<FiSave className="text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg mr-2" />}
           />
         )}
         <ButtonLoading
           onClick={() => navigate(backTo)}
           label="Go to back"
           className="whitespace-nowrap mr-2 py-1.5"
-          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+          icon={<FiArrowLeft className="text-lg mr-2" />}
         />
       </div>
     </div>

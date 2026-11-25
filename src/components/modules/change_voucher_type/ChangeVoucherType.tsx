@@ -156,21 +156,21 @@ const ChangeVoucherType = () => {
             disabled={saveButtonLoading}
             label="Change"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FaArrowsTurnToDots className="text-lg ml-2 mr-2" />}
+            icon={<FaArrowsTurnToDots className="text-lg mr-2" />}
           />
           <ButtonLoading
             onClick={() => navigate('/admin/dayclose')}
             buttonLoading={false}
             label="Back"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FaArrowLeft className="text-lg ml-2 mr-2" />}
+            icon={<FaArrowLeft className="text-lg mr-2" />}
           />
           <ButtonLoading
             onClick={() => navigate('/dashboard')}
             buttonLoading={false}
             label="Home"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FaHouse className="text-lg ml-2 mr-2" />}
+            icon={<FaHouse className="text-lg mr-2" />}
           />
         </div>
       </div>

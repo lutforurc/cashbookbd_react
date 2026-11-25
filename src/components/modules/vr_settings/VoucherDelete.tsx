@@ -150,7 +150,7 @@ const VoucherDelete = () => {
                 buttonLoading={saveButtonLoading}
                 label="Delete Voucher"
                 className="whitespace-nowrap"
-                icon={<FiTrash2 className="ml-2 mr-2 text-lg text-red-400" />}
+                icon={<FiTrash2 className="mr-2 text-lg text-red-400" />}
               />
 
               <ButtonLoading
@@ -158,7 +158,7 @@ const VoucherDelete = () => {
                 buttonLoading={false}
                 label="Home"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiHome className="text-lg ml-2 mr-2" />}
+                icon={<FiHome className="text-lg mr-2" />}
               />
             </div>
           </div>

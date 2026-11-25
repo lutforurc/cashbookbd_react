@@ -272,14 +272,14 @@ const AddEditBuilding = () => {
           onClick={handleSave}
           buttonLoading={buttonLoading}
           label={id ? "Update" : "Save"}
-          icon={<FiSave className="ml-2 text-lg" />}
+          icon={<FiSave className="text-lg" />}
         />
 
         <ButtonLoading
           onClick={handleReset}
           buttonLoading={false}
           label="Reset"
-          icon={<FiRefreshCcw className="ml-2 text-lg" />}
+          icon={<FiRefreshCcw className="text-lg" />}
         />
 
         <ButtonLoading
@@ -287,7 +287,7 @@ const AddEditBuilding = () => {
           buttonLoading={false}
           label="Back"
           className="whitespace-nowrap text-center mr-0"
-          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+          icon={<FiArrowLeft className="text-lg mr-2" />}
         />
       </div>
     </>

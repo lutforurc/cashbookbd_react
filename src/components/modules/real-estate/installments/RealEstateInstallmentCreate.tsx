@@ -785,7 +785,7 @@ export default function RealEstateInstallmentCreate() {
               }}
               label="Reset"
               className=""
-              icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+              icon={<FiRefreshCcw className="text-lg mr-2" />}
             />
           </div>
         </div>
@@ -834,7 +834,7 @@ export default function RealEstateInstallmentCreate() {
                 buttonLoading={loadingSales || summaryLoading || installmentsLoading}
                 label="Load"
                 className="w-full"
-                icon={<FiSearch className="text-lg ml-2 mr-2" />}
+                icon={<FiSearch className="text-lg mr-2" />}
               />
             </div>
           </div>
@@ -967,7 +967,7 @@ export default function RealEstateInstallmentCreate() {
                 buttonLoading={saving}
                 label="Create Installments"
                 className=""
-                icon={<FiSave className="text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg mr-2" />}
               />
             </div>
           </div>

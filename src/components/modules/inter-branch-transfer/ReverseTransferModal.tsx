@@ -152,7 +152,7 @@ const ReverseTransferModal = ({ transfer, scope = 'full', onClose, onReversed }:
             buttonLoading={saving}
             label={actionLabel}
             className="whitespace-nowrap bg-rose-600 px-4 py-2"
-            icon={<FiRotateCcw className="ml-2 mr-2 text-lg" />}
+            icon={<FiRotateCcw className="mr-2 text-lg" />}
             disabled={saving}
           />
         </div>

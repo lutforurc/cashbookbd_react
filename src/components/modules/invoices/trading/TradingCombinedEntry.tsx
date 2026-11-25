@@ -1572,9 +1572,9 @@ const TradingCombinedEntry = () => {
                 className="whitespace-nowrap text-center mr-0 py-1.5"
                 icon={
                   editingProductId ? (
-                    <FiEdit2 className="text-white text-lg ml-2 mr-2" />
+                    <FiEdit2 className="text-white text-lg mr-2" />
                   ) : (
-                    <FiPlus className="text-white text-lg ml-2 mr-2" />
+                    <FiPlus className="text-white text-lg mr-2" />
                   )
                 }
               />
@@ -1584,7 +1584,7 @@ const TradingCombinedEntry = () => {
                 label={saveButtonLoading ? 'Saving...' : editingCombinedNumber ? 'Update' : 'Save'}
                 responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiSave className="text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg mr-2" />}
                 disabled={saveButtonLoading}
               />
               <ButtonLoading
@@ -1593,7 +1593,7 @@ const TradingCombinedEntry = () => {
                 label="Reset"
                 responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+                icon={<FiRefreshCcw className="text-lg mr-2" />}
               />
               <ButtonLoading
                 onClick={() => navigate('/dashboard')}
@@ -1601,7 +1601,7 @@ const TradingCombinedEntry = () => {
                 label="Home"
                 responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiHome className="text-lg ml-2 mr-2" />}
+                icon={<FiHome className="text-lg mr-2" />}
               />
             </div>
           </div>
@@ -1674,7 +1674,7 @@ const TradingCombinedEntry = () => {
                       </Button>
                       <Button
                         onClick={() => handleDelete(row.id)}
-                        className="text-red-500 ml-2 text-center"
+                        className="text-red-500 text-center"
                         type="button"
                       >
                         <FiTrash2 className="cursor-pointer text-center" />

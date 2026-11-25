@@ -1660,7 +1660,7 @@ const TradingBusinessPurchase = () => {
                   label="Update"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit2 className="text-lg mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -1671,7 +1671,7 @@ const TradingBusinessPurchase = () => {
                   label="Add New"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                  icon={<FiPlus className="text-lg mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -1691,7 +1691,7 @@ const TradingBusinessPurchase = () => {
                   label="Update"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit className="text-lg mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -1700,7 +1700,7 @@ const TradingBusinessPurchase = () => {
                   label="Save"
                   responsiveLabel
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg mr-2" />}
                 />
               )}
 
@@ -1711,7 +1711,7 @@ const TradingBusinessPurchase = () => {
                 responsiveLabel
                 className="whitespace-nowrap text-center mr-0"
                 icon={
-                  <FiRefreshCcw className="text-white text-lg ml-2  mr-2" />
+                  <FiRefreshCcw className="text-white text-lg mr-2" />
                 }
               />
 
@@ -1721,7 +1721,7 @@ const TradingBusinessPurchase = () => {
                 label="Print"
                 responsiveLabel
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiPrinter className="text-lg ml-2 mr-2" />}
+                icon={<FiPrinter className="text-lg mr-2" />}
               />
 
               <ButtonLoading
@@ -1730,7 +1730,7 @@ const TradingBusinessPurchase = () => {
                 label="Home"
                 responsiveLabel
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiHome className="text-lg ml-2 mr-2" />}
+                icon={<FiHome className="text-lg mr-2" />}
               />
             </div>
           </div>
@@ -1818,13 +1818,13 @@ const TradingBusinessPurchase = () => {
                   >
                     <Button
                       onClick={() => handleDelete(row.id)}
-                      className="text-red-500 ml-2 text-center"
+                      className="text-red-500 text-center"
                     >
                       <FiTrash2 className="cursor-pointer text-center" />
                     </Button>
                     <Button
                       onClick={() => editProductItem(row.id)}
-                      className="text-green-500 ml-2 text-center"
+                      className="text-green-500 text-center"
                     >
                       <FiEdit2 className="cursor-pointer text-center" />
                     </Button>

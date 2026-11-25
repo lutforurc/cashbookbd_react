@@ -498,14 +498,14 @@ const AdminInAppMessageForm: React.FC = () => {
               buttonLoading={saving}
               label={isEdit ? 'Update' : 'Save'}
               className="mr-0 whitespace-nowrap text-center"
-              icon={<FiSave className="ml-2 mr-2 text-lg" />}
+              icon={<FiSave className="mr-2 text-lg" />}
             />
             <ButtonLoading
               onClick={() => navigate(routes.admin_in_app_messages)}
               buttonLoading={false}
               label="Back"
               className="mr-0 whitespace-nowrap text-center"
-              icon={<FiArrowLeft className="ml-2 mr-2 text-lg" />}
+              icon={<FiArrowLeft className="mr-2 text-lg" />}
             />
           </div>
         </div>

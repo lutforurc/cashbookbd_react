@@ -298,7 +298,7 @@ const ForgotPassword: React.FC = () => {
                 disabled={requestingOtp}
                 variant="primary"
                 className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center disabled:cursor-not-allowed disabled:opacity-60"
-                icon={<FiSend className="text-lg ml-2 mr-2" />}
+                icon={<FiSend className="text-lg mr-2" />}
               />
             </form>
           )}
@@ -327,7 +327,7 @@ const ForgotPassword: React.FC = () => {
                 disabled={verifyingOtp}
                 variant="primary"
                 className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center disabled:cursor-not-allowed disabled:opacity-60"
-                icon={<FiSave className="text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg mr-2" />}
               />
 
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -406,7 +406,7 @@ const ForgotPassword: React.FC = () => {
                 disabled={resettingPassword}
                 variant="primary"
                 className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center disabled:cursor-not-allowed disabled:opacity-60"
-                icon={<FiSave className="text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg mr-2" />}
               />
             </form>
           )}

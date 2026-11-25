@@ -186,7 +186,7 @@ const ReferrerMasterModal: React.FC<ReferrerMasterModalProps> = ({ isOpen, onClo
               buttonLoading={saving}
               label="Add"
               className="whitespace-nowrap text-center"
-              icon={<FiPlus className="text-lg ml-2 mr-2" />}
+              icon={<FiPlus className="text-lg mr-2" />}
             />
           </div>
         </div>

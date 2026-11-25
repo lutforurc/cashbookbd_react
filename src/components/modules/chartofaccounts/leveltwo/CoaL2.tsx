@@ -133,10 +133,10 @@ const CoaL2 = () => {
                     <Button onClick={() => { }} className="text-blue-500">
                         <FiBook className="cursor-pointer" />
                     </Button>
-                    <Button onClick={() => { }} className="text-blue-500  ml-2">
+                    <Button onClick={() => { }} className="text-blue-500">
                         <FiEdit2 className="cursor-pointer" />
                     </Button>
-                    <Button onClick={() => { }} className="text-red-500 ml-2">
+                    <Button onClick={() => { }} className="text-red-500">
                         <FiTrash2 className="cursor-pointer" />
                     </Button>
                 </div>
@@ -198,7 +198,7 @@ const CoaL2 = () => {
                   buttonLoading={false}
                   label="New COA L2"
                   className="whitespace-nowrap text-center mr-0 hidden"
-                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                  icon={<FiPlus className="text-lg mr-2" />}
                 />
             </div>
             <div className="relative overflow-x-auto overflow-y-hidden">

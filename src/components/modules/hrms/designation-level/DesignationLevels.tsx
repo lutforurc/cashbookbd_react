@@ -130,14 +130,15 @@ const DesignationLevels = () => {
       cellClass: 'text-center',
       render: (row: any) => (
         <div className="flex items-center justify-center gap-2">
-          <ButtonLoading
+          <button
+            type="button"
             onClick={() => navigate(`${ROUTES.hrms_designation_level_edit_base}/${row.id}`)}
-            buttonLoading={false}
-            label="Edit"
-            size="sm"
-            className="h-7! whitespace-nowrap text-center mr-0"
-            icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
-          />
+            title="Edit"
+            aria-label="Edit"
+            className="inline-flex items-center justify-center rounded p-1 text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            <FiEdit2 className="text-xl" />
+          </button>
           <ActionButtons
             row={row}
             showDelete={true}
@@ -172,7 +173,7 @@ const DesignationLevels = () => {
           buttonLoading={false}
           label="New Level"
           className="whitespace-nowrap text-center mr-0"
-          icon={<FiPlus className="text-lg ml-2 mr-2" />}
+          icon={<FiPlus className="text-lg mr-2" />}
         />
       </div>
 

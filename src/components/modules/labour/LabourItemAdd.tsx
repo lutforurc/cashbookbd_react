@@ -190,13 +190,13 @@ const LabourItemAdd = () => {
             buttonLoading={saving}
             label={editingId ? 'Update' : 'Save'}
             className="mr-0 whitespace-nowrap text-center"
-            icon={<FiSave className="ml-2 mr-2 text-lg" />}
+            icon={<FiSave className="mr-2 text-lg" />}
           />
           <ButtonLoading
             onClick={() => navigate(routes.labour_item)}
             label="Back"
             className="mr-0 whitespace-nowrap text-center"
-            icon={<FiHome className="ml-2 mr-2 text-lg" />}
+            icon={<FiHome className="mr-2 text-lg" />}
           />
         </div>
       </div>

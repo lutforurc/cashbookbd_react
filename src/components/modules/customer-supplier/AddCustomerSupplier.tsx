@@ -570,7 +570,7 @@ const AddCustomerSupplier = () => {
           buttonLoading={false}
           label="Customer List"
           className="whitespace-nowrap text-center mr-0"
-          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+          icon={<FiArrowLeft className="text-lg mr-2" />}
         />
       </div>
       <FormikProvider value={formik}>
@@ -1100,7 +1100,7 @@ const AddCustomerSupplier = () => {
                             })
                           }
 
-                          icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                          icon={<FiPlus className="text-lg mr-2" />}
                         />
                       </>
                     )}
@@ -1276,7 +1276,7 @@ const AddCustomerSupplier = () => {
                               remarks: '',
                             })
                           }
-                          icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                          icon={<FiPlus className="text-lg mr-2" />}
                         />
                       </>
                     )}
@@ -1292,7 +1292,7 @@ const AddCustomerSupplier = () => {
               buttonLoading={buttonLoading}
               label={buttonLoading ? 'Saving...' : 'Save'}
               className="whitespace-nowrap text-center pt-2 pb-2"
-              icon={<FiSave className="text-lg ml-2 mr-2" />}
+              icon={<FiSave className="text-lg mr-2" />}
               disabled={buttonLoading}
             />
             <ButtonLoading
@@ -1300,14 +1300,14 @@ const AddCustomerSupplier = () => {
               buttonLoading={false}
               label="Reset"
               className="whitespace-nowrap text-center pt-2 pb-2"
-              icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+              icon={<FiRefreshCcw className="text-lg mr-2" />}
             />
             <ButtonLoading
               onClick={() => navigate('/customer-supplier/list')}
               buttonLoading={false}
               label="Back"
               className="whitespace-nowrap text-center pt-2 pb-2"
-              icon={<FiHome className="text-lg ml-2 mr-2" />}
+              icon={<FiHome className="text-lg mr-2" />}
             />
           </div>
         </form>
@@ -1364,7 +1364,7 @@ const AddCustomerSupplier = () => {
                 buttonLoading={buttonLoading}
                 label="Continue Save"
                 className="whitespace-nowrap px-4 py-2"
-                icon={<FiSave className="text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg mr-2" />}
                 disabled={buttonLoading}
               />
             </div>

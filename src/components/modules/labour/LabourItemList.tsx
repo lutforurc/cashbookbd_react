@@ -155,13 +155,13 @@ const LabourItemList = () => {
               type="button"
               title="Edit"
               onClick={() => navigate(`${routes.labour_item_edit}/${row.id}`)}
-              className="ml-2 text-blue-500"
+              className="text-blue-500"
             >
               <FiEdit2 className="cursor-pointer" />
             </Button>
           ) : null}
           {canDelete ? (
-            <Button type="button" title="Delete" onClick={() => setRowToDelete(row)} className="ml-2 text-red-500">
+            <Button type="button" title="Delete" onClick={() => setRowToDelete(row)} className="text-red-500">
               <FiTrash2 className="cursor-pointer" />
             </Button>
           ) : null}

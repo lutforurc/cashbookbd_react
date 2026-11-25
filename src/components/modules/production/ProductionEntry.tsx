@@ -860,7 +860,7 @@ const ProductionEntry = () => {
       buttonLoading={false}
       label={editingRow ? 'Update' : 'Add'}
       className="w-full whitespace-nowrap text-center mr-0 py-2"
-      icon={editingRow ? <FiEdit2 className="text-lg ml-2 mr-2" /> : <FiPlus className="text-lg ml-2 mr-2" />}
+      icon={editingRow ? <FiEdit2 className="text-lg mr-2" /> : <FiPlus className="text-lg mr-2" />}
     />
   );
 
@@ -984,7 +984,7 @@ const ProductionEntry = () => {
               buttonLoading={false}
               label="Fill"
               className="w-full whitespace-nowrap text-center mr-0 py-2"
-              icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+              icon={<FiRefreshCcw className="text-lg mr-2" />}
             />
             {form.recipeId ? (
               <ButtonLoading
@@ -992,7 +992,7 @@ const ProductionEntry = () => {
                 buttonLoading={false}
                 label="Clear"
                 className="w-full whitespace-nowrap text-center mr-0 py-2"
-                icon={<FiTrash2 className="text-lg ml-2 mr-2" />}
+                icon={<FiTrash2 className="text-lg mr-2" />}
               />
             ) : null}
           </div>
@@ -1062,7 +1062,7 @@ const ProductionEntry = () => {
                 buttonLoading={saving}
                 label={editing ? 'Update draft' : 'Save draft'}
                 className="whitespace-nowrap text-center mr-0 py-2"
-                icon={<FiSave className="text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg mr-2" />}
               />
             </div>
           </div>

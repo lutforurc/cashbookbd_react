@@ -1127,7 +1127,7 @@ const ElectronicsBusinessSales = () => {
                         label="Close"
                         className="whitespace-nowrap text-center mr-0 mt-5 py-2"
                         icon={
-                          <FiShare className="text-white text-lg ml-2 mr-2" />
+                          <FiShare className="text-white text-lg mr-2" />
                         }
                       />
                     </div>
@@ -1332,7 +1332,7 @@ const ElectronicsBusinessSales = () => {
                   label="Update"
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit2 className="text-lg mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -1342,7 +1342,7 @@ const ElectronicsBusinessSales = () => {
                   label="Add New"
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                  icon={<FiPlus className="text-lg mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -1362,7 +1362,7 @@ const ElectronicsBusinessSales = () => {
                   label={updateButtonLoading ? 'Updating...' : 'Update'}
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit className="text-lg mr-2" />}
                   disabled={updateButtonLoading}
                 />
               ) : (
@@ -1372,7 +1372,7 @@ const ElectronicsBusinessSales = () => {
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg mr-2" />}
                   disabled={saveButtonLoading}
                 />
               )}
@@ -1383,7 +1383,7 @@ const ElectronicsBusinessSales = () => {
                 label="Reset"
                 responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+                icon={<FiRefreshCcw className="text-lg mr-2" />}
               />
               <div className="flex shrink-0 ml-auto">
                 <div className="mr-2">
@@ -1480,13 +1480,13 @@ const ElectronicsBusinessSales = () => {
                   <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20">
                     <Button
                       onClick={() => handleDelete(row.id)}
-                      className="text-red-500 ml-2 text-center"
+                      className="text-red-500 text-center"
                     >
                       <FiTrash2 className="cursor-pointer text-center" />
                     </Button>
                     <Button
                       onClick={() => editProductItem(row.id)}
-                      className="text-green-500 ml-2 text-center"
+                      className="text-green-500 text-center"
                     >
                       <FiEdit2 className="cursor-pointer text-center" />
                     </Button>

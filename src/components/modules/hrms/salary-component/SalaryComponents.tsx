@@ -183,7 +183,7 @@ const SalaryComponents = () => {
             label="Edit"
             size="sm"
             className="h-7! whitespace-nowrap text-center mr-0"
-            icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+            icon={<FiEdit2 className="text-lg mr-2" />}
           />
           <ButtonLoading
             onClick={() => handleToggleStatus(row)}
@@ -192,8 +192,8 @@ const SalaryComponents = () => {
             size="sm"
             className="h-7! whitespace-nowrap text-center mr-0"
             icon={Number(row.status) === 1
-              ? <FiSlash className="text-lg ml-2 mr-2" />
-              : <FiCheckCircle className="text-lg ml-2 mr-2" />}
+              ? <FiSlash className="text-lg mr-2" />
+              : <FiCheckCircle className="text-lg mr-2" />}
           />
         </div>
       ),
@@ -222,7 +222,7 @@ const SalaryComponents = () => {
           buttonLoading={false}
           label="New Pay Head"
           className="whitespace-nowrap text-center mr-0"
-          icon={<FiPlus className="text-lg ml-2 mr-2" />}
+          icon={<FiPlus className="text-lg mr-2" />}
         />
       </div>
 

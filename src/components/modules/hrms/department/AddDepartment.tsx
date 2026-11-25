@@ -115,14 +115,14 @@ const AddDepartment = () => {
             buttonLoading={saving}
             label={form.id ? t('department.update', { lng: 'en' }) : t('common.save', { lng: 'en' })}
             className="mr-0 whitespace-nowrap p-2 text-center"
-            icon={<FiSave className="ml-2 mr-2 text-lg" />}
+            icon={<FiSave className="mr-2 text-lg" />}
           />
           <ButtonLoading
             onClick={() => navigate(ROUTES.hrms_department_list)}
             buttonLoading={false}
             label={t('department.back', { lng: 'en' })}
             className="whitespace-nowrap text-center mr-0"
-            icon={<FiHome className="text-lg ml-2 mr-2" />}
+            icon={<FiHome className="text-lg mr-2" />}
           />
         </div>
       </div>

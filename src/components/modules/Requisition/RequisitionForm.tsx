@@ -476,7 +476,7 @@ const RequisitionForm = () => {
                   label=""
                   className="whitespace-nowrap bg-transparent! text-center mr-0 py-2 absolute -right-1 top-6 background-red-500 pr-2! pl-2!"
                   icon={
-                    <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg ml-2  mr-2" />
+                    <FiSearch className="dark:text-[rgb(var(--c-text))] text-black-2 text-lg mr-2" />
                   }
                 />
               </div>
@@ -592,7 +592,7 @@ const RequisitionForm = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit2 className="text-lg mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -601,7 +601,7 @@ const RequisitionForm = () => {
                   buttonLoading={buttonLoading}
                   label="Add New"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                  icon={<FiPlus className="text-lg mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -620,7 +620,7 @@ const RequisitionForm = () => {
                   buttonLoading={buttonLoading}
                   label="Update"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit className="text-lg mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -628,7 +628,7 @@ const RequisitionForm = () => {
                   buttonLoading={saveButtonLoading}
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg mr-2" />}
                   disabled={saveButtonLoading}
                 />
               )}
@@ -639,7 +639,7 @@ const RequisitionForm = () => {
                 label="Reset"
                 className="whitespace-nowrap text-center mr-0"
                 icon={
-                  <FiRefreshCcw className="text-white text-lg ml-2  mr-2" />
+                  <FiRefreshCcw className="text-white text-lg mr-2" />
                 }
               />
               <ButtonLoading
@@ -647,7 +647,7 @@ const RequisitionForm = () => {
                 buttonLoading={false}
                 label="Home"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiHome className="text-lg ml-2 mr-2" />}
+                icon={<FiHome className="text-lg mr-2" />}
               />
             </div>
           </div>
@@ -729,13 +729,13 @@ const RequisitionForm = () => {
                   >
                     <Button
                       onClick={() => handleDelete(row.id)}
-                      className="text-red-500 ml-2 text-center"
+                      className="text-red-500 text-center"
                     >
                       <FiTrash2 className="cursor-pointer text-center" />
                     </Button>
                     <Button
                       onClick={() => editProductItem(row.id)}
-                      className="text-green-500 ml-2 text-center"
+                      className="text-green-500 text-center"
                     >
                       <FiEdit2 className="cursor-pointer text-center" />
                     </Button>

@@ -372,14 +372,14 @@ const SaleNomineeModal: React.FC<Props> = ({ unit, onClose, onSaved }) => {
             buttonLoading={saving}
             disabled={saving || loading || available.length === 0}
             className="mt-0 w-full pb-[0.45rem] pt-[0.45rem]"
-            icon={<FiSave className="ml-2" />}
+            icon={<FiSave className="" />}
           />
           <ButtonLoading
             onClick={onClose}
             label="Close"
             disabled={saving}
             className="mt-0 w-full pb-[0.45rem] pt-[0.45rem]"
-            icon={<FiX className="ml-2" />}
+            icon={<FiX className="" />}
           />
         </div>
       </div>

@@ -1394,11 +1394,11 @@ const Product = (user: any) => {
               type="button"
               title="Clear search, filters and page"
               onClick={handleReset}
-              className="ml-2 whitespace-nowrap border border-[rgb(var(--c-border))] px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
+              className="whitespace-nowrap border border-[rgb(var(--c-border))] px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-meta-4"
             >
               Reset
             </Button>
-            <PrintButton onClick={handlePrint} label="Print" className="ml-2" />
+            <PrintButton onClick={handlePrint} label="Print" className="" />
 
             {/* The catalogue as the Opening Import sheet -- the same file the
                 import screen hands out, filled in, so a download here can be
@@ -1408,7 +1408,7 @@ const Product = (user: any) => {
               buttonLoading={exportLoading}
               label="Excel"
               icon={<FiDownload />}
-              className="ml-2 whitespace-nowrap"
+              className="whitespace-nowrap"
               title="Download the whole product list as a Product Opening Import sheet"
             />
 
@@ -1424,7 +1424,7 @@ const Product = (user: any) => {
                 })
               }
               label="New"
-              className="ml-2 whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
+              className="whitespace-nowrap pt-[0.45rem] pb-[0.45rem]"
               icon={<FiPlus className="h-5 w-5" />}
             />
           </div>

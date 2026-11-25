@@ -205,10 +205,10 @@ const Brands = () => {
       cellClass: 'text-center',
       render: (data: any) => (
         <div className="flex justify-center items-center">
-          <Button onClick={() => openEdit(data)} className="text-blue-500 ml-2" title="Edit">
+          <Button onClick={() => openEdit(data)} className="text-blue-500" title="Edit">
             <FiEdit2 className="cursor-pointer" />
           </Button>
-          <Button onClick={() => setDeleteRow(data)} className="text-red-500 ml-2" title="Delete">
+          <Button onClick={() => setDeleteRow(data)} className="text-red-500" title="Delete">
             <FiTrash2 className="cursor-pointer" />
           </Button>
         </div>
@@ -311,7 +311,7 @@ const Brands = () => {
                 disabled={editLoading}
                 label="Update"
                 className="px-6"
-                icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+                icon={<FiRefreshCcw className="text-lg mr-2" />}
               />
             </div>
           </div>

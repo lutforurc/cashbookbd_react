@@ -260,7 +260,7 @@ const ProductOutReport = () => {
           buttonLoading={loading}
           label="Show"
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiSearch className="text-lg ml-2 mr-2" />}
+          icon={<FiSearch className="text-lg mr-2" />}
         />
       </div>
 

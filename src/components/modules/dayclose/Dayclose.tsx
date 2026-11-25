@@ -118,7 +118,7 @@ const Dayclose = () => {
                         buttonLoading={saveButtonLoading}
                         label="Update"
                         className="whitespace-nowrap text-center mr-0"
-                        icon={<FiSave className="text-lg ml-2 mr-2" />}
+                        icon={<FiSave className="text-lg mr-2" />}
                         disabled={saveButtonLoading}
                     />
                     
@@ -128,7 +128,7 @@ const Dayclose = () => {
                         buttonLoading={jumpDateButtonLoading}
                         label="Jump Date"
                         className="whitespace-nowrap text-center mr-0"
-                        icon={<FaPersonSkating className="text-lg ml-2 mr-2" />}
+                        icon={<FaPersonSkating className="text-lg mr-2" />}
                     /> 
                     )}
                     <ButtonLoading
@@ -136,7 +136,7 @@ const Dayclose = () => {
                       buttonLoading={false}
                       label="Home"
                       className="whitespace-nowrap text-center mr-0"
-                      icon={<FiHome className="text-lg ml-2 mr-2" />}
+                      icon={<FiHome className="text-lg mr-2" />}
                     />
                     
                 </div>

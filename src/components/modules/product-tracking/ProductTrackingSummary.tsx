@@ -198,7 +198,7 @@ const ProductTrackingSummary = () => {
             buttonLoading={loading}
             label="Apply"
             className="whitespace-nowrap"
-            icon={<FiSearch className="text-lg ml-2 mr-2" />}
+            icon={<FiSearch className="text-lg mr-2" />}
           />
           {data ? (
             <ButtonLoading
@@ -206,7 +206,7 @@ const ProductTrackingSummary = () => {
               buttonLoading={false}
               label="Print"
               className="whitespace-nowrap"
-              icon={<FiPrinter className="text-lg ml-2 mr-2" />}
+              icon={<FiPrinter className="text-lg mr-2" />}
             />
           ) : null}
         </div>

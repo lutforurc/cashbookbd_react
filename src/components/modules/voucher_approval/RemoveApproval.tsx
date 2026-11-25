@@ -135,21 +135,21 @@ const RemoveApproval = () => {
             buttonLoading={saveButtonLoading}
             label="Remove Approval"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FaRegSquareMinus className="text-lg ml-2 mr-2" />}
+            icon={<FaRegSquareMinus className="text-lg mr-2" />}
           />
           <ButtonLoading
             onClick={() => navigate('/admin/voucher-approval')}
             buttonLoading={false}
             label="Back"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FaArrowLeft className="text-lg ml-2 mr-2" />}
+            icon={<FaArrowLeft className="text-lg mr-2" />}
           />
           <ButtonLoading
             onClick={() => navigate('/dashboard')}
             buttonLoading={false}
             label="Home"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FaHouse className="text-lg ml-2 mr-2" />}
+            icon={<FaHouse className="text-lg mr-2" />}
           />
         </div>
       </div>

@@ -479,7 +479,7 @@ const GeneralCashPayment = () => {
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
                   icon={
-                    <FiEdit2 className="text-white text-lg ml-2 mr-2 h-5" />
+                    <FiEdit2 className="text-white text-lg mr-2 h-5" />
                   }
                 />
               ) : (
@@ -491,7 +491,7 @@ const GeneralCashPayment = () => {
                   label="Add New"
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiPlus className="text-lg ml-2 mr-2 h-5" />}
+                  icon={<FiPlus className="text-lg mr-2 h-5" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -511,7 +511,7 @@ const GeneralCashPayment = () => {
                   label="Update"
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit className="text-lg mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -521,7 +521,7 @@ const GeneralCashPayment = () => {
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg mr-2" />}
                 />
               )}
               <ButtonLoading
@@ -532,7 +532,7 @@ const GeneralCashPayment = () => {
                 responsiveLabel="lg"
                 className="whitespace-nowrap text-center mr-0 p-2"
                 icon={
-                  <FiHome className="text-white text-lg ml-2  mr-2 " />
+                  <FiHome className="text-white text-lg mr-2 " />
                 }
               />
             </div>
@@ -601,14 +601,14 @@ const GeneralCashPayment = () => {
                   >
                     <Button
                       onClick={() => handleDelete(row.id)}
-                      className="text-red-500 ml-2 text-center"
+                      className="text-red-500 text-center"
                     >
                       <FiTrash2 className="cursor-pointer text-center" />
                     </Button>
 
                     <Button
                       onClick={() => paymentEditItem(row.id)}
-                      className="text-green-500 ml-2 text-center"
+                      className="text-green-500 text-center"
                     >
                       <FiEdit2 className="cursor-pointer text-center" />
                     </Button>

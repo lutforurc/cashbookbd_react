@@ -116,7 +116,7 @@ const ProductUnits = () => {
           label="Edit"
           size="sm"
           className="h-7! whitespace-nowrap text-center mr-0"
-          icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+          icon={<FiEdit2 className="text-lg mr-2" />}
         />
       ),
     },

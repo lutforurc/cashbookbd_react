@@ -652,7 +652,7 @@ const HelpPage = () => {
                     buttonLoading={false}
                     label="Print"
                     className="whitespace-nowrap text-center mr-0 py-2"
-                    icon={<FiPrinter className="text-lg ml-2 mr-2" />}
+                    icon={<FiPrinter className="text-lg mr-2" />}
                   />
                 </div>
 

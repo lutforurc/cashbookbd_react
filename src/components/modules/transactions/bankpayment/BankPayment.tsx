@@ -831,7 +831,7 @@ const BankPayment = () => {
                   label="Update"
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit2 className="text-lg mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -853,7 +853,7 @@ const BankPayment = () => {
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
                   icon={
-                    <FiPlus className="text-white text-lg ml-2 mr-2 " />
+                    <FiPlus className="text-white text-lg mr-2 " />
                   }
                 />
               )}
@@ -866,7 +866,7 @@ const BankPayment = () => {
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
                   icon={
-                    <FiEdit2 className="text-white text-lg ml-2  mr-2 " />
+                    <FiEdit2 className="text-white text-lg mr-2 " />
                   }
                 />
               ) : (
@@ -878,7 +878,7 @@ const BankPayment = () => {
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0"
                   icon={
-                    <FiSave className="text-white text-lg ml-2  mr-2 " />
+                    <FiSave className="text-white text-lg mr-2 " />
                   }
                 />
               )}
@@ -890,7 +890,7 @@ const BankPayment = () => {
                 responsiveLabel="lg"
                 className="whitespace-nowrap text-center mr-0 p-2"
                 icon={
-                  <FiHome className="text-white text-lg ml-2  mr-2 " />
+                  <FiHome className="text-white text-lg mr-2 " />
                 }
               />
             </div>
@@ -951,14 +951,14 @@ const BankPayment = () => {
                     <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20">
                       <Button
                         onClick={() => handleDelete(Number(t.id))}
-                        className="text-red-500 ml-2 text-center"
+                        className="text-red-500 text-center"
                       >
                         <FiTrash2 className="cursor-pointer text-center" />
                       </Button>
 
                       <Button
                         onClick={() => paymentEditItem(Number(t.id))}
-                        className="text-green-500 ml-2 text-center"
+                        className="text-green-500 text-center"
                       >
                         <FiEdit2 className="cursor-pointer text-center" />
                       </Button>

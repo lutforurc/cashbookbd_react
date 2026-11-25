@@ -1029,7 +1029,7 @@ const AddOrder = (user: any) => {
                     buttonLoading={buttonLoading}
                     label={isEditMode ? "Update" : "Save"}
                     className="whitespace-nowrap text-center mr-0 p-2"
-                    icon={<FiSave className="text-lg ml-2 mr-2" />}
+                    icon={<FiSave className="text-lg mr-2" />}
                 />
                 <ButtonLoading
                     id='reset_btn'
@@ -1038,14 +1038,14 @@ const AddOrder = (user: any) => {
                     buttonLoading={buttonLoading}
                     label="Reset"
                     className="whitespace-nowrap text-center mr-0 p-2"
-                    icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+                    icon={<FiRefreshCcw className="text-lg mr-2" />}
                 />
                 <ButtonLoading
                     onClick={() => navigate('/order/order-list')}
                     buttonLoading={false}
                     label="Back"
                     className="whitespace-nowrap text-center mr-0"
-                    icon={<FiHome className="text-lg ml-2 mr-2" />}
+                    icon={<FiHome className="text-lg mr-2" />}
                 />
             </div>
         </div>

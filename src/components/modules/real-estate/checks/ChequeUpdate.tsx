@@ -421,7 +421,7 @@ const ChequeUpdate = () => {
                         buttonLoading={buttonLoading}
                         label="Update"
                         className="whitespace-nowrap text-center mr-0 p-2"
-                        icon={<FiSave className="text-lg ml-2 mr-2" />}
+                        icon={<FiSave className="text-lg mr-2" />}
                     />
 
                     <ButtonLoading
@@ -429,7 +429,7 @@ const ChequeUpdate = () => {
                         buttonLoading={false}
                         label="Reset"
                         className="whitespace-nowrap text-center mr-0 p-2"
-                        icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+                        icon={<FiRefreshCcw className="text-lg mr-2" />}
                     />
 
                     <ButtonLoading
@@ -437,7 +437,7 @@ const ChequeUpdate = () => {
                       buttonLoading={false}
                       label="Back"
                       className="whitespace-nowrap text-center mr-0"
-                      icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+                      icon={<FiArrowLeft className="text-lg mr-2" />}
                     />
                 </div>
             </div>

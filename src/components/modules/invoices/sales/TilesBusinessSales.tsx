@@ -1411,7 +1411,7 @@ const TilesBusinessSales = () => {
                   label="Update"
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit2 className="text-lg mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -1421,7 +1421,7 @@ const TilesBusinessSales = () => {
                   label="Add New"
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                  icon={<FiPlus className="text-lg mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -1441,7 +1441,7 @@ const TilesBusinessSales = () => {
                   label={updateButtonLoading ? 'Updating...' : 'Update'}
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit className="text-lg mr-2" />}
                   disabled={updateButtonLoading}
                 />
               ) : (
@@ -1451,7 +1451,7 @@ const TilesBusinessSales = () => {
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg mr-2" />}
                   disabled={saveButtonLoading}
                 />
               )}
@@ -1462,7 +1462,7 @@ const TilesBusinessSales = () => {
                 label="Reset"
                 responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+                icon={<FiRefreshCcw className="text-lg mr-2" />}
               />
               <div className="flex shrink-0 ml-auto">
                 <div className="mr-2">
@@ -1609,13 +1609,13 @@ const TilesBusinessSales = () => {
                         }
                         handleDelete(row.id);
                       }}
-                      className="text-red-500 ml-2 text-center"
+                      className="text-red-500 text-center"
                     >
                       <FiTrash2 className="cursor-pointer text-center" />
                     </Button>
                     <Button
                       onClick={() => editProductItem(row.id)}
-                      className="text-green-500 ml-2 text-center"
+                      className="text-green-500 text-center"
                     >
                       <FiEdit2 className="cursor-pointer text-center" />
                     </Button>

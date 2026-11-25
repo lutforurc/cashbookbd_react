@@ -578,7 +578,7 @@ const ProjectPurchase = () => {
                 label=" "
                 title="Search invoice"
                 className="-ml-px w-12 shrink-0 border border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                icon={<FiSearch className="ml-2 text-lg" />}
+                icon={<FiSearch className="text-lg" />}
               />
             </div>
           </div>
@@ -697,9 +697,9 @@ const ProjectPurchase = () => {
               className="mr-0 whitespace-nowrap text-center"
               icon={
                 editingRowKey ? (
-                  <FiEdit2 className="ml-2 mr-2 h-6 text-lg text-white" />
+                  <FiEdit2 className="mr-2 h-6 text-lg text-white" />
                 ) : (
-                  <FiPlus className="ml-2 mr-2 h-6 text-lg text-white" />
+                  <FiPlus className="mr-2 h-6 text-lg text-white" />
                 )
               }
             />
@@ -708,7 +708,7 @@ const ProjectPurchase = () => {
                 onClick={handleCancelRowEdit}
                 label="Cancel"
                 className="mr-0 whitespace-nowrap text-center"
-                icon={<FiX className="ml-2 mr-2 h-6 text-lg" />}
+                icon={<FiX className="mr-2 h-6 text-lg" />}
               />
             ) : (
               <ButtonLoading
@@ -717,20 +717,20 @@ const ProjectPurchase = () => {
                 buttonLoading={saving}
                 label={saving ? 'Saving...' : editing ? 'Update' : 'Save'}
                 className="mr-0 whitespace-nowrap text-center"
-                icon={<FiSave className="ml-2 mr-2 h-6 text-lg" />}
+                icon={<FiSave className="mr-2 h-6 text-lg" />}
               />
             )}
             <ButtonLoading
               onClick={resetAll}
               label="Reset"
               className="mr-0 whitespace-nowrap p-2 text-center"
-              icon={<FiRefreshCw className="ml-2 mr-2 h-6 text-lg" />}
+              icon={<FiRefreshCw className="mr-2 h-6 text-lg" />}
             />
             <ButtonLoading
               onClick={() => navigate('/dashboard')}
               label="Home"
               className="mr-0 whitespace-nowrap p-2 text-center"
-              icon={<FiHome className="ml-2 mr-2 h-6 text-lg" />}
+              icon={<FiHome className="mr-2 h-6 text-lg" />}
             />
           </div>
         </div>

@@ -301,7 +301,7 @@ const EmployeeLoan = () => {
                           : 'Save'
                     }
                     className="whitespace-nowrap text-center mr-0 p-2"
-                    icon={<FiSave className="text-lg ml-2 mr-2" />}
+                    icon={<FiSave className="text-lg mr-2" />}
                   />
 
                   <ButtonLoading
@@ -309,7 +309,7 @@ const EmployeeLoan = () => {
                     buttonLoading={false}
                     label="Home"
                     className="whitespace-nowrap text-center mr-0"
-                    icon={<FiHome className="text-lg ml-2 mr-2" />}
+                    icon={<FiHome className="text-lg mr-2" />}
                   />
                 </div>
               </div>

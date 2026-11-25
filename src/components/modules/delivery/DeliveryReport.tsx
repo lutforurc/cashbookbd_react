@@ -249,7 +249,7 @@ const DeliveryReport = () => {
           label="Search"
           responsiveLabel="xl"
           className="whitespace-nowrap"
-          icon={<FiSearch className="text-lg ml-2 mr-2" />}
+          icon={<FiSearch className="text-lg mr-2" />}
         />
         <ButtonLoading
           onClick={handleReset}
@@ -257,7 +257,7 @@ const DeliveryReport = () => {
           label="Reset"
           responsiveLabel="xl"
           className="whitespace-nowrap"
-          icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+          icon={<FiRefreshCcw className="text-lg mr-2" />}
         />
       </div>
 

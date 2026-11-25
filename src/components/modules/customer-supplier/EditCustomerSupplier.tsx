@@ -544,7 +544,7 @@ const EditCustomerSupplier = () => {
           buttonLoading={false}
           label="Customer List"
           className="whitespace-nowrap text-center mr-0"
-          icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+          icon={<FiArrowLeft className="text-lg mr-2" />}
         />
       </div>
 
@@ -928,7 +928,7 @@ const EditCustomerSupplier = () => {
                   buttonLoading={savingPassword}
                   label="Save Password"
                   className="whitespace-nowrap text-center pt-2 pb-2 h-[2.4rem]"
-                  icon={<FiSave className="text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg mr-2" />}
                 />
               </div>
               <p className="text-xs text-gray-500 self-end pb-2">
@@ -1065,7 +1065,7 @@ const EditCustomerSupplier = () => {
                           address: "",
                         })
                       }
-                      icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                      icon={<FiPlus className="text-lg mr-2" />}
                     />
                   </>
                 )}
@@ -1259,7 +1259,7 @@ const EditCustomerSupplier = () => {
                           remarks: '',
                         })
                       }
-                      icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                      icon={<FiPlus className="text-lg mr-2" />}
                     />
                   </>
                 )}
@@ -1277,7 +1277,7 @@ const EditCustomerSupplier = () => {
               buttonLoading={updating}
               label="Update (Ctrl + U)"
               className="whitespace-nowrap text-center pt-2 pb-2"
-              icon={<FiSave className="text-lg ml-2 mr-2" />}
+              icon={<FiSave className="text-lg mr-2" />}
             />
 
             <ButtonLoading
@@ -1286,7 +1286,7 @@ const EditCustomerSupplier = () => {
               buttonLoading={false}
               label="Reset"
               className="whitespace-nowrap text-center pt-2 pb-2"
-              icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+              icon={<FiRefreshCcw className="text-lg mr-2" />}
             />
             <ButtonLoading
               type="button"
@@ -1294,7 +1294,7 @@ const EditCustomerSupplier = () => {
               buttonLoading={false}
               label="Back"
               className="whitespace-nowrap text-center pt-2 pb-2"
-              icon={<FiHome className="text-lg ml-2 mr-2" />}
+              icon={<FiHome className="text-lg mr-2" />}
             />
           </div>
         </form>

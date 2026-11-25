@@ -308,9 +308,9 @@ const TutorialVideos = () => {
             className="whitespace-nowrap text-center mr-0 py-1.5"
             icon={
               showForm ? (
-                <FiX className="text-white text-lg ml-2 mr-2" />
+                <FiX className="text-white text-lg mr-2" />
               ) : (
-                <FiPlus className="text-white text-lg ml-2 mr-2" />
+                <FiPlus className="text-white text-lg mr-2" />
               )
             }
           />
@@ -319,14 +319,14 @@ const TutorialVideos = () => {
             buttonLoading={loading}
             label="Reload"
             className="whitespace-nowrap text-center mr-0 py-1.5"
-            icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+            icon={<FiRefreshCcw className="text-lg mr-2" />}
           />
           <ButtonLoading
             onClick={handleSave}
             buttonLoading={saving}
             label={dirtyCount ? `Save (${dirtyCount})` : 'Save'}
             className="whitespace-nowrap text-center mr-0 py-1.5"
-            icon={<FiSave className="text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg mr-2" />}
           />
         </div>
       </div>
@@ -439,7 +439,7 @@ const TutorialVideos = () => {
                 onClick={closeForm}
                 label="Cancel"
                 className="whitespace-nowrap text-center mr-0 py-1.5"
-                icon={<FiX className="text-lg ml-2 mr-2" />}
+                icon={<FiX className="text-lg mr-2" />}
               />
               <ButtonLoading
                 onClick={handleAdd}
@@ -448,9 +448,9 @@ const TutorialVideos = () => {
                 className="whitespace-nowrap text-center mr-0 py-1.5"
                 icon={
                   editingId ? (
-                    <FiEdit2 className="text-white text-lg ml-2 mr-2" />
+                    <FiEdit2 className="text-white text-lg mr-2" />
                   ) : (
-                    <FiPlus className="text-white text-lg ml-2 mr-2" />
+                    <FiPlus className="text-white text-lg mr-2" />
                   )
                 }
               />

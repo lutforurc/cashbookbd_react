@@ -63,7 +63,7 @@ const CompanySchemeImeiModal = ({ conflicts, saving = false, onCancel, onContinu
             buttonLoading={saving}
             label="Continue Save"
             className="whitespace-nowrap px-4 py-2"
-            icon={<FiSave className="text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg mr-2" />}
             disabled={saving}
           />
         </div>

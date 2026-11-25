@@ -359,7 +359,7 @@ const EditCompany = () => {
           <ButtonLoading
             buttonLoading={company?.isSaving}
             label="Update"
-            icon={<FiSave className="text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg mr-2" />}
             type="submit"
             className="whitespace-nowrap mr-2 py-1.5"
           />
@@ -368,7 +368,7 @@ const EditCompany = () => {
             buttonLoading={false}
             label="Go to back"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+            icon={<FiArrowLeft className="text-lg mr-2" />}
           />
         </div>
       </form>

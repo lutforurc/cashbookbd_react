@@ -899,7 +899,7 @@ const ElectronicsBusinessPurchase = () => {
                 buttonLoading={buttonLoading}
                 label="Update"
                 className="whitespace-nowrap text-center mr-0 py-1.5"
-                icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+                icon={<FiEdit2 className="text-lg mr-2" />}
               />
             ) : (
               <ButtonLoading
@@ -908,7 +908,7 @@ const ElectronicsBusinessPurchase = () => {
                 buttonLoading={buttonLoading}
                 label="Add New"
                 className="whitespace-nowrap text-center mr-0 py-1.5"
-                icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                icon={<FiPlus className="text-lg mr-2" />}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -927,7 +927,7 @@ const ElectronicsBusinessPurchase = () => {
                 buttonLoading={buttonLoading}
                 label="Update"
                 className="whitespace-nowrap text-center mr-0 py-1.5"
-                icon={<FiEdit className="text-lg ml-2 mr-2" />}
+                icon={<FiEdit className="text-lg mr-2" />}
               />
             ) : (
               <ButtonLoading
@@ -935,7 +935,7 @@ const ElectronicsBusinessPurchase = () => {
                 buttonLoading={saveButtonLoading}
                 label="Save"
                 className="whitespace-nowrap text-center mr-0 py-1.5"
-                icon={<FiSave className="text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg mr-2" />}
                 disabled={saveButtonLoading}
               />
             )}
@@ -945,14 +945,14 @@ const ElectronicsBusinessPurchase = () => {
               buttonLoading={buttonLoading}
               label="Reset"
               className="whitespace-nowrap text-center mr-0 py-1.5"
-              icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+              icon={<FiRefreshCcw className="text-lg mr-2" />}
             />
             <ButtonLoading
               onClick={() => navigate('/dashboard')}
               buttonLoading={false}
               label="Home"
               className="whitespace-nowrap text-center mr-0"
-              icon={<FiHome className="text-lg ml-2 mr-2" />}
+              icon={<FiHome className="text-lg mr-2" />}
             />
           </div>
         </div>
@@ -1028,13 +1028,13 @@ const ElectronicsBusinessPurchase = () => {
                   >
                     <Button
                       onClick={() => handleDelete(row.id)}
-                      className="text-red-500 ml-2 text-center"
+                      className="text-red-500 text-center"
                     >
                       <FiTrash2 className="cursor-pointer text-center" />
                     </Button>
                     <Button
                       onClick={() => editProductItem(row.id)}
-                      className="text-green-500 ml-2 text-center"
+                      className="text-green-500 text-center"
                     >
                       <FiEdit2 className="cursor-pointer text-center" />
                     </Button>

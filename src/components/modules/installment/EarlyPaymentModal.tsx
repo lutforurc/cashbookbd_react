@@ -138,7 +138,7 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
               buttonLoading={applyLoading}
               disabled={applyLoading}
               className="mt-0 pt-[0.45rem] pb-[0.45rem] w-full"
-              icon={<FiCheckSquare className="ml-2" />}
+              icon={<FiCheckSquare className="" />}
             />
           ) : null}
           <ButtonLoading
@@ -146,7 +146,7 @@ const EarlyPaymentModal: React.FC<EarlyPaymentModalProps> = ({
             label="Close"
             disabled={applyLoading}
             className="mt-0 pt-[0.45rem] pb-[0.45rem] w-full"
-            icon={<FiX className="ml-2" />}
+            icon={<FiX className="" />}
           />
         </div>
       </div>

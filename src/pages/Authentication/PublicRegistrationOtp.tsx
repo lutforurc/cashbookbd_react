@@ -276,7 +276,7 @@ const PublicRegistrationOtp: React.FC = () => {
               disabled={submitting}
               variant="primary"
               className="whitespace-nowrap text-center mr-0 p-2 w-full mt-5 flex items-center justify-center disabled:cursor-not-allowed disabled:opacity-60"
-              icon={<FiSend className="text-lg ml-2 mr-2" />}
+              icon={<FiSend className="text-lg mr-2" />}
             />
           </form>
 

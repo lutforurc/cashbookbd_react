@@ -256,10 +256,10 @@ const Recyclebin = () => {
             <FiPrinter className="text-blue-500 text-lg font-bold" />
           </Button>
           <Button onClick={() => handleRestoreRecycle(row)}>
-            <FaRecycle className="text-green-500 text-lg font-bold ml-2" />
+            <FaRecycle className="text-green-500 text-lg font-bold" />
           </Button>
           <Button onClick={() => handleRemoveRecycle(row)}>
-            <FiTrash2 className="text-red-500 ml-2 text-lg" />
+            <FiTrash2 className="text-red-500 text-lg" />
           </Button>
         </div>
       ),
@@ -280,7 +280,7 @@ const Recyclebin = () => {
             buttonLoading={buttonLoading}
             label="Search"
             className="whitespace-nowrap"
-            icon={<FiSearch className="text-lg ml-2 mr-2" />}
+            icon={<FiSearch className="text-lg mr-2" />}
           />
         </div>
       </div>

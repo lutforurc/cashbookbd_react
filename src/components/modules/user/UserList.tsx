@@ -413,7 +413,7 @@ const UserList = () => {
             onClick={handleAddUser}
             buttonLoading={false}
             label={userLimitReached ? `User Limit Full (${currentUsers}/${maxUsers})` : "Add User"}
-            className="whitespace-nowrap ml-2"
+            className="whitespace-nowrap"
             icon={<FiPlus />}
           />
         )}

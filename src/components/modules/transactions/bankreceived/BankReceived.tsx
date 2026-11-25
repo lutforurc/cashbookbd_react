@@ -701,7 +701,7 @@ const BankReceived = () => {
                         buttonLoading={buttonLoading}
                         label=" "
                         className="-ml-px w-12 shrink-0 whitespace-nowrap border border-gray-600 text-center hover:border-blue-500 sm:w-20"
-                        icon={<FiSearch className="text-lg ml-2" />}
+                        icon={<FiSearch className="text-lg" />}
                       />
                     </>
                   )}
@@ -879,7 +879,7 @@ const BankReceived = () => {
                   label="Update"
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0 p-2"
-                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit2 className="text-lg mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -901,7 +901,7 @@ const BankReceived = () => {
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0 p-2"
                   icon={
-                    <FiPlus className="text-white text-lg ml-2 mr-2 " />
+                    <FiPlus className="text-white text-lg mr-2 " />
                   }
                 />
               )}
@@ -914,7 +914,7 @@ const BankReceived = () => {
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0 p-2"
                   icon={
-                    <FiEdit2 className="text-white text-lg ml-2  mr-2 " />
+                    <FiEdit2 className="text-white text-lg mr-2 " />
                   }
                 />
               ) : (
@@ -926,7 +926,7 @@ const BankReceived = () => {
                   responsiveLabel="lg"
                   className="whitespace-nowrap text-center mr-0 p-2"
                   icon={
-                    <FiSave className="text-white text-lg ml-2  mr-2 " />
+                    <FiSave className="text-white text-lg mr-2 " />
                   }
                 />
               )}
@@ -939,7 +939,7 @@ const BankReceived = () => {
                 responsiveLabel="lg"
                 className="whitespace-nowrap text-center mr-0 p-2"
                 icon={
-                  <FiHome className="text-white text-lg ml-2  mr-2 " />
+                  <FiHome className="text-white text-lg mr-2 " />
                 }
               />
             </div>
@@ -1002,14 +1002,14 @@ const BankReceived = () => {
                     <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20">
                       <Button
                         onClick={() => handleDelete(Number(t.id))}
-                        className="text-red-500 ml-2 text-center"
+                        className="text-red-500 text-center"
                       >
                         <FiTrash2 className="cursor-pointer text-center" />
                       </Button>
 
                       <Button
                         onClick={() => receivedEditItem(Number(t.id))}
-                        className="text-green-500 ml-2 text-center"
+                        className="text-green-500 text-center"
                       >
                         <FiEdit2 className="cursor-pointer text-center" />
                       </Button>

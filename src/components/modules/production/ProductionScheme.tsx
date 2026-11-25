@@ -373,11 +373,11 @@ const ProductionScheme = () => {
                   </span>
                 </td>
                 <td className="px-2 py-2 text-center">
-                  <Button onClick={() => editRow(row)} className="text-green-500 ml-2 text-center">
+                  <Button onClick={() => editRow(row)} className="text-green-500 text-center">
                     <FiEdit2 className="cursor-pointer text-center" />
                   </Button>
                   {row.status === 'active' && (
-                    <Button onClick={() => retire(row)} className="text-red-500 ml-2 text-center" title="Retire">
+                    <Button onClick={() => retire(row)} className="text-red-500 text-center" title="Retire">
                       <FiSlash className="cursor-pointer text-center" />
                     </Button>
                   )}

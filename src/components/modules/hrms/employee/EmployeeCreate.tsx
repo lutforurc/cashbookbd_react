@@ -619,7 +619,7 @@ const EmployeeCreate = ({ user }: any) => {
               disabled={saveLoading}
               label="Save"
               className="whitespace-nowrap text-center mr-0"
-              icon={<FiSave className="text-lg ml-2 mr-2" />}
+              icon={<FiSave className="text-lg mr-2" />}
             />
           }
         />

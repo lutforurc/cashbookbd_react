@@ -895,7 +895,7 @@ const TilesBusinessSalesReturn = () => {
                   label="Update"
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit2 className="text-lg mr-2" />}
                 />
               ) : (
                 <ButtonLoading
@@ -905,7 +905,7 @@ const TilesBusinessSalesReturn = () => {
                   label="Add New"
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0 py-1.5"
-                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                  icon={<FiPlus className="text-lg mr-2" />}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -925,7 +925,7 @@ const TilesBusinessSalesReturn = () => {
                   label={updateButtonLoading ? 'Updating...' : 'Update'}
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiEdit className="text-lg ml-2 mr-2" />}
+                  icon={<FiEdit className="text-lg mr-2" />}
                   disabled={updateButtonLoading}
                 />
               ) : (
@@ -935,7 +935,7 @@ const TilesBusinessSalesReturn = () => {
                   label={saveButtonLoading ? 'Saving...' : 'Save'}
                   responsiveLabel="xl"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiSave className="text-lg ml-2 mr-2" />}
+                  icon={<FiSave className="text-lg mr-2" />}
                   disabled={saveButtonLoading}
                 />
               )}
@@ -946,7 +946,7 @@ const TilesBusinessSalesReturn = () => {
                 label="Reset"
                 responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+                icon={<FiRefreshCcw className="text-lg mr-2" />}
               />
 
               <ButtonLoading
@@ -955,7 +955,7 @@ const TilesBusinessSalesReturn = () => {
                 label="Home"
                 responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiHome className="text-lg ml-2 mr-2" />}
+                icon={<FiHome className="text-lg mr-2" />}
               />
 
               {/* The registry resolves the paper from the Vr. No.'s own prefix,
@@ -1051,10 +1051,10 @@ const TilesBusinessSalesReturn = () => {
                   {thousandSeparator(parseFloat((Number(row.price) * Number(row.qty)).toFixed(2)))}
                 </td>
                 <td className="px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20">
-                  <Button onClick={() => handleDelete(row.id)} className="text-red-500 ml-2 text-center">
+                  <Button onClick={() => handleDelete(row.id)} className="text-red-500 text-center">
                     <FiTrash2 className="cursor-pointer text-center" />
                   </Button>
-                  <Button onClick={() => editProductItem(row.id)} className="text-green-500 ml-2 text-center">
+                  <Button onClick={() => editProductItem(row.id)} className="text-green-500 text-center">
                     <FiEdit2 className="cursor-pointer text-center" />
                   </Button>
                 </td>

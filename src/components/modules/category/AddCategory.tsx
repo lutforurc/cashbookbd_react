@@ -126,7 +126,7 @@ const AddCategory: React.FC = () => {
             disabled={saveButtonLoading}
             label="Save"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FiSave className="text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg mr-2" />}
           />
 
           <ButtonLoading
@@ -134,7 +134,7 @@ const AddCategory: React.FC = () => {
             buttonLoading={false}
             label="Back"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FiHome className="text-lg ml-2 mr-2" />}
+            icon={<FiHome className="text-lg mr-2" />}
           />
         </div>
       </form>

@@ -465,7 +465,7 @@ const UserList = () => {
             <Button
               type="button"
               onClick={() => handleEditUser(row.user_id)}
-              className="text-blue-500 ml-2"
+              className="text-blue-500"
               title="Edit user"
             >
               <FiEdit2 className="cursor-pointer w-5 h-5" />
@@ -540,7 +540,7 @@ const UserList = () => {
             onClick={handleAddUser}
             buttonLoading={false}
             label={userLimitReached ? `User Limit Full (${currentUsers}/${maxUsers})` : "Add User"}
-            className="whitespace-nowrap ml-2"
+            className="whitespace-nowrap"
             icon={<FiPlus />}
           />
         )}

@@ -160,7 +160,7 @@ const ReceiveTransferModal = ({ transfer, onClose, onReceived }: Props) => {
             buttonLoading={saving}
             label="Receive"
             className="whitespace-nowrap px-4 py-2"
-            icon={<FiCheckCircle className="ml-2 mr-2 text-lg" />}
+            icon={<FiCheckCircle className="mr-2 text-lg" />}
             disabled={saving || loadingAccounts}
           />
         </div>

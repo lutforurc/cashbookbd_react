@@ -273,7 +273,7 @@ const ReferrerPickerModal: React.FC<ReferrerPickerModalProps> = ({
                   buttonLoading={saving}
                   label="Add"
                   className="whitespace-nowrap text-center"
-                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                  icon={<FiPlus className="text-lg mr-2" />}
                 />
               </div>
             </div>
@@ -299,7 +299,7 @@ const ReferrerPickerModal: React.FC<ReferrerPickerModalProps> = ({
             buttonLoading={false}
             label="Save"
             className="whitespace-nowrap text-center"
-            icon={<FiSave className="text-lg ml-2 mr-2" />}
+            icon={<FiSave className="text-lg mr-2" />}
           />
         </div>
       </div>

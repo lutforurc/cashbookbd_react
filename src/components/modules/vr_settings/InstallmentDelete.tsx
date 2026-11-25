@@ -106,7 +106,7 @@ const InstallmentDelete = () => {
             buttonLoading={saveButtonLoading}
             label="Delete Installment"
             className="whitespace-nowrap"
-            icon={<FiTrash2 className="dark:text-red-700 text-lg ml-2 mr-2" />}
+            icon={<FiTrash2 className="dark:text-red-700 text-lg mr-2" />}
           />
 
           <ButtonLoading
@@ -114,7 +114,7 @@ const InstallmentDelete = () => {
             buttonLoading={false}
             label="Home"
             className="whitespace-nowrap text-center mr-0"
-            icon={<FiHome className="text-lg ml-2 mr-2" />}
+            icon={<FiHome className="text-lg mr-2" />}
           />
         </div>
       </div>

@@ -518,10 +518,10 @@ const ProductionPurchase = () => {
                   {row.free ? '0' : thousandSeparator(Number(row.qty) * Number(row.price))}
                 </td>
                 <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">
-                  <Button onClick={() => deleteLine(row.id)} className="text-red-500 ml-2 text-center">
+                  <Button onClick={() => deleteLine(row.id)} className="text-red-500 text-center">
                     <FiTrash2 className="cursor-pointer text-center" />
                   </Button>
-                  <Button onClick={() => editLine(row.id)} className="text-green-500 ml-2 text-center">
+                  <Button onClick={() => editLine(row.id)} className="text-green-500 text-center">
                     <FiEdit2 className="cursor-pointer text-center" />
                   </Button>
                 </td>

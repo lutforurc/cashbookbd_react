@@ -489,7 +489,7 @@ export default function UnitSalePaymentEdit() {
               buttonLoading={false}
               label="Back"
               className="whitespace-nowrap text-center mr-0"
-              icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+              icon={<FiArrowLeft className="text-lg mr-2" />}
             />
           </div>
         </div>
@@ -792,7 +792,7 @@ export default function UnitSalePaymentEdit() {
               buttonLoading={isSubmitting}
               label="Update"
               className=""
-              icon={<FiSave className="text-lg ml-2 mr-2" />}
+              icon={<FiSave className="text-lg mr-2" />}
             />
 
             <ButtonLoading
@@ -800,7 +800,7 @@ export default function UnitSalePaymentEdit() {
               buttonLoading={false}
               label="Cancel"
               className="whitespace-nowrap text-center mr-0"
-              icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+              icon={<FiArrowLeft className="text-lg mr-2" />}
             />
           </div>
         </div>

@@ -233,7 +233,7 @@ const AddHrmDesignation = () => {
                   buttonLoading={buttonLoading}
                   label={buttonLoading ? 'Updating...' : 'Update'}
                   className="mr-0 whitespace-nowrap p-2 text-center"
-                  icon={<FiSave className="ml-2 mr-2 text-lg" />}
+                  icon={<FiSave className="mr-2 text-lg" />}
                 />
               ) : (
                 <ButtonLoading
@@ -241,7 +241,7 @@ const AddHrmDesignation = () => {
                   buttonLoading={buttonLoading}
                   label={buttonLoading ? 'Saving...' : 'Save'}
                   className="mr-0 whitespace-nowrap p-2 text-center"
-                  icon={<FiSave className="ml-2 mr-2 text-lg" />}
+                  icon={<FiSave className="mr-2 text-lg" />}
                 />
               )}
 
@@ -250,7 +250,7 @@ const AddHrmDesignation = () => {
                 buttonLoading={false}
                 label="Back"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiHome className="text-lg ml-2 mr-2" />}
+                icon={<FiHome className="text-lg mr-2" />}
               />
             </div>
           </div>

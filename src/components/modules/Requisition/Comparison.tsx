@@ -229,7 +229,7 @@ const Requisition = (user: any) => {
               buttonLoading={false}
               label="New Requisition"
               className="whitespace-nowrap text-center mr-0 w-full"
-              icon={<FiPlus className="text-lg ml-2 mr-2" />}
+              icon={<FiPlus className="text-lg mr-2" />}
             />
           </div>
         </div>

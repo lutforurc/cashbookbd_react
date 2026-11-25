@@ -1161,9 +1161,9 @@ export default function UnitSalePage() {
               label={isEdit ? "Update" : "Save"}
               icon={
                 loading ? (
-                  <FiLoader className="animate-spin text-white text-lg ml-2 mr-2 " />
+                  <FiLoader className="animate-spin text-white text-lg mr-2 " />
                 ) : (
-                  <FiSave className="text-white text-lg ml-2 mr-2 " />
+                  <FiSave className="text-white text-lg mr-2 " />
                 )
               }
               className="mt-2 p-2 flex-1"

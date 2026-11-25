@@ -1590,7 +1590,7 @@ const Orders = () => {
                   buttonLoading={false}
                   label="New Order"
                   className="whitespace-nowrap text-center mr-0 self-start xl:self-auto"
-                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                  icon={<FiPlus className="text-lg mr-2" />}
                 />
               </div>
             </div>
@@ -1636,7 +1636,7 @@ const Orders = () => {
                   buttonLoading={false}
                   label="New Order"
                   className="whitespace-nowrap text-center mr-0 self-start xl:self-auto"
-                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                  icon={<FiPlus className="text-lg mr-2" />}
                 />
               </div>
             </>

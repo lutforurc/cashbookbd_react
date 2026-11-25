@@ -214,14 +214,14 @@ const ProductInReason = () => {
           buttonLoading={saving}
           label={form.id ? 'Update' : 'Add'}
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={form.id ? <FiEdit2 className="text-lg ml-2 mr-2" /> : <FiPlus className="text-lg ml-2 mr-2" />}
+          icon={form.id ? <FiEdit2 className="text-lg mr-2" /> : <FiPlus className="text-lg mr-2" />}
         />
         <ButtonLoading
           onClick={clearForm}
           buttonLoading={false}
           label="Clear"
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+          icon={<FiRefreshCcw className="text-lg mr-2" />}
         />
       </div>
 

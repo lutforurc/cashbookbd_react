@@ -313,7 +313,7 @@ const CoaL4 = () => {
                   buttonLoading={false}
                   label="New Head Entry"
                   className="whitespace-nowrap text-center mr-0"
-                  icon={<FiPlus className="text-lg ml-2 mr-2" />}
+                  icon={<FiPlus className="text-lg mr-2" />}
                 />
             </div>
             <div className="relative overflow-x-auto overflow-y-hidden">

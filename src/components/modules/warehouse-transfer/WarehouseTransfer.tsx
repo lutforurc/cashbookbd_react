@@ -799,7 +799,7 @@ const BranchTransfer = () => {
             buttonLoading={false}
             label="Update Item"
             className="whitespace-nowrap text-center mr-0 py-2"
-            icon={<FiEdit2 className="text-lg ml-2 mr-2" />}
+            icon={<FiEdit2 className="text-lg mr-2" />}
           />
         ) : (
           <ButtonLoading
@@ -807,7 +807,7 @@ const BranchTransfer = () => {
             buttonLoading={false}
             label="Add Item"
             className="whitespace-nowrap text-center mr-0 py-2"
-            icon={<FiPlus className="text-lg ml-2 mr-2" />}
+            icon={<FiPlus className="text-lg mr-2" />}
           />
         )}
         <ButtonLoading
@@ -815,7 +815,7 @@ const BranchTransfer = () => {
           buttonLoading={false}
           label="Clear Item"
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+          icon={<FiRefreshCcw className="text-lg mr-2" />}
         />
         <ButtonLoading
           onClick={handleSave}
@@ -830,14 +830,14 @@ const BranchTransfer = () => {
                 : 'Save'
           }
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiSave className="text-lg ml-2 mr-2" />}
+          icon={<FiSave className="text-lg mr-2" />}
         />
         <ButtonLoading
           onClick={resetForm}
           buttonLoading={false}
           label="Reset All"
           className="whitespace-nowrap text-center mr-0 py-2"
-          icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+          icon={<FiRefreshCcw className="text-lg mr-2" />}
         />
       </div>
 
@@ -878,13 +878,13 @@ const BranchTransfer = () => {
                 <td className="px-2 py-2 text-center text-gray-900 dark:text-[rgb(var(--c-text))]">
                   <Button
                     onClick={() => handleDeleteProduct(row.id)}
-                    className="text-red-500 ml-2 text-center"
+                    className="text-red-500 text-center"
                   >
                     <FiTrash2 className="cursor-pointer text-center" />
                   </Button>
                   <Button
                     onClick={() => handleEditProduct(row.id)}
-                    className="text-green-500 ml-2 text-center"
+                    className="text-green-500 text-center"
                   >
                     <FiEdit2 className="cursor-pointer text-center" />
                   </Button>
@@ -953,7 +953,7 @@ const BranchTransfer = () => {
                 buttonLoading={saveButtonLoading}
                 label="Continue Save"
                 className="whitespace-nowrap px-4 py-2"
-                icon={<FiSave className="text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg mr-2" />}
                 disabled={saveButtonLoading}
               />
             </div>
@@ -1025,7 +1025,7 @@ const BranchTransfer = () => {
                 buttonLoading={saveButtonLoading}
                 label="Continue Save"
                 className="whitespace-nowrap px-4 py-2"
-                icon={<FiSave className="text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg mr-2" />}
                 disabled={saveButtonLoading}
               />
             </div>

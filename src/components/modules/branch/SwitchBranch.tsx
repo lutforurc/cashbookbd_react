@@ -194,7 +194,7 @@ const SwitchBranch: React.FC = () => {
               disabled={loading || saving || alreadyHere || !selected}
               label="Switch Branch"
               className="w-full justify-center"
-              icon={<FiGitBranch className="text-lg ml-2 mr-2" />}
+              icon={<FiGitBranch className="text-lg mr-2" />}
             />
           </div>
         </form>

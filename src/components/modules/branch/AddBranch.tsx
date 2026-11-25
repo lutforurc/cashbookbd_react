@@ -4178,7 +4178,7 @@ const AddBranch = () => {
                       buttonLoading={false}
                       label="Back"
                       className="whitespace-nowrap text-center mr-0"
-                      icon={<FiArrowLeft className="text-lg ml-2 mr-2" />}
+                      icon={<FiArrowLeft className="text-lg mr-2" />}
                     />
                     <ButtonLoading
                       onClick={() => {

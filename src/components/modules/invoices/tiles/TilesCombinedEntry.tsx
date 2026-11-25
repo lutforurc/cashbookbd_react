@@ -1170,9 +1170,9 @@ const TilesCombinedEntry = () => {
                 className="whitespace-nowrap text-center mr-0 py-1.5"
                 icon={
                   editingProductId ? (
-                    <FiEdit2 className="text-white text-lg ml-2 mr-2" />
+                    <FiEdit2 className="text-white text-lg mr-2" />
                   ) : (
-                    <FiPlus className="text-white text-lg ml-2 mr-2" />
+                    <FiPlus className="text-white text-lg mr-2" />
                   )
                 }
               />
@@ -1182,7 +1182,7 @@ const TilesCombinedEntry = () => {
                 label={saveButtonLoading ? 'Saving...' : editingCombinedNumber ? 'Update' : 'Save'}
                 responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiSave className="text-lg ml-2 mr-2" />}
+                icon={<FiSave className="text-lg mr-2" />}
                 disabled={saveButtonLoading}
               />
               <ButtonLoading
@@ -1191,7 +1191,7 @@ const TilesCombinedEntry = () => {
                 label="Reset"
                 responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiRefreshCcw className="text-lg ml-2 mr-2" />}
+                icon={<FiRefreshCcw className="text-lg mr-2" />}
               />
               <ButtonLoading
                 onClick={() => navigate('/dashboard')}
@@ -1199,7 +1199,7 @@ const TilesCombinedEntry = () => {
                 label="Home"
                 responsiveLabel="xl"
                 className="whitespace-nowrap text-center mr-0"
-                icon={<FiHome className="text-lg ml-2 mr-2" />}
+                icon={<FiHome className="text-lg mr-2" />}
               />
             </div>
 
@@ -1293,7 +1293,7 @@ const TilesCombinedEntry = () => {
                       </Button>
                       <Button
                         onClick={() => handleDelete(row.id)}
-                        className="text-red-500 ml-2 text-center"
+                        className="text-red-500 text-center"
                         type="button"
                       >
                         <FiTrash2 className="cursor-pointer text-center" />
