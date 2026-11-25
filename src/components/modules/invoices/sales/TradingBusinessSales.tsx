@@ -68,7 +68,7 @@ import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import StockShortageModal, {
   StockShortage,
 } from '../../../utils/components/StockShortageModal';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { INVOICE_WORKFLOW_ORDER } from '../shared/invoiceWorkflow';
 
 interface Product {
@@ -79,8 +79,9 @@ interface Product {
       code -- same shape the paper prints. */
   product_code?: string;
   unit: string;
-  qty: number;
-  price: number;
+  /** Editable in the table, so it may hold a half-typed figure between keys. */
+  qty: number | string;
+  price: number | string;
   bag?: string;
   warehouse: string;
   variance?: string;
@@ -163,6 +164,22 @@ const TradingBusinessSales = () => {
   // send exactly what was refused rather than whatever the form holds by then.
   const [stockWarning, setStockWarning] = useState<(StockShortage & { payload: any }) | null>(null);
   const [lineTotal, setLineTotal] = useState<number>(0);
+  /**
+   * The order this invoice was opened from (Orders -> "Create sales invoice").
+   *
+   * Set, the screen sells only that order's products, each capped at what is
+   * still undelivered. The order travels in the query (`?order=<id>&order_no=`)
+   * so a refresh reopens the same one.
+   */
+  const [lockedOrder, setLockedOrder] = useState<{
+    id: string;
+    number: string;
+    items: any[];
+  } | null>(null);
+  const loadedOrderRef = useRef<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const orderParam = searchParams.get('order');
+  const orderNumberParam = searchParams.get('order_no') || '';
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerDraftName, setCustomerDraftName] = useState('');
   const [isReceivedAmtManuallyEdited, setIsReceivedAmtManuallyEdited] = useState(false);
@@ -223,6 +240,181 @@ const TradingBusinessSales = () => {
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  /**
+   * Open the invoice the Orders list asked for: the order is put on the form,
+   * its party becomes the customer, and every line with something still to
+   * deliver is written onto the invoice at its ordered rate.
+   */
+  useEffect(() => {
+    if (!orderParam) return;
+    if (loadedOrderRef.current === String(orderParam)) return;
+    loadedOrderRef.current = String(orderParam);
+
+    let cancelled = false;
+
+    const loadOrder = async () => {
+      try {
+        const token = getToken();
+        const params = new URLSearchParams();
+        params.set('q', orderNumberParam || String(orderParam));
+        params.set('order_type', '2');
+
+        const response = await fetch(`${API_ORDERS_DDL_URL}?${params.toString()}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const body = await response.json();
+        const rows = body?.data?.data ?? body?.data ?? [];
+        const order = (Array.isArray(rows) ? rows : []).find(
+          (row: any) => String(row.value ?? row.id) === String(orderParam),
+        );
+
+        if (!order) {
+          loadedOrderRef.current = null;
+          toast.error('That order could not be loaded.');
+          return;
+        }
+
+        if (cancelled) return;
+
+        const items = Array.isArray(order.items) ? order.items : [];
+        const products = items
+          .filter((item: any) => Number(item.remaining_qty) > 0)
+          .map((item: any, index: number) => ({
+            id: Date.now() + index,
+            product: Number(item.product_id),
+            product_name: item.product_name || '',
+            unit: '',
+            qty: Number(item.remaining_qty),
+            price: Number(item.order_rate),
+          }));
+
+        setLockedOrder({
+          id: String(orderParam),
+          number: order.label || orderNumberParam,
+          items,
+        });
+        setSelectedCustomerOption(
+          order.party_id ? { value: order.party_id, label: order.label_2 } : null,
+        );
+        setFormData((prev) => ({
+          ...prev,
+          salesOrderNumber: String(orderParam),
+          salesOrderText: order.label || orderNumberParam,
+          account: order.party_id ? String(order.party_id) : prev.account,
+          accountName: order.label_2 || prev.accountName,
+          products,
+        }));
+      } catch {
+        loadedOrderRef.current = null;
+        toast.error('That order could not be loaded.');
+      }
+    };
+
+    void loadOrder();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderParam, orderNumberParam]);
+
+  // Clearing the sales order releases the lock, so an ordinary invoice can be
+  // written on this form straight after one taken from an order.
+  useEffect(() => {
+    if (formData.salesOrderNumber) return;
+    setLockedOrder(null);
+    loadedOrderRef.current = null;
+  }, [formData.salesOrderNumber]);
+
+  /** The order line for a product, when this invoice came from an order. */
+  const orderItemFor = (productId: any) =>
+    lockedOrder?.items?.find((item: any) => String(item.product_id) === String(productId)) ?? null;
+
+  /**
+   * What is still open on the order for one product, or a reason it cannot be
+   * sold. Null when this invoice is not tied to an order at all.
+   */
+  const orderLineError = (productId: any, qty: number): string | null => {
+    if (!lockedOrder) return null;
+
+    const item = orderItemFor(productId);
+
+    if (!item) return 'Only the products on this order can be sold on its invoice.';
+
+    if (qty > Number(item.remaining_qty) + 0.000001) {
+      return `${item.product_name}: only ${item.remaining_qty} left on this order.`;
+    }
+
+    return null;
+  };
+
+  /** Pick one of the order's own products on a locked invoice. */
+  const lockedProductChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const item = orderItemFor(event.target.value);
+
+    if (!item) {
+      setProductData((prev: any) => ({ ...prev, product: '', product_name: '' }));
+      return;
+    }
+
+    setProductData((prev: any) => ({
+      ...prev,
+      product: String(item.product_id),
+      product_name: item.product_name,
+      product_code: '',
+      unit: '',
+      qty: String(item.remaining_qty),
+      price: String(item.order_rate),
+    }));
+    setUnit(null);
+    setLineTotal(Number(item.remaining_qty) * Number(item.order_rate));
+  };
+
+  /** One line's quantity or rate, as it is typed into the table. */
+  const updateLineField = (id: number, field: 'qty' | 'price', raw: string) => {
+    const value = raw.replace(/[^\d.]/g, '');
+
+    setFormData((prev) => ({
+      ...prev,
+      products: prev.products.map((line) =>
+        line.id === id ? { ...line, [field]: value } : line,
+      ),
+    }));
+  };
+
+  /**
+   * Leaving an edited cell: a blank or a negative becomes 0, and on an invoice
+   * opened from an order the quantity falls back to what the order still has
+   * left, with the reason said out loud.
+   */
+  const commitLineField = (line: Product, field: 'qty' | 'price', raw: string) => {
+    const amount = Number(String(raw).replace(/[^\d.]/g, '')) || 0;
+
+    if (amount < 0) {
+      updateLineField(line.id, field, '0');
+      return;
+    }
+
+    if (field === 'qty' && lockedOrder) {
+      const orderError = orderLineError(line.product, amount);
+
+      if (orderError) {
+        toast.error(orderError);
+        updateLineField(
+          line.id,
+          'qty',
+          String(Number(orderItemFor(line.product)?.remaining_qty) || 0),
+        );
+        return;
+      }
+    }
+
+    updateLineField(line.id, field, String(amount));
+  };
 
   /**
    * Tracking is configured per party, so the list follows the customer: the
@@ -532,6 +724,20 @@ const TradingBusinessSales = () => {
       return;
     }
 
+    const orderError = orderLineError(productData.product, Number(productData.qty) || 0);
+    if (orderError) {
+      toast.error(orderError);
+      return;
+    }
+
+    if (
+      lockedOrder &&
+      formData.products.some((line) => String(line.product) === String(productData.product))
+    ) {
+      toast.error('That product is already on this invoice.');
+      return;
+    }
+
     // Generate a unique ID for the product
     const newProduct: Product = {
       ...productData,
@@ -554,6 +760,23 @@ const TradingBusinessSales = () => {
     const isValid = validateProductData(productData);
     if (!isValid) {
       // Proceed with form submission or API call
+      return;
+    }
+
+    const orderError = orderLineError(productData.product, Number(productData.qty) || 0);
+    if (orderError) {
+      toast.error(orderError);
+      return;
+    }
+
+    if (
+      lockedOrder &&
+      formData.products.some(
+        (line, index) =>
+          index !== updateId && String(line.product) === String(productData.product),
+      )
+    ) {
+      toast.error('That product is already on this invoice.');
       return;
     }
     // let products = formData.products;
@@ -712,6 +935,17 @@ const TradingBusinessSales = () => {
       return;
     }
 
+    if (lockedOrder) {
+      for (const line of formData.products) {
+        const orderError = orderLineError(line.product, Number(line.qty) || 0);
+        if (orderError) {
+          toast.error(orderError);
+          setSaveButtonLoading(false);
+          return;
+        }
+      }
+    }
+
     const payload = {
       ...formData,
       receivedAmt: formData.receivedAmt === '' ? '0' : formData.receivedAmt,
@@ -766,6 +1000,11 @@ const TradingBusinessSales = () => {
                 // to be named too -- otherwise the one chosen on the invoice
                 // just saved silently attaches itself to the next one.
                 trackedProductId: null,
+                // The order is released with the invoice it was opened for; a
+                // second delivery is started from Orders again, which also
+                // reloads what is still open on it.
+                salesOrderNumber: '',
+                salesOrderText: '',
                 products: [],
               }));
               setSaveButtonLoading(false);
@@ -1417,6 +1656,11 @@ const TradingBusinessSales = () => {
                     orderType="2"
                     onKeyDown={(e) => handleInputKeyDown(e, 'receivedAmt')}
                   />
+                  {lockedOrder ? (
+                    <p className="mt-0.5 text-[11px] leading-tight text-emerald-600 dark:text-emerald-400">
+                      Order {lockedOrder.number} — only its products can be sold on this invoice.
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -1521,40 +1765,58 @@ const TradingBusinessSales = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label htmlFor="">Select Product</label>
-                <ProductDropdown
-                  id="products"
-                  name="products"
-                  className={`${autofillHighlights.product ? autofillHighlightClass : ''}`}
-                  onSelect={productSelectHandler}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      // Delay to allow react-select to complete selection
-                      setTimeout(() => {
-                        const input = document.querySelector(
-                          '#bag',
-                        ) as HTMLInputElement | null;
-                        if (input) input.focus();
-                        if (input) input.select();
-                      }, 150);
-                    }
-                  }}
-                  //   defaultValue={
-                  //     productData.product_name && productData.product
-                  //       ? {
-                  //           label: productData.product_name,
-                  //           value: productData.product,
-                  //         }
-                  //       : null
-                  //   }
-                  value={
-                    productData.product_name && productData.product
-                      ? {
-                        label: productData.product_name,
-                        value: productData.product,
+                {lockedOrder ? (
+                  // From an order, the box only ever lists that order's lines:
+                  // the product search behind the normal dropdown is what would
+                  // let a product outside the order onto the invoice.
+                  <DropdownCommon
+                    id="products"
+                    name="products"
+                    value={productData.product ? String(productData.product) : ''}
+                    onChange={lockedProductChange}
+                    className="bg-transparent"
+                    data={[
+                      { id: '', name: 'Select order product' },
+                      ...lockedOrder.items
+                        .filter(
+                          (item: any) =>
+                            Number(item.remaining_qty) > 0 ||
+                            String(item.product_id) === String(productData.product),
+                        )
+                        .map((item: any) => ({
+                          id: String(item.product_id),
+                          name: `${item.product_name} (${item.remaining_qty} left)`,
+                        })),
+                    ]}
+                  />
+                ) : (
+                  <ProductDropdown
+                    id="products"
+                    name="products"
+                    className={`${autofillHighlights.product ? autofillHighlightClass : ''}`}
+                    onSelect={productSelectHandler}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        // Delay to allow react-select to complete selection
+                        setTimeout(() => {
+                          const input = document.querySelector(
+                            '#bag',
+                          ) as HTMLInputElement | null;
+                          if (input) input.focus();
+                          if (input) input.select();
+                        }, 150);
                       }
-                      : null
-                  }
-                />
+                    }}
+                    value={
+                      productData.product_name && productData.product
+                        ? {
+                          label: productData.product_name,
+                          value: productData.product,
+                        }
+                        : null
+                    }
+                  />
+                )}
               </div>
               <div>
                 <label htmlFor="">Select Warehouse</label>
@@ -1786,20 +2048,50 @@ const TradingBusinessSales = () => {
                       : '-'}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
+                    className={`px-2 py-1 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
                   >
-                    {row.qty} {row.unit}
+                    {/* Editable here as well as in the entry box above: a
+                        quantity is the one figure changed most on a delivery,
+                        and sending the line back through the form to change it
+                        was two clicks for one number. */}
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={row.qty === '' || row.qty === null || row.qty === undefined ? '' : String(row.qty)}
+                      onChange={(event) => updateLineField(row.id, 'qty', event.target.value)}
+                      onFocus={(event) => event.currentTarget.select()}
+                      onBlur={(event) => commitLineField(row, 'qty', event.target.value)}
+                      aria-label={`Quantity for ${row.product_name}`}
+                      title={
+                        lockedOrder && orderItemFor(row.product)
+                          ? `Up to ${orderItemFor(row.product).remaining_qty} on this order`
+                          : undefined
+                      }
+                      className="w-20 rounded border border-[rgb(var(--c-border))] bg-transparent px-1 py-1 text-right text-sm focus:border-blue-500 focus:outline-none"
+                    />
+                    {row.unit ? <span className="ml-1 text-xs">{row.unit}</span> : null}
                   </td>
                   <td
-                    className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
+                    className={`px-2 py-1 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
                   >
-                    {row.price}
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={row.price === '' || row.price === null || row.price === undefined ? '' : String(row.price)}
+                      onChange={(event) => updateLineField(row.id, 'price', event.target.value)}
+                      onFocus={(event) => event.currentTarget.select()}
+                      onBlur={(event) => commitLineField(row, 'price', event.target.value)}
+                      aria-label={`Rate for ${row.product_name}`}
+                      className="w-24 rounded border border-[rgb(var(--c-border))] bg-transparent px-1 py-1 text-right text-sm focus:border-blue-500 focus:outline-none"
+                    />
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-right `}
                   >
                     {thousandSeparator(
-                      parseFloat((row.price * row.qty).toFixed(2)))}
+                      parseFloat((Number(row.price) * Number(row.qty)).toFixed(2)))}
                   </td>
                   <td
                     className={`px-2 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-[rgb(var(--c-text))] text-center w-20 `}

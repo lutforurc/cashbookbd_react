@@ -10,7 +10,8 @@ import SearchInput from '../../utils/fields/SearchInput';
 import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import Pagination from '../../utils/utils-functions/Pagination';
-import { FiCheckSquare, FiEye, FiFilter, FiPrinter, FiRefreshCw, FiX, FiPlus } from 'react-icons/fi';
+import { FiCheckSquare, FiEye, FiFilePlus, FiFilter, FiPrinter, FiRefreshCw, FiX, FiPlus } from 'react-icons/fi';
+import { INVOICE_WORKFLOW_ORDER } from '../invoices/shared/invoiceWorkflow';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import OrdersPrint from './OrdersPrint';
@@ -1024,6 +1025,24 @@ const Orders = () => {
     navigate(`/orders/edit/${row.id}`, { state: { order: row, returnToOrdersList: true } });
   };
 
+  /**
+   * Write an invoice against this order.
+   *
+   * The order travels in the query, not router state: the sales screen reads
+   * it on every load, so a refresh (or a link shared between the two screens)
+   * still opens the same order. `order_no` is what the order DDL is searched
+   * by; `order` is the id it is matched on.
+   */
+  const handleCreateInvoice = (row: any) => {
+    persistOrdersListState();
+    const params = new URLSearchParams({
+      workflow: INVOICE_WORKFLOW_ORDER,
+      order: String(row.id),
+      order_no: String(row.order_number ?? ''),
+    });
+    navigate(`/invoice/sales?${params.toString()}`);
+  };
+
   const refreshOrders = () => {
     dispatch(
       getOrders({
@@ -1337,6 +1356,18 @@ const Orders = () => {
       headerClass: 'text-center',
       render: (data: any) => (
         <div className="flex justify-center items-center">
+          {/* Only a sales order with something still to deliver can start an
+              invoice; a purchase order or a fully delivered one gets no button. */}
+          {Number(data?.order_type) === 2 && getOrderRemainingQuantity(data) > 0 ? (
+            <Button
+              type="button"
+              onClick={() => handleCreateInvoice(data)}
+              className="text-emerald-600 mr-2"
+              title="Create sales invoice from this order"
+            >
+              <FiFilePlus className="cursor-pointer h-5 w-5" />
+            </Button>
+          ) : null}
           <Button
             type="button"
             onClick={() => void handleOrderTransactionPrint(data)}
