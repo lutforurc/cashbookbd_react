@@ -232,7 +232,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.designation.view permission থাকলে।"] },
       {
         "heading": "তালিকা ও নতুন পদবি",
-        "menu": "HRM → Designations → Designations",
+        "menu": "HRM → Organization Setup → Designations",
         "steps": [
           "Search দিয়ে পদবি খুঁজুন।",
           "New Designation চাপলে ফর্ম খোলে।",
@@ -252,7 +252,7 @@
     "sections": [
       {
         "heading": "ফর্ম",
-        "menu": "HRM → Designations → Designations → New Designation",
+        "menu": "HRM → Organization Setup → Designations → New Designation",
         "steps": [
           "Designation Level নির্বাচন করুন।",
           "Designation Name, Sequence ও Description লিখুন।",
@@ -275,7 +275,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ hrm.designation.level.view permission থাকলে।"] },
       {
         "heading": "তালিকা",
-        "menu": "HRM → Designations → Designation Levels",
+        "menu": "HRM → Organization Setup → Designation Levels",
         "steps": [
           "Search দিয়ে স্তর খুঁজুন।",
           "New Level চাপলে নতুন স্তরের ফর্ম খোলে।",
@@ -303,7 +303,7 @@
       },
       {
         "heading": "তালিকা",
-        "menu": "HRM → Designations → Departments",
+        "menu": "HRM → Organization Setup → Departments",
         "steps": [
           "Search দিয়ে ডিপার্টমেন্ট খুঁজুন।",
           "New Department চাপলে নতুন ডিপার্টমেন্টের ফর্ম খোলে।",
@@ -325,10 +325,10 @@
     "sections": [
       {
         "heading": "ফর্ম",
-        "menu": "HRM → Designations → Departments → New Department",
+        "menu": "HRM → Organization Setup → Departments → New Department",
         "steps": [
           "ডিপার্টমেন্টের নাম লিখুন; ENG|বাংলা সুইচে বাংলা নামও দেওয়া যায়।",
-          "চাইলে বিবরণ লিখুন, তারপর Save চাপুন।",
+          "চাইলে বিবরণ লিখুন; ENG|বাংলা সুইচে বাংলা বিবরণও দেওয়া যায়। তারপর Save চাপুন।",
           "Edit-এ Active টিক তুলে দিলে ডিপার্টমেন্টটি কর্মচারী ফর্মে আর দেখা যায় না।"
         ]
       },
@@ -352,7 +352,7 @@
     "sections": [
       {
         "heading": "ফর্ম",
-        "menu": "HRM → Designations → Designation Levels → New Level",
+        "menu": "HRM → Organization Setup → Designation Levels → New Level",
         "steps": [
           "Level Name লিখুন।",
           "Description লিখুন।",

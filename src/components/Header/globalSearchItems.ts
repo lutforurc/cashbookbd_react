@@ -149,7 +149,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Employees', path: routes.hrms_employee_list, group: 'HRM', permissions: ['employee.view'] },
   { title: 'Designation Levels', path: routes.hrms_designation_level_list, group: 'HRM', permissions: ['hrm.designation.level.view'] },
   { title: 'Departments', path: routes.hrms_department_list, group: 'HRM', permissions: ['hrm.department.view'] },
-  { title: 'Designations', path: routes.hrms_designation_list, group: 'HRM', permissions: ['hrm.designation.view'] },
+  { title: 'Designations', path: routes.hrms_designation_list, group: 'HRM', keywords: ['organization setup', 'designation level', 'department'], permissions: ['hrm.designation.view'] },
   { title: 'Manual Attendance', path: routes.hrms_attendance_entries, group: 'HRM', keywords: ['attendance entry in out'], permissions: ['hrm.attendance.view'] },
   { title: 'Attendance Report', path: routes.hrms_attendance_report, group: 'HRM', keywords: ['present absent attendance summary'], permissions: ['hrm.attendance.report.view'] },
   { title: 'Overtime Report', path: routes.hrms_overtime_report, group: 'HRM', keywords: ['ot overtime eligible amount minutes attendance'], permissions: ['hrm.overtime.report.view'] },

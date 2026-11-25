@@ -204,7 +204,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
   ],
   'hrm': [
     { id: 'hrms/employees', title: "Employees" },
-    { id: 'hrms_designation_list', title: "Designations" },
+    { id: 'hrms_designation_list', title: "Organization Setup" },
     { id: 'hrms_attendance_entries', title: "Attendance" },
     { id: 'hrms_attendance_report', title: "Attendance Reports" },
     { id: 'hrms_attendance_setup', title: "Attendance Settings" },
@@ -3127,7 +3127,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(DESIGNATION_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(DESIGNATION_TABS, pathname) })}
                               >
-                                Designations
+                                Organization Setup
                               </NavLink>
                             </li>
                           )}

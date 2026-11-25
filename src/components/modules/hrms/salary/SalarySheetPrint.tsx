@@ -6,7 +6,7 @@ import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import { formatDate, formatPaymentMonth } from '../../../utils/utils-functions/formatDate';
 import { rl } from '../../../../i18n/reportLabel';
-import { toLocalMonth } from '../../../../i18n/months';
+import { toLocalMonth } from '../../../../i18n/mapper';
 import { useLocalDigits } from '../../../../i18n/useLocalDigits';
 import i18n from '../../../../i18n';
 

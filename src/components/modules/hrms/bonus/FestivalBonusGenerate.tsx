@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FiCheckSquare, FiGift, FiSave, FiSearch, FiTrash2 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -17,6 +17,8 @@ import Table from "../../../utils/others/Table";
 import thousandSeparator from "../../../utils/utils-functions/thousandSeparator";
 import ConfirmModal from "../../../utils/components/ConfirmModalProps";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
+import { useLanguage } from "../../../../i18n/useLanguage";
+import { useLocalDigits } from "../../../../i18n/useLocalDigits";
 
 const BONUS_TEMPLATES = [
   { value: "Durga-puja Bonus", label: "Durga-puja Bonus" },
@@ -33,6 +35,13 @@ const FestivalBonusGenerate = ({ user }: any) => {
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
   const employeeSettings = useSelector((state: any) => state.employees);
+
+  // Bangla digits on a Bangla screen, the same rule the salary screens follow:
+  // the conversion happens over the rendered text (month dropdown, totals,
+  // table), so nothing parsed back ever holds a Bangla digit.
+  const { code: languageCode } = useLanguage();
+  const digitsRef = useRef<HTMLDivElement>(null);
+  useLocalDigits(digitsRef, languageCode !== "en");
 
   const [employees, setEmployees] = useState<any[]>([]);
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
@@ -292,20 +301,17 @@ const FestivalBonusGenerate = ({ user }: any) => {
       <HelmetTitle title="Bonus Generate" />
       {(loading || searchLoading) && <Loader />}
 
-      <div className="space-y-2">
+      <div ref={digitsRef} className="space-y-2">
         <div className="border border-[rgb(var(--c-border))] bg-white shadow-sm dark:bg-slate-800">
-          <div className="flex flex-col gap-4 px-6 py-6 md:flex-row md:items-center md:justify-between">
-            <div>
+          <div className="flex flex-col gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="w-full lg:max-w-xl">
               <div className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
                 <FiGift className="h-4 w-4" />
                 HRM Bonus Module
               </div>
-              <p className="mt-0 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-                Generate festival bonus batches based on a fixed percentage of basic salary.
-              </p>
-              
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-sm border-[rgb(var(--c-border))]">
+
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
+                <div className="w-full sm:flex-1">
                   <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Bonus % of Basic</label>
                   <InputElement
                     value={bonusPercent}
@@ -315,42 +321,46 @@ const FestivalBonusGenerate = ({ user }: any) => {
                     className="w-full"
                   />
                 </div>
-                <div className="flex items-end">
+                <div className="grid grid-cols-2 gap-2 sm:flex">
                   <ButtonLoading
                     onClick={handleSearch}
                     label="Load Employees"
                     icon={<FiSearch className="h-4 w-4" />}
-                    className="w-full whitespace-nowrap xl:w-auto"
+                    className="w-full whitespace-nowrap"
                   />
-                  <div className="ml-2 flex justify-end">
-                    <ButtonLoading className="px-5 py-2"  onClick={() => setShowConfirm(true)} buttonLoading={saveButtonLoading} label="Generate Bonus" icon={<FiCheckSquare className="h-4 w-4" />}  />
-                  </div>
+                  <ButtonLoading
+                    onClick={() => setShowConfirm(true)}
+                    buttonLoading={saveButtonLoading}
+                    label="Generate Bonus"
+                    icon={<FiCheckSquare className="h-4 w-4" />}
+                    className="w-full whitespace-nowrap"
+                  />
                 </div>
               </div>
 
             </div>
-            <div className="grid grid-cols-3 gap-3 text-sm md:min-w-[320px]">
-              <div className="relative overflow-hidden border border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 pl-5 dark:bg-slate-900">
+            <div className="grid w-full grid-cols-1 gap-2 text-sm sm:grid-cols-3 lg:w-auto lg:min-w-[420px]">
+              <div className="relative overflow-hidden border border-[rgb(var(--c-border))] bg-slate-50 px-3 py-2 pl-4 dark:bg-slate-900">
                 <span className="absolute inset-y-0 left-0 w-1 bg-indigo-500" />
                 <div className="text-xs text-slate-500 dark:text-slate-400">Total Basic Salary</div>
-                <div className="mt-1 text-2xl font-bold text-indigo-600 dark:text-indigo-400">{thousandSeparator(totalBasic)}</div>
+                <div className="mt-1 truncate text-xl font-bold text-indigo-600 dark:text-indigo-400 lg:text-2xl">{thousandSeparator(totalBasic)}</div>
               </div>
-              <div className="relative overflow-hidden border border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 pl-5 dark:bg-slate-900">
+              <div className="relative overflow-hidden border border-[rgb(var(--c-border))] bg-slate-50 px-3 py-2 pl-4 dark:bg-slate-900">
                 <span className="absolute inset-y-0 left-0 w-1 bg-emerald-500" />
                 <div className="text-xs text-slate-500 dark:text-slate-400">Eligible Employees</div>
-                <div className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{totalEmployees}</div>
+                <div className="mt-1 truncate text-xl font-bold text-emerald-600 dark:text-emerald-400 lg:text-2xl">{totalEmployees}</div>
               </div>
-              <div className="relative overflow-hidden border border-[rgb(var(--c-border))] bg-slate-50 px-4 py-3 pl-5 dark:bg-slate-900">
+              <div className="relative overflow-hidden border border-[rgb(var(--c-border))] bg-slate-50 px-3 py-2 pl-4 dark:bg-slate-900">
                 <span className="absolute inset-y-0 left-0 w-1 bg-blue-500" />
                 <div className="text-xs text-slate-500 dark:text-slate-400">Projected Bonus</div>
-                <div className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">{thousandSeparator(totalBonus)}</div>
+                <div className="mt-1 truncate text-xl font-bold text-blue-600 dark:text-blue-400 lg:text-2xl">{thousandSeparator(totalBonus)}</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="border border-[rgb(var(--c-border))] bg-white p-5 shadow-sm dark:bg-slate-800">
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
+        <div className="border border-[rgb(var(--c-border))] bg-white p-4 shadow-sm sm:p-5 dark:bg-slate-800">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-sm border-[rgb(var(--c-border))]">
               <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-[rgb(var(--c-text))]">Branch</label>
               <BranchDropdown
@@ -359,7 +369,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
                   const value = e.target.value;
                   setBranchId(value === "" ? "" : Number(value));
                 }}
-                className="w-60 font-medium text-sm p-2 mr-2 h-9"
+                className="w-full font-medium text-sm p-2 h-9"
                 branchDdl={dropdownData}
               />
             </div>
@@ -371,7 +381,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
                 name="bonus_month_id"
                 value={monthId}
                 onChange={handleMonthChange}
-                className="bg-transparent min-w-35"
+                className="bg-transparent"
               />
             </div>
 
@@ -445,7 +455,7 @@ const FestivalBonusGenerate = ({ user }: any) => {
               </div> */}
             </div>
 
-            <div className="border border-[rgb(var(--c-border))] bg-white p-5 shadow-sm dark:bg-slate-800">
+            <div className="border border-[rgb(var(--c-border))] bg-white p-3 shadow-sm sm:p-5 dark:bg-slate-800">
               <Table columns={columns} data={employees} perPage={20} />
             </div>
           </>

@@ -31,7 +31,7 @@ import { useLanguage } from '../../../../i18n/useLanguage';
 import { localizeReport } from '../../../../i18n/displayName';
 import { useLocalDigits } from '../../../../i18n/useLocalDigits';
 import { rl } from '../../../../i18n/reportLabel';
-import { toLocalMonth } from '../../../../i18n/months';
+import { toLocalMonth } from '../../../../i18n/mapper';
 import i18n from '../../../../i18n';
 
 const figure = (v: BusinessMonthValue | undefined, field: 'opening' | 'closing') =>

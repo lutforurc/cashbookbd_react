@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import DropdownCommon from "../utils-functions/DropdownCommon";
 import { useLanguage } from "../../../i18n/useLanguage";
-import { toLocalMonth } from "../../../i18n/months";
+import { toLocalMonth } from "../../../i18n/mapper";
 import { rl } from "../../../i18n/reportLabel";
 
 interface Props {
@@ -48,9 +48,9 @@ const MonthDropdown: React.FC<Props> = ({
   onChange,
 }) => {
   const { code: languageCode } = useLanguage();
-  // On a Bangla screen the months read "অক্টোবর 2026" from the shared month
-  // mapper (the digits turn Bangla wherever the page converts them); the id
-  // stays "10-2026", so the value sent is the same either way.
+  // On a Bangla screen the months read "অক্টোবর ২০২৬" from the shared month
+  // mapper, year digits included; the id stays "10-2026", so the value sent is
+  // the same either way.
   const monthData = useMemo(
     () => [
       { id: "", name: rl("Select Month") },

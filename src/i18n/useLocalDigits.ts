@@ -1,7 +1,5 @@
 import { RefObject, useEffect } from 'react';
-
-const BANGLA = '০১২৩৪৫৬৭৮৯';
-const toBangla = (text: string) => text.replace(/[0-9]/g, (d) => BANGLA[Number(d)]);
+import { toLocalDigits } from './mapper';
 
 /**
  * Shows every digit inside `ref` as a Bangla digit while `on`.
@@ -21,7 +19,7 @@ export const useLocalDigits = (ref: RefObject<HTMLElement | null>, on: boolean) 
     const convertText = (text: Node) => {
       if (text.parentElement?.closest('style, script')) return;
       const value = text.nodeValue || '';
-      if (/[0-9]/.test(value)) text.nodeValue = toBangla(value);
+      if (/[0-9]/.test(value)) text.nodeValue = toLocalDigits(value, 'local');
     };
 
     const convert = (node: Node) => {

@@ -6,7 +6,7 @@ import thousandSeparator from '../../../utils/utils-functions/thousandSeparator'
 import { businessBlocks, businessSections, sectionTotals } from './businessSummaryData';
 import type { BusinessLine, BusinessMonthValue, BusinessSummaryData } from './businessSummaryData';
 import { rl } from '../../../../i18n/reportLabel';
-import { toLocalMonth } from '../../../../i18n/months';
+import { toLocalMonth } from '../../../../i18n/mapper';
 import i18n from '../../../../i18n';
 
 type Props = {

@@ -9,16 +9,13 @@ import InputElement from '../../utils/fields/InputElement';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import ProductDropdown from '../../utils/utils-functions/ProductDropdown';
 import ToggleSwitch from '../../utils/utils-functions/ToggleSwitch';
-
-const BN_DIGITS = '০১২৩৪৫৬৭৮৯';
-const toBanglaDigits = (value: string | number) =>
-  String(value).replace(/[0-9]/g, (d) => BN_DIGITS[Number(d)]);
+import { toLocalDigits } from '../../../i18n/mapper';
 
 // The Repeat switch in words anyone reads: on, the free goods come again at
 // every threshold (30 bought on "10 gets 1" earns 3), not once per invoice.
 const repeatLabel = (threshold: string, freeQty: string) =>
   Number(threshold) > 0 && Number(freeQty) > 0
-    ? `যত কিনবে তত ফ্রি · প্রতি ${toBanglaDigits(threshold)}-এ ${toBanglaDigits(freeQty)}`
+    ? `যত কিনবে তত ফ্রি · প্রতি ${toLocalDigits(String(threshold), 'bn')}-এ ${toLocalDigits(String(freeQty), 'bn')}`
     : 'যত কিনবে তত ফ্রি';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import {

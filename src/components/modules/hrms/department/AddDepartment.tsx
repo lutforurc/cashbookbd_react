@@ -13,10 +13,9 @@ import {
 } from '../../../services/apiRoutes';
 import ROUTES from '../../../services/appRoutes';
 import BilingualInput from '../../../utils/fields/BilingualInput';
-import InputElement from '../../../utils/fields/InputElement';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 
-const EMPTY = { id: '', name: '', name_local: '', description: '', status: 1 };
+const EMPTY = { id: '', name: '', name_local: '', description: '', description_local: '', status: 1 };
 
 /** New or edit a department. A department people are in is closed by setting it Inactive. */
 const AddDepartment = () => {
@@ -39,6 +38,7 @@ const AddDepartment = () => {
           name: row.name || '',
           name_local: row.name_local || '',
           description: row.description || '',
+          description_local: row.description_local || '',
           status: Number(row.status ?? 1),
         });
       }
@@ -76,8 +76,8 @@ const AddDepartment = () => {
           <BilingualInput
             name="name"
             kind="name"
-            label={t('department.name')}
-            placeholder={t('department.namePlaceholder')}
+            label={t('department.name', { lng: 'en' })}
+            placeholder={t('department.namePlaceholder', { lng: 'en' })}
             value={form.name}
             localValue={form.name_local}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -86,13 +86,15 @@ const AddDepartment = () => {
         </div>
 
         <div className="mb-2">
-          <InputElement
-            id="description"
+          <BilingualInput
             name="description"
-            label={t('department.description')}
-            placeholder={t('department.descriptionPlaceholder')}
+            kind="description"
+            label={t('department.description', { lng: 'en' })}
+            placeholder={t('department.descriptionPlaceholder', { lng: 'en' })}
             value={form.description}
+            localValue={form.description_local}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            onLocalChange={(value) => setForm((f) => ({ ...f, description_local: value }))}
           />
         </div>
 
@@ -111,14 +113,14 @@ const AddDepartment = () => {
           <ButtonLoading
             onClick={handleSave}
             buttonLoading={saving}
-            label={form.id ? t('department.update') : t('common.save')}
+            label={form.id ? t('department.update', { lng: 'en' }) : t('common.save', { lng: 'en' })}
             className="mr-0 whitespace-nowrap p-2 text-center"
             icon={<FiSave className="ml-2 mr-2 text-lg" />}
           />
           <ButtonLoading
             onClick={() => navigate(ROUTES.hrms_department_list)}
             buttonLoading={false}
-            label={t('department.back')}
+            label={t('department.back', { lng: 'en' })}
             className="whitespace-nowrap text-center mr-0"
             icon={<FiHome className="text-lg ml-2 mr-2" />}
           />

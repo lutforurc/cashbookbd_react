@@ -63,7 +63,11 @@ const Departments = () => {
       header: t('department.name'),
       render: (row: any) => <span>{(i18n.language !== 'en' && row.name_local) || row.name}</span>,
     },
-    { key: 'description', header: t('department.description'), render: (row: any) => <span>{row.description || '-'}</span> },
+    {
+      key: 'description',
+      header: t('department.description'),
+      render: (row: any) => <span>{((i18n.language !== 'en' && row.description_local) || row.description) || '-'}</span>,
+    },
     { key: 'employee_count', header: t('department.employees'), headerClass: 'text-center', cellClass: 'text-center' },
     {
       key: 'status',

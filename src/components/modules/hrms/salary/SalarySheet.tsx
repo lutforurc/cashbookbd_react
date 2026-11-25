@@ -25,7 +25,7 @@ import { FiSearch } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import { Select } from '../../../utils/fields/FormControls';
 import { rl } from '../../../../i18n/reportLabel';
-import { toLocalMonth } from '../../../../i18n/months';
+import { toLocalMonth } from '../../../../i18n/mapper';
 import i18n from '../../../../i18n';
 import { useLanguage } from '../../../../i18n/useLanguage';
 import { useLocalDigits } from '../../../../i18n/useLocalDigits';
