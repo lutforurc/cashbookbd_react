@@ -15,7 +15,6 @@ import httpService from '../../services/httpService';
 import { API_PROJECT_DDL_LIST_URL } from '../../services/apiRoutes';
 import { getDdlWarehouse } from '../warehouse/ddlWarehouseSlider';
 import { storeMaterialIssue } from './materialIssueSlice';
-import MaterialIssueList from './MaterialIssueList';
 import { Select } from '../../utils/fields/FormControls';
 
 type ProductOption = {
@@ -68,7 +67,6 @@ const MaterialIssue = () => {
   // A ref, not the state above: two clicks inside one render both see the old
   // state, and the second would post the same issue again.
   const savingRef = useRef(false);
-  const [listRefreshKey, setListRefreshKey] = useState(0);
   const [issueDate, setIssueDate] = useState<Date | null>(dayjs().toDate());
   const [isUpdatingLine, setIsUpdatingLine] = useState(false);
   const [editingLineId, setEditingLineId] = useState<number | null>(null);
@@ -275,7 +273,6 @@ const MaterialIssue = () => {
         if (response?.success) {
           toast.success(response?.message || 'Material issue saved');
           resetForm();
-          setListRefreshKey((prev) => prev + 1);
         } else {
           toast.error(response?.message || 'Failed to save material issue');
         }
@@ -506,8 +503,6 @@ const MaterialIssue = () => {
           </tbody>
         </table>
       </div>
-
-      <MaterialIssueList refreshKey={listRefreshKey} />
     </div>
   );
 };

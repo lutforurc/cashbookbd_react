@@ -130,6 +130,7 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
   '/inventory/branch-transfer': 'branch-issue',
   '/inventory/branch-received': 'branch-receive',
   '/inventory/material-issue': 'material-issue',
+  '/inventory/material-issue-list': 'material-issue',
   '/branch/branch-list': 'branch-list',
 
   // Chart of Accounts

@@ -264,92 +264,103 @@ const BranchStockReport = ({ user }: any) => {
       <HelmetTitle title="Branch Stock Report" />
 
       <div className="px-0 py-3">
-        <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-[repeat(3,minmax(0,1fr))_auto]">
-          <div>
-            <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
-              Select Branch
-            </label>
-            <Select
-              value={branchId}
-              onChange={(event) => setBranchId(event.target.value)}
-              className={`${FIELD_SELECT} w-full px-2 text-sm font-medium`}
-            >
-              <option value="">All Branch</option>
-              {dropdownData.map((item: any) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </Select>
+        {/* Two lines of filters. The first line is the container's full width --
+            nothing is held back for the buttons there -- and the second line
+            carries Product / Start / End with OK-Print-Home beside them. On a
+            narrow screen everything folds to one column, and the buttons follow
+            the fields instead of sitting beside them. */}
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <div>
+              <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
+                Select Branch
+              </label>
+              <Select
+                value={branchId}
+                onChange={(event) => setBranchId(event.target.value)}
+                className={`${FIELD_SELECT} w-full px-2 text-sm font-medium`}
+              >
+                <option value="">All Branch</option>
+                {dropdownData.map((item: any) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
+                Brand
+              </label>
+              <CategoryDropdown
+                onChange={(option: any) => setBrandId(option?.value ?? '')}
+                className="w-full text-sm"
+                categoryDdl={brandOptions}
+                value={brandId}
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
+                Category
+              </label>
+              <CategoryDropdown
+                onChange={(option: any) => setCategoryId(option?.value ?? '')}
+                className="w-full text-sm"
+                categoryDdl={categoryOptions}
+                placeholder="All Categories"
+                value={categoryId}
+              />
+            </div>
           </div>
 
-          <InputDatePicker
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-end">
+            <div className="grid flex-1 grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <InputElement
+                id="branchStockReportSearch"
+                name="search"
+                label="Product"
+                placeholder="Filter by product"
+                value={search}
+                onChange={(event: any) => setSearch(event.target.value)}
+                className="text-sm font-medium"
+              />
+
+              <InputDatePicker
  label="Start Date"
  selectedDate={startDate}
  setSelectedDate={setStartDate}
  setCurrentDate={setStartDate}
  className="w-full text-sm font-medium"
-          />
+              />
 
-          <InputDatePicker
+              <InputDatePicker
  label="End Date"
  selectedDate={endDate}
  setSelectedDate={setEndDate}
  setCurrentDate={setEndDate}
  className="w-full text-sm font-medium"
-          />
+              />
+            </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
-              Brand
-            </label>
-            <CategoryDropdown
-              onChange={(option: any) => setBrandId(option?.value ?? '')}
-              className="w-full text-sm"
-              categoryDdl={brandOptions}
-              value={brandId}
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">
-              Category
-            </label>
-            <CategoryDropdown
-              onChange={(option: any) => setCategoryId(option?.value ?? '')}
-              className="w-full text-sm"
-              categoryDdl={categoryOptions}
-              placeholder="All Categories"
-              value={categoryId}
-            />
-          </div>
-
-          <InputElement
-            id="branchStockReportSearch"
-            name="search"
-            label="Product"
-            placeholder="Filter by product"
-            value={search}
-            onChange={(event: any) => setSearch(event.target.value)}
-            className="text-sm font-medium"
-          />
-
-          <div className="flex items-end gap-2 md:col-span-3 xl:col-span-1">
-            <ButtonLoading
-              onClick={runReport}
-              buttonLoading={buttonLoading}
-              label="OK"
-              icon={<FiCheckSquare />}
-              className="px-6"
-            />
-            <PrintButton onClick={onPrint} label="Print" className="px-5" />
-            <ButtonLoading
-              onClick={() => navigate('/')}
-              buttonLoading={false}
-              label="Home"
-              icon={<FiHome />}
-              className="px-5"
-            />
+            <div className="flex items-end gap-2">
+              <ButtonLoading
+                onClick={runReport}
+                buttonLoading={buttonLoading}
+                label="OK"
+                icon={<FiCheckSquare />}
+                className="px-6"
+              />
+              <PrintButton onClick={onPrint} label="Print" className="px-5" />
+              <ButtonLoading
+                onClick={() => navigate('/')}
+                buttonLoading={false}
+                label="Home"
+                icon={<FiHome />}
+                className="px-5"
+              />
+            </div>
           </div>
         </div>
 

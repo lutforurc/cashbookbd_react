@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiCheckSquare, FiPrinter } from 'react-icons/fi';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
@@ -73,7 +74,7 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
       header: 'Date',
       headerClass: 'w-32',
       cellClass: 'w-32',
-      render: (row: any) => <span>{row?.issue_date || '-'}</span>,
+      render: (row: any) => <span>{row?.issue_date && dayjs(row.issue_date).isValid() ? dayjs(row.issue_date).format('DD/MM/YYYY') : '-'}</span>,
     },
     {
       key: 'project',
@@ -123,13 +124,20 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
   ];
 
   return (
-    <div className="mt-6">
-      <h3 className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))] mb-2">Issue List</h3>
-
+    <div>
       <div className="flex overflow-x-auto justify-between mb-2">
         <div className="flex">
           <SelectOption onChange={handleSelectChange} className="mr-1 md:mr-2" />
-          <SearchInput search={search} setSearchValue={setSearchValue} className="text-nowrap" />
+          {/* Issue No, the products on the lines, and the line's work item --
+              the three things somebody actually remembers about a challan.
+              Enter runs the same search the button does. */}
+          <SearchInput
+            search={search}
+            setSearchValue={setSearchValue}
+            className="text-nowrap"
+            placeholder="Issue No, Product or Work Item"
+            onEnter={handleSearch}
+          />
           <ButtonLoading
             onClick={handleSearch}
             buttonLoading={searchLoading}

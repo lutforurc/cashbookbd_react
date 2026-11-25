@@ -271,6 +271,7 @@ import BranchTransferListReport from './components/modules/reports/branch-transf
 import BranchReceiveListReport from './components/modules/reports/branch-receive-list/BranchReceiveListReport';
 import BranchStockReport from './components/modules/reports/branch-stock-report/BranchStockReport';
 import MaterialIssue from './components/modules/material-issue/MaterialIssue';
+import MaterialIssueListPage from './components/modules/material-issue/MaterialIssueListPage';
 import ProductOut from './components/modules/product-out/ProductOut';
 import ProductOutReason from './components/modules/product-out/ProductOutReason';
 import ProductOutReport from './components/modules/product-out/ProductOutReport';
@@ -1165,6 +1166,9 @@ function App() {
             <Route element={<RouteTabs tabs={BT_PRODUCT_OUT_TABS} />}>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['material.issue.create']} loading={permissionsLoading} />}>
                 <Route path={routes.material_issue} element={<MaterialIssue />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['asset.issue.view']} loading={permissionsLoading} />}>
+                <Route path={routes.material_issue_list} element={<MaterialIssueListPage />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.create']} loading={permissionsLoading} />}>
                 <Route path={routes.product_out} element={<ProductOut />} />

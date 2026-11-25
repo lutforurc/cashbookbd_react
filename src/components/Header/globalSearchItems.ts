@@ -193,6 +193,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Branch Receive Report', path: routes.report_branch_receive, group: 'Branch Transfer', permissions: ['branch.received.report.view'] },
   { title: 'Branch Stock', path: routes.report_branch_stock, group: 'Branch Transfer', permissions: ['branch.stock.view'] },
   { title: 'Material Issue', path: routes.material_issue, group: 'Branch Transfer', permissions: ['material.issue.create'] },
+  { title: 'Issue List', path: routes.material_issue_list, group: 'Branch Transfer', permissions: ['asset.issue.view'] },
   { title: 'Product Out', path: routes.product_out, group: 'Branch Transfer', keywords: ['damage', 'lost', 'write off', 'stock out'], permissions: ['product.out.create'] },
   { title: 'Product Out Register', path: routes.product_out_report, group: 'Branch Transfer', keywords: ['write-off register', 'damage list'], permissions: ['product.out.report.view'] },
   { title: 'Product Out Reasons', path: routes.product_out_reason, group: 'Branch Transfer', permissions: ['product.out.reason.manage'] },

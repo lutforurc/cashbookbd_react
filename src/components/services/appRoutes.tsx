@@ -94,6 +94,7 @@ const ROUTES = {
   branch_transfer: '/inventory/branch-transfer',
   branch_received: '/inventory/branch-received',
   material_issue: '/inventory/material-issue',
+  material_issue_list: '/inventory/material-issue-list',
   product_out: '/inventory/product-out',
   product_out_reason: '/inventory/product-out/reasons',
   product_out_report: '/inventory/product-out/register',

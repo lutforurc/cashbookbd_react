@@ -70,7 +70,11 @@ export const getMaterialIssues = createAsyncThunk<
   { rejectValue: string }
 >('materialIssue/getMaterialIssues', async (params = {}, thunkAPI) => {
   try {
-    const res = await httpService.get(API_MATERIAL_ISSUE_LIST_URL, params);
+    // ⚠️ `{ params }`, not the object itself. Axios reads the second argument
+    // as request CONFIG, so a bare `{ page, perPage, search }` was accepted and
+    // silently ignored -- no query string was ever built, the server answered
+    // its default first page, and the Search button looked broken.
+    const res = await httpService.get(API_MATERIAL_ISSUE_LIST_URL, { params });
     const responseData = res.data;
 
     if (responseData?.success) {

@@ -152,6 +152,7 @@
 | branch_received | Inventory → Branch Receive | `/inventory/branch-received` | `branch-receive` | done |
 | branch_transfer | Inventory → Branch Issue | `/inventory/branch-transfer` | `branch-issue` | done |
 | material_issue | Inventory → Material Issue | `/inventory/material-issue` | `material-issue` | done |
+| material_issue_list | Inventory → Issue List | `/inventory/material-issue-list` | `material-issue` | done |
 | product_in | Inventory → Product In | `/inventory/product-in` | `product-in` | done |
 | product_in_reason | Inventory → Product In → Reasons | `/inventory/product-in/reasons` | `product-in-reasons` | done |
 | product_in_report | Inventory → Product In Register | `/inventory/product-in/register` | `product-in-register` | done |

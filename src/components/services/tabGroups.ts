@@ -320,6 +320,10 @@ export const BT_REPORT_TABS: RouteTab[] = [
 
 export const BT_PRODUCT_OUT_TABS: RouteTab[] = [
   { label: 'Material Issue', path: routes.material_issue, permission: 'material.issue.create' },
+  // The issued-challans table, on its own: it sits under the Material Issue
+  // form as well, but a reader checking what has gone out should not have to
+  // pass a form first. It answers to the list endpoint's own permission.
+  { label: 'Issue List', path: routes.material_issue_list, permission: 'asset.issue.view' },
   { label: 'Product Out', path: routes.product_out, permission: 'product.out.create' },
   { label: 'Write-off Register', path: routes.product_out_report, permission: 'product.out.report.view' },
   { label: 'Out Reasons', path: routes.product_out_reason, permission: 'product.out.reason.manage' },
