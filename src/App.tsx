@@ -143,6 +143,8 @@ import Employees from './components/modules/hrms/employee/Employees';
 import EmployeeEdit from './components/modules/hrms/employee/EmployeeEdit';
 import DesignationLevels from './components/modules/hrms/designation-level/DesignationLevels';
 import AddDesignationLevel from './components/modules/hrms/designation-level/AddDesignationLevel';
+import Departments from './components/modules/hrms/department/Departments';
+import AddDepartment from './components/modules/hrms/department/AddDepartment';
 import SalaryComponents from './components/modules/hrms/salary-component/SalaryComponents';
 import SalaryComponentForm from './components/modules/hrms/salary-component/SalaryComponentForm';
 import SalaryStructures from './components/modules/hrms/salary-structure/SalaryStructures';
@@ -1699,10 +1701,17 @@ function App() {
                 <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.designation.level.view']} loading={permissionsLoading} />}>
                   <Route path={routes.hrms_designation_level_list} element={<DesignationLevels />} />
                 </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.department.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.hrms_department_list} element={<Departments />} />
+                </Route>
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.designation.level.view']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_designation_level_create} element={<AddDesignationLevel />} />
                 <Route path={routes.hrms_designation_level_edit} element={<AddDesignationLevel />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.department.view']} loading={permissionsLoading} />}>
+                <Route path={routes.hrms_department_create} element={<AddDepartment />} />
+                <Route path={routes.hrms_department_edit} element={<AddDepartment />} />
               </Route>
               {/* Salary Setup: the two lists as tabs; their New/Edit forms stay full-page. */}
               <Route element={<RouteTabs tabs={SALARY_SETUP_TABS} />}>

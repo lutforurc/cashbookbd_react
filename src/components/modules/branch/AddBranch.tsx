@@ -888,6 +888,13 @@ const AddBranch = () => {
     // On: the tiles sales screen keeps refusing a line under its cost, which
     // is what every branch did before this switch existed.
     block_below_cost_sale: true,
+    // Payroll: how a gross wage splits into pay heads. Off until set.
+    wage_split_enabled: false,
+    wage_split_medical: '',
+    wage_split_transport: '',
+    wage_split_food: '',
+    wage_split_divisor: '1.5',
+    wage_split_house_rent_percent: '50',
     need_demo_tutorial: false,
     need_customer_contact_person: false,
     due_list_with_address: false,
@@ -1195,6 +1202,13 @@ const AddBranch = () => {
             ? true
             : toBooleanFlag(b.block_below_cost_sale),
         need_demo_tutorial: toBooleanFlag(b.need_demo_tutorial),
+        // An unsaved meta reads back as false; show a blank box, not "false".
+        wage_split_enabled: toBooleanFlag(b.wage_split_enabled),
+        wage_split_medical: b.wage_split_medical ? String(b.wage_split_medical) : '',
+        wage_split_transport: b.wage_split_transport ? String(b.wage_split_transport) : '',
+        wage_split_food: b.wage_split_food ? String(b.wage_split_food) : '',
+        wage_split_divisor: b.wage_split_divisor ? String(b.wage_split_divisor) : '1.5',
+        wage_split_house_rent_percent: b.wage_split_house_rent_percent ? String(b.wage_split_house_rent_percent) : '50',
         need_customer_contact_person: toBooleanFlag(b.need_customer_contact_person),
         due_list_with_address: toBooleanFlag(b.due_list_with_address),
         due_list_show_area: toBooleanFlag(b.due_list_show_area),
@@ -3979,7 +3993,7 @@ const AddBranch = () => {
                       salaries are priced, a different question from the
                       operational switches above, and it saves the moment it is
                       switched rather than with the branch. */}
-                    {canManageSalaryEngine && formData?.id ? (
+                    {formData?.id ? (
                       <div className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4">
                         <h4 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                           {t('branch.payrollHeading')}
@@ -3988,14 +4002,31 @@ const AddBranch = () => {
                           {t('branch.payrollIntro')}
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                          {canManageSalaryEngine ? (
+                            <FormToggleField
+                              label={t('branch.salaryEngineLabel')}
+                              description={t('branch.salaryEngineHint')}
+                              checked={salaryEngineOn}
+                              disabled={salaryEngineSaving}
+                              onChange={(checked) => handleSalaryEngineChange(checked)}
+                            />
+                          ) : null}
                           <FormToggleField
-                            label={t('branch.salaryEngineLabel')}
-                            description={t('branch.salaryEngineHint')}
-                            checked={salaryEngineOn}
-                            disabled={salaryEngineSaving}
-                            onChange={(checked) => handleSalaryEngineChange(checked)}
+                            label={t('branch.wageSplitLabel')}
+                            description={t('branch.wageSplitHint')}
+                            checked={Boolean((formData as any).wage_split_enabled)}
+                            onChange={(checked) => handleToggleFieldChange('wage_split_enabled' as any, checked)}
                           />
                         </div>
+                        {(formData as any).wage_split_enabled ? (
+                          <div className="mt-2 grid grid-cols-1 md:grid-cols-5 gap-2">
+                            <InputElement id="wage_split_food" name="wage_split_food" label={t('branch.wageSplitFood')} type="number" value={(formData as any).wage_split_food || ''} onChange={handleOnChange} />
+                            <InputElement id="wage_split_medical" name="wage_split_medical" label={t('branch.wageSplitMedical')} type="number" value={(formData as any).wage_split_medical || ''} onChange={handleOnChange} />
+                            <InputElement id="wage_split_transport" name="wage_split_transport" label={t('branch.wageSplitTransport')} type="number" value={(formData as any).wage_split_transport || ''} onChange={handleOnChange} />
+                            <InputElement id="wage_split_divisor" name="wage_split_divisor" label={t('branch.wageSplitDivisor')} type="number" step="0.01" value={(formData as any).wage_split_divisor || ''} description={t('branch.wageSplitDivisorHint')} onChange={handleOnChange} />
+                            <InputElement id="wage_split_house_rent_percent" name="wage_split_house_rent_percent" label={t('branch.wageSplitHouseRent')} type="number" value={(formData as any).wage_split_house_rent_percent || ''} onChange={handleOnChange} />
+                          </div>
+                        ) : null}
                       </div>
                     ) : null}
 

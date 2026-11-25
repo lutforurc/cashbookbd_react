@@ -128,6 +128,9 @@
 | hrms_designation_level_list | HRM → Designation Level | `/hrms/designation-levels` | `designation-level-list` | done |
 | hrms_designation_level_create | HRM → Designation Level → New Level | `/hrms/designation-levels/create` | `designation-level-form` | done |
 | hrms_designation_level_edit | HRM → Designation Level → New Level | `/hrms/designation-levels/edit/:id` | `designation-level-form` | done |
+| hrms_department_list | HRM → Designations → Departments | `/hrms/departments` | `department-list` | done |
+| hrms_department_create | HRM → Designations → Departments → New Department | `/hrms/departments/create` | `department-form` | done |
+| hrms_department_edit | HRM → Designations → Departments → Edit | `/hrms/departments/edit/:id` | `department-form` | done |
 | hrms_salary_component_list | HRM → Salary → Salary Components | `/hrms/salary-components` | `salary-components` | done |
 | hrms_salary_component_create | HRM → Salary → Salary Components → New Pay Head | `/hrms/salary-components/create` | `salary-component-form` | done |
 | hrms_salary_component_edit | HRM → Salary → Salary Components → New Pay Head | `/hrms/salary-components/edit/:id` | `salary-component-form` | done |

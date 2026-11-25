@@ -57,6 +57,7 @@ export const LOAN_TABS: RouteTab[] = [
 export const DESIGNATION_TABS: RouteTab[] = [
   { label: 'Designations', path: routes.hrms_designation_list, permission: 'hrm.designation.view', forms: true },
   { label: 'Designation Levels', path: routes.hrms_designation_level_list, permission: 'hrm.designation.level.view', forms: true },
+  { label: 'Departments', path: routes.hrms_department_list, permission: 'hrm.department.view', forms: true },
 ];
 
 // ---- Admin

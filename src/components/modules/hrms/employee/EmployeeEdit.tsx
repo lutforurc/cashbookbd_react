@@ -21,7 +21,9 @@ import { FIELD_LABEL } from '../../../../theme/fieldStyles';
 import BilingualInput from '../../../utils/fields/BilingualInput';
 import { useLanguage } from '../../../../i18n/useLanguage';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../../../i18n';
 import StepRail from '../../../utils/others/StepRail';
+import { rl } from '../../../../i18n/reportLabel';
 
 const EMPLOYEE_STEPS = ['Personal Information', 'Employment & Attendance', 'Salary & Payroll'];
 
@@ -59,6 +61,8 @@ class EmployeeFormModel {
       present_address: '',
       permanent_address: '',
       nid: '',
+      card_no: '',
+      department_id: '',
       mobile: '',
       date_of_birth: '',
       joning_dt: '',
@@ -150,6 +154,8 @@ const EmployeeEdit = ({ user }: any) => {
       present_address: emp.present_address,
       permanent_address: emp.permanent_address,
       nid: emp.nid,
+      card_no: emp.card_no ?? '',
+      department_id: emp.department_id ?? '',
       mobile: emp.mobile,
       date_of_birth: dobDate ? dayjs(dobDate).format('DD/MM/YYYY') : '',
       joning_dt: joinDate ? dayjs(joinDate).format('DD/MM/YYYY') : '',
@@ -308,6 +314,14 @@ const EmployeeEdit = ({ user }: any) => {
               value={formData.nid}
               onChange={handleChange}
             />
+            <InputElement
+              id="card_no"
+              placeholder="Enter card no"
+              label={rl('Card No')}
+              name="card_no"
+              value={formData.card_no || ''}
+              onChange={handleChange}
+            />
             <div>
               <label className={FIELD_LABEL}>Date of Birth</label>
               <InputDatePicker
@@ -385,6 +399,22 @@ const EmployeeEdit = ({ user }: any) => {
               className="bg-transparent"
               value={formData.designation?.toString() ?? ''}
               data={designation}
+            />
+            {/* Optional: an employee may sit in no department. */}
+            <DropdownCommon
+              id="department_id"
+              name="department_id"
+              label={t('department.selectLabel')}
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.department_id?.toString() ?? ''}
+              data={[
+                { id: '', name: t('department.none') },
+                ...(employeeState?.employeeSettings?.data?.data?.departments || []).map((d: any) => ({
+                  id: d.id,
+                  name: (i18n.language !== 'en' && d.name_local) || d.name,
+                })),
+              ]}
             />
             <div>
               <label className={FIELD_LABEL}>Select Branch</label>

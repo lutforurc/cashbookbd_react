@@ -283,6 +283,13 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
       ),
     },
     {
+      key: 'card_no',
+      header: rl('Card No'),
+      headerClass: 'text-center',
+      cellClass: 'text-center',
+      render: (row: any) => row.card_no || '-',
+    },
+    {
       key: 'month_days',
       header: rl('Month Days'),
       headerClass: 'text-right',
@@ -339,6 +346,13 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
       cellClass: 'text-right font-semibold text-red-700 dark:text-red-400',
       render: (row: any) =>
         row.is_daily_labour ? '-' : thousandSeparator(row.attendance_deduction),
+    },
+    {
+      key: 'revenue_stamp',
+      header: rl('Revenue Stamp'),
+      headerClass: 'text-right',
+      cellClass: 'text-right',
+      render: (row: any) => thousandSeparator(amountOf(row, 'revenue_stamp')),
     },
     {
       key: 'others_deduction',

@@ -36,18 +36,21 @@ export interface SalaryRevision {
 
 interface SalaryRevisionState {
   revisions: SalaryRevision[];
+  /** The employee's branch rule for splitting a gross wage into pay heads. */
+  wageSplit: any;
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: SalaryRevisionState = {
   revisions: [],
+  wageSplit: null,
   isLoading: false,
   error: null,
 };
 
 export const fetchSalaryRevisions = createAsyncThunk<
-  SalaryRevision[],
+  { revisions: SalaryRevision[]; wageSplit: any },
   number | string,
   { rejectValue: string }
 >('salaryRevision/fetchSalaryRevisions', async (employeeId, thunkAPI) => {
@@ -55,7 +58,7 @@ export const fetchSalaryRevisions = createAsyncThunk<
     const res = await httpService.get(
       `${API_HRMS_SALARY_EMPLOYEE_REVISION_URL}/${employeeId}/revisions`,
     );
-    return unwrapApiData(res.data) ?? [];
+    return { revisions: unwrapApiData(res.data) ?? [], wageSplit: res.data?.wage_split ?? null };
   } catch (err: any) {
     return thunkAPI.rejectWithValue(
       err?.response?.data?.message || err?.message || 'Failed to fetch salary revisions',
@@ -124,9 +127,10 @@ const salaryRevisionSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchSalaryRevisions.fulfilled, (state, action: PayloadAction<SalaryRevision[]>) => {
+      .addCase(fetchSalaryRevisions.fulfilled, (state, action: PayloadAction<{ revisions: SalaryRevision[]; wageSplit: any }>) => {
         state.isLoading = false;
-        state.revisions = action.payload;
+        state.revisions = action.payload.revisions;
+        state.wageSplit = action.payload.wageSplit;
       })
       .addCase(fetchSalaryRevisions.rejected, (state, action) => {
         state.isLoading = false;

@@ -20,6 +20,7 @@ import DropdownCommon from '../../../utils/utils-functions/DropdownCommon';
 import { toast } from 'react-toastify';
 import MultiSelectDropdown from '../../../utils/utils-functions/MultiSelectDropdown';
 import { FiSearch } from 'react-icons/fi';
+import i18n from '../../../../i18n';
 
 const Employees = ({ user }: any) => {
   const employees = useSelector((state) => state.employees);
@@ -256,6 +257,13 @@ const Employees = ({ user }: any) => {
         ) : (
           <span className="text-gray-400">Loading...</span>
         ),
+    },
+    {
+      key: 'department_name',
+      header: i18n.t('department.column', { ns: 'common' }),
+      render: (row: any) => (
+        <span>{(i18n.language !== 'en' && row.department_name_local) || row.department_name || '-'}</span>
+      ),
     },
     {
       key: 'mobile',

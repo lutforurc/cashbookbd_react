@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { FiPlus, FiSave } from 'react-icons/fi';
 
@@ -72,6 +73,8 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
   const [note, setNote] = useState('');
   const [drafts, setDrafts] = useState<ComponentDraft[]>([]);
   const [loading, setLoading] = useState(false);
+  const [grossInput, setGrossInput] = useState('');
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     dispatch(fetchSalaryComponentDdl({}));
@@ -252,6 +255,64 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
     }
   };
 
+  /**
+   * The branch's wage split (Branch Settings -> Payroll): from one gross wage,
+   * the fixed allowances come off first, Basic is what is left divided by the
+   * divisor, and House Rent is a share of Basic. E.g. 15,800 with food 1,250,
+   * medical 750, transport 450 and divisor 1.5: Basic 8,900, House Rent 4,450.
+   * The heads land in the table like any typed amount and can still be edited.
+   */
+  const wageSplit = revisionState?.wageSplit;
+  const splitGross = () => {
+    const total = Number(grossInput) || 0;
+    if (!wageSplit?.enabled || total <= 0) return;
+
+    const medical = Number(wageSplit.medical) || 0;
+    const transport = Number(wageSplit.transport) || 0;
+    const food = Number(wageSplit.food) || 0;
+    const divisor = Number(wageSplit.divisor) || 1.5;
+    const basic = Math.round((total - medical - transport - food) / divisor);
+    const houseRent = Math.round((basic * (Number(wageSplit.house_rent_percent) || 50)) / 100);
+
+    if (basic <= 0) {
+      toast.error(t('salaryRevision.grossTooSmall'));
+      return;
+    }
+
+    const wanted: Record<string, number> = {
+      basic,
+      house_rent: houseRent,
+      medical_allowance: medical,
+      conveyance: transport,
+      lunch_bill: food,
+    };
+
+    setDrafts((prev) => {
+      const next = [...prev];
+      Object.entries(wanted).forEach(([code, amount]) => {
+        if (amount <= 0 && code !== 'basic') return;
+        const at = next.findIndex((draft) => draft.code === code);
+        if (at >= 0) {
+          next[at] = { ...next[at], amount: String(amount) };
+          return;
+        }
+        const component = (componentState?.ddl || []).find((item: any) => item.code === code);
+        if (!component) return;
+        next.push({
+          component_id: component.id,
+          code: component.code,
+          name: component.name,
+          short_name: component.short_name,
+          component_type: component.component_type,
+          amount: String(amount),
+          prorate: String(component.prorate ?? '0'),
+          sort_order: (next.length + 1) * 10,
+        });
+      });
+      return next;
+    });
+  };
+
   const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
@@ -339,6 +400,30 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
           placeholder="e.g. annual increment"
           onChange={(event) => setNote(event.target.value)}
         />
+
+        {wageSplit?.enabled ? (
+          <div className="flex items-end gap-2">
+            <div className="min-w-0 flex-1">
+              <InputElement
+                id="salary_gross_split"
+                name="salary_gross_split"
+                label={t('salaryRevision.grossLabel')}
+                inputMode="numeric"
+                value={grossInput}
+                placeholder="e.g. 15800"
+                description={t('salaryRevision.grossHint')}
+                onChange={(event) => setGrossInput(event.target.value.replace(/[^\d.]/g, ''))}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={splitGross}
+              className="mb-6 whitespace-nowrap rounded-sm bg-primary px-3 py-2 text-sm font-medium text-white"
+            >
+              {t('salaryRevision.split')}
+            </button>
+          </div>
+        ) : null}
 
         <div className="flex flex-col justify-end">
           <span className="text-xs uppercase tracking-wide text-[rgb(var(--c-text-muted))]">

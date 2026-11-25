@@ -46,6 +46,9 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
   '/hrms/designation-levels': 'designation-level-list',
   '/hrms/designation-levels/create': 'designation-level-form',
   '/hrms/designation-levels/edit/:id': 'designation-level-form',
+  '/hrms/departments': 'department-list',
+  '/hrms/departments/create': 'department-form',
+  '/hrms/departments/edit/:id': 'department-form',
 
   // HRM attendance
   '/hrms/attendance/setup': 'attendance-setup',

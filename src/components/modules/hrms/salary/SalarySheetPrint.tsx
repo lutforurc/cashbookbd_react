@@ -20,6 +20,8 @@ type EmployeeHistory = {
   designation_name?: string;
   /** The designation's Bangla name, where the branch has one. */
   designation_name_local?: string;
+  /** The worker's card number, frozen with the sheet. */
+  card_no?: string;
   month_days?: number | string;
   working_days?: number | string;
   monthly_basic_salary?: number | string;
@@ -185,6 +187,183 @@ const resolveMonthlyBasicSalary = (row: EmployeeRow, history: EmployeeHistory, m
 };
 
 /* =======================
+   The sample-style sheet (pay-head sheets)
+======================= */
+
+const fmtDate = (value?: string | null) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ''));
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(value || '');
+};
+const num = (value: any) => Number(value) || 0;
+const show = (value: any) => thousandSeparator(num(value));
+
+/** Paid from attendance, so not part of the monthly wage block. */
+const NOT_IN_WAGE = new Set(['overtime', 'attendance_bonus']);
+
+/**
+ * The salary sheet laid out like the owner's sample: basic information, the
+ * monthly wage one column per pay head, the month's days, attendance and
+ * overtime with each leave type, earnings, deductions, net payable and a
+ * signature box. Read only from what the sheet froze when it was generated,
+ * so a reprint never changes; an older sheet lacks the new fields and shows 0.
+ */
+const DetailedTable = ({ pageRows, allRows, isLastPage, fs }: {
+  pageRows: EmployeeRow[];
+  allRows: EmployeeRow[];
+  isLastPage: boolean;
+  fs: number;
+}) => {
+  const local = i18n.language !== 'en';
+  const histories = allRows.map((row) => getHistory(row.history) as any);
+  const amountOf = (row: EmployeeRow, code: string) =>
+    num((row.components || []).find((line) => line.component_code === code)?.amount);
+
+  // Same columns on every page: first-seen order over the whole sheet.
+  const wageHeads: { code: string; name: string }[] = [];
+  allRows.forEach((row, i) => {
+    Object.keys(histories[i]?.entitlements || {}).forEach((code) => {
+      if (NOT_IN_WAGE.has(code) || wageHeads.some((h) => h.code === code)) return;
+      const line = (row.components || []).find((l) => l.component_code === code);
+      wageHeads.push({ code, name: (local && line?.component_name_local) || line?.component_name || code });
+    });
+  });
+  const leaveTypes: string[] = [];
+  histories.forEach((h) =>
+    Object.keys(h?.day_counts?.leave_by_type || {}).forEach((type) => {
+      if (!leaveTypes.includes(type)) leaveTypes.push(type);
+    }),
+  );
+
+  const th: React.CSSProperties = { fontSize: fs, textAlign: 'center', verticalAlign: 'middle', padding: 2 };
+  const vth: React.CSSProperties = { ...th, writingMode: 'vertical-rl', transform: 'rotate(180deg)', whiteSpace: 'nowrap', height: 90 };
+  const td: React.CSSProperties = { fontSize: fs, textAlign: 'center', verticalAlign: 'middle', padding: 2, height: 40 };
+  const tdr: React.CSSProperties = { ...td, textAlign: 'right' };
+
+  const wageTotal = (h: any) => wageHeads.reduce((s, head) => s + num(h?.entitlements?.[head.code]), 0);
+  const presentPay = (row: EmployeeRow) =>
+    num(row.gross_salary) - amountOf(row, 'overtime') - amountOf(row, 'attendance_bonus');
+  const total = (pick: (row: EmployeeRow) => number) => show(sum(allRows.map(pick)));
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th colSpan={7} style={th}>{rl('Basic Information')}</th>
+          <th colSpan={wageHeads.length + 1} style={th}>{rl('Salary Information')}</th>
+          <th colSpan={5} style={th}>{rl('Month')}</th>
+          <th colSpan={leaveTypes.length + 5} style={th}>{rl('Attendance and Overtime')}</th>
+          <th colSpan={2} style={th}>{rl('Total Salary')}</th>
+          <th rowSpan={2} style={vth}>{rl('Total Earnings')}</th>
+          <th rowSpan={2} style={vth}>{rl('Absence Deduction')}</th>
+          <th colSpan={3} style={th}>{rl('Deduction')}</th>
+          <th rowSpan={2} style={vth}>{rl('Net Payable Wage')}</th>
+          <th rowSpan={2} style={{ ...th, width: 80 }}>{rl('Signature')}</th>
+        </tr>
+        <tr>
+          <th style={th}>{rl('Sl. No.')}</th>
+          <th style={th}>{rl('Name')}</th>
+          <th style={th}>{rl('Card No')}</th>
+          <th style={th}>{rl('Designation')}</th>
+          <th style={vth}>{rl('Grade')}</th>
+          <th style={vth}>{rl('Joining Date')}</th>
+          <th style={vth}>{rl('Date of Birth')}</th>
+          {wageHeads.map((head) => <th key={head.code} style={vth}>{head.name}</th>)}
+          <th style={vth}>{rl('Total Salary')}</th>
+          <th style={vth}>{rl('Month Days')}</th>
+          <th style={vth}>{rl('Working Day')}</th>
+          <th style={vth}>{rl('Weekly Holiday')}</th>
+          <th style={vth}>{rl('Festival Holiday')}</th>
+          <th style={vth}>{rl('Present Days')}</th>
+          {leaveTypes.map((type) => <th key={type} style={vth}>{rl(type)}</th>)}
+          <th style={vth}>{rl('Absent Days')}</th>
+          <th style={vth}>{rl('Late Days')}</th>
+          <th style={vth}>{rl('OT Hours')}</th>
+          <th style={vth}>{rl('OT Rate')}</th>
+          <th style={vth}>{rl('Attendance Bonus')}</th>
+          <th style={vth}>{rl('OT Amount')}</th>
+          <th style={vth}>{rl('Present Salary')}</th>
+          <th style={vth}>{rl('Advance')}</th>
+          <th style={vth}>{rl('Revenue Stamp')}</th>
+          <th style={vth}>{rl('Others')}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {pageRows.map((row, idx) => {
+          const h = getHistory(row.history) as any;
+          const days = h.day_counts || {};
+          return (
+            <tr key={idx}>
+              <td style={td}>{h.serial_no ?? idx + 1}</td>
+              <td style={{ ...td, textAlign: 'left' }}>{(local && (row as any).employee?.name_local) || h.name || '-'}</td>
+              <td style={td}>{h.card_no || ''}</td>
+              <td style={{ ...td, textAlign: 'left' }}>{(local && h.designation_name_local) || h.designation_name || ''}</td>
+              <td style={td}>{h.grade || ''}</td>
+              <td style={{ ...td, whiteSpace: 'nowrap' }}>{fmtDate(h.joining_date)}</td>
+              <td style={{ ...td, whiteSpace: 'nowrap' }}>{fmtDate(h.date_of_birth)}</td>
+              {wageHeads.map((head) => <td key={head.code} style={tdr}>{show(h.entitlements?.[head.code])}</td>)}
+              <td style={tdr}>{show(wageTotal(h))}</td>
+              <td style={td}>{num(h.month_days || row.month_days)}</td>
+              <td style={td}>{num(h.working_days)}</td>
+              <td style={td}>{num(days.weekly_holiday)}</td>
+              <td style={td}>{num(days.holiday)}</td>
+              <td style={td}>{num(days.present)}</td>
+              {leaveTypes.map((type) => <td key={type} style={td}>{num(days.leave_by_type?.[type])}</td>)}
+              <td style={td}>{num(days.absent)}</td>
+              <td style={td}>{num(h.late_count)}</td>
+              <td style={td}>{Math.round((num(h.overtime_minutes) / 60) * 10) / 10}</td>
+              <td style={td}>{num(h.ot_rate)}</td>
+              <td style={tdr}>{show(amountOf(row, 'attendance_bonus'))}</td>
+              <td style={tdr}>{show(amountOf(row, 'overtime'))}</td>
+              <td style={tdr}>{show(presentPay(row))}</td>
+              <td style={tdr}>{show(row.gross_salary)}</td>
+              <td style={tdr}>{show(row.attendance_deduction_amount)}</td>
+              <td style={tdr}>{show(row.loan_deduction)}</td>
+              <td style={tdr}>{show(amountOf(row, 'revenue_stamp'))}</td>
+              <td style={tdr}>{show(amountOf(row, 'other_deduction'))}</td>
+              <td style={{ ...tdr, fontWeight: 700 }}>{show(row.net_salary)}</td>
+              <td style={td} />
+            </tr>
+          );
+        })}
+        {isLastPage && (
+          <tr style={{ fontWeight: 700, background: '#e5e5e5' }}>
+            <td colSpan={7} style={tdr}>{rl('Grand Total')}</td>
+            {wageHeads.map((head) => (
+              <td key={head.code} style={tdr}>{show(sum(histories.map((h) => num(h?.entitlements?.[head.code]))))}</td>
+            ))}
+            <td style={tdr}>{show(sum(histories.map(wageTotal)))}</td>
+            <td colSpan={leaveTypes.length + 9} style={td} />
+            <td style={tdr}>{total((r) => amountOf(r, 'attendance_bonus'))}</td>
+            <td style={tdr}>{total((r) => amountOf(r, 'overtime'))}</td>
+            <td style={tdr}>{total(presentPay)}</td>
+            <td style={tdr}>{total((r) => num(r.gross_salary))}</td>
+            <td style={tdr}>{total((r) => num(r.attendance_deduction_amount))}</td>
+            <td style={tdr}>{total((r) => num(r.loan_deduction))}</td>
+            <td style={tdr}>{total((r) => amountOf(r, 'revenue_stamp'))}</td>
+            <td style={tdr}>{total((r) => amountOf(r, 'other_deduction'))}</td>
+            <td style={tdr}>{total((r) => num(r.net_salary))}</td>
+            <td style={td} />
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
+};
+
+/** The six sign-off boxes at the foot of the sample. */
+const SIGNATURES = ['Prepared By', 'Accounts Department', 'Admin Department', 'HR Department', 'GM (Operations)', 'Approved By'];
+
+const SignatureRow = () => (
+  <div style={{ display: 'flex', gap: 16, marginTop: 48 }}>
+    {SIGNATURES.map((label) => (
+      <div key={label} style={{ flex: 1, textAlign: 'center', borderTop: '1px solid #000', paddingTop: 4, fontSize: 12 }}>
+        {rl(label)}
+      </div>
+    ))}
+  </div>
+);
+
+/* =======================
    Component
 ======================= */
 
@@ -240,6 +419,10 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
 
     const amountOf = (row: EmployeeRow, code: string) =>
       Number((row.components || []).find((line) => line.component_code === code)?.amount ?? 0);
+
+    /** The revenue stamp the calculator took off; its own column when any row has one. */
+    const stampOf = (row: EmployeeRow) => amountOf(row, 'revenue_stamp');
+    const hasStamp = safeRows.some((row) => stampOf(row) > 0);
 
     /** A pay-head sheet draws one column per head; the old sheet keeps its own. */
     const hasComponentColumns = earningColumns.length > 0;
@@ -353,6 +536,12 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
               </div>
 
               {/* ===== Table ===== */}
+              {hasComponentColumns ? (
+                <>
+                  <DetailedTable pageRows={pageRows} allRows={safeRows} isLastPage={isLastPage} fs={fs} />
+                  {isLastPage && <SignatureRow />}
+                </>
+              ) : (
               <table>
                 <thead>
                   {hasComponentColumns ? (
@@ -362,6 +551,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                     <tr>
                       <th style={{ fontSize: fs }}>SL</th>
                       <th className='text-left' style={{ fontSize: fs }}>{rl('Employee Name')}</th>
+                      <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Card No')}</th>
                       <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>{rl('M. Days')}</th>
                       <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>{rl('W. Days')}</th>
                       {earningColumns.map((column) => (
@@ -370,6 +560,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                       <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Total')}</th>
                       <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Loan')}</th>
                       <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Att. Ded')}</th>
+                      {hasStamp ? <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Revenue Stamp')}</th> : null}
                       <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Net Salary')}</th>
                       <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Payment')}</th>
                       <th style={{ fontSize: fs }}>{rl('Signature')}</th>
@@ -378,6 +569,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                     <tr>
                       <th style={{ fontSize: fs }}>SL</th>
                       <th className='text-left' style={{ fontSize: fs }}>{rl('Employee Name')}</th>
+                      <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('Card No')}</th>
                       <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>{rl('M. Days')}</th>
                       <th style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60, lineHeight: 1.1 }}>{rl('W. Days')}</th>
                       <th style={{ fontSize: fs, textAlign: 'center' }}>{rl('M. Basic')}</th>
@@ -414,6 +606,8 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                             {(i18n.language !== 'en' && h.designation_name_local) || h.designation_name || '-'}
                           </span>
                         </td>
+                        {/* Frozen with the sheet; an older sheet has none. */}
+                        <td style={{ fontSize: fs, textAlign: 'center' }}>{h.card_no || ''}</td>
                         <td style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60 }}>{monthDays}</td>
                         <td style={{ fontSize: fs, textAlign: 'center', width: 60, maxWidth: 60 }}>{h.working_days || ''}</td>
                         {hasComponentColumns ? (
@@ -455,6 +649,9 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         >
                           {thousandSeparator(row.attendance_deduction_amount ?? 0)}
                         </td>
+                        {hasStamp ? (
+                          <td style={{ fontSize: fs, textAlign: 'right' }}>{thousandSeparator(stampOf(row))}</td>
+                        ) : null}
                         <td style={{ fontSize: fs, textAlign: 'right', fontWeight: 600 }}>
                           {thousandSeparator(row.net_salary ?? 0)}
                         </td>
@@ -479,7 +676,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                   {/* ===== Totals ===== */}
                   {!isLastPage && (
                     <tr style={{ fontSize: fs, fontWeight: 600, background: '#f3f3f3' }}>
-                      <td colSpan={4}>Subtotal (Page {pageIndex + 1})</td>
+                      <td colSpan={5}>Subtotal (Page {pageIndex + 1})</td>
                       {hasComponentColumns ? (
                         <>
                           {/* One subtotal per pay head, then the page's gross. */}
@@ -500,6 +697,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                       )}
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageLoan)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAttendanceDeduction)}</td>
+                          {hasStamp ? <td style={{ textAlign: 'right' }}>{thousandSeparator(sum(pageRows.map(stampOf)))}</td> : null}
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pageNet)}</td>
                       <td style={{ textAlign: 'right' }}>{thousandSeparator(pagePayment)}</td>
                       <td />
@@ -511,7 +709,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                       {/* ✅ Page Total শুধু multiple pages হলে */}
                       {hasMultiplePages && (
                         <tr style={{ fontSize: fs, fontWeight: 600, background: '#f3f3f3' }}>
-                          <td colSpan={4}>{rl('Page Total')}</td>
+                          <td colSpan={5}>{rl('Page Total')}</td>
                           {hasComponentColumns ? (
                             <>
                               {earningColumns.map((column) => (
@@ -531,13 +729,14 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                           )}
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageLoan)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageAttendanceDeduction)}</td>
+                          {hasStamp ? <td style={{ textAlign: 'right' }}>{thousandSeparator(sum(pageRows.map(stampOf)))}</td> : null}
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pageNet)}</td>
                           <td style={{ textAlign: 'right' }}>{thousandSeparator(pagePayment)}</td>
                           <td></td>
                         </tr>
                       )}
                       <tr style={{ fontSize: fs, fontWeight: 700, background: '#e5e5e5' }}>
-                        <td colSpan={4}>{rl('Grand Total')}</td>
+                        <td colSpan={5}>{rl('Grand Total')}</td>
                         {hasComponentColumns ? (
                           <>
                             {earningColumns.map((column) => (
@@ -557,6 +756,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                         )}
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandLoan)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandAttendanceDeduction)}</td>
+                        {hasStamp ? <td style={{ textAlign: 'right' }}>{thousandSeparator(sum(safeRows.map(stampOf)))}</td> : null}
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandNet)}</td>
                         <td style={{ textAlign: 'right' }}>{thousandSeparator(grandPayment)}</td>
                         <td></td>
@@ -565,6 +765,7 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                   )}
                 </tbody>
               </table>
+              )}
 
               {!isLastPage && <div className="page-break" />}
             </React.Fragment>
