@@ -58,6 +58,7 @@ export const DESIGNATION_TABS: RouteTab[] = [
   { label: 'Designations', path: routes.hrms_designation_list, permission: 'hrm.designation.view', forms: true },
   { label: 'Designation Levels', path: routes.hrms_designation_level_list, permission: 'hrm.designation.level.view', forms: true },
   { label: 'Departments', path: routes.hrms_department_list, permission: 'hrm.department.view', forms: true },
+  { label: 'Grades', path: routes.hrms_grade_list, permission: 'hrm.grade.view', forms: true },
 ];
 
 // ---- Admin

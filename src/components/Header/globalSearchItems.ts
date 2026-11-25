@@ -151,6 +151,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Employees', path: routes.hrms_employee_list, group: 'HRM', permissions: ['employee.view'] },
   { title: 'Designation Levels', path: routes.hrms_designation_level_list, group: 'HRM', permissions: ['hrm.designation.level.view'] },
   { title: 'Departments', path: routes.hrms_department_list, group: 'HRM', permissions: ['hrm.department.view'] },
+  { title: 'Grades', path: routes.hrms_grade_list, group: 'HRM', keywords: ['pay grade', 'pay scale'], permissions: ['hrm.grade.view'] },
   { title: 'Designations', path: routes.hrms_designation_list, group: 'HRM', keywords: ['structure', 'organization setup', 'designation level', 'department'], permissions: ['hrm.designation.view'] },
   { title: 'Manual Attendance', path: routes.hrms_attendance_entries, group: 'HRM', keywords: ['attendance entry in out'], permissions: ['hrm.attendance.view'] },
   { title: 'Attendance Report', path: routes.hrms_attendance_report, group: 'HRM', keywords: ['present absent attendance summary'], permissions: ['hrm.attendance.report.view'] },

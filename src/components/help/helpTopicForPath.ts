@@ -49,6 +49,9 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
   '/hrms/departments': 'department-list',
   '/hrms/departments/create': 'department-form',
   '/hrms/departments/edit/:id': 'department-form',
+  '/hrms/grades': 'grade-list',
+  '/hrms/grades/create': 'grade-form',
+  '/hrms/grades/edit/:id': 'grade-form',
 
   // HRM attendance
   '/hrms/attendance/setup': 'attendance-setup',

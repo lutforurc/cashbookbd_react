@@ -63,6 +63,7 @@ class EmployeeFormModel {
       nid: '',
       card_no: '',
       department_id: '',
+      grade_id: '',
       mobile: '',
       date_of_birth: '',
       joning_dt: '',
@@ -156,6 +157,7 @@ const EmployeeEdit = ({ user }: any) => {
       nid: emp.nid,
       card_no: emp.card_no ?? '',
       department_id: emp.department_id ?? '',
+      grade_id: emp.grade_id ?? '',
       mobile: emp.mobile,
       date_of_birth: dobDate ? dayjs(dobDate).format('DD/MM/YYYY') : '',
       joning_dt: joinDate ? dayjs(joinDate).format('DD/MM/YYYY') : '',
@@ -411,6 +413,22 @@ const EmployeeEdit = ({ user }: any) => {
               data={[
                 { id: '', name: t('department.none') },
                 ...(employeeState?.employeeSettings?.data?.data?.departments || []).map((d: any) => ({
+                  id: d.id,
+                  name: (i18n.language !== 'en' && d.name_local) || d.name,
+                })),
+              ]}
+            />
+            {/* Optional: an employee may sit in no grade. */}
+            <DropdownCommon
+              id="grade_id"
+              name="grade_id"
+              label={t('grade.selectLabel')}
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.grade_id?.toString() ?? ''}
+              data={[
+                { id: '', name: t('grade.none') },
+                ...(employeeState?.employeeSettings?.data?.data?.grades || []).map((d: any) => ({
                   id: d.id,
                   name: (i18n.language !== 'en' && d.name_local) || d.name,
                 })),

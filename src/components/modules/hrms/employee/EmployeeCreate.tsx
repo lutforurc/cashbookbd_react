@@ -53,6 +53,7 @@ class EmployeeFormModel {
       nid: '',
       card_no: '',
       department_id: '',
+      grade_id: '',
       mobile: '',
       dob: '',
       joining_date: '',
@@ -236,6 +237,7 @@ const EmployeeCreate = ({ user }: any) => {
       nid: formData.nid,
       card_no: formData.card_no || null,
       department_id: formData.department_id || null,
+      grade_id: formData.grade_id || null,
       designation: formData.designation,
       qualification: formData.qualification,
       date_of_birth: formData.dob,
@@ -425,6 +427,22 @@ const EmployeeCreate = ({ user }: any) => {
               data={[
                 { id: '', name: t('department.none') },
                 ...(employeeSettings?.employeeSettings?.data?.data?.departments || []).map((d: any) => ({
+                  id: d.id,
+                  name: (i18n.language !== 'en' && d.name_local) || d.name,
+                })),
+              ]}
+            />
+            {/* Optional: an employee may sit in no grade. */}
+            <DropdownCommon
+              id="grade_id"
+              name="grade_id"
+              label={t('grade.selectLabel')}
+              onChange={handleOnSelectChange}
+              className="bg-transparent"
+              value={formData.grade_id?.toString() ?? ''}
+              data={[
+                { id: '', name: t('grade.none') },
+                ...(employeeSettings?.employeeSettings?.data?.data?.grades || []).map((d: any) => ({
                   id: d.id,
                   name: (i18n.language !== 'en' && d.name_local) || d.name,
                 })),

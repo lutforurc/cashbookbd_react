@@ -285,6 +285,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     '/hrms/employees',
     routes.hrms_designation_level_list,
     routes.hrms_department_list,
+    routes.hrms_grade_list,
     routes.hrms_designation_list,
     routes.hrms_attendance_entries,
     routes.hrms_attendance_report,

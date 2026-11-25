@@ -147,6 +147,8 @@ import DesignationLevels from './components/modules/hrms/designation-level/Desig
 import AddDesignationLevel from './components/modules/hrms/designation-level/AddDesignationLevel';
 import Departments from './components/modules/hrms/department/Departments';
 import AddDepartment from './components/modules/hrms/department/AddDepartment';
+import Grades from './components/modules/hrms/grade/Grades';
+import AddGrade from './components/modules/hrms/grade/AddGrade';
 import SalaryComponents from './components/modules/hrms/salary-component/SalaryComponents';
 import SalaryComponentForm from './components/modules/hrms/salary-component/SalaryComponentForm';
 import SalaryStructures from './components/modules/hrms/salary-structure/SalaryStructures';
@@ -1744,6 +1746,9 @@ function App() {
                 <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.department.view']} loading={permissionsLoading} />}>
                   <Route path={routes.hrms_department_list} element={<Departments />} />
                 </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.grade.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.hrms_grade_list} element={<Grades />} />
+                </Route>
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.designation.level.view']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_designation_level_create} element={<AddDesignationLevel />} />
@@ -1752,6 +1757,10 @@ function App() {
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.department.view']} loading={permissionsLoading} />}>
                 <Route path={routes.hrms_department_create} element={<AddDepartment />} />
                 <Route path={routes.hrms_department_edit} element={<AddDepartment />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['hrm.grade.view']} loading={permissionsLoading} />}>
+                <Route path={routes.hrms_grade_create} element={<AddGrade />} />
+                <Route path={routes.hrms_grade_edit} element={<AddGrade />} />
               </Route>
               {/* Salary Setup: the two lists as tabs; their New/Edit forms stay full-page. */}
               <Route element={<RouteTabs tabs={SALARY_SETUP_TABS} />}>

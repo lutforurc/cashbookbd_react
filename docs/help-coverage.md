@@ -131,6 +131,9 @@
 | hrms_department_list | HRM → Structure → Departments | `/hrms/departments` | `department-list` | done |
 | hrms_department_create | HRM → Structure → Departments → New Department | `/hrms/departments/create` | `department-form` | done |
 | hrms_department_edit | HRM → Structure → Departments → Edit | `/hrms/departments/edit/:id` | `department-form` | done |
+| hrms_grade_list | HRM → Structure → Grades | `/hrms/grades` | `grade-list` | done |
+| hrms_grade_create | HRM → Structure → Grades → New Grade | `/hrms/grades/create` | `grade-form` | done |
+| hrms_grade_edit | HRM → Structure → Grades → Edit | `/hrms/grades/edit/:id` | `grade-form` | done |
 | hrms_salary_component_list | HRM → Salary → Salary Components | `/hrms/salary-components` | `salary-components` | done |
 | hrms_salary_component_create | HRM → Salary → Salary Components → New Pay Head | `/hrms/salary-components/create` | `salary-component-form` | done |
 | hrms_salary_component_edit | HRM → Salary → Salary Components → New Pay Head | `/hrms/salary-components/edit/:id` | `salary-component-form` | done |

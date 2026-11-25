@@ -186,6 +186,7 @@ export const MENU_PERMISSIONS = {
     'hrm.designation.level.view',
     'hrm.designation.view',
     'hrm.department.view',
+    'hrm.grade.view',
     'hrm.attendance.view',
     'hrm.attendance.report.view',
     'hrm.attendance.audit.view',

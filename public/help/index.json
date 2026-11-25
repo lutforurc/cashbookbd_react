@@ -116,6 +116,8 @@
         "designation-level-form",
         "department-list",
         "department-form",
+        "grade-list",
+        "grade-form",
         "salary-components",
         "salary-component-form",
         "salary-structures",

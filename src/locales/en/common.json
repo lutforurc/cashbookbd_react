@@ -329,5 +329,33 @@
     "selectLabel": "Department (optional)",
     "none": "No department",
     "column": "Department"
+  },
+  "grade": {
+    "listTitle": "Grade List",
+    "addTitle": "Add Grade",
+    "editTitle": "Edit Grade",
+    "sl": "Sl",
+    "name": "Grade Name",
+    "namePlaceholder": "Enter grade name",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter short description",
+    "employees": "Employees",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "action": "Action",
+    "edit": "Edit",
+    "search": "Search",
+    "new": "New Grade",
+    "update": "Update",
+    "back": "Back",
+    "saved": "Grade saved.",
+    "saveFailed": "Grade could not be saved.",
+    "deleted": "Grade deleted.",
+    "deleteFailed": "Grade could not be deleted.",
+    "nameRequired": "Please enter the grade name.",
+    "selectLabel": "Grade (optional)",
+    "none": "No grade",
+    "column": "Grade"
   }
 }

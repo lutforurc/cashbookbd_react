@@ -266,6 +266,13 @@ const Employees = ({ user }: any) => {
       ),
     },
     {
+      key: 'grade_name',
+      header: i18n.t('grade.column', { ns: 'common' }),
+      render: (row: any) => (
+        <span>{(i18n.language !== 'en' && row.grade_name_local) || row.grade_name || '-'}</span>
+      ),
+    },
+    {
       key: 'mobile',
       header: 'Mobile',
       render: (row: any) => (
