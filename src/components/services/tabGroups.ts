@@ -268,3 +268,65 @@ export const FIN_FINAL_ACCOUNTS_TABS: RouteTab[] = [
   { label: 'Cash Flow Statement', path: routes.cash_flow_statement, permission: 'cash.flow.statement' },
   { label: 'General Ledger', path: routes.general_ledger, permission: 'general.ledger' },
 ];
+
+// ---- Real Estate
+// Four groups: the setup lists, the selling side, the project's day-to-day
+// entries, then the project reports. Add/edit forms stay full-page.
+export const RE_SETUP_TABS: RouteTab[] = [
+  { label: 'Location', path: routes.real_estate_area_list, permission: 'real.estate.area.view' },
+  { label: 'Projects', path: routes.real_estate_project_list, permission: 'real.estate.project.view' },
+  { label: 'Buildings', path: routes.real_estate_buildings_list, permission: 'real.estate.building.view' },
+  { label: 'Floors', path: routes.real_estate_floor_list, permission: 'real.estate.floor.view' },
+  { label: 'Units', path: routes.real_estate_floor_unit_list, permission: 'real.estate.unit.view' },
+  { label: 'Charges', path: routes.real_estate_unit_types_list, permission: 'real.estate.charge.view' },
+  { label: 'Layout', path: routes.real_estate_flat_layout, permission: 'real.estate.layout.view' },
+];
+
+export const RE_SALES_TABS: RouteTab[] = [
+  { label: 'Unit Sales', path: routes.real_estate_unit_sales, permission: 'real.estate.unit.sale.view' },
+  { label: 'Sold Units', path: routes.real_estate_sold_units, permission: 'real.estate.sold.unit.view' },
+  { label: 'Installment Create', path: routes.real_estate_installment_create, permission: 'real.estate.installment.create' },
+  { label: 'Check Register', path: routes.unit_payment_list, permission: 'check.register.view' },
+  { label: 'Sales Summary', path: routes.report_sales_summary, permission: 'real.estate.sales.summary' },
+];
+
+export const RE_PROJECT_ENTRY_TABS: RouteTab[] = [
+  { label: 'Project Expense', path: routes.real_estate_project_expense, permission: 'real.estate.project.expense.view' },
+  { label: 'Project Income', path: routes.real_estate_project_income, permission: 'real.estate.project.income.view' },
+  { label: 'Project Purchase', path: routes.real_estate_project_purchase, permission: 'real.estate.project.purchase.view' },
+  { label: 'Project Labour', path: routes.real_estate_project_labour, permission: 'real.estate.project.labour.view' },
+];
+
+export const RE_PROJECT_REPORT_TABS: RouteTab[] = [
+  { label: 'Project Summary', path: routes.real_estate_project_summary_report, permission: 'real.estate.project.summary.view' },
+  { label: 'Project Cost', path: routes.real_estate_project_cost_report, permission: 'real.estate.project.cost.view' },
+  { label: 'Project Income Report', path: routes.real_estate_project_income_report, permission: 'real.estate.project.income.report.view' },
+];
+
+// ---- Branch Transfer
+// Four groups: the challans, their reports, stock going out, stock coming in.
+export const BT_TRANSFER_TABS: RouteTab[] = [
+  { label: 'Branch Issue', path: routes.branch_transfer, permission: 'branch.issue.create' },
+  { label: 'Branch Receive', path: routes.branch_received, permission: 'branch.received.create' },
+  { label: 'Transfer List', path: routes.report_branch_transfer_list, permission: 'branch.issue.list.view' },
+  { label: 'Receive List', path: routes.report_branch_receive_list, permission: 'branch.received.list.view' },
+];
+
+export const BT_REPORT_TABS: RouteTab[] = [
+  { label: 'Issue Report', path: routes.report_branch_transfer, permission: 'branch.transfer.create' },
+  { label: 'Receive Report', path: routes.report_branch_receive, permission: 'branch.received.report.view' },
+  { label: 'Branch Stock', path: routes.report_branch_stock, permission: 'branch.stock.view' },
+];
+
+export const BT_PRODUCT_OUT_TABS: RouteTab[] = [
+  { label: 'Material Issue', path: routes.material_issue, permission: 'material.issue.create' },
+  { label: 'Product Out', path: routes.product_out, permission: 'product.out.create' },
+  { label: 'Write-off Register', path: routes.product_out_report, permission: 'product.out.report.view' },
+  { label: 'Out Reasons', path: routes.product_out_reason, permission: 'product.out.reason.manage' },
+];
+
+export const BT_PRODUCT_IN_TABS: RouteTab[] = [
+  { label: 'Product In', path: routes.product_in, permission: 'product.in.create' },
+  { label: 'Stock In Register', path: routes.product_in_report, permission: 'product.in.report.view' },
+  { label: 'In Reasons', path: routes.product_in_reason, permission: 'product.in.reason.manage' },
+];

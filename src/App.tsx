@@ -191,7 +191,7 @@ import AttendanceSetup from './components/modules/hrms/attendance/AttendanceSetu
 import AttendanceEntries from './components/modules/hrms/attendance/AttendanceEntries';
 import AttendanceReport from './components/modules/hrms/attendance/AttendanceReport';
 import RouteTabs from './components/utils/others/RouteTabs';
-import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, DAILY_CONTROL_TABS, ORDER_TABS, UPLOAD_TABS, COMPANY_BRANCH_TABS, USER_TABS, ROLE_TABS, ADMIN_SETTINGS_TABS, PLATFORM_TABS, SMS_TABS, PRODUCT_TABS, CLASSIFICATION_TABS, STOCK_ALERT_TABS, VR_CORRECTION_TABS, VR_AUDIT_TABS, PARTY_TABS, COA_TABS, REPORT_CASH_BANK_TABS, REPORT_LEDGER_TABS, REPORT_SALES_TABS, REPORT_STOCK_TABS, REPORT_INSTALLMENT_TABS, FIN_PROFIT_TABS, FIN_PERIODIC_TABS, FIN_TRIAL_BALANCE_TABS, FIN_FINAL_ACCOUNTS_TABS } from './components/services/tabGroups';
+import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, DAILY_CONTROL_TABS, ORDER_TABS, UPLOAD_TABS, COMPANY_BRANCH_TABS, USER_TABS, ROLE_TABS, ADMIN_SETTINGS_TABS, PLATFORM_TABS, SMS_TABS, PRODUCT_TABS, CLASSIFICATION_TABS, STOCK_ALERT_TABS, VR_CORRECTION_TABS, VR_AUDIT_TABS, PARTY_TABS, COA_TABS, REPORT_CASH_BANK_TABS, REPORT_LEDGER_TABS, REPORT_SALES_TABS, REPORT_STOCK_TABS, REPORT_INSTALLMENT_TABS, FIN_PROFIT_TABS, FIN_PERIODIC_TABS, FIN_TRIAL_BALANCE_TABS, FIN_FINAL_ACCOUNTS_TABS, RE_SETUP_TABS, RE_SALES_TABS, RE_PROJECT_ENTRY_TABS, RE_PROJECT_REPORT_TABS, BT_TRANSFER_TABS, BT_REPORT_TABS, BT_PRODUCT_OUT_TABS, BT_PRODUCT_IN_TABS } from './components/services/tabGroups';
 import AttendanceAuditHistory from './components/modules/hrms/attendance/AttendanceAuditHistory';
 import AttendanceDevices from './components/modules/hrms/attendance/AttendanceDevices';
 import UnmatchedPunches from './components/modules/hrms/attendance/UnmatchedPunches';
@@ -667,7 +667,6 @@ function App() {
             </Route>
 
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['check.register.view']} loading={permissionsLoading} />}>
-              <Route path={routes.unit_payment_list} element={<UnitSalePaymentList />} />
               <Route path={routes.unit_payment_edit} element={<UnitSalePaymentEdit />} />
               <Route path={routes.unit_payment_entry} element={<UnitSalePaymentEntry />} />
             </Route>
@@ -1114,27 +1113,6 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['interbranch.transfer.view']} loading={permissionsLoading} />}>
               <Route path={routes.inter_branch} element={<InterBranchTransfers user={me} />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.issue.create']} loading={permissionsLoading} />}>
-              <Route path={routes.branch_transfer} element={<BranchTransfer />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['material.issue.create']} loading={permissionsLoading} />}>
-              <Route path={routes.material_issue} element={<MaterialIssue />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.create']} loading={permissionsLoading} />}>
-              <Route path={routes.product_out} element={<ProductOut />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.report.view']} loading={permissionsLoading} />}>
-              <Route path={routes.product_out_report} element={<ProductOutReport />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.reason.manage']} loading={permissionsLoading} />}>
-              <Route path={routes.product_out_reason} element={<ProductOutReason />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.create']} loading={permissionsLoading} />}>
-              <Route path={routes.product_in} element={<ProductIn />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.report.view']} loading={permissionsLoading} />}>
-              <Route path={routes.product_in_report} element={<ProductInReport />} />
-            </Route>
             {/* Production (Manufacturing). The screens are additionally GATED
                 BY THE BRANCH SERVER-SIDE -- the menu hides them off a
                 non-manufacturing branch, and the API refuses them there too
@@ -1157,11 +1135,57 @@ function App() {
               <Route path={routes.production_expiry} element={<ExpiryReport />} />
               <Route path={routes.production_costing} element={<BatchCosting />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.reason.manage']} loading={permissionsLoading} />}>
-              <Route path={routes.product_in_reason} element={<ProductInReason />} />
+
+            {/* Branch Transfer as four tab groups. */}
+            <Route element={<RouteTabs tabs={BT_TRANSFER_TABS} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.issue.create']} loading={permissionsLoading} />}>
+                <Route path={routes.branch_transfer} element={<BranchTransfer />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.create']} loading={permissionsLoading} />}>
+                <Route path={routes.branch_received} element={<WarehouseReceived />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.issue.list.view']} loading={permissionsLoading} />}>
+                <Route path={routes.report_branch_transfer_list} element={<BranchTransferListReport />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.list.view']} loading={permissionsLoading} />}>
+                <Route path={routes.report_branch_receive_list} element={<BranchReceiveListReport />} />
+              </Route>
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.create']} loading={permissionsLoading} />}>
-              <Route path={routes.branch_received} element={<WarehouseReceived />} />
+            <Route element={<RouteTabs tabs={BT_REPORT_TABS} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create']} loading={permissionsLoading} />}>
+                <Route path={routes.report_branch_transfer} element={<BranchTransferReport user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.report.view']} loading={permissionsLoading} />}>
+                <Route path={routes.report_branch_receive} element={<BranchReceiveReport user={me} />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.stock.view']} loading={permissionsLoading} />}>
+                <Route path={routes.report_branch_stock} element={<BranchStockReport user={me} />} />
+              </Route>
+            </Route>
+            <Route element={<RouteTabs tabs={BT_PRODUCT_OUT_TABS} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['material.issue.create']} loading={permissionsLoading} />}>
+                <Route path={routes.material_issue} element={<MaterialIssue />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.create']} loading={permissionsLoading} />}>
+                <Route path={routes.product_out} element={<ProductOut />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.report.view']} loading={permissionsLoading} />}>
+                <Route path={routes.product_out_report} element={<ProductOutReport />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.reason.manage']} loading={permissionsLoading} />}>
+                <Route path={routes.product_out_reason} element={<ProductOutReason />} />
+              </Route>
+            </Route>
+            <Route element={<RouteTabs tabs={BT_PRODUCT_IN_TABS} />}>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.create']} loading={permissionsLoading} />}>
+                <Route path={routes.product_in} element={<ProductIn />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.report.view']} loading={permissionsLoading} />}>
+                <Route path={routes.product_in_report} element={<ProductInReport />} />
+              </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.in.reason.manage']} loading={permissionsLoading} />}>
+                <Route path={routes.product_in_reason} element={<ProductInReason />} />
+              </Route>
             </Route>
 
             {/* Products */}
@@ -1318,32 +1342,6 @@ function App() {
               </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.stock.view']} loading={permissionsLoading} />}>
               <Route path={routes.report_closing_stock} element={<ClosingStockReport user={me} />} />
-            </Route>
-            {/* Its own permission, not product.stock.view -- that one is held by
-                almost everybody, so the report opened for people the menu had
-                already decided not to offer it to. */}
-            {/* The whole sales book of a project on one page -- its own
-                permission, not the module's: entering a sale and reading what
-                every other buyer paid are not the same trust. */}
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.sales.summary']} loading={permissionsLoading} />}>
-              <Route path={routes.report_sales_summary} element={<SalesSummaryReport />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.transfer.create']} loading={permissionsLoading} />}>
-              <Route path={routes.report_branch_transfer} element={<BranchTransferReport user={me} />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.report.view']} loading={permissionsLoading} />}>
-              <Route path={routes.report_branch_receive} element={<BranchReceiveReport user={me} />} />
-            </Route>
-            {/* The voucher lists, guarded as their entry forms are: whoever may
-                raise a challan may read back the ones already raised. */}
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.issue.list.view']} loading={permissionsLoading} />}>
-              <Route path={routes.report_branch_transfer_list} element={<BranchTransferListReport />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.received.list.view']} loading={permissionsLoading} />}>
-              <Route path={routes.report_branch_receive_list} element={<BranchReceiveListReport />} />
-            </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['branch.stock.view']} loading={permissionsLoading} />}>
-              <Route path={routes.report_branch_stock} element={<BranchStockReport user={me} />} />
             </Route>
 
             {/* Orders */}
@@ -1633,66 +1631,96 @@ function App() {
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.area.view']} loading={permissionsLoading} />}>
                 <Route path={routes.real_estate_area_add} element={<AreaAdd />} />
                 <Route path={`${routes.real_estate_area_edit}/:id`} element={<AreaAdd />} />
-                <Route path={routes.real_estate_area_list} element={<AreaList />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.view']} loading={permissionsLoading} />}>
                 <Route path={routes.real_estate_project_activities} element={<AddEditProject user={me} />} />
                 <Route path={`${routes.real_estate_project_edit}/:id`} element={<AddEditProject user={me} />} />
-                <Route path={routes.real_estate_project_list} element={<ProjectsList user={me} />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.building.view']} loading={permissionsLoading} />}>
                 <Route path={routes.real_estate_buildings} element={<AddEditBuilding />} />
                 <Route path={`${routes.real_estate_building_edit}/:id`} element={<AddEditBuilding />} />
-                <Route path={routes.real_estate_buildings_list} element={<BuildingList user={me} />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.floor.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_floor_list} element={<FloorList user={me} />} />
                 <Route path={routes.real_estate_add_building_floor} element={<AddEditFlat />} />
                 <Route path={`${routes.real_estate_floor_edit}/:id`} element={<AddEditFlat />} />
               </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.layout.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_flat_layout} element={<FlatLayout />} />
-              </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.unit.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_floor_unit_list} element={<BuildingUnitsList user={me} />} />
                 <Route path={routes.real_estate_add_floor_unit} element={<AddEditUnit />} />
                 <Route path={routes.real_estate_add_floor_unit_edit} element={<AddEditUnit />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.charge.view']} loading={permissionsLoading} />}>
                 <Route path={routes.real_estate_unit_types_create} element={<AddEditUnitChargeType />} />
                 <Route path={`${routes.real_estate_charge_type_edit}/:id`} element={<AddEditUnitChargeType />} />
-                <Route path={routes.real_estate_unit_types_list} element={<ChargeTypeList user={me} />} />
               </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.unit.sale.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_unit_sales} element={<UnitSalePage />} />
                 <Route path={routes.real_estate_unit_sale_edit} element={<UnitSalePage />} />
               </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.sold.unit.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_sold_units} element={<SoldUnitList />} />
+
+              {/* Real Estate as four tab groups; add/edit forms stay full-page above. */}
+              <Route element={<RouteTabs tabs={RE_SETUP_TABS} />}>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.area.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_area_list} element={<AreaList />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_project_list} element={<ProjectsList user={me} />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.building.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_buildings_list} element={<BuildingList user={me} />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.floor.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_floor_list} element={<FloorList user={me} />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.unit.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_floor_unit_list} element={<BuildingUnitsList user={me} />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.charge.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_unit_types_list} element={<ChargeTypeList user={me} />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.layout.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_flat_layout} element={<FlatLayout />} />
+                </Route>
               </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.installment.create']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_installment_create} element={<RealEstateInstallmentCreate />} />
+              <Route element={<RouteTabs tabs={RE_SALES_TABS} />}>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.unit.sale.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_unit_sales} element={<UnitSalePage />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.sold.unit.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_sold_units} element={<SoldUnitList />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.installment.create']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_installment_create} element={<RealEstateInstallmentCreate />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['check.register.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.unit_payment_list} element={<UnitSalePaymentList />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.sales.summary']} loading={permissionsLoading} />}>
+                  <Route path={routes.report_sales_summary} element={<SalesSummaryReport />} />
+                </Route>
               </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.expense.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_project_expense} element={<ProjectExpense />} />
+              <Route element={<RouteTabs tabs={RE_PROJECT_ENTRY_TABS} />}>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.expense.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_project_expense} element={<ProjectExpense />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.income.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_project_income} element={<ProjectIncome />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.purchase.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_project_purchase} element={<ProjectPurchase />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.labour.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_project_labour} element={<ProjectLabour />} />
+                </Route>
               </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.income.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_project_income} element={<ProjectIncome />} />
-              </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.purchase.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_project_purchase} element={<ProjectPurchase />} />
-              </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.labour.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_project_labour} element={<ProjectLabour />} />
-              </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.cost.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_project_cost_report} element={<ProjectCostReport user={me} />} />
-              </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.income.report.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_project_income_report} element={<ProjectIncomeReport user={me} />} />
-              </Route>
-              <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.summary.view']} loading={permissionsLoading} />}>
-                <Route path={routes.real_estate_project_summary_report} element={<ProjectSummaryReport user={me} />} />
+              <Route element={<RouteTabs tabs={RE_PROJECT_REPORT_TABS} />}>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.summary.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_project_summary_report} element={<ProjectSummaryReport user={me} />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.cost.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_project_cost_report} element={<ProjectCostReport user={me} />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.income.report.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_project_income_report} element={<ProjectIncomeReport user={me} />} />
+                </Route>
               </Route>
 
 

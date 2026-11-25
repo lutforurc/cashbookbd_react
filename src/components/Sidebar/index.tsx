@@ -97,21 +97,12 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'production_free_goods', title: "Free Goods" },
     { id: 'production_expiry', title: "Near Expiry" },
   ],
+  // Four tab groups, the way Financial Statement does it.
   'branch-transfer': [
-    { id: 'branch_transfer', title: "Branch Issue" },
-    { id: 'branch_received', title: "Branch Receive" },
-    { id: 'material_issue', title: "Material Issue" },
-    { id: 'product_out', title: "Product Out" },
-    { id: 'product_out_reason', title: "Out Reasons" },
-    { id: 'product_out_report', title: "Write-off Register" },
+    { id: 'branch_transfer', title: "Transfer" },
+    { id: 'report_branch_transfer', title: "Transfer Reports" },
+    { id: 'material_issue', title: "Product Out" },
     { id: 'product_in', title: "Product In" },
-    { id: 'product_in_reason', title: "In Reasons" },
-    { id: 'product_in_report', title: "Stock In Register" },
-    { id: 'report_branch_transfer_list', title: "Transfer List" },
-    { id: 'report_branch_receive_list', title: "Receive List" },
-    { id: 'report_branch_transfer', title: "Issue Report" },
-    { id: 'report_branch_receive', title: "Receive Report" },
-    { id: 'report_branch_stock', title: "Branch Stock" },
   ],
   'reports': [
     { id: 'reports/cashbook', title: "Cash & Bank" },
@@ -148,26 +139,12 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     { id: 'requisition_create', title: "Create" },
     { id: 'requisition_comparison', title: "Comparison" },
   ],
+  // Four tab groups, the way Financial Statement does it.
   'real-estate': [
-    { id: 'admin/check-register', title: "Check Register" },
-    { id: 'real-estate/area-list', title: "Location" },
-    { id: 'real_estate_project_list', title: "Projects" },
-    { id: 'real_estate_buildings_list', title: "Buildings" },
-    { id: 'real_estate_floor_list', title: "Floor List" },
-    { id: 'real_estate_floor_unit_list', title: "Unit List" },
-    { id: 'real_estate_unit_types_list', title: "Chareges" },
-    { id: 'real-estate/flat-layout', title: "Layout" },
-    { id: 'real-estate/unit-sales', title: "Unit Sales" },
-    { id: 'real_estate_sold_units', title: "Sold Units" },
-    { id: 'report_sales_summary', title: "Sales Summary" },
-    { id: 'real_estate_installment_create', title: "Installment Create" },
-    { id: 'real_estate_project_expense', title: "Project Expense" },
-    { id: 'real_estate_project_income', title: "Project Income" },
-    { id: 'real_estate_project_purchase', title: "Project Purchase" },
-    { id: 'real_estate_project_labour', title: "Project Labour" },
-    { id: 'real_estate_project_summary_report', title: "Project Summary" },
-    { id: 'real_estate_project_cost_report', title: "Project Cost Report" },
-    { id: 'real_estate_project_income_report', title: "Project Income Report" },
+    { id: 'real-estate/area-list', title: "Setup" },
+    { id: 'real-estate/unit-sales', title: "Sales" },
+    { id: 'real_estate_project_expense', title: "Project Entry" },
+    { id: 'real_estate_project_summary_report', title: "Project Reports" },
   ],
   'asset': [
     { id: 'asset_setup', title: "Assets" },
@@ -273,7 +250,7 @@ import {
 import { FaBluetooth, FaRegStar } from 'react-icons/fa6';
 import { hasPermission } from '../utils/permissionChecker';
 import { inTabGroup, tabsFor, useTabOrder } from '../utils/others/RouteTabs';
-import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, DAILY_CONTROL_TABS, ORDER_TABS, UPLOAD_TABS, COMPANY_BRANCH_TABS, USER_TABS, ROLE_TABS, ADMIN_SETTINGS_TABS, PLATFORM_TABS, SMS_TABS, PRODUCT_TABS, CLASSIFICATION_TABS, STOCK_ALERT_TABS, VR_CORRECTION_TABS, VR_AUDIT_TABS, PARTY_TABS, COA_TABS, REPORT_CASH_BANK_TABS, REPORT_LEDGER_TABS, REPORT_SALES_TABS, REPORT_STOCK_TABS, REPORT_INSTALLMENT_TABS, FIN_PROFIT_TABS, FIN_PERIODIC_TABS, FIN_TRIAL_BALANCE_TABS, FIN_FINAL_ACCOUNTS_TABS } from '../services/tabGroups';
+import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, DAILY_CONTROL_TABS, ORDER_TABS, UPLOAD_TABS, COMPANY_BRANCH_TABS, USER_TABS, ROLE_TABS, ADMIN_SETTINGS_TABS, PLATFORM_TABS, SMS_TABS, PRODUCT_TABS, CLASSIFICATION_TABS, STOCK_ALERT_TABS, VR_CORRECTION_TABS, VR_AUDIT_TABS, PARTY_TABS, COA_TABS, REPORT_CASH_BANK_TABS, REPORT_LEDGER_TABS, REPORT_SALES_TABS, REPORT_STOCK_TABS, REPORT_INSTALLMENT_TABS, FIN_PROFIT_TABS, FIN_PERIODIC_TABS, FIN_TRIAL_BALANCE_TABS, FIN_FINAL_ACCOUNTS_TABS, RE_SETUP_TABS, RE_SALES_TABS, RE_PROJECT_ENTRY_TABS, RE_PROJECT_REPORT_TABS, BT_TRANSFER_TABS, BT_REPORT_TABS, BT_PRODUCT_OUT_TABS, BT_PRODUCT_IN_TABS } from '../services/tabGroups';
 import { branchFormVariant, branchInvoiceVariant, separateEntriesShown, unifiedEntryShown } from '../utils/userFeatureSettings';
 import { useSelector } from 'react-redux';
 import './Sidebar.css';
@@ -1305,149 +1282,43 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               <span className="h-px min-w-0 flex-1 bg-stroke dark:bg-strokedark" />
                             </li>
                           ))}
-                          {/* Issue first, then receive, then what each looks
-                              like afterwards -- the order a consignment moves. */}
-                          {hasPermission(permissions, 'branch.issue.create') && (
+                          {tabsFor(BT_TRANSFER_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('branch-transfer', 'branch_transfer')}>
                               <NavLink
-                                to={routes.branch_transfer}
-                                className={subMenuLinkClass}
+                                to={tabsFor(sortTabs(BT_TRANSFER_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(BT_TRANSFER_TABS, pathname) })}
                               >
-                                Branch Issue
+                                Transfer
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'branch.received.create') && (
-                              <li style={subSlot('branch-transfer', 'branch_received')}>
-                                <NavLink
-                                  to={routes.branch_received}
-                                  className={subMenuLinkClass}
-                                >
-                                  Branch Receive
-                                </NavLink>
-                              </li>
-                            )}
-                          
-                          {/* The voucher lists, ahead of the product-wise
-                              reports: "which challans" is asked far oftener
-                              than "how much of each product". */}
-                          {hasPermission(permissions, 'branch.issue.list.view') && (
-                            <li style={subSlot('branch-transfer', 'report_branch_transfer_list')}>
-                              <NavLink
-                                to={routes.report_branch_transfer_list}
-                                className={subMenuLinkClass}
-                              >
-                                Transfer List
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'branch.received.list.view') && (
-                              <li style={subSlot('branch-transfer', 'report_branch_receive_list')}>
-                                <NavLink
-                                  to={routes.report_branch_receive_list}
-                                  className={subMenuLinkClass}
-                                >
-                                  Receive List
-                                </NavLink>
-                              </li>
-                            )}
-                          {hasPermission(permissions, 'branch.transfer.create') && (
+                          {tabsFor(BT_REPORT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('branch-transfer', 'report_branch_transfer')}>
                               <NavLink
-                                to={routes.report_branch_transfer}
-                                className={subMenuLinkClass}
+                                to={tabsFor(sortTabs(BT_REPORT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(BT_REPORT_TABS, pathname) })}
                               >
-                                Issue Report
+                                Transfer Reports
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'branch.received.report.view') && (
-                            <li style={subSlot('branch-transfer', 'report_branch_receive')}>
-                              <NavLink
-                                to={routes.report_branch_receive}
-                                className={subMenuLinkClass}
-                              >
-                                Receive Report
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'branch.stock.view') && (
-                            <li style={subSlot('branch-transfer', 'report_branch_stock')}>
-                              <NavLink
-                                to={routes.report_branch_stock}
-                                className={subMenuLinkClass}
-                              >
-                                Branch Stock
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'material.issue.create') && (
+                          {tabsFor(BT_PRODUCT_OUT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('branch-transfer', 'material_issue')}>
                               <NavLink
-                                to={routes.material_issue}
-                                className={subMenuLinkClass}
-                              >
-                                Material Issue
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.out.create') && (
-                            <li style={subSlot('branch-transfer', 'product_out')}>
-                              <NavLink
-                                to={routes.product_out}
-                                className={subMenuLinkClass}
+                                to={tabsFor(sortTabs(BT_PRODUCT_OUT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(BT_PRODUCT_OUT_TABS, pathname) })}
                               >
                                 Product Out
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'product.out.report.view') && (
-                            <li style={subSlot('branch-transfer', 'product_out_report')}>
-                              <NavLink
-                                to={routes.product_out_report}
-                                className={subMenuLinkClass}
-                              >
-                                Write-off Register
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.out.reason.manage') && (
-                            <li style={subSlot('branch-transfer', 'product_out_reason')}>
-                              <NavLink
-                                to={routes.product_out_reason}
-                                className={subMenuLinkClass}
-                              >
-                                Out Reasons
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.in.create') && (
+                          {tabsFor(BT_PRODUCT_IN_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                             <li style={subSlot('branch-transfer', 'product_in')}>
                               <NavLink
-                                to={routes.product_in}
-                                className={subMenuLinkClass}
+                                to={tabsFor(sortTabs(BT_PRODUCT_IN_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                className={() => subMenuLinkClass({ isActive: inTabGroup(BT_PRODUCT_IN_TABS, pathname) })}
                               >
                                 Product In
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.in.report.view') && (
-                            <li style={subSlot('branch-transfer', 'product_in_report')}>
-                              <NavLink
-                                to={routes.product_in_report}
-                                className={subMenuLinkClass}
-                              >
-                                Stock In Register
-                              </NavLink>
-                            </li>
-                          )}
-                          {hasPermission(permissions, 'product.in.reason.manage') && (
-                            <li style={subSlot('branch-transfer', 'product_in_reason')}>
-                              <NavLink
-                                to={routes.product_in_reason}
-                                className={subMenuLinkClass}
-                              >
-                                In Reasons
                               </NavLink>
                             </li>
                           )}
@@ -2217,198 +2088,43 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             </li>
                           ))}
 
-                            {hasPermission(permissions, 'check.register.view') && (
-                              <li style={subSlot('real-estate', 'admin/check-register')}>
+                            {tabsFor(RE_SETUP_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
+                              <li style={subSlot('real-estate', 'real-estate/area-list')}>
                                 <NavLink
-                                  // to="/admin/check-register"
-                                  to={routes.unit_payment_list}
-                                  className={subMenuLinkClass}
+                                  to={tabsFor(sortTabs(RE_SETUP_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                  className={() => subMenuLinkClass({ isActive: inTabGroup(RE_SETUP_TABS, pathname) })}
                                 >
-                                  Check Register
+                                  Setup
                                 </NavLink>
                               </li>
                             )}
-
-                            {hasPermission(permissions, 'real.estate.area.view') && (
-                            <li style={subSlot('real-estate', 'real-estate/area-list')}>
-                              <NavLink
-                                to="/real-estate/area-list"
-                                className={subMenuLinkClass}
-                              >
-                                Location
-                              </NavLink>
-                            </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.project.view') && (
-                              <li style={subSlot('real-estate', 'real_estate_project_list')}>
-                                <NavLink
-                                  to={routes.real_estate_project_list}
-                                  className={subMenuLinkClass}
-                                >
-                                  Projects
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.building.view') && (
-                              <li style={subSlot('real-estate', 'real_estate_buildings_list')}>
-                                <NavLink
-                                  to={routes.real_estate_buildings_list}
-                                  className={subMenuLinkClass}
-                                >
-                                  Buildings
-                                </NavLink>
-                              </li>
-                            )}
-
-                            {hasPermission(permissions, 'real.estate.floor.view') && (
-                              <li style={subSlot('real-estate', 'real_estate_floor_list')}>
-                                <NavLink
-                                  to={routes.real_estate_floor_list}
-                                  className={subMenuLinkClass}
-                                >
-                                  Floor List
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.unit.view') && (
-                              <li style={subSlot('real-estate', 'real_estate_floor_unit_list')}>
-                                <NavLink
-                                  to={routes.real_estate_floor_unit_list}
-                                  className={subMenuLinkClass}
-                                >
-                                  Unit List
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.charge.view') && (
-                              <li style={subSlot('real-estate', 'real_estate_unit_types_list')}>
-                                <NavLink
-                                  to={routes.real_estate_unit_types_list}
-                                  className={subMenuLinkClass}
-                                >
-                                  Chareges
-                                </NavLink>
-                              </li>
-                            )}
-
-                            {hasPermission(permissions, 'real.estate.layout.view') && (
-                              <li style={subSlot('real-estate', 'real-estate/flat-layout')}>
-                                <NavLink
-                                  to="/real-estate/flat-layout"
-                                  className={subMenuLinkClass}
-                                >
-                                  Layout
-                                </NavLink>
-                              </li>
-                            )}
-
-                            {hasPermission(permissions, 'real.estate.unit.sale.view') && (
+                            {tabsFor(RE_SALES_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                               <li style={subSlot('real-estate', 'real-estate/unit-sales')}>
                                 <NavLink
-                                  to="/real-estate/unit-sales"
-                                  className={subMenuLinkClass}
+                                  to={tabsFor(sortTabs(RE_SALES_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                  className={() => subMenuLinkClass({ isActive: inTabGroup(RE_SALES_TABS, pathname) })}
                                 >
-                                  Unit Sales
+                                  Sales
                                 </NavLink>
                               </li>
                             )}
-                            {hasPermission(permissions, 'real.estate.sold.unit.view') && (
-                              <li style={subSlot('real-estate', 'real_estate_sold_units')}>
-                                <NavLink
-                                  to={routes.real_estate_sold_units}
-                                  className={subMenuLinkClass}
-                                >
-                                  Sold Units
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.sales.summary') && (
-                              <li style={subSlot('real-estate', 'report_sales_summary')}>
-                                <NavLink
-                                  to={routes.report_sales_summary}
-                                  className={subMenuLinkClass}
-                                >
-                                  Sales Summary
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.installment.create') && (
-                            <li style={subSlot('real-estate', 'real_estate_installment_create')}>
-                              <NavLink
-                                to={routes.real_estate_installment_create}
-                                className={subMenuLinkClass}
-                              >
-                                Installment Create
-                              </NavLink>
-                            </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.project.expense.view') && (
+                            {tabsFor(RE_PROJECT_ENTRY_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                               <li style={subSlot('real-estate', 'real_estate_project_expense')}>
                                 <NavLink
-                                  to={routes.real_estate_project_expense}
-                                  className={subMenuLinkClass}
+                                  to={tabsFor(sortTabs(RE_PROJECT_ENTRY_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                  className={() => subMenuLinkClass({ isActive: inTabGroup(RE_PROJECT_ENTRY_TABS, pathname) })}
                                 >
-                                  Project Expense
+                                  Project Entry
                                 </NavLink>
                               </li>
                             )}
-                            {hasPermission(permissions, 'real.estate.project.income.view') && (
-                              <li style={subSlot('real-estate', 'real_estate_project_income')}>
-                                <NavLink
-                                  to={routes.real_estate_project_income}
-                                  className={subMenuLinkClass}
-                                >
-                                  Project Income
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.project.purchase.view') && (
-                              <li style={subSlot('real-estate', 'real_estate_project_purchase')}>
-                                <NavLink
-                                  to={routes.real_estate_project_purchase}
-                                  className={subMenuLinkClass}
-                                >
-                                  Project Purchase
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.project.labour.view') && (
-                              <li style={subSlot('real-estate', 'real_estate_project_labour')}>
-                                <NavLink
-                                  to={routes.real_estate_project_labour}
-                                  className={subMenuLinkClass}
-                                >
-                                  Project Labour
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.project.summary.view') && (
+                            {tabsFor(RE_PROJECT_REPORT_TABS, permissions, isPlatformAdmin, currentBranch?.business_type_id).length > 0 && (
                               <li style={subSlot('real-estate', 'real_estate_project_summary_report')}>
                                 <NavLink
-                                  to={routes.real_estate_project_summary_report}
-                                  className={subMenuLinkClass}
+                                  to={tabsFor(sortTabs(RE_PROJECT_REPORT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
+                                  className={() => subMenuLinkClass({ isActive: inTabGroup(RE_PROJECT_REPORT_TABS, pathname) })}
                                 >
-                                  Project Summary
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.project.cost.view') && (
-                              <li style={subSlot('real-estate', 'real_estate_project_cost_report')}>
-                                <NavLink
-                                  to={routes.real_estate_project_cost_report}
-                                  className={subMenuLinkClass}
-                                >
-                                  Project Cost Report
-                                </NavLink>
-                              </li>
-                            )}
-                            {hasPermission(permissions, 'real.estate.project.income.report.view') && (
-                              <li style={subSlot('real-estate', 'real_estate_project_income_report')}>
-                                <NavLink
-                                  to={routes.real_estate_project_income_report}
-                                  className={subMenuLinkClass}
-                                >
-                                  Project Income Report
+                                  Project Reports
                                 </NavLink>
                               </li>
                             )}

@@ -872,7 +872,7 @@
     "video": "",
     "intro": "প্রকল্পের ইউনিট কেনা প্রতিটি ক্রেতার কেনা, পরিশোধ ও বাকি এক সারিতে দেখা যায়।",
     "sections": [
-      { "heading": "রিপোর্ট দেখা", "menu": "Reports → Sales Summary", "steps": ["Location, Project ও Building নির্বাচন করুন।", "Apply চাপুন।"] },
+      { "heading": "রিপোর্ট দেখা", "menu": "Real Estate → Sales → Sales Summary", "steps": ["Location, Project ও Building নির্বাচন করুন।", "Apply চাপুন।"] },
       { "heading": "ফল পড়া", "steps": ["Customer Name, Sales Amount, Received Amt ও Due Amt দেখা যায়।", "Action-এর Payment ledger দিয়ে পরিশোধের বিবরণ খোলে।", "নিচে Grand Total; Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "Location/Project/Building ভুল বাছলে অন্য প্রকল্পের ক্রেতা আসবে।" }
     ]

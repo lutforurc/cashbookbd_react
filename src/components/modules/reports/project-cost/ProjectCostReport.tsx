@@ -426,7 +426,6 @@ const ProjectCostReport = ({ user }: any) => {
               isOpen={filterOpen}
               onToggle={() => setFilterOpen((p) => !p)}
               menuWidthClassName="w-[min(92vw,340px)]"
-              inlineClassName="grid grid-cols-1 items-end gap-3 md:grid-cols-3 xl:grid-cols-4"
             >
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -464,37 +463,39 @@ const ProjectCostReport = ({ user }: any) => {
               </div>
             </FilterMenuShell>
 
-            <ButtonLoading
-              label="Apply"
-              onClick={handleApply}
-              buttonLoading={buttonLoading}
-              className="px-6"
-              icon={<FiCheckSquare />}
-            />
-            <ButtonLoading
-              label="Reset"
-              onClick={handleReset}
-              buttonLoading={false}
-              className="px-4"
-              icon={<FiRotateCcw />}
-            />
-            <PrintRowsInput
- type="number"
- label=""
- placeholder="Rows"
- className="w-20! text-center"
- value={perPage}
- onChange={(e) => setPerPage(Number(e.target.value) || 0)}
-            />
-            <PrintFontInput
- type="number"
- label=""
- placeholder="Font"
- className="w-20! text-center"
- value={fontSize}
- onChange={(e) => setFontSize(Number(e.target.value) || 12)}
-            />
-            <PrintButton label="Print" onClick={handlePrint} className="px-6" disabled={!hasData} />
+            <div className="grid min-w-max grid-cols-[auto_auto_auto_auto_auto] items-end gap-2 max-md:w-full xl:ml-auto">
+              <ButtonLoading
+                label="Apply"
+                onClick={handleApply}
+                buttonLoading={buttonLoading}
+                className="px-6"
+                icon={<FiCheckSquare />}
+              />
+              <ButtonLoading
+                label="Reset"
+                onClick={handleReset}
+                buttonLoading={false}
+                className="px-4"
+                icon={<FiRotateCcw />}
+              />
+              <PrintRowsInput
+   type="number"
+   label=""
+   placeholder="Rows"
+   className="w-20! text-center"
+   value={perPage}
+   onChange={(e) => setPerPage(Number(e.target.value) || 0)}
+              />
+              <PrintFontInput
+   type="number"
+   label=""
+   placeholder="Font"
+   className="w-20! text-center"
+   value={fontSize}
+   onChange={(e) => setFontSize(Number(e.target.value) || 12)}
+              />
+              <PrintButton label="Print" onClick={handlePrint} className="px-6" disabled={!hasData} />
+            </div>
           </div>
         </div>
 
