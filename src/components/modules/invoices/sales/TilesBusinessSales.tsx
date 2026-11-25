@@ -1674,9 +1674,6 @@ const TilesBusinessSales = () => {
           if (pending) sendInvoice(pending.payload, true);
         }}
       />
-
-
-
       <ReferrerPickerModal
         isOpen={showReferrerModal}
         onClose={() => setShowReferrerModal(false)}
