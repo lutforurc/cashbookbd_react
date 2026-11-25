@@ -40,6 +40,8 @@ interface ComponentDraft {
   name: string;
   short_name?: string | null;
   component_type?: string;
+  calculation_type?: string;
+  day_basis?: string | null;
   amount: string;
   prorate: string;
   sort_order: number;
@@ -124,6 +126,8 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
         name: line.name ?? '',
         short_name: line.short_name ?? '',
         component_type: line.component_type,
+        calculation_type: line.calculation_type ?? 'fixed',
+        day_basis: line.day_basis ?? null,
         amount: line.amount == null ? '' : String(line.amount),
         prorate: String(line.prorate ?? '0'),
         sort_order: Number(line.sort_order) || (index + 1) * 10,
@@ -153,6 +157,8 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
         name: component.name,
         short_name: component.short_name,
         component_type: component.component_type,
+        calculation_type: component.calculation_type ?? 'fixed',
+        day_basis: component.day_basis ?? null,
         amount: component.default_amount == null ? '' : String(component.default_amount),
         prorate: String(component.prorate ?? '0'),
         sort_order: (prev.length + 1) * 10,
@@ -178,10 +184,24 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
     );
   };
 
+  // A per-day head holds a day's rate, not a month's figure: its money is
+  // rate x days present, which only the server knows, so it never joins the
+  // monthly gross on this panel.
   const gross = useMemo(
     () =>
       drafts
-        .filter((draft) => draft.component_type !== 'deduction')
+        .filter(
+          (draft) =>
+            draft.component_type !== 'deduction' && draft.calculation_type !== 'per_day',
+        )
+        .reduce((total, draft) => total + (Number(draft.amount) || 0), 0),
+    [drafts],
+  );
+
+  const perDayRate = useMemo(
+    () =>
+      drafts
+        .filter((draft) => draft.calculation_type === 'per_day')
         .reduce((total, draft) => total + (Number(draft.amount) || 0), 0),
     [drafts],
   );
@@ -204,6 +224,8 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
           name: line.name ?? '',
           short_name: line.short_name ?? '',
           component_type: line.component_type,
+          calculation_type: line.calculation_type ?? line.master_calculation_type ?? 'fixed',
+          day_basis: line.day_basis ?? null,
           amount: line.amount == null ? '' : String(line.amount),
           prorate: String(line.prorate ?? line.master_prorate ?? '0'),
           sort_order: Number(line.sort_order) || (index + 1) * 10,
@@ -227,6 +249,8 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
         name: line.name ?? '',
         short_name: line.short_name ?? '',
         component_type: line.component_type,
+        calculation_type: line.calculation_type ?? 'fixed',
+        day_basis: line.day_basis ?? null,
         amount: line.amount == null ? '' : String(line.amount),
         prorate: String(line.prorate ?? '0'),
         sort_order: Number(line.sort_order) || (index + 1) * 10,
@@ -430,6 +454,11 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
             Monthly Gross
           </span>
           <span className="text-lg font-semibold">{thousandSeparator(gross)}</span>
+          {perDayRate > 0 ? (
+            <span className="text-[11px] leading-tight text-[rgb(var(--c-text-muted))]">
+              + {thousandSeparator(perDayRate)}/day for per-day heads, paid by attendance
+            </span>
+          ) : null}
         </div>
       </div>
 
@@ -508,6 +537,11 @@ const SalaryTab: React.FC<SalaryTabProps> = ({ employeeId, onSaved }) => {
                           onChange={(event) => updateAmount(draft.component_id, event.target.value)}
                           className="text-right"
                         />
+                        {draft.calculation_type === 'per_day' ? (
+                          <div className="mt-0.5 text-[11px] leading-tight text-[rgb(var(--c-text-muted))]">
+                            Rate per day × days present
+                          </div>
+                        ) : null}
                       </td>
                       <td className="px-2 py-2 text-center">
                         <button

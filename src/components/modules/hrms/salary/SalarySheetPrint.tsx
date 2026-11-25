@@ -35,6 +35,10 @@ type EmployeeComponent = {
   component_type?: string;
   amount?: number | string;
   monthly_amount?: number | string;
+  /** Present when the head is priced per day: rate x quantity, frozen with the sheet. */
+  calculation_type?: string;
+  rate?: number | string;
+  quantity?: number | string;
   sort_order?: number | string;
 };
 
@@ -215,8 +219,9 @@ const DetailedTable = ({ pageRows, allRows, isLastPage, fs }: {
 }) => {
   const local = i18n.language !== 'en';
   const histories = allRows.map((row) => getHistory(row.history) as any);
-  const amountOf = (row: EmployeeRow, code: string) =>
-    num((row.components || []).find((line) => line.component_code === code)?.amount);
+  const lineOf = (row: EmployeeRow, code: string) =>
+    (row.components || []).find((line) => line.component_code === code);
+  const amountOf = (row: EmployeeRow, code: string) => num(lineOf(row, code)?.amount);
 
   // Same columns on every page: first-seen order over the whole sheet.
   const wageHeads: { code: string; name: string }[] = [];
@@ -615,11 +620,25 @@ const SalarySheetPrint = React.forwardRef<HTMLDivElement, Props>(
                             {/* One cell per pay head the header named, read off
                                 this row's own frozen lines -- the figure the
                                 server priced, never recomputed here. */}
-                            {earningColumns.map((column) => (
-                              <td key={column.code} style={{ fontSize: fs, textAlign: 'right' }}>
-                                {thousandSeparator(amountOf(row, column.code))}
-                              </td>
-                            ))}
+                            {earningColumns.map((column) => {
+                              const line = lineOf(row, column.code);
+                              const perDay = line?.calculation_type === 'per_day';
+
+                              return (
+                                <td key={column.code} style={{ fontSize: fs, textAlign: 'right' }}>
+                                  {thousandSeparator(amountOf(row, column.code))}
+                                  {perDay ? (
+                                    // How the figure was reached, so the paper
+                                    // reconciles: "24 দিন × 50".
+                                    <span style={{ display: 'block', fontSize: '0.75em' }}>
+                                      {Number(line?.quantity ?? 0)}{' '}
+                                      {i18n.language !== 'en' ? 'দিন' : 'days'} ×{' '}
+                                      {thousandSeparator(num(line?.rate))}
+                                    </span>
+                                  ) : null}
+                                </td>
+                              );
+                            })}
                             <td style={{ fontSize: fs, textAlign: 'right' }}>
                               {thousandSeparator((row as any).gross ?? row.gross_salary ?? 0)}
                             </td>

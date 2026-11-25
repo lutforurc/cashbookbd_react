@@ -28,7 +28,7 @@ const calculationLabel = (row: any) => {
     return `${row?.default_percent ?? 0}% of ${row?.percent_base === 'gross' ? 'Gross' : 'Basic'}`;
   }
 
-  if (type === 'per_day') return 'Per day';
+  if (type === 'per_day') return `Per day (${Number(row?.default_amount) || 0}/day)`;
   if (type === 'formula') return 'Formula';
   if (type === 'system') return 'System';
 

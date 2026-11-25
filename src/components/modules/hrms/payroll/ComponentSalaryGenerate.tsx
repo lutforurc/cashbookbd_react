@@ -307,7 +307,23 @@ const ComponentSalaryGenerate: React.FC<ComponentSalaryGenerateProps> = ({
       header: column.name,
       headerClass: 'text-right',
       cellClass: 'text-right',
-      render: (row: any) => thousandSeparator(amountOf(row, column.code)),
+      render: (row: any) => {
+        const line = (row.components || []).find(
+          (item: any) => item.component_code === column.code,
+        );
+
+        return (
+          <div>
+            <div>{thousandSeparator(amountOf(row, column.code))}</div>
+            {line?.calculation_type === 'per_day' ? (
+              <div className="text-[11px] font-normal text-slate-400">
+                {Number(line?.quantity ?? 0)} {languageCode !== 'en' ? 'দিন' : 'days'} ×{' '}
+                {thousandSeparator(Number(line?.rate ?? 0))}
+              </div>
+            ) : null}
+          </div>
+        );
+      },
     })),
     {
       key: 'gross',

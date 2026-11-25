@@ -78,7 +78,7 @@ const categoryOptions = [
 const calculationOptions = [
   { id: 'fixed', name: 'Fixed amount' },
   { id: 'percent', name: 'Percent of Basic / Gross' },
-  { id: 'per_day', name: 'Per day (not yet paid)' },
+  { id: 'per_day', name: 'Per day (present days × rate)' },
 ];
 
 const percentBaseOptions = [
@@ -180,6 +180,11 @@ const SalaryComponentForm = () => {
 
     if (formData.calculation_type === 'percent' && !formData.default_percent) {
       toast.error('Please enter the percentage.');
+      return false;
+    }
+
+    if (formData.calculation_type === 'per_day' && !(Number(formData.default_amount) > 0)) {
+      toast.error('Please enter the per-day rate.');
       return false;
     }
 
@@ -335,10 +340,14 @@ const SalaryComponentForm = () => {
                 id="default_amount"
                 name="default_amount"
                 value={formData.default_amount}
-                label="Default Amount"
-                placeholder="Optional"
+                label={formData.calculation_type === 'per_day' ? 'Per-day Rate' : 'Default Amount'}
+                placeholder={formData.calculation_type === 'per_day' ? 'e.g. 50' : 'Optional'}
                 inputMode="numeric"
-                description="A new employee on this pay head starts with this amount."
+                description={
+                  formData.calculation_type === 'per_day'
+                    ? 'Paid for each day the employee is present.'
+                    : 'A new employee on this pay head starts with this amount.'
+                }
                 onChange={handleOnChange}
               />
             )}

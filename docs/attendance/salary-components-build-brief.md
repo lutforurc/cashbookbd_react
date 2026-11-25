@@ -25,7 +25,7 @@
 | # | বিষয় | সিদ্ধান্ত |
 |---|---|---|
 | D1 | House Rent / Medical | আলাদা pay করা **হবে না**। Default structure = Basic + Mobile Bill। `hrm_employees.house_rent` / `medical_allowance` কোথাও যোগ করবেন না। |
-| D2 | Per-day খাত (Lunch, Attendance Bonus, Mid Day Meal) | প্রথম release-এ **নেই**। Master-এ seed আছে, কিন্তু calculator Phase 3-এ `per_day` সমর্থন পাবে। এখন `per_day` বা `formula` খাত revision-এ এলে calculator **exception দেবে**, চুপচাপ ০ নয়। |
+| D2 | Per-day খাত (Lunch, Attendance Bonus, Mid Day Meal) | **২৫ নভেম্বর ২০২৬-এ চালু** (owner-এর সিদ্ধান্ত): এক দিনের রেট × **উপস্থিত দিন** (half-day ০.৫); ছুটি, paid leave ও সাপ্তাহিক ছুটি গোনা হয় না, দেরি/আগে বেরোলে পুরো দিন; Prorate বা Attendance Deduction-এর উপর চলে না। ওই মাসের attendance এন্ট্রি না থাকলে calculator **exception দেয়** — চুপচাপ ০ বা পুরো মাস নয়। `formula` এখনো exception। |
 | D3 | Mid-month revision | **পরের মাস থেকে**। নতুন revision-এর `effective_from` সবসময় কোনো মাসের ১ তারিখ — API validation-এ enforce করুন। |
 | D4 | Print-এ column | যে খাতে sheet-এর কোনো employee-এর amount > ০, শুধু সেগুলো; Column Manager দিয়ে user লুকাতে পারবে (localStorage, user+branch key)। |
 | D5 | Loan | এখনকার মতো — loan module থেকে, Generate screen-এ editable। Revision-এ নয়। |
@@ -137,7 +137,7 @@ net       = gross − total_ded
 - **Done যখন:** tab থেকে revision তৈরি → legacy column মিলে যায় → T1-এর নিয়ম ভাঙে না।
 
 ### T5 — `SalaryCalculator` + shadow run
-- `app/Services/Hrms/SalaryCalculator.php`: `preview(branchId, paymentMonth, sheetType, employeeIds, adjustments)` → employee-প্রতি line সহ ফল। §3.4-এর হিসাব, কিন্তু খাত আসবে active revision থেকে; settings থেকে ভাজক/rounding; `include_in_deduction_base`; `salary_sheet_types`; D2 অনুযায়ী `per_day`/`formula`-এ exception।
+- `app/Services/Hrms/SalaryCalculator.php`: `preview(branchId, paymentMonth, sheetType, employeeIds, adjustments)` → employee-প্রতি line সহ ফল। §3.4-এর হিসাব, কিন্তু খাত আসবে active revision থেকে; settings থেকে ভাজক/rounding; `include_in_deduction_base`; `salary_sheet_types`; `per_day` এখন উপস্থিত দিন × রেট হিসেবে হিসাব হয়, `formula`-এ exception।
 - Artisan command `payroll:shadow {month=112026} {--branch=}`: প্রতিটি branch-এর জন্য ঐ মাসের **saved** `hrm_salary_payments` row (active voucher) নিয়ে, একই `working_days`, attendance summary, loan ও others_deduction দিয়ে calculator চালাবে, এবং `basic_salary`, `others_allowance`, `overtime_amount`, `gross_salary`, `attendance_deduction_amount`, `total_deduction`, `net_salary` তুলনা করবে। Mismatch তালিকা + সারাংশ। **DB-তে কিছু লিখবে না।**
 - **Done যখন:** `php artisan payroll:shadow 112026` → mismatch **০**। না মিললে calculator ঠিক করুন, পুরোনো data নয়। ঐ মাসে sheet না থাকলে command তা বলবে এবং সবচেয়ে কাছের মাস সুপারিশ করবে — owner-কে জানান, নিজে মাস বদলাবেন না।
 
