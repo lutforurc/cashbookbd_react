@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "react-toastify";
-import { FiFilter, FiSearch, FiX } from "react-icons/fi";
+import { FiCheckSquare, FiRotateCcw, FiSearch } from "react-icons/fi";
 import Loader from "../../../../common/Loader";
 import { ButtonLoading, PrintButton } from "../../../../pages/UiElements/CustomButtons";
 import HelmetTitle from "../../../utils/others/HelmetTitle";
@@ -26,6 +26,10 @@ import {
 import routes from "../../../services/appRoutes";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { Select } from '../../../utils/fields/FormControls';
+import FilterMenuShell from '../../../utils/components/FilterMenuShell';
+import { isUserFeatureEnabled } from '../../../utils/userFeatureSettings';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { useLocalDigits } from '../../../../i18n/useLocalDigits';
 
 const FestivalBonus = ({ user }: any) => {
   const dispatch: any = useDispatch();
@@ -34,6 +38,9 @@ const FestivalBonus = ({ user }: any) => {
   const { loading, bonusSheet, bonusPrintSheet } = useSelector((state: any) => state.festivalBonus);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const settings = useSelector((state: any) => state.settings);
+  // The user's own filter-panel choice (Settings -> User Feature Settings).
+  // Off, the fields sit inline above the table, the way the other reports do.
+  const useFilterMenuEnabled = isUserFeatureEnabled(settings, 'use_filter_parameter');
 
   const [branchId, setBranchId] = useState<string | number>(user?.branch_id ?? "");
   const [yearId, setYearId] = useState<string>("");
@@ -47,6 +54,11 @@ const FestivalBonus = ({ user }: any) => {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const filterMenuRef = useRef<HTMLDivElement>(null);
+  const { code: languageCode } = useLanguage();
+  const digitsRef = useRef<HTMLDivElement>(null);
+  // The year options and the figures read in Bangla digits while the screen is
+  // in Bangla, the way the other reports do.
+  useLocalDigits(digitsRef, languageCode !== 'en');
   const [filterOpen, setFilterOpen] = useState(false);
   const restoredYearId = location.state?.yearId ? String(location.state.yearId) : "";
 
@@ -302,81 +314,60 @@ const FestivalBonus = ({ user }: any) => {
       <HelmetTitle title="Bonus Reports" />
       {loading && <Loader />}
 
-      <div className="space-y-6">
+      <div className="space-y-6" ref={digitsRef}>
         <div className="px-0 py-3">
          
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="relative" ref={filterMenuRef}>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  onClick={() => setFilterOpen((prev) => !prev)}
-                  className={`inline-flex w-10 items-center justify-center rounded border text-sm transition ${
- filterOpen
- ?"border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300":"border-blue-500 bg-[rgb(var(--c-surface))] text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-boxdark-2"}`}
-                  aria-label="Open filters"
-                >
-                  <FiFilter size={16} />
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => setFilterOpen((prev) => !prev)}
-                  className="text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-[rgb(var(--c-text-muted))] dark:hover:text-white"
-                >
-                  Use the filter
-                </Button>
+            {/* The user's filter-panel switch (use_filter_parameter), the same
+                shell the other reports use: a panel when it is on, the fields
+                inline above the table when it is off. */}
+            <FilterMenuShell
+              enabled={useFilterMenuEnabled}
+              isOpen={filterOpen}
+              onToggle={() => setFilterOpen((prev) => !prev)}
+              containerRef={filterMenuRef}
+              menuWidthClassName="w-[min(92vw,320px)]"
+            >
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Branch</label>
+                <BranchDropdown
+                  defaultValue={branchId?.toString()}
+                  onChange={(e: any) => {
+                    const value = e.target.value;
+                    setBranchId(value === "" ? "" : Number(value));
+                  }}
+                  className="w-full p-2 text-sm font-medium"
+                  branchDdl={dropdownData}
+                />
               </div>
 
-              {filterOpen && (
-                <form
-                  onSubmit={handleApplyFilters}
-                  className="absolute left-0 top-full z-30 mt-2 w-[min(320px,calc(100vw-2rem))] rounded-md border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-2xl"
-                >
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-800 dark:text-[rgb(var(--c-text))]">Filter Menu</span>
-                    <Button
-                      type="button"
-                      onClick={() => setFilterOpen(false)}
-                      className="rounded-sm p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-boxdark-2 dark:hover:text-bodydark1"
-                      aria-label="Close filter menu"
-                    >
-                      <FiX />
-                    </Button>
-                  </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Select Year</label>
+                <YearDropdown
+                  className="w-full text-sm"
+                  name="year"
+                  value={yearId}
+                  onChange={(e: any) => setYearId(e.target.value)}
+                />
+              </div>
 
-                  <div className="space-y-3">
-                    <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">Select Branch</label>
-                      <BranchDropdown
-                        defaultValue={branchId?.toString()}
-                        onChange={(e: any) => {
-                          const value = e.target.value;
-                          setBranchId(value === "" ? "" : Number(value));
-                        }}
-                        className="h-10 w-full border-form-strokedark bg-boxdark font-medium text-sm"
-                        branchDdl={dropdownData}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-bodydark1">Select Year</label>
-                      <YearDropdown
-                        className="w-full border-form-strokedark bg-boxdark text-sm"
-                        name="year"
-                        value={yearId}
-                        onChange={(e: any) => setYearId(e.target.value)}
-                      />
-                    </div>
-
-
-                    <div className="flex justify-end gap-2 pt-1">
-                      <ButtonLoading onClick={handleApplyFilters} label="Apply" className="px-6 bg-meta-4 hover:bg-graydark" />
-                      <ButtonLoading onClick={handleResetFilters} buttonLoading={false} label="Reset" icon="" className="px-4 bg-meta-4 hover:bg-graydark" />
-                    </div>
-                  </div>
-                </form>
-              )}
-            </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <ButtonLoading
+                  onClick={handleApplyFilters}
+                  buttonLoading={loading}
+                  label="Apply"
+                  icon={<FiCheckSquare />}
+                  className="px-6"
+                />
+                <ButtonLoading
+                  onClick={handleResetFilters}
+                  buttonLoading={false}
+                  label="Reset"
+                  icon={<FiRotateCcw />}
+                  className="px-4"
+                />
+              </div>
+            </FilterMenuShell>
 
             <div className="ml-auto flex items-end gap-2">
               <div>
