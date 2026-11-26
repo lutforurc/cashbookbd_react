@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
-import { FiCheckCircle, FiHome, FiKey, FiRotateCcw } from 'react-icons/fi';
+import { FiCheckCircle, FiCornerUpLeft, FiHome, FiKey, FiRotateCcw } from 'react-icons/fi';
+import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { FIELD_LABEL, FIELD_PADDING, FIELD_SELECT } from '../../../../theme/fieldStyles';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputDatePicker from '../../../utils/fields/DatePicker';
@@ -16,6 +17,7 @@ import {
   API_UNIT_HANDOVER_BUILDINGS_URL,
   API_UNIT_HANDOVER_COMPLETE_URL,
   API_UNIT_HANDOVER_LANDOWNER_URL,
+  API_UNIT_HANDOVER_REVERSE_URL,
   API_UNIT_HANDOVER_STORE_URL,
   API_UNIT_HANDOVER_UNITS_URL,
 } from '../../../services/apiRoutes';
@@ -90,6 +92,9 @@ const UnitHandover = () => {
   // Rows per printed sheet (0 = all on one sheet) and the print type size, as on every report.
   const [perPage, setPerPage] = useState<number>(0);
   const [fontSize, setFontSize] = useState<number>(10);
+  // The handover being taken back, and why. The reason is required: it goes on the voucher.
+  const [reversing, setReversing] = useState<any>(null);
+  const [reason, setReason] = useState('');
   const handlePrint = useReactToPrint({ contentRef: printRef, documentTitle: t('handover.printTitle') });
 
   const stateLabel: Record<UnitState, string> = {
@@ -136,10 +141,32 @@ const UnitHandover = () => {
       }
       toast.success(response?.data?.message || t('handover.saved'));
       await load(buildingId);
+      return true;
     } catch (error: any) {
       toast.error(error?.response?.data?.message || t('handover.failed'));
     } finally {
       setBusy('');
+    }
+    return false;
+  };
+
+  const confirmReverse = async () => {
+    if (reason.trim().length < 3) {
+      toast.error(t('handover.reasonRequired'));
+      return;
+    }
+    if (!iso(date)) {
+      toast.error(t('handover.pickDate'));
+      return;
+    }
+    const done = await post('r', API_UNIT_HANDOVER_REVERSE_URL, {
+      handover_id: reversing.handover.id,
+      reverse_date: iso(date),
+      reason: reason.trim(),
+    });
+    if (done) {
+      setReversing(null);
+      setReason('');
     }
   };
 
@@ -390,6 +417,19 @@ const UnitHandover = () => {
                               {t('handover.handOver')}
                             </button>
                           )}
+                          {row.handover && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setReason('');
+                                setReversing(row);
+                              }}
+                              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-300 hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 dark:text-rose-200 dark:ring-rose-400/40 dark:hover:bg-rose-500/10"
+                            >
+                              <FiCornerUpLeft />
+                              {t('handover.reverse')}
+                            </button>
+                          )}
                           {!row.handover && !row.sale_id && (
                             <button
                               type="button"
@@ -429,6 +469,44 @@ const UnitHandover = () => {
               </tfoot>
             </table>
           </div>
+
+          <ConfirmModal
+            show={Boolean(reversing)}
+            title={t('handover.reverseTitle')}
+            confirmLabel={t('handover.reverse')}
+            cancelLabel={t('handover.cancel')}
+            loading={busy === 'r'}
+            onCancel={() => setReversing(null)}
+            onConfirm={confirmReverse}
+            message={
+              reversing ? (
+                <div className="space-y-3 text-left">
+                  <p>
+                    {t('handover.reverseExplain', {
+                      unit: reversing.unit_no,
+                      date: iso(date),
+                    })}
+                  </p>
+                  {reversing.handover?.vr_no && (
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {t('handover.reverseVoucher', { vr: reversing.handover.vr_no })}
+                    </p>
+                  )}
+                  <label htmlFor="reverse_reason" className="block text-sm">{t('handover.reason')}</label>
+                  <textarea
+                    id="reverse_reason"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    rows={3}
+                    maxLength={191}
+                    className="w-full rounded-md border border-[rgb(var(--c-border))] bg-transparent p-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                  />
+                </div>
+              ) : (
+                ''
+              )
+            }
+          />
 
           <div className="hidden">
             <UnitHandoverPrint
