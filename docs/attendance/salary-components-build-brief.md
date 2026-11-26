@@ -1,9 +1,9 @@
 # Flexible Salary Components — Build Brief (coding agent-এর জন্য)
 
 **Date:** 2026-11-23
-**পড়ার ক্রম:** এই brief → [`salary-components-how-it-works.md`](./salary-components-how-it-works.md) → [`salary-management-flexible-components.md`](./salary-management-flexible-components.md) → [`salary-components-schema.sql`](./salary-components-schema.sql)
+**পড়ার ক্রম:** এই brief → [`salary-components-how-it-works.md`](./salary-components-how-it-works.md) → [`salary-management-flexible-components.md`](./salary-management-flexible-components.md) → [`salary-components-schema.sql`](./salary-components-schema.sql)
 
-এই brief যা বলে, design doc-এর সাথে অমিল হলে **এই brief-ই চূড়ান্ত**।
+এই brief যা বলে, design doc-এর সাথে অমিল হলে **এই brief-ই চূড়ান্ত**।
 
 ---
 
@@ -20,7 +20,7 @@
 
 ---
 
-## 1. চূড়ান্ত সিদ্ধান্ত (owner-এর অনুমোদিত)
+## 1. চূড়ান্ত সিদ্ধান্ত (owner-এর অনুমোদিত)
 
 | # | বিষয় | সিদ্ধান্ত |
 |---|---|---|
@@ -30,7 +30,7 @@
 | D4 | Print-এ column | যে খাতে sheet-এর কোনো employee-এর amount > ০, শুধু সেগুলো; Column Manager দিয়ে user লুকাতে পারবে (localStorage, user+branch key)। |
 | D5 | Loan | এখনকার মতো — loan module থেকে, Generate screen-এ editable। Revision-এ নয়। |
 | D6 | Attendance deduction ভাজক | **30** (`hrm_payroll_settings.deduction_day_divisor = fixed`)। Settings থেকে `month_days` বেছে নেওয়া যাবে, কিন্তু default বদলাবেন না। |
-| D7 | Voucher ledger | **এক ledger**, ঠিক এখনকার মতো (§3.3)। `expense_ledger_id` field থাকবে কিন্তু Phase 2-এ পড়া হবে না। |
+| D7 | Voucher ledger | **এক ledger**, ঠিক এখনকার মতো (§3.3)। `expense_ledger_id` field থাকবে কিন্তু Phase 2-এ পড়া হবে না। |
 | D8 | Feature flag | Branch-ভিত্তিক `metas` row: `meta_key = 'payroll_engine'`, `meta_value = 'components'`। Row না থাকলে = পুরোনো engine। Default সবার জন্য বন্ধ। |
 | D9 | Shadow run মাস | **`112026`** (November 2026)। ⚠️ 2026-11-23-এ local `nibirnirman`-এ এই মাসের কোনো sheet নেই — সর্বশেষ `102026` (১৭ row, ১ branch); `072026` ও `062026`-এ ৩টি branch। কোনো branch-এ overtime sheet নেই। 112026 পুরোনো engine-এ generate না হওয়া পর্যন্ত T5 এই মাসে চলবে না — owner-কে জিজ্ঞাসা করুন। |
 
@@ -49,7 +49,7 @@
 
 ---
 
-## 3. বর্তমান কোড — আগে পড়তে হবে
+## 3. বর্তমান কোড — আগে পড়তে হবে
 
 ### 3.1 Backend
 
@@ -122,7 +122,7 @@ net       = gross − total_ded
 - নিয়ম: `code` create-এর পর বদলায় না; `is_system = 1` হলে শুধু `name`, `short_name`, `sort_order` বদলানো যায়; delete নেই, শুধু status; `(company_id, code)` unique-এ সুন্দর error।
 - Screen: `src/components/modules/hrms/salary-component/` — `DesignationLevels` ধরনে list + form। Sidebar: **HRM → Salary → Salary Components**। Route, `menuPermissions.ts`, `globalSearchItems.ts`।
 - Help topic `salary-components` (`hrms.json`)।
-- **Done যখন:** CRUD কাজ করে, system খাতের code/type বদলানো যায় না, permission ছাড়া 403, `npm run help:check` পাস, `npx tsc --noEmit` পাস।
+- **Done যখন:** CRUD কাজ করে, system খাতের code/type বদলানো যায় না, permission ছাড়া 403, `npm run help:check` পাস, `npx tsc --noEmit` পাস।
 
 ### T3 — Salary Structures (API + screen)
 - API: `GET/POST /salary/structures`, `PUT /salary/structures/{id}` — `salary.structure.manage`। Structure-এর component list একসাথে save (replace)।

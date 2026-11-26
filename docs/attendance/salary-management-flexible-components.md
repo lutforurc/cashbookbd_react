@@ -48,10 +48,10 @@ Ready-to-run schema: [`salary-components-schema.sql`](./salary-components-schema
 - Preview calculation TypeScript-এ, Generate calculation PHP-তে — দুই জায়গায় formula থাকায় mismatch হওয়ার ঝুঁকি আছে।
 - Generate করা বেতন `hrm_salary_payments`-এ employee-প্রতি একটি row হিসেবে জমা হয়: `basic_salary`, `others_allowance`, `overtime_amount`, `loan_deduction`, `attendance_*` columns, `history` JSON, salary voucher `main_trx_id` ও payment voucher `payment_main_trx_id`। আংশিক payment থাকে `hrm_salary_payment_histories`-এ। নতুন ডিজাইন এই table-কেই ব্যবহার করবে, বিকল্প বানাবে না।
 - Late/early-out deduction = `(prorated Basic + prorated Mobile) / 30 × deduction days`, nearest 10-এ round। এখানে ৩০ fixed, মাসের প্রকৃত দিন নয়।
-- Prorate-এ `roundUpToNearestTen` হয়, কিন্তু payable days ≥ month days হলে পুরো amount round ছাড়াই দেয়।
+- Prorate-এ `roundUpToNearestTen` হয়, কিন্তু payable days ≥ month days হলে পুরো amount round ছাড়াই দেয়।
 - Festival Bonus সরাসরি `hrm_employees.basic_salary` থেকে percent হিসাব করে (`FestivalBonusUpdate.tsx`)।
 
-নতুন কোম্পানি "Lunch Bill", "Attendance Bonus", "Mid Day Meal" চাইলেই column যোগ করতে হবে, তারপর Generate, Sheet, Print, Update, Excel, Report — সব জায়গায় কোড বদলাতে হবে। কোম্পানির সংখ্যা বাড়লে এটি অসীম কাজ।
+নতুন কোম্পানি "Lunch Bill", "Attendance Bonus", "Mid Day Meal" চাইলেই column যোগ করতে হবে, তারপর Generate, Sheet, Print, Update, Excel, Report — সব জায়গায় কোড বদলাতে হবে। কোম্পানির সংখ্যা বাড়লে এটি অসীম কাজ।
 
 > আপনার আগের Laravel Blade-এর Salary Setup যদি employee-wise fixed column-ভিত্তিক হয়, সেখান থেকেও একই শিক্ষা: fixed column scale করে না। ওই setup-কে master + template + revision মডেলে রূপান্তর করা যায়। পুরোনো migration/Blade শেয়ার করলে field-by-field mapping করে দেওয়া যাবে — এই repo-তে সেটি নেই।
 
@@ -138,7 +138,7 @@ Structure হলো **টেমপ্লেট**, employee-এর বেতন �
 
 ### 4.3 Employee salary revision (effective dated)
 
-Employee-এর বেতন কখনো `UPDATE` করবেন না। বেতন বাড়লে/কমলে **নতুন revision** তৈরি করবেন:
+Employee-এর বেতন কখনো `UPDATE` করবেন না। বেতন বাড়লে/কমলে **নতুন revision** তৈরি করবেন:
 
 ```text
 employee_id = 12
@@ -155,7 +155,7 @@ house_rent      10000
 mobile_bill       500
 ```
 
-পরের মাসে বেতন বাড়লে:
+পরের মাসে বেতন বাড়লে:
 
 - পুরোনো revision-এ `effective_to = 2026-10-31`
 - নতুন revision `effective_from = 2026-11-01`
@@ -173,7 +173,7 @@ LIMIT 1;
 
 ### 4.4 Payroll snapshot (সবচেয়ে গুরুত্বপূর্ণ)
 
-নতুন কোনো employee-row table বানানো হবে না। বর্তমান `hrm_salary_payments` row-এ ইতিমধ্যে attendance days, gross, net, payment, voucher (`main_trx_id`, `payment_main_trx_id`) ও `history` আছে; Salary Sheet, payment ও accounting report এটা থেকেই পড়ে। পাশে আরেকটি `hrm_payroll_items` বানালে একই মাসের বেতন দুই জায়গায় থাকবে এবং কোনটা ঠিক তা নিয়ে গোলমাল হবে।
+নতুন কোনো employee-row table বানানো হবে না। বর্তমান `hrm_salary_payments` row-এ ইতিমধ্যে attendance days, gross, net, payment, voucher (`main_trx_id`, `payment_main_trx_id`) ও `history` আছে; Salary Sheet, payment ও accounting report এটা থেকেই পড়ে। পাশে আরেকটি `hrm_payroll_items` বানালে একই মাসের বেতন দুই জায়গায় থাকবে এবং কোনটা ঠিক তা নিয়ে গোলমাল হবে।
 
 Generate করলে:
 
@@ -182,7 +182,7 @@ Generate করলে:
 - `hrm_salary_payment_components` (নতুন) — প্রতিটি line: component code, **frozen name**, monthly amount, rate, quantity, amount, frozen `expense_ledger_id`। `salary_payment_id` → `hrm_salary_payments.id` (ON DELETE CASCADE, যেমন `hrm_salary_payment_histories`)।
 - `hrm_salary_payment_histories` (বর্তমান) — আংশিক payment আগের মতোই।
 
-পুরোনো sheet-গুলোর component backfill করা হবে না; সেগুলো legacy column থেকেই পড়বে।
+পুরোনো sheet-গুলোর component backfill করা হবে না; সেগুলো legacy column থেকেই পড়বে।
 
 **মাসের ক্রম (`period_ym`):** `payment_month` `mmyyyy` ফরম্যাটে, তাই string হিসেবে sort বা `BETWEEN` করলে বছর পার হলে ভুল হয় (`012027` < `122026`)। Format বদলালে বর্তমান সব কোড ভাঙবে, তাই বদলানো হবে না। এর বদলে `hrm_salary_payments` ও `hrm_payroll_runs`-এ একটি STORED generated column `period_ym` (`yyyymm`) যোগ হবে, index সহ:
 
@@ -221,7 +221,7 @@ Preview ও Generate একই function ব্যবহার করবে। �
 
 1. Payroll period-এর জন্য employee-এর **active revision** resolve করো।
 2. Attendance monthly summary থেকে `payable_days`, `present_days`, `absent_days`, `half_days`, late/early-out দিন আনে।
-3. **Basic** বের করো (fixed amount; prorate হলে `amount × payable_days / month_days`)। `hrm_payroll_settings.full_month_skip_rounding = 1` হলে payable days ≥ month days-এ পুরো amount round ছাড়া — বর্তমান engine-এর মতো। এটা না রাখলে shadow run-এ হিসাব মিলবে না।
+3. **Basic** বের করো (fixed amount; prorate হলে `amount × payable_days / month_days`)। `hrm_payroll_settings.full_month_skip_rounding = 1` হলে payable days ≥ month days-এ পুরো amount round ছাড়া — বর্তমান engine-এর মতো। এটা না রাখলে shadow run-এ হিসাব মিলবে না।
 4. **Fixed earnings** বের করো (House Rent, Mobile Bill...)।
 5. **Percent earnings** বের করো। `percent_base = basic` হলে Basic-এর উপর, `gross` হলে Basic + fixed earnings-এর উপর। Percent component অন্য percent component-এর উপর নির্ভর করবে না — এটি স্পষ্টভাবে নিষিদ্ধ।
 6. **Per-day earnings** বের করো: `rate × day_basis` (Lunch Bill, Attendance Bonus, Mid Day Meal)।
@@ -437,7 +437,7 @@ Sl | Name/Designation | Month Days | Working Days |
 
 ### 7.6 Report
 
-- **Salary Register by Pay Head** — component-wise monthly total (report-এর সবচেয়ে বড় লাভ)।
+- **Salary Register by Pay Head** — component-wise monthly total (report-এর সবচেয়ে বড় লাভ)।
 - Bank sheet / cash sheet।
 - Payslip (dynamic lines)।
 - Revision history report — কে কখন বেতন বদলেছে।
@@ -562,7 +562,7 @@ gross = prorated(basic_salary) + prorated(others_allowance)
 তাই:
 
 - Default migration-এ শুধু **Basic + Mobile Bill** (`others_allowance`) নেবেন।
-- House Rent/Medical যোগ করলে **মোট বেতন বাড়বে**। যদি কোম্পানি সত্যিই House Rent আলাদা দেখাতে চায়, তাহলে **gross-neutral restructuring** করুন: মোট একই রেখে Basic ভেঙে House Rent বের করুন (যেমন Basic 30,000 → Basic 18,000 + House Rent 12,000)। Employee-এর সম্মতি/HR approval লাগবে।
+- House Rent/Medical যোগ করলে **মোট বেতন বাড়বে**। যদি কোম্পানি সত্যিই House Rent আলাদা দেখাতে চায়, তাহলে **gross-neutral restructuring** করুন: মোট একই রেখে Basic ভেঙে House Rent বের করুন (যেমন Basic 30,000 → Basic 18,000 + House Rent 12,000)। Employee-এর সম্মতি/HR approval লাগবে।
 
 ### 9.2 Backfill ধাপ
 
@@ -573,20 +573,20 @@ gross = prorated(basic_salary) + prorated(others_allowance)
 5. দুই-তিন মাস **shadow run**: পুরোনো Generate ও নতুন Generate একসাথে চালিয়ে totals মিলিয়ে দেখুন।
 6. নতুন payroll screen feature flag দিয়ে branch-ভিত্তিক চালু করুন।
 7. সব স্ক্রিন dynamic হলে legacy input field বন্ধ করুন।
-8. আরও কিছুদিন পর `basic_salary`/`others_allowance` column drop করার আলাদা patch — তাড়াহুড়ো করবেন না, পুরোনো report/print নির্ভর করতে পারে।
+8. আরও কিছুদিন পর `basic_salary`/`others_allowance` column drop করার আলাদা patch — তাড়াহুড়ো করবেন না, পুরোনো report/print নির্ভর করতে পারে।
 
 **যেসব module legacy column-এর উপর নির্ভর করে (column বন্ধ করার আগে বদলাতে হবে):**
 
-- **Festival Bonus** (`FestivalBonusUpdate.tsx` ও এর backend) — `basic_salary`-এর percent হিসাব করে। একে bonus date-এর active revision-এর `basic` component থেকে পড়াতে হবে। Phase 1-এ dual-write থাকায় কিছু ভাঙবে না, কিন্তু Phase 4-এর আগে এটি অবশ্যই বদলাতে হবে।
-- Employee list/print, Overtime sheet (`ot_rate`), এবং যেকোনো report যা `hrm_employees.basic_salary` পড়ে।
+- **Festival Bonus** (`FestivalBonusUpdate.tsx` ও এর backend) — `basic_salary`-এর percent হিসাব করে। একে bonus date-এর active revision-এর `basic` component থেকে পড়াতে হবে। Phase 1-এ dual-write থাকায় কিছু ভাঙবে না, কিন্তু Phase 4-এর আগে এটি অবশ্যই বদলাতে হবে।
+- Employee list/print, Overtime sheet (`ot_rate`), এবং যেকোনো report যা `hrm_employees.basic_salary` পড়ে।
 
 ### 9.3 Dual-read / dual-write
 
 Transition-এ:
 
-- নতুন স্ক্রিন: revision থেকে পড়বে; revision না থাকলে legacy column থেকে fallback।
+- নতুন স্ক্রিন: revision থেকে পড়বে; revision না থাকলে legacy column থেকে fallback।
 - Employee save: legacy column + revision দুই জায়গায় লিখবে।
-- পুরোনো Salary Sheet: আগের stored data পড়বে, কিছু বদলাবে না।
+- পুরোনো Salary Sheet: আগের stored data পড়বে, কিছু বদলাবে না।
 - Salary generate: নতুন engine `hrm_salary_payments`-এর legacy column-ও ভরবে (Basic → `basic_salary`, Mobile Bill → `others_allowance`, Overtime → `overtime_amount`, ইত্যাদি)। যে খাতের legacy column নেই (Lunch, Bonus...) সেটা শুধু component line-এ থাকবে, কিন্তু `gross_salary`/`net_salary`-তে যোগ হবে — তাই পুরোনো report-এ total ঠিক থাকবে।
 
 ### 9.4 Rollback
@@ -609,7 +609,7 @@ Transition-এ:
 | Daily labour | `employment_type = daily` হলে monthly component নয় — daily wage × present days + OT |
 | Overtime sheet | শুধু OT-eligible employee; `salary_sheet_types` দিয়ে শুধু `overtime` component |
 | Attendance deduction base | শুধু `include_in_deduction_base = 1` খাত; divisor ও rounding `hrm_payroll_settings` থেকে |
-| Full month rounding | payable days ≥ month days হলে round ছাড়া পুরো amount (`full_month_skip_rounding`) |
+| Full month rounding | payable days ≥ month days হলে round ছাড়া পুরো amount (`full_month_skip_rounding`) |
 | Accounting | খাতভিত্তিক ledger `expense_ledger_id`; NULL হলে default salary ledger; voucher total = gross |
 | Taxable default | `is_taxable = 0`; tax module চালুর সময় খাত ধরে ধরে চালু |
 | Festival bonus | আলাদা bonus module বা one-off component; monthly revision-এ নয় |
@@ -669,7 +669,7 @@ Transition-এ:
 ### Phase 4 — Cleanup
 
 - [ ] সব স্ক্রিন revision-ভিত্তিক
-- [ ] Festival Bonus revision-এর Basic থেকে পড়ে
+- [ ] Festival Bonus revision-এর Basic থেকে পড়ে
 - [ ] Legacy column write বন্ধ
 - [ ] পুরোনো column drop (আলাদা patch, sign-off-এর পর)
 - [ ] পুরোনো documentation update
@@ -685,7 +685,7 @@ Transition-এ:
 - [ ] Master-এ নাম/amount বদলালে পুরোনো payslip বদলায় না
 - [ ] Component disable করলে নতুন payroll-এ আসে না, পুরোনো history থাকে
 - [ ] Salary Sheet/Print/Excel-এ column গুলো dynamic
-- [ ] Legacy salary sheet আগের মতোই পড়া যায়
+- [ ] Legacy salary sheet আগের মতোই পড়া যায়
 - [ ] একই মাসের বেতন শুধু `hrm_salary_payments`-এ থাকে (কোনো parallel employee-row table নেই)
 - [ ] Shadow run-এ attendance deduction ও full-month amount পুরোনো engine-এর সাথে টাকায় টাকায় মেলে
 - [ ] Salary voucher-এর total gross-এর সমান; ledger না দিলে voucher আগের মতো
@@ -704,14 +704,14 @@ Transition-এ:
 - Frontend-এ final salary হিসাব করে সেটাই save করা।
 - Generate করার সময় component-এর নাম/amount master থেকে live join করে payslip দেখানো।
 - পুরোনো revision `UPDATE` করে বেতন বদলানো।
-- `house_rent`/`medical_allowance` কে না বুঝে নতুন structure-এ যোগ করা — এতে gross বেড়ে যাবে।
+- `house_rent`/`medical_allowance` কে না বুঝে নতুন structure-এ যোগ করা — এতে gross বেড়ে যাবে।
 
 ---
 
 ## 14. সংযুক্ত ফাইল
 
 - [`salary-components-schema.sql`](./salary-components-schema.sql) — table DDL, seed component/structure, legacy backfill।
-- [`salary-components-build-brief.md`](./salary-components-build-brief.md) — চূড়ান্ত সিদ্ধান্ত, বর্তমান কোডের মানচিত্র, T1–T6 কাজ ও "done" শর্ত; coding agent-কে এটা আগে দিন।
+- [`salary-components-build-brief.md`](./salary-components-build-brief.md) — চূড়ান্ত সিদ্ধান্ত, বর্তমান কোডের মানচিত্র, T1–T6 কাজ ও "done" শর্ত; coding agent-কে এটা আগে দিন।
 - [`salary-components-how-it-works.md`](./salary-components-how-it-works.md) — বাস্তবায়িত সিস্টেম কীভাবে চলে, patch-এর ধাপ, যাচাইয়ের ফল ও query, rollback, সমস্যা-সমাধান।
 - [`attendance-management-system-requirements.md`](./attendance-management-system-requirements.md) — attendance policy ও salary integration-এর বিদ্যমান spec।
 - [`attendance-management-update.md`](./attendance-management-update.md) — OT/pay rules ও attendance settings।
@@ -720,7 +720,7 @@ Transition-এ:
 
 ## 15. সিদ্ধান্ত
 
-> **2026-11-23-এ চূড়ান্ত:** নিচের সব প্রশ্নে সুপারিশকৃত উত্তর গৃহীত; shadow run মাস `112026`; feature flag branch-ভিত্তিক `metas.payroll_engine`। বিস্তারিত ও কাজের তালিকা: [`salary-components-build-brief.md`](./salary-components-build-brief.md) §1।
+> **2026-11-23-এ চূড়ান্ত:** নিচের সব প্রশ্নে সুপারিশকৃত উত্তর গৃহীত; shadow run মাস `112026`; feature flag branch-ভিত্তিক `metas.payroll_engine`। বিস্তারিত ও কাজের তালিকা: [`salary-components-build-brief.md`](./salary-components-build-brief.md) §1।
 
 মূল প্রশ্নগুলো (রেকর্ডের জন্য):
 

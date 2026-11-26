@@ -9,7 +9,7 @@
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ account.deletion.manage permission থাকলে।"] },
       { "heading": "তালিকা", "menu": "Admin → Account Deletions", "steps": ["All statuses, All types, Personal বা Company নির্বাচন করুন।", "Reference, name, email… বক্সে লিখে খুঁজুন।", "Reference, Type, Requester, Company, Status ও Submitted দেখা যায়; Review দিয়ে অনুরোধ খুলুন।"] },
-      { "heading": "সতর্কতা", "warning": "অনুরোধ মঞ্জুর করলেও ১৪ দিন অপেক্ষা ও যাচাই ছাড়া মোছা চলে না।" }
+      { "heading": "সতর্কতা", "warning": "অনুরোধ মঞ্জুর করলেও ১৪ দিন অপেক্ষা ও যাচাই ছাড়া মোছা চলে না।" }
     ]
   },
   "account-deletion-detail": {
@@ -30,11 +30,11 @@
     "updated": "15/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "ভাউচারের সাথে কাগজের ছবি জোড়া হয় — একসাথে অনেক ভাউচারে (Bulk) বা একটি একটি করে।",
+    "intro": "ভাউচারের সাথে কাগজের ছবি জোড়া হয় — একসাথে অনেক ভাউচারে (Bulk) বা একটি একটি করে।",
     "sections": [
       { "heading": "একসাথে আপলোড", "menu": "Admin → Uploads → Bulk Upload", "steps": ["Select Branch, Voucher Type, Attachment Type, Start Date ও End Date দিন।", "Update চেপে ভাউচার আনুন; Choose Voucher দিয়ে ফাইল নির্বাচন করুন।", "ফাইল বাছা হলে আপলোড শুরু হয়; N file(s) selected দেখায়।"] },
       { "heading": "একটি একটি করে", "menu": "Admin → Uploads → Voucher Upload", "steps": ["Branch, Voucher Type, Attachment Type ও তারিখ দিয়ে Run চাপুন।", "প্রতিটি ভাউচার এক সারিতে আসে — SL No., Voucher No., Voucher Details, Amount ও Voucher Images।", "Voucher Details-এ প্রথম লাইনটি ভাউচারের প্রধান খাত, নিচে ছোট করে বিপরীত পাশ (যেমন Cash); Amount-এ ভাউচারের মোট টাকা।", "সেই এক সারিতে Upload / Add More দিয়ে ছবি দিন; Cancel দিয়ে বাতিল।"] },
-      { "heading": "সতর্কতা", "warning": "খুব বড় ফাইল বাদ পড়ে যাবে — ছোট ছবি দিন। ছবি ভাউচারের তারিখের মধ্যে থাকা ভাউচারেই যুক্ত হয়।" }
+      { "heading": "সতর্কতা", "warning": "খুব বড় ফাইল বাদ পড়ে যাবে — ছোট ছবি দিন। ছবি ভাউচারের তারিখের মধ্যে থাকা ভাউচারেই যুক্ত হয়।" }
     ]
   },
   "admin-business-types": {
@@ -147,7 +147,7 @@
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ admin.notifications.view permission থাকলে।"] },
       { "heading": "নোটিশ পাঠানো", "menu": "Admin → Platform → Admin Notifications", "steps": ["Title ও Message লিখুন।", "Tone (Info/Warning/Danger/Success) ও Audience (Global/Branch/Role) নির্বাচন করুন।", "Branch বা Role, Expires at দিন; Send চাপুন।"] },
-      { "heading": "পাঠানো তালিকা", "steps": ["Sent Notifications-এ Title, Tone, Audience, Read, Created, Expires ও Action দেখা যায়।", "কেউ পড়েছে কি না Read ঘরে বোঝা যায়।"] },
+      { "heading": "পাঠানো তালিকা", "steps": ["Sent Notifications-এ Title, Tone, Audience, Read, Created, Expires ও Action দেখা যায়।", "কেউ পড়েছে কি না Read ঘরে বোঝা যায়।"] },
       { "heading": "সতর্কতা", "warning": "Expires at খালি রাখলে নোটিশের মেয়াদ শেষ হয় না; বন্ধ করতে চাইলে তারিখ দিন।" }
     ]
   },
@@ -160,7 +160,7 @@
     "intro": "একটি অনুমোদিত ভাউচারের অনুমোদন তুলে ফেলা হয়, যাতে সেটি আবার বদলানো যায়।",
     "sections": [
       { "heading": "অনুমোদন তোলা", "menu": "Admin → Daily Control → Approval Remove", "steps": ["Enter Voucher Number ঘরে ভাউচার নম্বর লিখুন।", "Remove Approval চাপুন।", "লেনদেন মুছে যায় না — শুধু অনুমোদনের সিল তুলে যায়।"] },
-      { "heading": "সতর্কতা", "warning": "ভুল ভাউচার হলে টাকা নড়বে না, কিন্তু রিপোর্টে অনুমোদিত হিসেবে থাকবে না — নম্বর মিলিয়ে নিন।" }
+      { "heading": "সতর্কতা", "warning": "ভুল ভাউচার হলে টাকা নড়বে না, কিন্তু রিপোর্টে অনুমোদিত হিসেবে থাকবে না — নম্বর মিলিয়ে নিন।" }
     ]
   },
   "admin-voucher-approval": {
@@ -260,7 +260,7 @@
     "intro": "একটি টেমপ্লেটের পৃষ্ঠা, রং ও লেখা সাজানোর পাতা।",
     "sections": [
       { "heading": "সাজানো", "menu": "Admin → Platform → Website Templates → Edit", "steps": ["Template-এ Name ও Description লিখুন।", "Theme-এ Heading font, Body font ও Corner radius নির্বাচন করুন।", "Pages-এ Title ও Slug দিয়ে পৃষ্ঠা যোগ করুন, Add a section দিয়ে অংশ বসান।", "Preview (draft)-এ দেখে নিন।"] },
-      { "heading": "সতর্কতা", "warning": "Preview শুধু খসড়া দেখায়; প্রকাশ করতে তালিকায় Publish করতে হবে। কোনো পৃষ্ঠা না বাছলে No page selected দেখায়।" }
+      { "heading": "সতর্কতা", "warning": "Preview শুধু খসড়া দেখায়; প্রকাশ করতে তালিকায় Publish করতে হবে। কোনো পৃষ্ঠা না বাছলে No page selected দেখায়।" }
     ]
   }
 }

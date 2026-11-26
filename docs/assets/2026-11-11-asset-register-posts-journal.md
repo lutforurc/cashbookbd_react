@@ -3,10 +3,10 @@
 **তারিখ:** 2026-11-11 · **অবস্থা:** তৈরি (আনকমিটেড) · **ডাটাবেজ:** কোনো স্কিমা বদল নেই, কোনো patch নেই
 
 > **তৈরি হয়েছে 2026-11-11, লাইভ ডাটাবেজে এক transaction-এ চালিয়ে যাচাই করা হয়েছে (শেষে rollback)।**
-> যাচাইয়ের ফল: টিক ছাড়া → ভাউচার নেই; টিক দিয়ে cost 12,345.67 / opening 2,345.67 / Capital →
+> যাচাইয়ের ফল: টিক ছাড়া → ভাউচার নেই; টিক দিয়ে cost 12,345.67 / opening 2,345.67 / Capital →
 > `5-261100148`, তারিখ 10/11/2026, তিন লাইন (Dr 7813 · Cr 7814 · Cr 14), ডেবিট = ক্রেডিট;
-> counter ছাড়া টিক → 422, কিছুই লেখা হয়নি; as-on কেনার আগে → 422; পোস্ট হওয়া সারির cost/তারিখ এডিট → 422,
-> নাম/সিরিয়াল এডিট → 200; ডিলিট → 422; টিক ছাড়া সারি ডিলিট → soft delete ও তালিকা থেকে গায়েব।
+> counter ছাড়া টিক → 422, কিছুই লেখা হয়নি; as-on কেনার আগে → 422; পোস্ট হওয়া সারির cost/তারিখ এডিট → 422,
+> নাম/সিরিয়াল এডিট → 200; ডিলিট → 422; টিক ছাড়া সারি ডিলিট → soft delete ও তালিকা থেকে গায়েব।
 > পরের ধাপে: ক্যাটাগরির নিজের হেড counter হিসেবে দিলে → 422 (`5-260100001`-এর মতো শূন্য ভাউচার আর হবে না);
 > ভাউচার মুছে (`status = 0`) দিলে সারি আবার খোলে — cost এডিট → 200, ডিলিট → 200।
 > শেষ ধাপে (মালিকের অনুরোধে, ১১/১১/২০২৬ রাতে): cost 20,000 → 25,000 edit → পুরোনো `5-…148` বাতিল,
@@ -36,7 +36,7 @@ Cost 20,000 · Depreciation so far 4,000 · Counter account: Capital
 |---|---|
 | ☐ **Post this to the books** | default **বন্ধ**। শুধু নতুন সারিতে দেখাবে; edit খোললে লুকানো। |
 | **Counter account** | টিক দিলে দেখাবে। `DdlMultiline` (Journal যে পিকার ব্যবহার করে), `acType="3,4,5"` — Income / Expense / Manufacturing বাদ, অর্থাৎ Assets ও Liabilities/Balances থাকে। |
-| সারসংক্ষেপ (পড়ার ঘর) | “Dr Fixed Assets 20,000 · Cr Accumulated Dep. 4,000 · Cr Capital 16,000” — সেভের আগে ঠিক এই তিনটি লাইন দেখানো হয়, যাতে ভুলে কেউ অঙ্ক না মেলায়। |
+| সারসংক্ষেপ (পড়ার ঘর) | “Dr Fixed Assets 20,000 · Cr Accumulated Dep. 4,000 · Cr Capital 16,000” — সেভের আগে ঠিক এই তিনটি লাইন দেখানো হয়, যাতে ভুলে কেউ অঙ্ক না মেলায়। |
 
 ⚠️ এখনকার লেখা — **“Nothing is posted from this box.”** — আর সত্যি থাকবে না। ব্লকের সাহায্য-লেখা হবে শর্তসাপেক্ষ: “পুরোনো বই থেকে আনা হলে এই দুটি সংখ্যা আগেই খতিয়ানে আছে; ওই ক্ষেত্রে টিক দেবেন না। নিজে থেকে বইয়ে আনতে চাইলে টিক দিয়ে বিপরীত হিসাব বাছুন।”
 
@@ -65,7 +65,7 @@ Cost 20,000 · Depreciation so far 4,000 · Counter account: Capital
 
 `DepreciationRun::raiseFor()` (`app/Services/Asset/DepreciationRun.php:353`) — **public static, নতুন কোড নয়, reuse**:
 
-- একই জায়গায় period-open + কোটা চেক, ডেবিট=ক্রেডিট যাচাই, মাস-ভিত্তিক সিরিয়াল (status ফিল্টার ছাড়া — বাতিল ভাউচারও নাম্বার ধরে রাখে),
+- একই জায়গায় period-open + কোটা চেক, ডেবিট=ক্রেডিট যাচাই, মাস-ভিত্তিক সিরিয়াল (status ফিল্টার ছাড়া — বাতিল ভাউচারও নাম্বার ধরে রাখে),
 - লেখে `main_trx_master` (`transaction_type = 5`, `voucher_type = null`, `vr_no = 5-YYMM#####`) → `acc_transaction_master` (`voucher_type_id = 3`, `is_approved = '0'`, `financial_year_id = 1`) → `acc_transaction_details`।
 - অর্থাৎ **Journal স্ক্রিনের মতোই একই সিরিজ ও একই আচরণ** — কোনো নতুন ভাউচার-লেখক বানানো হবে না।
 
@@ -80,7 +80,7 @@ Cost 20,000 · Depreciation so far 4,000 · Counter account: Capital
 `POST /asset/register/store` (একই রুট; `routes/api.php:875`), `AssetRegisterController::store()` (`AssetRegisterController.php:127`)।
 
 - নতুন ইনপুট: `post_to_books` (bool), `counter_coa4_id` (int|nullable)।
-- পোস্টিং হয় দুভাবে: **নতুন সারিতে** টিক দিলে; আর **এডিটে** — যে সারি কখনো পোস্ট হয়নি সেটিতে টিক দিলে, কিংবা পোস্ট হওয়া সারির অঙ্ক বদলালে (re-post)। একই অ্যাসেটে দুটি ভাউচার কখনো একসাথে দাঁড়ায় না: পুরোনোটি বাতিল হয়।
+- পোস্টিং হয় দুভাবে: **নতুন সারিতে** টিক দিলে; আর **এডিটে** — যে সারি কখনো পোস্ট হয়নি সেটিতে টিক দিলে, কিংবা পোস্ট হওয়া সারির অঙ্ক বদলালে (re-post)। একই অ্যাসেটে দুটি ভাউচার কখনো একসাথে দাঁড়ায় না: পুরোনোটি বাতিল হয়।
 - পুরো কাজ **`DB::transaction`**-এর ভেতরে: ভাউচার → Register সারি (`main_trx_id` সহ)। একটুও ব্যর্থ হলে কিছুই থাকবে না।
 - ভুল/প্রত্যাখ্যান: `AssetDepreciationController::run()`-এর মতো — `try/catch (Throwable)`, `rethrowIfPeriodClosed($e)` (বন্ধ বছরের প্রত্যাখ্যান গিলে ফেলা যাবে না, §42), বাকি সব `notFound($e->getMessage(), 422)`।
 - সফল রেসপন্সে যোগ: `voucher_no` (ও `main_trx_id`)।
@@ -91,9 +91,9 @@ Cost 20,000 · Depreciation so far 4,000 · Counter account: Capital
 |---|---|
 | টিক দেওয়া, কিন্তু `counter_coa4_id` নেই | 422 — “Which account is the other side of this entry?” |
 | টিক দেওয়া, ব্যবহারকারীর `journal.create` নেই | 422/403 — পুরো সেভ আটকাবে (নীরবে সারি সেভ করে পোস্ট না করা আরও খারাপ) |
-| ক্যাটাগরির `asset_coa4_id` নেই | 422। `opening_accum_dep > 0` হলে `accum_dep_coa4_id`-ও লাগবে। (`readyToPost()` তিনটি হেড চায় — পোস্টিংয়ের জন্য দরকার নেই `dep_expense`, তাই ওটা ব্যবহার করব না; বেশি কড়া নিয়ম দিয়ে বৈধ কাজ আটকানো ঠিক নয়।) |
+| ক্যাটাগরির `asset_coa4_id` নেই | 422। `opening_accum_dep > 0` হলে `accum_dep_coa4_id`-ও লাগবে। (`readyToPost()` তিনটি হেড চায় — পোস্টিংয়ের জন্য দরকার নেই `dep_expense`, তাই ওটা ব্যবহার করব না; বেশি কড়া নিয়ম দিয়ে বৈধ কাজ আটকানো ঠিক নয়।) |
 | `counter_coa4_id` এই কোম্পানির লেভেল-৪ নয় | 422 |
-| `counter_coa4_id` ক্যাটাগরির নিজের চারটি হেডের একটি (Fixed Asset / Accum Dep / Dep Expense / Disposal) | 422 — ডেবিট-ক্রেডিট একই হেডে পড়ে ভাউচার শূন্য হয়ে যেত, ব্যালান্স শিটে কিছুই দেখাত না |
+| `counter_coa4_id` ক্যাটাগরির নিজের চারটি হেডের একটি (Fixed Asset / Accum Dep / Dep Expense / Disposal) | 422 — ডেবিট-ক্রেডিট একই হেডে পড়ে ভাউচার শূন্য হয়ে যেত, ব্যালান্স শিটে কিছুই দেখাত না |
 | `cost = 0`, বা `cost = opening` ও opening = 0 | 422 — পোস্ট করার কিছু নেই |
 | বন্ধ বছর / কোটা শেষ | 422 (period-close হলে §42-এর নিজস্ব রেসপন্স) |
 | কোড ডুপ্লিকেট / opening > cost | আজকের মতোই আগে আটকাবে |
@@ -104,7 +104,7 @@ Cost 20,000 · Depreciation so far 4,000 · Counter account: Capital
 
 | কাজ | নিয়ম |
 |---|---|
-| Edit — `cost`, `opening_accum_dep`, `purchase_date`, `opening_as_on`, `category_id` | **এক বছর অবচয় চার্জ না হওয়া পর্যন্ত খোলা** — বদলে সেভ করলে **re-post**: পুরোনো ভাউচার `status = 0`, নতুন অঙ্কে নতুন ভাউচার, `main_trx_id` নতুনটি, বিপরীত হিসাব পুরোনো ভাউচারের লাইন থেকেই পড়া। এক বছর চার্জ হলে ৪২২ |
+| Edit — `cost`, `opening_accum_dep`, `purchase_date`, `opening_as_on`, `category_id` | **এক বছর অবচয় চার্জ না হওয়া পর্যন্ত খোলা** — বদলে সেভ করলে **re-post**: পুরোনো ভাউচার `status = 0`, নতুন অঙ্কে নতুন ভাউচার, `main_trx_id` নতুনটি, বিপরীত হিসাব পুরোনো ভাউচারের লাইন থেকেই পড়া। এক বছর চার্জ হলে ৪২২ |
 | Edit — `code`, `name`, `serial_no`, `location`, `notes` | সবসময় খোলা (বইয়ে যায় না) |
 | Edit — পোস্ট না হওয়া সারিতে `post_to_books` টিক | তখনই ভাউচার লেখা হয় ও লিংক বসে |
 | Branch সরানো | `main_trx_id` থাকলে বন্ধ, এবং এক বছর চার্জ থাকলে বন্ধ |
@@ -120,7 +120,7 @@ Cost 20,000 · Depreciation so far 4,000 · Counter account: Capital
 
 UI: API `index`/`edit`-এ `in_books` ফেরত দেয়; `AssetRegisterTab`-এর `locked` কেবল অবচয় চার্জ থেকে আসে — `locked = charged_here > 0` (শেষে বদলানো: প্রথমে `in_books`-ও যোগ করা হয়েছিল, পরে re-post চালু হওয়ায় বাদ)। `in_books` কেবল form-কে জানায় কী লিখতে হবে।
 
-> ⚠️ **`main_trx_id` নয়, `main_trx_master.status = 1` — এটাই লকের মাপকাঠি।** ভাউচার মুছলে কেবল `main_trx_master.status = 0` হয়; `asset_registers.main_trx_id` থেকে যায়। সংখ্যাটাকেই ভরসা করলে ব্যবহারকারী ওই ভাউচার মুছে দিলে সারিটি চিরকালের জন্য লক হয়ে থাকত, যা মোছাও যেত না, এডিটও নয়। তাই চারটি জায়গায় একই উত্তর: `in_books = main_trx_id সেট है এবং সেই ভাউচার এখনো দাঁড়িয়ে আছে`। (যাচাই: পোস্ট → এডিট ৪২২ · ভাউচার `status = 0` → এডিট ২০০ ও ডিলিট ২০০।)
+> ⚠️ **`main_trx_id` নয়, `main_trx_master.status = 1` — এটাই লকের মাপকাঠি।** ভাউচার মুছলে কেবল `main_trx_master.status = 0` হয়; `asset_registers.main_trx_id` থেকে যায়। সংখ্যাটাকেই ভরসা করলে ব্যবহারকারী ওই ভাউচার মুছে দিলে সারিটি চিরকালের জন্য লক হয়ে থাকত, যা মোছাও যেত না, এডিটও নয়। তাই চারটি জায়গায় একই উত্তর: `in_books = main_trx_id সেট है এবং সেই ভাউচার এখনো দাঁড়িয়ে আছে`। (যাচাই: পোস্ট → এডিট ৪২২ · ভাউচার `status = 0` → এডিট ২০০ ও ডিলিট ২০০।)
 
 **পাশাপাশি একটা পুরোনো ফাঁকও বন্ধ হবে:** এখন কেনার পথে তৈরি Register সারির (`main_trx_id` আছে) cost/তারিখ Register স্ক্রিন থেকে এডিট হয়ে যায়, বইয়ের ভাউচার অপরিবর্তিত রেখেই। নতুন নিয়মে ওগুলোও লক হবে। পুরোনো কোনো সারি backfill করা লাগবে না।
 
@@ -148,7 +148,7 @@ UI: API `index`/`edit`-এ `in_books` ফেরত দেয়; `AssetRegisterT
 
 ## ৮. যাচাই (কোড লেখার পর ঠিক এই ক্রমে)
 
-1. **টিক ছাড়া** — Register সেভ → কোনো `main_trx_master` তৈরি হয়নি, `main_trx_id` NULL।
+1. **টিক ছাড়া** — Register সেভ → কোনো `main_trx_master` তৈরি হয়নি, `main_trx_id` NULL।
 2. **টিক দিয়ে** (একই কোম্পানি/শাখা, cost 20,000, opening 4,000, counter = Capital) →
    ```sql
    SELECT id, vr_no, vr_date, transaction_type, voucher_type FROM main_trx_master WHERE id = <trx>;

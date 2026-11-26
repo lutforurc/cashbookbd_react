@@ -122,7 +122,7 @@ const BranchRollCallCard = ({ tick, rowClass = 'px-3 py-2' }: { tick: number; ro
         <span className="truncate">All Branches</span>
         <span className="shrink-0 text-[11px] font-normal text-slate-400">
           {rows ? `${rows.length} ${local ? 'শাখা' : 'branches'}` : ''}
-          {readAt ? ` · ${local ? 'পড়া' : 'read'} ${dayjs(readAt).format('hh:mm A')}` : ''}
+          {readAt ? ` · ${local ? 'পড়া' : 'read'} ${dayjs(readAt).format('hh:mm A')}` : ''}
         </span>
       </div>
 

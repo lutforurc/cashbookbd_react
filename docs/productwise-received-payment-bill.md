@@ -79,7 +79,7 @@ API endpoints (routes/api.php):
 
 অর্থাৎ detail row-এর id প্রতি edit-এ বদলে যায়। সেটিকে mapping key বানালে
 একবার voucher edit করলেই mapping অনাথ হয়ে যেত, Product-এর Cash Received
-কমে যেত এবং Receivable মিথ্যাভাবে বেড়ে যেত।
+কমে যেত এবং Receivable মিথ্যাভাবে বেড়ে যেত।
 
 সিদ্ধান্ত: স্থায়ী anchor হবে
 
@@ -167,7 +167,7 @@ upgrade করা হবে — mapping থাকলে exact হিসাব, �
 -----------------------------------------------
 
 `ledgerWithProductOpeningBalance()` transaction_type = 5 (Journal)-কেও
-received/payment হিসেবে গোনে। এছাড়া BankReceivedController ও
+received/payment হিসেবে গোনে। এছাড়া BankReceivedController ও
 BankPaymentController আলাদাভাবে বিদ্যমান।
 
 শুধু cash ধরলে Product Receivable/Payable overstate হবে। তাই mapping-এ
@@ -315,7 +315,7 @@ BRANCH SCOPE নিয়ম:
 EFFECTIVE PERIOD নিয়ম:
 
     effective_from / effective_to শুধু *নতুন mapping তৈরি* নিয়ন্ত্রণ করে।
-    Report সবসময় সম্পূর্ণ history পড়বে।
+    Report সবসময় সম্পূর্ণ history পড়বে।
 
     কারণ: পুরোনো bill বাদ দিয়ে পুরোনো cash রেখে দিলে Opening Receivable
     ঋণাত্মক হয়ে যেত। Opening ও closing-এর মধ্যে অসঙ্গতি তৈরি হতো।
@@ -435,7 +435,7 @@ SQL ফাইলে তিনটি view আছে। এগুলো legacy tab
     v_product_cash_lines     mapped Received/Payment
     v_product_ledger_lines   উপরের দুটির UNION — statement-এর row source
 
-Report query এই view গুলোর উপর দাঁড়াবে, যাতে formula এক জায়গায় থাকে এবং
+Report query এই view গুলোর উপর দাঁড়াবে, যাতে formula এক জায়গায় থাকে এবং
 test করা যায়।
 
 ============================================================
@@ -564,7 +564,7 @@ transaction তৈরি হলে (`inventory_*_masters.netpayment`):
 2. একাধিক tracked Product থাকলে অনুমান করে mapping করা যাবে না।
 3. Tracked ও untracked মিশ্রিত invoice হলে পুরো amount tracked Product-এর
    নামে map করা যাবে না।
-4. Ambiguous mapping ছাড়া থাকবে; audit log-এ `ambiguous` লেখা হবে।
+4. Ambiguous mapping ছাড়া থাকবে; audit log-এ `ambiguous` লেখা হবে।
 5. Invoice form-এ নতুন allocation UI যোগ করা যাবে না।
 6. Invoice update/delete/cancel হলে REWRITE CONTRACT অনুযায়ী mapping sync হবে।
 7. কোনো invoice বা invoice detail row rewrite করা যাবে না।
@@ -764,9 +764,9 @@ API response existing envelope (foundData / notFound) অনুসরণ কর�
 শুধু নতুন table-এর ভিতরে index — SQL ফাইলে সংজ্ঞায়িত।
 
 Existing table-এ নতুন index যোগ করা যাবে না। বিদ্যমান invoice/report query
-ধীর হলে আগে EXPLAIN করে দেখাতে হবে; অনুমতি ছাড়া legacy table alter নয়।
+ধীর হলে আগে EXPLAIN করে দেখাতে হবে; অনুমতি ছাড়া legacy table alter নয়।
 
-Report pagination ব্যবহার করবে এবং বড় data memory-তে load করবে না।
+Report pagination ব্যবহার করবে এবং বড় data memory-তে load করবে না।
 
 ============================================================
 ২১. BACKWARD COMPATIBILITY
@@ -776,7 +776,7 @@ Report pagination ব্যবহার করবে এবং বড় data me
 2. Received/Payment request-এ trackedProductId না থাকলে আগের মতো save হবে।
 3. Existing mobile/web clients ভাঙবে না।
 4. Existing invoice save/edit/print অপরিবর্তিত থাকবে।
-5. Product filter ছাড়া existing Ledger result অপরিবর্তিত থাকবে।
+5. Product filter ছাড়া existing Ledger result অপরিবর্তিত থাকবে।
 6. Product নির্বাচন করলেও, Product untracked হলে বর্তমান heuristic আচরণ
    অপরিবর্তিত থাকবে।
 7. Unmapped transaction Product Financial Statement-এ cash movement হিসেবে
@@ -797,7 +797,7 @@ Backend:
 3. Payment dropdown-এ শুধু track_cash_payment Product আসে।
 4. Cross-company Product mapping reject হয়।
 5. Untracked Product mapping reject হয়।
-6. Product ছাড়া existing transaction আগের মতো save হয়।
+6. Product ছাড়া existing transaction আগের মতো save হয়।
 7. Mapping create/update/delete কাজ করে।
 8. Duplicate mapping হয় না।
 9. ⚠ Voucher edit করার পরেও mapping টিকে থাকে এবং সঠিক row-এর সঙ্গে থাকে
@@ -814,7 +814,7 @@ Backend:
 19. Closing Receivable/Payable সঠিক।
 20. Branch scope precedence (branch-specific > branch_id 0) সঠিক।
 21. Date filter সঠিক।
-22. Product filter ছাড়া legacy ledger response byte-for-byte অপরিবর্তিত।
+22. Product filter ছাড়া legacy ledger response byte-for-byte অপরিবর্তিত।
 23. Untracked Product নির্বাচন করলে পুরোনো heuristic আচরণ অপরিবর্তিত।
 24. Backfill idempotent।
 25. Ambiguous transaction auto-map হয় না।
@@ -893,7 +893,7 @@ Implementation ক্রম:
 8. Historical bills existing invoice items থেকে আসে।
 9. Historical cash mapping শুধু নিশ্চিত transaction-এর ক্ষেত্রে হয়।
 10. Ambiguous data manual reconciliation করা যায়।
-11. Product filter ছাড়া Ledger আগের মতো থাকে।
+11. Product filter ছাড়া Ledger আগের মতো থাকে।
 12. Untracked Product নির্বাচনে পুরোনো আচরণ অক্ষত থাকে।
 13. Report-এ "memo statement" ঘোষণা ও Unmapped ঘর আছে।
 14. কোনো legacy table ALTER হয়নি।

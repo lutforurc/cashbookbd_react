@@ -57,7 +57,7 @@
             ["Rate %", "20", "বছরে অবচয়ের হার (আবশ্যক, ০ হলেও লিখতে হবে)"],
             ["Stops at", "1", "মূল্য এই অঙ্কে নামলে অবচয় থামে"],
             ["Asset head", "Vehicles", "ক্রয়মূল্য এখানে থাকে"],
-            ["Accumulated depreciation", "Accumulated Depreciation — Vehicles", "জমা অবচয় এখানে বাড়ে"],
+            ["Accumulated depreciation", "Accumulated Depreciation — Vehicles", "জমা অবচয় এখানে বাড়ে"],
             ["Depreciation charge", "Depreciation", "এ বছরের অবচয় খরচ"],
             ["Gain or loss on sale", "Gain / Loss on Disposal of Asset", "বিক্রিতে লাভ বা ক্ষতি"],
             ["Note", "ঐচ্ছিক", "হারটি কোথা থেকে এলো"]

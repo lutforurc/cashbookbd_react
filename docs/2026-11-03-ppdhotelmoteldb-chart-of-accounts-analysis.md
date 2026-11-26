@@ -71,7 +71,7 @@
 - কারণ সম্ভবত `Coal3Controller.php:137` লাইনে `$coal3->status = 1;`। এখানে সংখ্যা 1 enum-এর
   index হিসেবে গণ্য হয়, তাই `'0'` জমা হয়। একই ফাইলের 119, 149 আর 186 লাইনেও সংখ্যা দিয়ে তুলনা করা হয়েছে।
 - **সবচেয়ে বিপজ্জনক অংশ:** L4 366 *Food Management A/c* আর 367 *Washing & Cleaning A/c* এখন
-  **Cash-এর গোষ্ঠীতে** পড়ে আছে। তাই Hotel-এ টাকা নেওয়ার তালিকায় এগুলো "cash till" হিসেবে আসতে পারে,
+  **Cash-এর গোষ্ঠীতে** পড়ে আছে। তাই Hotel-এ টাকা নেওয়ার তালিকায় এগুলো "cash till" হিসেবে আসতে পারে,
   আর Cash Book-এ খরচের বদলে নগদ হিসেবে দেখাতে পারে।
 - **যা করতে হবে:** এই ৫টা L3-তে `status='1'` দিতে হবে আর source `12` (General) করতে হবে। কোডের বাগটাও
   ঠিক করতে হবে, নইলে পরের খাতও একইভাবে নষ্ট হবে।
@@ -159,7 +159,7 @@ depreciation একটা L3 **46**-এর নিচে। **পরামর্�
 | Accomodation Element | নেই | ➕ (বানান: *Accommodation*) + category |
 | Crockeries A/c | নেই | ➕ + category |
 | ৬টা Acc Depriciaion … | ২টা মিলেছে (347, 351) | ➕ বাকি ৪টা (বানান: *Depreciation*) |
-| *(শীটে নেই)* | 348 Vehicles / 349, 352 Capital Work in Progress (`asset_cwip_works`-এ ব্যবহার হয়) | ? গাড়ি না থাকলে বন্ধ করা যায়। 352 রেখে দিতে হবে। |
+| *(শীটে নেই)* | 348 Vehicles / 349, 352 Capital Work in Progress (`asset_cwip_works`-এ ব্যবহার হয়) | ? গাড়ি না থাকলে বন্ধ করা যায়। 352 রেখে দিতে হবে। |
 
 **শীটে Depreciation-এর খরচের খাত নেই।** DB-র 344 *Depreciation* খাতটা রাখতে হবে, নইলে accumulated
 depreciation-এর বিপরীতে খরচ লেখার কোনো খাত থাকবে না।
@@ -168,7 +168,7 @@ depreciation-এর বিপরীতে খরচ লেখার কোনো
 | শীট | DB | করণীয় |
 |---|---|---|
 | Capital | 14 Capital Accounts (L2 14 → L3 27) | ✎ নাম "Capital" করা যায়। id 14 কোডে লেখা। ব্যক্তির নামের খাতগুলো বন্ধ। |
-| Loan from General Fund | নেই | ➕ L3 30 *Current Liability*-এর নিচে (Asset দিকের "Loan Realized General Fund"-এর জোড়া মনে হচ্ছে) |
+| Loan from General Fund | নেই | ➕ L3 30 *Current Liability*-এর নিচে (Asset দিকের "Loan Realized General Fund"-এর জোড়া মনে হচ্ছে) |
 | Advance A/c | 336 Advance Against Booking (marker দেওয়া, ৩৯টা লাইন) | ✎ নাম বদলানো যায়। marker রাখতে হবে। |
 | A/c Payable | 13 Account Payable | ✓ |
 | *(শীটে নেই)* | **337 VAT Payable** (marker দেওয়া, ১৮,৫২৭ টাকা জমা) | **রাখতে হবে।** Hotel এই খাতে VAT পোস্ট করে। শীটে যোগ করার কথা মালিককে বলতে হবে। |
@@ -179,15 +179,15 @@ depreciation-এর বিপরীতে খরচ লেখার কোনো
 Hotel-এর চার্জ কোন খাতে যাবে তা ঠিক হয় এভাবে: চার্জ টাইপে (`hotel_booking_charge_types.coa4_id`) খাত দেওয়া থাকলে
 সেটাতে যায়। Room Rent যায় 333-এ, Hall Rent 342-এ, আর বাকি সব 339 *Other Income*-এ। এখন কোনো চার্জ টাইপে
 খাত দেওয়া নেই।
-**মানে কোড না বদলেই নতুন আয়ের খাত বানিয়ে চার্জ টাইপের সাথে জুড়ে দেওয়া যায়।** ব্যতিক্রম Room Rent-এর AC আর
+**মানে কোড না বদলেই নতুন আয়ের খাত বানিয়ে চার্জ টাইপের সাথে জুড়ে দেওয়া যায়।** ব্যতিক্রম Room Rent-এর AC আর
 Non-AC ভাগ।
 
 | শীট | DB | করণীয় |
 |---|---|---|
 | Income from Guest Room Rent (AC) | 333 Room Rent Income (একটাই খাত) | ✎ |
-| Income from Guest Room Rent (AC) — **দ্বিতীয়বার** | – | ? সম্ভবত Non-AC। Room Rent এখন একটা খাতেই যায়, তাই AC আর Non-AC ভাগ করতে **কোড বদলাতে হবে** (hotel-vat-rate-wise প্ল্যান, স্থগিত আছে)। L3 50/51 খালি আর বন্ধ অবস্থায় পড়ে আছে। |
-| Income from Class Room Rent | নেই | ➕ নতুন খাত + চার্জ টাইপ "Class Room" তার সাথে জুড়ে দেওয়া |
-| Catering (Food Management Income A/c) | নেই (catering এখন 339-এ যায়) | ➕ খাত বানিয়ে চার্জ টাইপ *catering* (1497)-এ জুড়ে দেওয়া |
+| Income from Guest Room Rent (AC) — **দ্বিতীয়বার** | – | ? সম্ভবত Non-AC। Room Rent এখন একটা খাতেই যায়, তাই AC আর Non-AC ভাগ করতে **কোড বদলাতে হবে** (hotel-vat-rate-wise প্ল্যান, স্থগিত আছে)। L3 50/51 খালি আর বন্ধ অবস্থায় পড়ে আছে। |
+| Income from Class Room Rent | নেই | ➕ নতুন খাত + চার্জ টাইপ "Class Room" তার সাথে জুড়ে দেওয়া |
+| Catering (Food Management Income A/c) | নেই (catering এখন 339-এ যায়) | ➕ খাত বানিয়ে চার্জ টাইপ *catering* (1497)-এ জুড়ে দেওয়া |
 | Service Charge | 334 Hotel Service Charge / 42 Service Charge | ✎ 334-এর নাম বদলানো যায়। 42 সিস্টেমের খাত। |
 | Training Service Charge | নেই | ➕ + চার্জ টাইপ |
 | *(শীটে নেই)* | 339 Other Income, 340 Cancellation, 341 Rounding, 342 Hall Rent, 343 Discount Allowed | রাখতে হবে (marker দেওয়া, ৩টাতে লেনদেন আছে)। Hall Rent শীটে নেই, কিন্তু ৬,৯৫৬ টাকা জমা আছে। |

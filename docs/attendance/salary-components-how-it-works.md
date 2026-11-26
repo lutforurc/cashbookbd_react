@@ -154,7 +154,7 @@ erDiagram
    - `mobile_bill` = `hrm_employees.others_allowance`
 3. `gross_salary` = দুই লাইনের যোগফল।
 
-**কেন House Rent / Medical নেওয়া হয়নি:** বর্তমান engine এগুলো pay করে না। নিলে নতুন engine চালুর দিন সবার বেতন বেড়ে যেত।
+**কেন House Rent / Medical নেওয়া হয়নি:** বর্তমান engine এগুলো pay করে না। নিলে নতুন engine চালুর দিন সবার বেতন বেড়ে যেত।
 
 **কেন `2000-01-01`:** যেকোনো payroll তারিখে এই revision পাওয়া যায়। `joning_dt` কিছু tenant-এ `DD/MM/YYYY` string, DATE নয়, তাই নির্ভরযোগ্য নয়।
 
@@ -225,7 +225,7 @@ Phase 1 শুধু data তৈরি করে। Phase 2-এ একটি bac
 3. প্রতিটি খাতের লাইন `hrm_salary_payment_components`-এ — নাম ও ledger freeze। পরে master-এ নাম বদলালেও পুরোনো payslip বদলাবে না।
 4. Salary voucher (`main_trx_id`) — খাতের `expense_ledger_id` থাকলে সেই ledger-এ, না থাকলে default ledger-এ। মোট debit = gross।
 
-পুরোনো sheet-গুলোর লাইন backfill হয়নি; সেগুলো আগের column থেকেই পড়বে।
+পুরোনো sheet-গুলোর লাইন backfill হয়নি; সেগুলো আগের column থেকেই পড়বে।
 
 ---
 
@@ -276,7 +276,7 @@ ORDER BY c.sort_order;
 
 - **Patch-এ:** কিছু drop হয় না। নতুন table-এ কেউ লেখে না যতক্ষণ Phase 2 চালু না হয়, তাই রেখে দিলেও ক্ষতি নেই।
 - **Migration rollback (`migrate:rollback`):** ৮টি নতুন table ও `payroll_run_id` drop হয়। `period_ym` থেকে যায় — নিজে হিসাব হয়, ক্ষতিহীন, আর report হয়তো ইতিমধ্যে এর উপর sort করছে।
-- পুরোনো engine কখনো নতুন table পড়ে না, তাই rollback-এ পুরোনো বেতন প্রভাবিত হয় না।
+- পুরোনো engine কখনো নতুন table পড়ে না, তাই rollback-এ পুরোনো বেতন প্রভাবিত হয় না।
 
 ---
 

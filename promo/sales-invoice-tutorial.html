@@ -232,7 +232,7 @@
     [8,   () => $('s-sales').classList.add('hl')],
     [11,  () => { caption(2, 'Select Customer থেকে কাস্টমার বেছে নিন', 'নতুন কাস্টমার হলে তালিকার নিচে "+ Add New Customer"'); focus('f-cust'); dropdown('f-cust', ['রহিম এন্টারপ্রাইজ', 'করিম ট্রেডার্স', 'সালমা স্টোর'], 0, '+ Add New Customer'); }],
     [15,  () => { closeDd(); val('f-cust').textContent = 'রহিম এন্টারপ্রাইজ'; focus('f-cust', true); }],
-    [18,  () => { caption(3, 'গাড়ির নম্বর লিখে Enter চাপুন', 'ঐচ্ছিক — না থাকলে Enter দিয়ে এগিয়ে যান'); focus('f-veh', true); type('f-veh', 'ঢাকা মেট্রো-ট ১২-৩৪৫৬', 2200); }],
+    [18,  () => { caption(3, 'গাড়ির নম্বর লিখে Enter চাপুন', 'ঐচ্ছিক — না থাকলে Enter দিয়ে এগিয়ে যান'); focus('f-veh', true); type('f-veh', 'ঢাকা মেট্রো-ট ১২-৩৪৫৬', 2200); }],
     [22,  () => { caption(4, 'কত টাকা পেলেন — Received Amount', 'পরে প্রোডাক্ট যোগ হলেও এখানকার অঙ্ক বদলানো যায়'); focus('f-rec', true); type('f-rec', bn(30000), 1000); }],
     [26,  () => { caption(5, 'ডিসকাউন্ট ও নোট লিখুন', 'নোট আগে লিখলে suggestion তালিকা থেকেও বেছে নেওয়া যায়'); focus('f-dis', true); type('f-dis', bn(800), 700); }],
     [29,  () => { focus('f-note', true); type('f-note', 'নগদ + বাকি', 1000); }],

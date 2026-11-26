@@ -324,7 +324,7 @@ export const API_PRODUCT_OUT_REASON_STORE_URL = `${API_BASE_URL}/product-out/rea
 export const API_PRODUCT_OUT_REASON_UPDATE_URL = `${API_BASE_URL}/product-out/reason/update`;
 export const API_PRODUCT_OUT_REASON_DESTROY_URL = `${API_BASE_URL}/product-out/reason/destroy`;
 
-// Product In Routes (ক্রয় ছাড়া মাল ঢোকা)
+// Product In Routes (ক্রয় ছাড়া মাল ঢোকা)
 // The mirror of the block above, and the same lifecycle: posted at SAVE,
 // reversed by `destroy`, signed off in the Approval Center.
 export const API_PRODUCT_IN_LIST_URL = `${API_BASE_URL}/product-in/list`;

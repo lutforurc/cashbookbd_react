@@ -24,7 +24,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ real.estate.project.view permission থাকলে।"] },
       { "heading": "প্রকল্প তৈরি", "menu": "Real Estate → Setup → Projects → New Project", "steps": ["Select Branch, Select Location ও Select Land Owner নির্বাচন করুন।", "Project / Land Name, Location Details, Area (Sq. Ft), Purchase Price ও Sale Price লিখুন।", "Notes, Purchase Date ও Sales Date দিন।", "Select Status দিয়ে Save চাপুন; বদলাতে Update।"] },
       { "heading": "তালিকা", "steps": ["List of Projects-এ Name of Project, Area, Location ও Branch দেখা যায়; উপরের ফিল্টার দিয়ে নির্বাচন করুন।"] },
-      { "heading": "সতর্কতা", "warning": "Purchase Price ও Sale Price ভুল দিলে লাভের হিসাব ভুল হবে; Area ছাড়া ইউনিটের হিসাব মিলবে না।" }
+      { "heading": "সতর্কতা", "warning": "Purchase Price ও Sale Price ভুল দিলে লাভের হিসাব ভুল হবে; Area ছাড়া ইউনিটের হিসাব মিলবে না।" }
     ]
   },
   "realestate-building": {
@@ -100,7 +100,7 @@
     "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "ইউনিট বিক্রির সঙ্গে যে বাড়তি চার্জ যোগ বা বাদ হয় (যেমন কর, রেজিস্ট্রি), তার ধরন তৈরি করা হয়।",
+    "intro": "ইউনিট বিক্রির সঙ্গে যে বাড়তি চার্জ যোগ বা বাদ হয় (যেমন কর, রেজিস্ট্রি), তার ধরন তৈরি করা হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ real.estate.charge.view permission থাকলে।"] },
       { "heading": "চার্জের ধরন", "menu": "Real Estate → Setup → Charges", "steps": ["New Charge Type চাপুন।", "Charge Type Name, Effect ((+) Add বা (−) Subtract), Notes, Sort Order ও Status দিন।", "Save চাপুন; বদলাতে Update।"] },
@@ -114,7 +114,7 @@
     "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "ইউনিট, পার্কিং ও বাড়তি চার্জ মিলিয়ে বিক্রির মোট দাম তৈরি হয়; বুকিংয়ের টাকাও এখানে লেখা হয়।",
+    "intro": "ইউনিট, পার্কিং ও বাড়তি চার্জ মিলিয়ে বিক্রির মোট দাম তৈরি হয়; বুকিংয়ের টাকাও এখানে লেখা হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ real.estate.unit.sale.view permission থাকলে।"] },
       { "heading": "নতুন বিক্রি", "menu": "Real Estate → Sales → Unit Sales", "steps": ["Select Customer ও Select Unit নির্বাচন করুন; দরকার হলে Select Parking।", "Charge Type ও Amount (Tk.) দিয়ে Add Charge চাপুন।", "Payment Mode, Money Receipt No., Booking Tk. ও প্রয়োজনে Check/Ref. Number, Bank Name, Branch Name দিন।", "Nominee দরকার হলে নির্বাচন করুন; Save চাপুন।"] },
@@ -160,7 +160,7 @@
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["Project Expense মেনু দেখা যায় শুধু Roles-এ real.estate.project.expense.view permission থাকলে।", "Project Income মেনু দেখা যায় শুধু Roles-এ real.estate.project.income.view permission থাকলে।"] },
       { "heading": "লেখার ধাপ", "menu": "Real Estate → Project Entry → Project Expense / Project Income", "steps": ["Select Account নির্বাচন করুন।", "Select Project (Optional) ও Select Building নির্বাচন করুন।", "Enter Remarks ও Amount (Tk.) দিন; Voucher Note লিখুন।", "Add New দিয়ে লাইন যোগ করুন, তারপর Save/Update চাপুন।"] },
-      { "heading": "সম্পাদনা", "steps": ["Search Voucher দিয়ে পুরনো ভাউচার খুলুন।", "ক্যাশ ছাড়া অন্য হিসাব থেকে হলে উপরে লেখা থাকে — Save করলে সেটিই থাকবে।"] },
+      { "heading": "সম্পাদনা", "steps": ["Search Voucher দিয়ে পুরনো ভাউচার খুলুন।", "ক্যাশ ছাড়া অন্য হিসাব থেকে হলে উপরে লেখা থাকে — Save করলে সেটিই থাকবে।"] },
       { "heading": "সতর্কতা", "warning": "Project না বাছলে খরচ বা আয় কোনো প্রকল্পের হিসাবে ধরা হবে না; রিপোর্টে আলাদা দেখাবে।" }
     ]
   },
@@ -174,7 +174,7 @@
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["Project Purchase মেনু দেখা যায় শুধু Roles-এ real.estate.project.purchase.view permission থাকলে।", "Project Labour মেনু দেখা যায় শুধু Roles-এ real.estate.project.labour.view permission থাকলে।"] },
       { "heading": "বিল লেখা", "menu": "Real Estate → Project Entry → Project Purchase / Project Labour", "steps": ["Select Supplier ও Notes দিন।", "Invoice/Bill Number, Invoice Date, Vehicle Number, Discount Amount ও Payment Amount দিন।", "Select Project ও Select Building নির্বাচন করুন।", "Select Product বা Select Labour Item, Quantity ও Price/Rate দিয়ে Add New চাপুন।", "Save/Update চাপুন।"] },
-      { "heading": "ফল পড়া", "steps": ["Payment Amount এখনই দেওয়া টাকা; বাকিটা Due Tk.-এ থাকে।", "Search Invoice দিয়ে পুরনো বিল খোলা যায়।"] },
+      { "heading": "ফল পড়া", "steps": ["Payment Amount এখনই দেওয়া টাকা; বাকিটা Due Tk.-এ থাকে।", "Search Invoice দিয়ে পুরনো বিল খোলা যায়।"] },
       { "heading": "সতর্কতা", "warning": "Payment Amount ভুল দিলে সরবরাহকারী বা শ্রমিকের বাকি ভুল হবে।" }
     ]
   },
@@ -203,7 +203,7 @@
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ real.estate.project.income.report.view permission থাকলে।"] },
       { "heading": "রিপোর্ট দেখা", "menu": "Real Estate → Project Reports → Project Income Report", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
       { "heading": "ট্যাব", "steps": ["Project Summary — Building, Project-wide ও Total।", "Income Detail — Project, Building, Head ও Amount।", "Income Without a Project — Date, Voucher, Head, Remarks ও Amount।"] },
-      { "heading": "সতর্কতা", "warning": "Project-wide আয় বিল্ডিংয়ে ভাগ করা হয় না — একটি হোর্ডিংয়ের ভাড়া ফ্ল্যাটের মাপে ভাগ হবে না।" }
+      { "heading": "সতর্কতা", "warning": "Project-wide আয় বিল্ডিংয়ে ভাগ করা হয় না — একটি হোর্ডিংয়ের ভাড়া ফ্ল্যাটের মাপে ভাগ হবে না।" }
     ]
   },
   "realestate-project-summary-report": {
@@ -216,7 +216,7 @@
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ real.estate.project.summary.view permission থাকলে।"] },
       { "heading": "রিপোর্ট দেখা", "menu": "Real Estate → Project Reports → Project Summary", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
-      { "heading": "ফল পড়া", "steps": ["Project, Expense, Income, Purchase, Labour, Units, Sold, Received, Outstanding ও P&L দেখা যায়।", "নিচে Total সারি; Print কাগজ বের করে।"] },
+      { "heading": "ফল পড়া", "steps": ["Project, Expense, Income, Purchase, Labour, Units, Sold, Received, Outstanding ও P&L দেখা যায়।", "নিচে Total সারি; Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "তারিখের পরিসর বদলালে সব অঙ্ক বদলাবে — একই পরিসরে তুলনা করুন।" }
     ]
   }

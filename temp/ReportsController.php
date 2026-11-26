@@ -1489,7 +1489,7 @@ class ReportsController extends Controller
         };
 
         /**
-         * চূড়ান্ত DETAILS (Opening Balance নেই)
+         * চূড়ান্ত DETAILS (Opening Balance নেই)
          * 4টি ব্লক: (<>3,debit) ∪ (<>3,credit) ∪ (=3,credit) ∪ (=3,debit)
          */
         $detailsQuery = $block('debit',  '<>3')

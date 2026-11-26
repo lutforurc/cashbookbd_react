@@ -128,7 +128,7 @@ php artisan route:clear
 | Reversal: কিছু মোছে না; voucher status 0, খরচ released, input layer থাকে, Batch Costing-এ "Reversed" | পাস |
 | একাধিক দামের ও আংশিক FIFO layer | পাস |
 | দুবার post-এ একবারই movement | পাস |
-| Permission ছাড়া, manufacture বন্ধ branch, অন্য company: API প্রত্যাখ্যান | পাস |
+| Permission ছাড়া, manufacture বন্ধ branch, অন্য company: API প্রত্যাখ্যান | পাস |
 | আগের Sales Return বনাম নতুন: ledger হুবহু এক, শুধু stock-এর দাম (২০০ বনাম ১৭১.১৬) আলাদা | পাস |
 | Opening stock ১২.৫০ @১৭১.১৬ → stock, purchase সারি, ledger তিনটাই ২,১৩৯.৫০; ১০ @১০০ আগের মতোই | পাস |
 | `production_master` না থাকলেও Product Ledger/Statement চলে | পাস |
@@ -136,7 +136,7 @@ php artisan route:clear
 
 ## ৪-ক. Gross profit: সিদ্ধান্ত "গ" (৪ নভেম্বর ২০২৬)
 
-**কেন:** P&L-এর trading অংশ শুধু ক্রয়, বিক্রি, ফেরত আর stock পড়ে। মজুরি বসে নিচে, খরচের তালিকায়। Production মজুরিকে তৈরি মালের দামে (closing stock-এ) ঢোকায়, কিন্তু "ক্রয়"-এ ঢোকায় না। তাই "ক"-তে gross profit মজুরির পুরো টাকা বেশি দেখাত (worked example-এ ৪,৩৫৮, আসল ১,২৯৮), যদিও net profit ঠিক থাকত। "খ" (স্বয়ংক্রিয় Journal দিয়ে মজুরিকে Purchase-এ সরানো) বাদ, কারণ তাতে Purchase-এর অঙ্কে মজুরি মেশে আর ledger লিখতে হয়।
+**কেন:** P&L-এর trading অংশ শুধু ক্রয়, বিক্রি, ফেরত আর stock পড়ে। মজুরি বসে নিচে, খরচের তালিকায়। Production মজুরিকে তৈরি মালের দামে (closing stock-এ) ঢোকায়, কিন্তু "ক্রয়"-এ ঢোকায় না। তাই "ক"-তে gross profit মজুরির পুরো টাকা বেশি দেখাত (worked example-এ ৪,৩৫৮, আসল ১,২৯৮), যদিও net profit ঠিক থাকত। "খ" (স্বয়ংক্রিয় Journal দিয়ে মজুরিকে Purchase-এ সরানো) বাদ, কারণ তাতে Purchase-এর অঙ্কে মজুরি মেশে আর ledger লিখতে হয়।
 
 **"গ" কী করে:** কোনো ledger লেখে না। শুধু রিপোর্টে এক অঙ্ক দুই জায়গায় বসায়: COGS-এর "Direct Acquisition Costs"-এ যোগ, আর Production Cost খরচের group থেকে বাদ।
 
@@ -146,10 +146,10 @@ php artisan route:clear
 - Batch `posted`, বণ্টন `active` (বা পুরনো সারিতে NULL)। Reverse করা batch বাদ।
 - Production-এর তারিখ আর খরচের voucher-এর তারিখ দুটোই P&L-এর range-এর মধ্যে, একই branch ও company, voucher live (`status = 1`, `is_closing = 0`)।
 - প্রতি খরচের সারিতে `LEAST(বণ্টিত টাকা, সারির বর্তমান debit)`, তাই voucher পরে কমালে বেশি সরে না।
-- প্রতি group-এ সীমা: সেই group-এর net (debit − credit, ০-এর নিচে নয়)। ফলে যত যোগ হয় ঠিক তত বাদ যায়, net profit কখনো বদলায় না। (প্রথম সংস্করণে এই সীমা ছিল না; group-এ সংশোধনী credit থাকলে net profit কমে যেত। ধরা পড়ে ঠিক করা হয়েছে।)
+- প্রতি group-এ সীমা: সেই group-এর net (debit − credit, ০-এর নিচে নয়)। ফলে যত যোগ হয় ঠিক তত বাদ যায়, net profit কখনো বদলায় না। (প্রথম সংস্করণে এই সীমা ছিল না; group-এ সংশোধনী credit থাকলে net profit কমে যেত। ধরা পড়ে ঠিক করা হয়েছে।)
 - টেবিল না থাকলে বা production না থাকলে অঙ্ক ০। তখন সব রিপোর্ট আগের মতো হুবহু।
 
-**কোথায় কোথায় লাগানো:** gross profit যে ছয় জায়গায় আলাদা করে হিসাব হয়, সবগুলোতে একই নিয়ম: P&L স্ক্রিন ও print (`ProfitLoss.tsx`), পুরনো Blade print, Monthly Statement, Cash Flow, পণ্যভিত্তিক লাভের Adjustment, দিনভিত্তিক P&L। কোনো জায়গা বাদ পড়লেও সেখানে net profit ঠিক থাকে, শুধু gross profit "ক"-এর মতো দেখায়।
+**কোথায় কোথায় লাগানো:** gross profit যে ছয় জায়গায় আলাদা করে হিসাব হয়, সবগুলোতে একই নিয়ম: P&L স্ক্রিন ও print (`ProfitLoss.tsx`), পুরনো Blade print, Monthly Statement, Cash Flow, পণ্যভিত্তিক লাভের Adjustment, দিনভিত্তিক P&L। কোনো জায়গা বাদ পড়লেও সেখানে net profit ঠিক থাকে, শুধু gross profit "ক"-এর মতো দেখায়।
 
 **বাকি রাখা:** `apiProfitLossExpenseSummary()` (খরচের group-এ ক্লিক করলে head-এর বিস্তারিত) আগের মতো পুরো head দেখায়; Production Cost group আংশিক কমলে বিস্তারিতের যোগফল group-এর লাইনের চেয়ে বেশি দেখাবে। ইচ্ছে করে বদলানো হয়নি।
 
@@ -180,14 +180,14 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 | --- | --- | --- | --- |
 | ১ | Production Entry (৪ নভেম্বর, commit `bf4a31d7`) | Product-এর ঘরে Chart of Accounts আসত; খরচের তালিকা কখনো ভরত না; Edit draft খুলত না | ProductDropdown; thunk-এর সঠিক ডাক |
 | ২ | `ProductionPosting` নষ্টের হিসাব | সব input-এর পরিমাণ যোগ করে tolerance ধরত, তাই repack-এ ৫০ kg + ১৯৮ packet = ২৪৮ "unit"; স্বাভাবিক নষ্ট বেশি, অস্বাভাবিক কম আসত | শুধু loss basis-এর unit-এর input (যেমন "kg" = "Kg.") ধরা হয়; কোনোটা না মিললে আগের মতো সব |
-| ৩ | Posting | অস্বাভাবিক নষ্টে কারণ ছাড়াই post হতো (v4 খ-৪-এ বাধ্যতামূলক) | কারণ না লিখলে post আটকায় |
+| ৩ | Posting | অস্বাভাবিক নষ্টে কারণ ছাড়াই post হতো (v4 খ-৪-এ বাধ্যতামূলক) | কারণ না লিখলে post আটকায় |
 | ৪ | Posting | Batch ref খালি থাকলে stock-এ `date('Ymd')` বসত (v4 খ-১, খ-৬) | খালি থাকলে voucher নম্বরই batch ref |
 | ৫ | Posting | Output-এ Non Asset (type 2) পণ্য বা output = নিজের input চলত | দুটোই আটকায় |
 | ৬ | Production Register | কোনো draft-এ খরচ বসালেই সারি লাল দেখাত ("no longer posted") | শুধু posted batch পরীক্ষা হয় |
-| ৭ | Register | কাঁচামালের ক্রয় edit (দাম/পরিমাণ বদল) ধরা পড়ত না, শুধু মোছা ধরত (v4 Check ১৪) | voucher + product + দাম + পরিমাণ মিলিয়ে দেখে |
+| ৭ | Register | কাঁচামালের ক্রয় edit (দাম/পরিমাণ বদল) ধরা পড়ত না, শুধু মোছা ধরত (v4 Check ১৪) | voucher + product + দাম + পরিমাণ মিলিয়ে দেখে |
 | ৮ | Entry-র "On hand" | branch-এর সর্বকালের balance দেখাত, batch-এর তারিখের নয়; post অন্য সংখ্যা ধরত | post যে reader ব্যবহার করে সেটাই, batch-এর তারিখে |
 | ৯ | Production Sales Return (টাকা) | `netpayment`-এ সবসময় মোট ফেরত পাঠাত। পুরনো ফর্মে এটা "Cash Payment"। ফলে বাকির কাস্টমারের ফেরতেও ledger-এ নগদ ফেরত লেখা হতো | পুরনো ফর্মের মতো "Cash Payment" ঘর: ক্যাশ কাস্টমারে মোট টাকা (বন্ধ), অন্যদের ০ থেকে শুরু, বদলানো যায় |
-| ১০ | Production Sales Return (stock) | একই বিক্রির বিপরীতে বিক্রির চেয়ে বেশি ফেরত নেওয়া যেত | আগের সব ফেরত (পুরনো ও নতুন ফর্ম) মিলিয়ে বিক্রির পরিমাণ ছাড়ালে আটকায় |
+| ১০ | Production Sales Return (stock) | একই বিক্রির বিপরীতে বিক্রির চেয়ে বেশি ফেরত নেওয়া যেত | আগের সব ফেরত (পুরনো ও নতুন ফর্ম) মিলিয়ে বিক্রির পরিমাণ ছাড়ালে আটকায় |
 
 **যাচাই:** `myappsaasdatabase`-এ company 18-এ একটা transaction-এর ভিতরে fixture (৫০ kg @১২০ + ১৯৮ packet @২, repack ১৯৬ packet, ৩ kg নষ্ট, ১% সীমা, বিক্রি ১০) বানিয়ে আসল controller ও service চালানো হয়েছে, তারপর roll back। ১৭টা পরীক্ষাই পাস: স্বাভাবিক নষ্ট ০.৫ kg, অস্বাভাবিক ২.৫ kg, অস্বাভাবিক খরচ ৩১৯.৮০, output ৬,০৭৬.২০ (layer মিলে হুবহু), batch ref = voucher নম্বর, ফেরত ৪টা @৩১.০২ (FIFO), আরও ৭টা ফেরত আটকায়, ক্রয়ের দাম বদলালে batch লাল। কোনো সারি থেকে যায়নি। `php -l` পাস, `npm run build` exit 0।
 
@@ -216,8 +216,8 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 
 | # | কোথায় | সমস্যা | ঠিক করা |
 | --- | --- | --- | --- |
-| ১ | ২৮- Production Sales Return-এর প্রিন্ট | ভয় ছিল voucher_type বা `13` prefix-এর ওপর নির্ভর করে | **নির্ভর করে না।** `electronics/sales/invoice-print` নম্বর ধরে voucher পড়ে, type জিজ্ঞেস করে না; `salesPrintData()` `sales_return_master.details` ও ledger-এর customer leg দুটোই পাঠায়। `ReturnPrint` সেটাই আঁকে। কোনো কোড বদল লাগেনি; শুধু যাচাই হয়েছে |
-| ২ | `ProductionSalesReturnPosting::rebuild()` | প্রতিবার edit-এ পুরনো `inventory_sales_return_masters/_details` রয়ে যেত; edit/print পুরনো সারি পড়তে পারত। এছাড়া cash payment বদলালেও `main_trx_master.transaction_type` বদলাত না, তাই Cash Book ধরত না | `clearVoucher()` এখন voucher-এর নিজের return master/details-ও মুছে নতুন করে লেখে; `transaction_type` = ২ (নগদ) / ৫ (বাকি) হয়, `vr_no` অপরিবর্তিত |
+| ১ | ২৮- Production Sales Return-এর প্রিন্ট | ভয় ছিল voucher_type বা `13` prefix-এর ওপর নির্ভর করে | **নির্ভর করে না।** `electronics/sales/invoice-print` নম্বর ধরে voucher পড়ে, type জিজ্ঞেস করে না; `salesPrintData()` `sales_return_master.details` ও ledger-এর customer leg দুটোই পাঠায়। `ReturnPrint` সেটাই আঁকে। কোনো কোড বদল লাগেনি; শুধু যাচাই হয়েছে |
+| ২ | `ProductionSalesReturnPosting::rebuild()` | প্রতিবার edit-এ পুরনো `inventory_sales_return_masters/_details` রয়ে যেত; edit/print পুরনো সারি পড়তে পারত। এছাড়া cash payment বদলালেও `main_trx_master.transaction_type` বদলাত না, তাই Cash Book ধরত না | `clearVoucher()` এখন voucher-এর নিজের return master/details-ও মুছে নতুন করে লেখে; `transaction_type` = ২ (নগদ) / ৫ (বাকি) হয়, `vr_no` অপরিবর্তিত |
 | ৩ | `ProductionReportController::periodSummary()` | net sales পুরো branch-এর Sales head (১৫/১৯) ধরত, খরচ ধরত শুধু output পণ্যের | net sales এখন `inventory_sales_details` ও `inventory_sales_return_details` থেকে, শুধু batch-এর output পণ্যের জন্য (§ নিচে) |
 | ৪ | Production Register / Batch Costing-এর print | Register-এ ধূসর লেখার ঝুঁকি; Batch Costing-এ print-ই ছিল না | Register-এর print কঠোরভাবে solid black; Batch Costing-এ Print বোতাম ও সম্পূর্ণ কালো কাগজ যোগ |
 | ৫ | Expiry | কোথাও ঘর ছিল না | `production_outputs.expiry_date` DATE NULL (ঐচ্ছিক), output-ভিত্তিক; Entry-র Products out-এ ঘর ও কলাম, Recent batches / Register / Batch Costing-এ দেখা যায়; উৎপাদনের তারিখের আগে হলে স্ক্রিনে ও সার্ভারে আটকায় |
@@ -233,11 +233,11 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 - স্ক্রিনে **Vr. No.** লিখে **Find**; পাওয়া গেলে form ভরে যায়, **Update Return** দিয়ে একই নম্বরে save, **Cancel edit** দিয়ে নতুন return-এ ফেরা।
 - `edit()` এখন `cash_payment` (আসল নগদ ফেরত, `netpayment`-এরই নামান্তর) আর `sale_date` (মূল বিক্রির `vr_date`) পাঠায়; stored date খালি হলে `invoice_date`-ও ওই তারিখই হয়। reload করা বাকি return-এ আসল নগদ ফেরত দেখায়, refund total নয়।
 - Cash Payment নিয়ম অপরিবর্তিত: account 17-এ refund total বাঁধা, অন্যরা ০ থেকে শুরু করে বদলানো যায়।
-- Over-return guard আগের মতোই edit-কৃত voucher বাদ দেয় (`mtm.id <> $mtmId`); edit-এ qty বাড়ালে বিক্রির বাকি পরিমাণের বেশি হলে আটকায়।
+- Over-return guard আগের মতোই edit-কৃত voucher বাদ দেয় (`mtm.id <> $mtmId`); edit-এ qty বাড়ালে বিক্রির বাকি পরিমাণের বেশি হলে আটকায়।
 
 ### Register net sales (টাস্ক ৩)
 
-`periodSummary()`-র net sales এখন শুধু batch-এর **output পণ্য** পড়ে (double-check: branch-এর অন্য পণ্য বাদ):
+`periodSummary()`-র net sales এখন শুধু batch-এর **output পণ্য** পড়ে (double-check: branch-এর অন্য পণ্য বাদ):
 
 | কী | কোথা থেকে | কীভাবে |
 | --- | --- | --- |
@@ -326,7 +326,7 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 
 - **Recipe-তে না থাকা কাঁচামাল:** variance এখন ব্যাচের সব input দেখে; recipe-তে না থাকলে `expected_qty` ০, `not_in_recipe = true`। এক output-এর ব্যাচে এটা over গোনা হয় ও ব্যাচ লাল হয়; একাধিক output-এর ব্যাচে শুধু দেখানো হয়, লাল হয় না (ওই মাল অন্য output-এর হতে পারে)। Batch Costing ও তার print-এ "(not in recipe)" লেখা আসে।
 - **Recipe validation:** output ও প্রতিটা line-এর পণ্য caller-এর company-র হতে হবে; না থাকলে বা Non Asset (type 2) হলে recipe save-ই হয় না। আগে এমন recipe save হতো, আর প্রতিটা batch post-এ stock shortage-এ আটকাত।
-- **Make/Fill:** "Make" বদলে Fill না চাপলে স্ক্রিনে লাল বার্তা দেখায় এবং Save আটকায় ("The make quantity changed. Press Fill…"); Fill ছাড়া save হলে server যে নতুন target snapshot করত, inputs তার সঙ্গে মিলত না। recipe না বেছে Fill চাপলে এখন স্পষ্ট বার্তা আসে।
+- **Make/Fill:** "Make" বদলে Fill না চাপলে স্ক্রিনে লাল বার্তা দেখায় এবং Save আটকায় ("The make quantity changed. Press Fill…"); Fill ছাড়া save হলে server যে নতুন target snapshot করত, inputs তার সঙ্গে মিলত না। recipe না বেছে Fill চাপলে এখন স্পষ্ট বার্তা আসে।
 - **Retired recipe:** নতুন batch-এ retired recipe দিলে server আটকায়; পুরনো draft যেটা আগে থেকেই ওই recipe-তে save করা, সেটা অপরিবর্তিত save/post হতে পারে (validateDraft-এ, snapshot-এর আগে)।
 - **Permission:** Recipe স্ক্রিনে `production.create` না থাকলে Save ও New version disabled, delete লুকানো; আগে চাপার পরেই server refusal আসত।
 - **Patch বাধ্যতামূলক:** উপরের deploy ধাপ ৪ দেখুন; `ProductionRecipeSnapshot::apply()`-এর মন্তব্যও সংশোধিত।
@@ -335,7 +335,7 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 
 ### যাচাই
 
-- Production ছাড়া ব্রাঞ্চে P&L / Monthly / Cash Flow / দিনভিত্তিক / Balance Sheet আগে-পরে হুবহু এক (§৪-ক)। Product Ledger-এর কোডও এই কাজে বদলায়নি; non-production branch-এ চালিয়ে দেখা গেছে (§৪-ঘ)।
+- Production ছাড়া ব্রাঞ্চে P&L / Monthly / Cash Flow / দিনভিত্তিক / Balance Sheet আগে-পরে হুবহু এক (§৪-ক)। Product Ledger-এর কোডও এই কাজে বদলায়নি; non-production branch-এ চালিয়ে দেখা গেছে (§৪-ঘ)।
 - "গ"-এর সংখ্যা Command Code-এর বানানো fixture-এ যাচাই; branch 11-এর আসল test data (অন্য কম্পিউটারের `krishibitandatabase`)-তে P&L একবার খুলে gross ১,২৯৮ আর net ১,২৯৮ মিলিয়ে দেখা বাকি।
 - একই company-র ভিতরে অন্য branch-এর API call আলাদা করে পরীক্ষা হয়নি (অন্য company-রটা হয়েছে)।
 - নিজে মেনু খুলে পুরো ক্রম UI দিয়ে একবার চালানো।
@@ -352,7 +352,7 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 
 ### মালিক / ক্লায়েন্টের কাছ থেকে
 
-- **পুরনো Sales Return ফর্ম:** এটা ফেরত মাল stock-এ ফেরতের টাকার দামে ঢোকায় (যেমন ২০০, খরচ ১৭১.১৬), আর `(int)` দিয়ে ভগ্নাংশ কাটে; সব branch-এ লাভ বাড়িয়ে দেখায় (v4 গ-৪)। আলাদা কাজ হিসেবে ঠিক হবে কি না, সিদ্ধান্ত বাকি।
+- **পুরনো Sales Return ফর্ম:** এটা ফেরত মাল stock-এ ফেরতের টাকার দামে ঢোকায় (যেমন ২০০, খরচ ১৭১.১৬), আর `(int)` দিয়ে ভগ্নাংশ কাটে; সব branch-এ লাভ বাড়িয়ে দেখায় (v4 গ-৪)। আলাদা কাজ হিসেবে ঠিক হবে কি না, সিদ্ধান্ত বাকি।
 - **ক্লায়েন্ট DB-তে query (v4 গ-৯):** পুরনো Manufacturing module-এর ব্যবহার, id-গুলো, unit/net contents। এখনো চালানো হয়নি।
 - ক-২ #১০ (VAT), #১১ (কাঁচামালের উৎস, গুদাম)। #৬ (expiry) সিদ্ধান্ত হয়ে বানানো হয়েছে (§৪-ঘ)।
 
@@ -374,11 +374,11 @@ v4 আর পুরো কোড মিলিয়ে দেখা হয়ে
 
 ## ৬. Command Code-এর সঙ্গে কাজের নিয়ম
 
-নতুন কাজ দেওয়ার আগে Command Code-কে এই ফাইল আর v4 পড়তে বলুন। মূল নিয়ম:
+নতুন কাজ দেওয়ার আগে Command Code-কে এই ফাইল আর v4 পড়তে বলুন। মূল নিয়ম:
 
 - P&L Account (`profitLossData`, `ProfitLoss*.tsx`) বদলাবে না। একমাত্র ব্যতিক্রম ক-২ #১২ "গ" (৪ নভেম্বর ২০২৬): allocated production cost COGS-এর Direct Acquisition Costs-এ যোগ, আর একই অঙ্ক Production Cost expense group থেকে বাদ; এর বাইরে কোনো P&L বদল নয়।
 - আগের এন্ট্রি ফর্ম বদলাবে না; বদল লাগলে নতুন ফর্ম। ব্যতিক্রম শুধু opening stock-এর দশমিক।
-- আগের রিপোর্টে শুধু নতুন শাখা যোগ, আগে অনুমোদন; নতুন টেবিল পড়লে `Schema::hasTable` দিয়ে সুরক্ষা।
+- আগের রিপোর্টে শুধু নতুন শাখা যোগ, আগে অনুমোদন; নতুন টেবিল পড়লে `Schema::hasTable` দিয়ে সুরক্ষা।
 - সব SQL এক ফাইলে, আর সেটাই `AddUnitTypeToBuildingUnits`-এ method হিসেবে; নতুন artisan command নয়।
 - Voucher type আর account head নাম বা marker দিয়ে খোঁজা, id দিয়ে নয়।
 - Commit নিজে নয়; diff দেখে commit।

@@ -175,7 +175,7 @@ interface branchItem {
    */
   product_list_inline_edit: boolean;
   is_opening: boolean;
-  /** Opening চলাকালীন movement থাকা সত্ত্বেও opening বদলানোর ছাড়। */
+  /** Opening চলাকালীন movement থাকা সত্ত্বেও opening বদলানোর ছাড়। */
   multiple_opening_allow: boolean;
   use_bangla: boolean;
   report_zero_bal: boolean;

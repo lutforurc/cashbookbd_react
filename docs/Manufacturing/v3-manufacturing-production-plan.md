@@ -6,7 +6,7 @@ title: "Manufacturing / Production — বাস্তবায়ন পরি�
 
 ## অবস্থা ও এই ডকের গঠন
 
-এটা পরিকল্পনা, কোড বা ডেটা বদলের নির্দেশ নয়। v1 (২৪ অক্টোবর, আলোচনার নোট) আর v2 (৩ নভেম্বর, কারিগরি সংশোধন) মিলিয়ে v3 লেখা হয়েছে। মালিকের বাকি সিদ্ধান্ত আর Phase 0-এর প্রমাণ ছাড়া কাজ শুরু হবে না।
+এটা পরিকল্পনা, কোড বা ডেটা বদলের নির্দেশ নয়। v1 (২৪ অক্টোবর, আলোচনার নোট) আর v2 (৩ নভেম্বর, কারিগরি সংশোধন) মিলিয়ে v3 লেখা হয়েছে। মালিকের বাকি সিদ্ধান্ত আর Phase 0-এর প্রমাণ ছাড়া কাজ শুরু হবে না।
 
 - **অংশ ক** মালিক ও ক্লায়েন্টের জন্য, সহজ বাংলায়।
 - **অংশ খ** ডেভেলপারের জন্য, কারিগরি নিয়ম ও যাচাই।
@@ -17,12 +17,12 @@ v2-এর সব নিয়ম বহাল, তিনটে জায়গ�
 
 ## অংশ ক-১: এক নজরে
 
-নতুন ব্রাঞ্চে একটা নতুন ভাউচার "Production Entry" দিয়ে কাঁচামাল থেকে পণ্য বানানো, বড় প্যাকেট ভেঙে ছোট প্যাকেট আর কম্বো প্যাক, তিনটেই হবে। পুরনো ব্রাঞ্চে কিছু বদলাবে না।
+নতুন ব্রাঞ্চে একটা নতুন ভাউচার "Production Entry" দিয়ে কাঁচামাল থেকে পণ্য বানানো, বড় প্যাকেট ভেঙে ছোট প্যাকেট আর কম্বো প্যাক, তিনটেই হবে। পুরনো ব্রাঞ্চে কিছু বদলাবে না।
 
 ### ক্লায়েন্ট কী চান
 
 1. কাঁচামাল মিশিয়ে নতুন পণ্য বানানো।
-2. বড় প্যাকেট থেকে ছোট প্যাকেট (যেমন ৫০ কেজি বস্তা থেকে ২৫০ গ্রাম)।
+2. বড় প্যাকেট থেকে ছোট প্যাকেট (যেমন ৫০ কেজি বস্তা থেকে ২৫০ গ্রাম)।
 3. তৈরি পণ্যের আসল প্রতি-ইউনিট খরচ।
 4. ফ্রি পণ্য (১০০ কিনলে ২ ফ্রি), বিক্রিতে ও ক্রয়ে।
 5. কম্বো প্যাক।
@@ -32,8 +32,8 @@ v2-এর সব নিয়ম বহাল, তিনটে জায়গ�
 
 | অংশ | কী হয় | দাম কোথা থেকে |
 | --- | --- | --- |
-| বের হবে (কাঁচামাল, বড় প্যাকেট, খালি প্যাকেট) | স্টক থেকে বের হয় | কেনা দাম, আগে কেনা মাল আগে (FIFO); সিস্টেম নিজে বসাবে |
-| বাড়তি খরচ (মজুরি ইত্যাদি) | আগে লেখা খরচের ভাউচার থেকে নেওয়া হয় | হাতে টাকা লিখে নয়, ভাউচার বেছে |
+| বের হবে (কাঁচামাল, বড় প্যাকেট, খালি প্যাকেট) | স্টক থেকে বের হয় | কেনা দাম, আগে কেনা মাল আগে (FIFO); সিস্টেম নিজে বসাবে |
+| বাড়তি খরচ (মজুরি ইত্যাদি) | আগে লেখা খরচের ভাউচার থেকে নেওয়া হয় | হাতে টাকা লিখে নয়, ভাউচার বেছে |
 | ঢুকবে (তৈরি পণ্য / ছোট প্যাকেট) | স্টকে ঢোকে | (কাঁচামাল + খরচ) ÷ ভালো মালের সংখ্যা |
 | নষ্ট | আলাদা দেখায় | স্বাভাবিক নষ্টের দাম তৈরি পণ্যে ঢোকে |
 
@@ -45,9 +45,9 @@ v2-এর সব নিয়ম বহাল, তিনটে জায়গ�
 
 | কাজ | ফর্ম | নতুন? |
 | --- | --- | --- |
-| কাঁচামাল, বড় প্যাকেট, খালি প্যাকেট/লেবেল কেনা | Purchase Invoice | না |
+| কাঁচামাল, বড় প্যাকেট, খালি প্যাকেট/লেবেল কেনা | Purchase Invoice | না |
 | পুরনো ব্রাঞ্চ থেকে কাঁচামাল আনা | Branch Transfer | না, যাচাই লাগবে |
-| মজুরি, বিদ্যুৎ, ভাড়া | Payment Voucher, বা বাকি থাকলে Journal | না, নতুন কয়েকটা খরচের head |
+| মজুরি, বিদ্যুৎ, ভাড়া | Payment Voucher, বা বাকি থাকলে Journal | না, নতুন কয়েকটা খরচের head |
 | মাল তৈরি / প্যাকেট বদল / কম্বো | **Production Entry** | **হ্যাঁ** |
 | রেসিপি সেট করা | **Recipe** | **হ্যাঁ** (পরের ধাপে) |
 | ফ্রির নিয়ম | **স্কিম সেটআপ** | **হ্যাঁ** (পরের ধাপে) |
@@ -62,8 +62,8 @@ v2-এর সব নিয়ম বহাল, তিনটে জায়গ�
 | বিষয় | সিদ্ধান্ত |
 | --- | --- |
 | কোথায় চলবে | নতুন ব্রাঞ্চে; পুরনোগুলো যেমন আছে |
-| রেসিপি | দুটোই: রেসিপি দিয়ে, আর রেসিপি ছাড়া হাতে |
-| বাড়তি খরচ | যোগ হবে, শুধু যেগুলো এন্ট্রিতে বেছে দেওয়া হবে |
+| রেসিপি | দুটোই: রেসিপি দিয়ে, আর রেসিপি ছাড়া হাতে |
+| বাড়তি খরচ | যোগ হবে, শুধু যেগুলো এন্ট্রিতে বেছে দেওয়া হবে |
 | নষ্ট | আলাদা দেখাবে, দাম তৈরি পণ্যে ঢুকবে |
 | ছোট প্যাকেট | আলাদা পণ্য, আলাদা কোড |
 | ফ্রিসহ ফেরত | ফ্রি অংশও আনুপাতিক হারে ফেরত |
@@ -75,11 +75,11 @@ v2-এর সব নিয়ম বহাল, তিনটে জায়গ�
 
 | # | প্রশ্ন (সহজ ভাষায়) | প্রস্তাব |
 | --- | --- | --- |
-| ১ | এন্ট্রি সেভ করলেই স্টক বদলাবে, নাকি কেউ অনুমোদন দেওয়ার পর? | "খসড়া" আর "পোস্ট" দুটো বোতাম; পোস্ট করলেই স্টক বদলাবে, আলাদা অনুমোদন নয় |
+| ১ | এন্ট্রি সেভ করলেই স্টক বদলাবে, নাকি কেউ অনুমোদন দেওয়ার পর? | "খসড়া" আর "পোস্ট" দুটো বোতাম; পোস্ট করলেই স্টক বদলাবে, আলাদা অনুমোদন নয় |
 | ২ | মজুরি পরে দিলে কী হবে? | উৎপাদনের দিন Journal দিয়ে "মজুরি বাকি" লেখা, পরে টাকা দিলে Payment |
 | ৩ | কোন কোন খরচ পণ্যের দামে ঢুকবে? | কারখানার মজুরি, প্যাকিং মজুরি, কারখানার পরিবহন; অফিস খরচ নয় |
-| ৪ | বিদ্যুৎ-ভাড়ার মতো মাসিক খরচ ভাগ হবে? | এখন না; খরচ হিসেবেই থাকবে। এর ফলে অবিক্রিত মালের দাম একটু কম দেখাবে, আর যে মাসে খরচ সেই মাসের লাভ একটু কম দেখাবে |
-| ৫ | কতটুকু নষ্ট "স্বাভাবিক"? | প্রতি পণ্যে সীমা, যেমন মশলা ৫%, চিনি ১%। বেশি হলে বাড়তিটা "অস্বাভাবিক নষ্ট" খরচে যাবে, কারণ লিখতে হবে |
+| ৪ | বিদ্যুৎ-ভাড়ার মতো মাসিক খরচ ভাগ হবে? | এখন না; খরচ হিসেবেই থাকবে। এর ফলে অবিক্রিত মালের দাম একটু কম দেখাবে, আর যে মাসে খরচ সেই মাসের লাভ একটু কম দেখাবে |
+| ৫ | কতটুকু নষ্ট "স্বাভাবিক"? | প্রতি পণ্যে সীমা, যেমন মশলা ৫%, চিনি ১%। বেশি হলে বাড়তিটা "অস্বাভাবিক নষ্ট" খরচে যাবে, কারণ লিখতে হবে |
 | ৬ | ব্যাচ নম্বর ও মেয়াদ (expiry) লাগবে? | ব্যাচ নম্বর হ্যাঁ; মেয়াদ খাদ্যপণ্য হলে হ্যাঁ। **প্রথম ধাপ শুরুর আগেই জানাতে হবে** |
 | ৭ | পুরনো তারিখে এন্ট্রি চলবে? | চলবে, যদি সেই পণ্যের পরে কোনো লেনদেন না হয়ে থাকে |
 | ৮ | ফ্রির নিয়ম সবার জন্য এক, নাকি কাস্টমার/সময়ভেদে আলাদা? | শুরুতে সবার জন্য এক, তারিখ থেকে তারিখ পর্যন্ত |
@@ -94,7 +94,7 @@ v2-এর সব নিয়ম বহাল, তিনটে জায়গ�
 | ধাপ | ক্লায়েন্ট কী পাবেন |
 | --- | --- |
 | ০. যাচাই | কোড ও ডেটাবেস দেখে নিশ্চিত হওয়া, একটা পুরো সংখ্যার উদাহরণ (খ-১৩) দেখানো। ক্লায়েন্ট কিছু পান না, কিন্তু পরের সব ধাপের ভিত্তি |
-| ১. উৎপাদন | নতুন ব্রাঞ্চ, Production Entry (রেসিপি ছাড়া), Production Register ও Costing রিপোর্ট; তিন রিপোর্ট মেলে |
+| ১. উৎপাদন | নতুন ব্রাঞ্চ, Production Entry (রেসিপি ছাড়া), Production Register ও Costing রিপোর্ট; তিন রিপোর্ট মেলে |
 | ২. রেসিপি | রেসিপি বাছলে লাইন নিজে ভরে যাবে; কাঁচামাল কম থাকলে আগেই জানাবে |
 | ৩. বিক্রিতে ফ্রি | সেলসে ফ্রি ঘর, স্কিম সেটআপ, ফ্রিসহ ফেরত |
 | ৪. ক্রয়ে ফ্রি | সরবরাহকারীর ফ্রি মাল ঢুকলে দাম নিজে ভাগ হবে |
@@ -116,12 +116,12 @@ v1-এর সময় কোড দেখে পাওয়া তথ্য।
 | বিষয় | পর্যবেক্ষণ | প্রভাব |
 | --- | --- | --- |
 | Branch setup | Business Type "Manufacturing", Branch Type "Factory", Inventory "General" সারি আছে (এই DB-তে Manufacturing id = 3) | মেনু খুলবে permission দিয়ে, numeric id দিয়ে নয়; Sidebar-এর Hotel মেনুর মন্তব্যে একই সমস্যার উল্লেখ |
-| Closing stock | P&L ও Balance Sheet closing stock পড়ে FIFO layer থেকে, `ReportsController::rebuildStockTable()` দিয়ে | Production movement এই rebuild-এ না ঢুকলে রিপোর্টে মাল হারাবে। **Phase 1-এর সবচেয়ে বড় কাজ** |
+| Closing stock | P&L ও Balance Sheet closing stock পড়ে FIFO layer থেকে, `ReportsController::rebuildStockTable()` দিয়ে | Production movement এই rebuild-এ না ঢুকলে রিপোর্টে মাল হারাবে। **Phase 1-এর সবচেয়ে বড় কাজ** |
 | Write-off ও receipt | `writeOffValue()` ও receipt হিসাব `product_out_master` / `product_in_master` দেখে চেনে | Production-এর নিজের টেবিল; Product In/Out টেবিল ব্যবহার করা যাবে না |
 | দাম > ০ নিয়ম | `productValidation` সব sales/purchase স্ক্রিনে শেয়ার করা | নিয়ম ঢিলা করা যাবে না; ফ্রির জন্য আলাদা ঘর/লাইন |
 | পুরনো Manufacturing module | `ManufacturingController`, `CommonFunction/Manufacturing.php`, `Http/Utils/ManufacturingJournal.php`, `inventory_manufacturing_*`; dev DB-তে সারি নেই; React স্ক্রিন নেই; `coa4_id = 5` ও financial year `1` hardcoded | ব্যবহার হবে না, মোছাও হবে না। ক্লায়েন্ট DB-তে ব্যবহার আছে কি না Phase 0-এ দেখতে হবে |
 
-**Phase 0-এ বের করতে হবে:** একটা canonical stock movement table/engine আছে কি না, নাকি প্রতিটা report নিজে বিভিন্ন টেবিল থেকে stock গড়ে; stock পড়ে এমন সব consumer-এর তালিকা (stock ledger, closing stock, COGS, sales return, transfer, delivery); unit conversion product master-এ আছে কি না; branch transfer কোন দামে যায়।
+**Phase 0-এ বের করতে হবে:** একটা canonical stock movement table/engine আছে কি না, নাকি প্রতিটা report নিজে বিভিন্ন টেবিল থেকে stock গড়ে; stock পড়ে এমন সব consumer-এর তালিকা (stock ledger, closing stock, COGS, sales return, transfer, delivery); unit conversion product master-এ আছে কি না; branch transfer কোন দামে যায়।
 
 ## অংশ খ-৩: Production Entry
 
@@ -138,19 +138,19 @@ v1-এর সময় কোড দেখে পাওয়া তথ্য।
 **Unit cost = (FIFO material + allocated cost − abnormal loss cost) ÷ good output qty**
 
 - **স্বাভাবিক loss** (recipe বা product-এর tolerance পর্যন্ত) output cost-এ absorb হয়।
-- **অস্বাভাবিক loss (v2 থেকে নরম করা):** posting বন্ধ নয়। Tolerance-এর বাইরের অংশের cost = (abnormal qty ÷ total input qty) × capitalizable cost; এটা "Abnormal Production Loss" expense head-এ যাবে (Dr Abnormal Loss / Cr Production Cost Clearing বা চূড়ান্ত model অনুযায়ী), reason বাধ্যতামূলক, register-এ লাল। Product Out দিয়ে একই consumption দ্বিতীয়বার নয়।
+- **অস্বাভাবিক loss (v2 থেকে নরম করা):** posting বন্ধ নয়। Tolerance-এর বাইরের অংশের cost = (abnormal qty ÷ total input qty) × capitalizable cost; এটা "Abnormal Production Loss" expense head-এ যাবে (Dr Abnormal Loss / Cr Production Cost Clearing বা চূড়ান্ত model অনুযায়ী), reason বাধ্যতামূলক, register-এ লাল। Product Out দিয়ে একই consumption দ্বিতীয়বার নয়।
 - Mass balance শুধু তুলনাযোগ্য unit-এ; evaporation/moisture থাকলে expected yield recipe-তে।
 - **হিসাব যাচাই:** ১৬,২৬০ ÷ ৯৫ = ১৭১.১৫৭৮৯…; display ১৭১.১৬ কিন্তু layer total ১৬,২৬০.০০। ৬,৯৯৪ ÷ ১৯৮ = ৩৫.৩২৩২…। Recipe: ১০০ × ১ kg, ৪% loss → input ১০০ ÷ ০.৯৬ = ১০৪.১৬৬৭ kg (v1-এর ১০৫ kg-তে output হতো ১০০.৮ kg)।
 
 ## অংশ খ-৫: খরচ ও accounting model (Phase 0 gate)
 
-Production শুধু আগে post করা খরচের voucher line থেকে cost নেবে; হাতে অঙ্ক লিখে stock value বাড়ানো যাবে না। কোন accounting model চলবে তা Phase 0-এ report formula দেখে ঠিক হবে।
+Production শুধু আগে post করা খরচের voucher line থেকে cost নেবে; হাতে অঙ্ক লিখে stock value বাড়ানো যাবে না। কোন accounting model চলবে তা Phase 0-এ report formula দেখে ঠিক হবে।
 
 | | Model A: periodic (v1-এর ধারণা) | Model B: clearing account |
 | --- | --- | --- |
 | Production ledger লেখে? | না | হ্যাঁ: Dr Inventory Adj / Cr Production Cost Clearing (allocated অংশ) |
 | কখন কাজ করে | P&L = Opening + Purchase + Direct Exp − Closing (FIFO) হলে | Ledger-ভিত্তিক inventory থাকলে |
-| ঝুঁকি | খরচ আর production আলাদা period-এ পড়লে দুই মাসের লাভ ভুল | Report-এ double count যদি closing stock-ও আবার যোগ হয় |
+| ঝুঁকি | খরচ আর production আলাদা period-এ পড়লে দুই মাসের লাভ ভুল | Report-এ double count যদি closing stock-ও আবার যোগ হয় |
 | প্রস্তাব | Phase 0-এ formula নিশ্চিত হলে **A**, সঙ্গে cross-period block | A না মিললে B |
 
 **Model A-তে বাধ্যতামূলক:**
@@ -166,12 +166,12 @@ Production শুধু আগে post করা খরচের voucher line �
 - Source আর production একই branch/company, valid ও open period।
 - Purchase বা আগেই capitalize করা line আবার capitalize নয়।
 - Allocated source voucher edit/delete হলে source-side guard আটকাবে ("এই খরচ Production #… তে ব্যবহৃত")। Guard তৈরি না হওয়া পর্যন্ত posting চালু হবে না।
-- Overhead (বিদ্যুৎ, ভাড়া) v1-এ allocate নয়; এর ফলে অবিক্রিত মালের valuation কম ও খরচের period-এর লাভ কম। মালিকের সম্মতি (ক-২ #৪) লাগবে।
+- Overhead (বিদ্যুৎ, ভাড়া) v1-এ allocate নয়; এর ফলে অবিক্রিত মালের valuation কম ও খরচের period-এর লাভ কম। মালিকের সম্মতি (ক-২ #৪) লাগবে।
 
 ## অংশ খ-৬: Stock/FIFO integration
 
 - Logical entity: production master, inputs, output, cost allocations, FIFO consumption links, audit/reversal refs। Table নাম Phase 0-এর পর।
-- Production-এর নিজের টেবিল, তবে stock পড়ে এমন **প্রতিটা** consumer (খ-২-এর তালিকা) production in/out বুঝবে। একটা বাদ থাকলে কাজ অসম্পূর্ণ।
+- Production-এর নিজের টেবিল, তবে stock পড়ে এমন **প্রতিটা** consumer (খ-২-এর তালিকা) production in/out বুঝবে। একটা বাদ থাকলে কাজ অসম্পূর্ণ।
 - Posting একটা DB transaction-এ: validate → lock stock ও cost source → FIFO consume → output layer → source links → (Model B হলে) journal → status Posted। Error হলে সব rollback। Idempotency key দিয়ে double-click/retry-তে একবারই।
 - Availability production date অনুযায়ী; future receipt দিয়ে পুরনো production নয়; negative stock নিষিদ্ধ।
 - **Backdating (v2 থেকে নরম করা):** অনুমোদিত, যদি production date-এর পরে input বা output product-এর কোনো stock movement না থাকে এবং period খোলা থাকে। থাকলে আটকাবে ও কোন voucher-এর কারণে তা দেখাবে। একই দিনে ক্রম: voucher time/sequence অনুযায়ী।
@@ -189,7 +189,7 @@ Production শুধু আগে post করা খরচের voucher line �
 
 - Yield, base-unit input qty, packaging qty, expected normal loss %, optional suggested cost।
 - Production-এ snapshot; batch-এ বদলালে recipe বদলায় না। Version ও effective date।
-- Suggested cost কোনো posted source ছাড়া capitalize নয়; শুধু কোন source line বাছতে হবে সেটা মনে করায়।
+- Suggested cost কোনো posted source ছাড়া capitalize নয়; শুধু কোন source line বাছতে হবে সেটা মনে করায়।
 - **ঘাটতি দেখা:** recipe ও target qty দিলে প্রতিটা input-এর প্রয়োজন বনাম available stock, কম থাকলে লাল।
 - VAT প্রযোজ্য হলে recipe-র input-output অনুপাত মূসক-৪.৩-এর সঙ্গে মিলিয়ে রাখার ব্যবস্থা (নিচে খ-১০)।
 
@@ -199,7 +199,7 @@ Production শুধু আগে post করা খরচের voucher line �
 - **Different-SKU free:** linked promotion line, zero charge; `productValidation` blanket শিথিল নয়, promotion line-এর আলাদা validation।
 - **খরচের হিসাব:** free অংশের FIFO cost COGS-এ, তবে আলাদা চিহ্ন রেখে, যাতে report-এ "ফ্রি দেওয়া মালের খরচ" দেখা যায়।
 - **Scheme:** product, threshold, free qty, repeat হবে কি না (২০০-তে ৪?), তারিখ সীমা, customer group (পরে), manual override permission; invoice-এ snapshot।
-- **Return:** original line-এর সঙ্গে linked, original issue cost-এ ফেরত; cumulative return original ছাড়াবে না। Rounding: প্রতি return-এ free = floor(returned paid × free ÷ paid), শেষ return-এ বাকিটা settle।
+- **Return:** original line-এর সঙ্গে linked, original issue cost-এ ফেরত; cumulative return original ছাড়াবে না। Rounding: প্রতি return-এ free = floor(returned paid × free ÷ paid), শেষ return-এ বাকিটা settle।
 - **Purchase free (Phase 4):** same SKU-তে unit cost = মোট দাম ÷ মোট received qty; আলাদা SKU হলে rule আগে ঠিক।
 - Delivery-based stock deduction চালু থাকলে invoice ও delivery-তে free দুবার কাটবে না।
 - Prepared bundle = আলাদা SKU, Production দিয়ে তৈরি; disassembly v1-এ নয়।
@@ -210,7 +210,7 @@ Production শুধু আগে post করা খরচের voucher line �
 
 ## অংশ খ-১১: Permission ও branch isolation
 
-- প্রস্তাবিত: `production.view/create/post/reverse`, `production.report.view`; পরে `recipe.*`, `scheme.*`, `free.override`। চূড়ান্ত নাম বিদ্যমান convention অনুযায়ী।
+- প্রস্তাবিত: `production.view/create/post/reverse`, `production.report.view`; পরে `recipe.*`, `scheme.*`, `free.override`। চূড়ান্ত নাম বিদ্যমান convention অনুযায়ী।
 - Menu, route ও API-তে authorization; feature-enabled branch ও company/branch ownership server-side যাচাই।
 - Numeric Business Type id hardcode নয়; permission একা data scope ঠিক করবে না।
 

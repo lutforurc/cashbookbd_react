@@ -43,7 +43,7 @@ php artisan delivery:find-over-delivered
 
 | সমস্যা | কী হতো | এখন |
 |---|---|---|
-| চালু delivery থাকা অবস্থায় invoice delete | invoice মুছে যেত, delivery-র stock বাদ পড়েই থাকত | চালু delivery থাকলে delete আটকায়, delivery-র নম্বর বলে দেয়। আগে Delivery স্ক্রিন থেকে cancel করতে হবে |
+| চালু delivery থাকা অবস্থায় invoice delete | invoice মুছে যেত, delivery-র stock বাদ পড়েই থাকত | চালু delivery থাকলে delete আটকায়, delivery-র নম্বর বলে দেয়। আগে Delivery স্ক্রিন থেকে cancel করতে হবে |
 | Delivery API-তে permission যাচাই ছিল না | login করা যে কেউ API দিয়ে delivery বা cancel করতে পারত | `delivery.view` / `delivery.create` / `delivery.cancel` প্রতিটি endpoint-এ যাচাই হয় |
 | Delivery-র তারিখ | কম্পিউটারের তারিখ বা যেকোনো পাঠানো তারিখ নিত, invoice-এর আগেরও | সবসময় branch-এর transaction date (Dayclose), পাঠানো তারিখ উপেক্ষা হয়। Invoice-এর তারিখের আগে হলে আটকায় |
 | Stock কম থাকলে | শুধু একটা error, এগোনোর উপায় ছিল না | Invoice-এর মতো `StockShortageModal`: warn branch-এ Continue, block branch-এ শুধু জানায় |
@@ -83,7 +83,7 @@ Delivery স্ক্রিন আগেও বাকির বেশি নি�
 
 ### ঠিক করা সমস্যা
 
-- **৳0 সতর্কবার্তা দেখাত না:** Product In-এর বার্তা ভুল জায়গা থেকে পড়া হচ্ছিল (`data.unpriced` → `data.data.unpriced`)।
+- **৳0 সতর্কবার্তা দেখাত না:** Product In-এর বার্তা ভুল জায়গা থেকে পড়া হচ্ছিল (`data.unpriced` → `data.data.unpriced`)।
 - **Rate লোডে race:** দ্রুত পরপর product বদলালে আগের product-এর rate পরের লাইনে বসে যেত। Rate আসার আগে Add করা যায় না।
 - **ভুল customer save হওয়া:** customer লাগে এমন reason বদলে অন্য reason দিলে আগের customer save হয়ে যেত। এখন হয় না।
 - **কোম্পানি যাচাই:** অন্য কোম্পানির product, warehouse বা customer-এর id নেয় না (`StockSlipScope`)।
@@ -108,7 +108,7 @@ Delivery স্ক্রিন আগেও বাকির বেশি নি�
 | "স্থায়ী delete" দিয়ে **চালু** voucher-ও মুছে যেত, Voucher Delete-এর সব নিয়ম পাশ কাটিয়ে | শুধু delete অবস্থার (status 0) voucher-এ কাজ করে |
 | Product In/Out ফেরালে voucher চালু হতো কিন্তু slip delete-ই থাকত, stock ফিরত না | slip আর stock দুটোই voucher-এর সাথে ফিরে আসে |
 
-`product-out:resync`-এ একটা bug ছিল: `--dry-run` ছাড়া চালালে crash করত, কিছুই ঠিক হতো না। এখন কাজ করে।
+`product-out:resync`-এ একটা bug ছিল: `--dry-run` ছাড়া চালালে crash করত, কিছুই ঠিক হতো না। এখন কাজ করে।
 
 ---
 
@@ -130,7 +130,7 @@ Employee Loan ফর্মে **Manual Voucher Number**-এর ঘরও আছ�
 
 - **Customer ফেরতের দুটো পথই থাকবে:**
   - Delivery-র সময় ফেরত: Product In, "customer ফেরত" reason দিয়ে।
-  - Delivery ছাড়া ফেরত: Sales Return।
+  - Delivery ছাড়া ফেরত: Sales Return।
 - **Delivery-র তারিখ সবসময় transaction date।** Invoice-এর তারিখের পরে যেকোনো দিন delivery দেওয়া যাবে।
 - **Write-off (Product Out)** stock কম থাকলেও করা যায়, শুধু জিজ্ঞেস করে। Product Out-এ কোনো তারিখের ঘর নেই।
 

@@ -375,7 +375,7 @@ books is not the same as not being able to see them separately.*
 
 ### 2.8 Rent lives on the row that is sold
 
-*(The client's instruction, 2026-08-24: **"একেকটি রুম বা সিট এর ভাড়া দেয়া থাকবে"** —
+*(The client's instruction, 2026-08-24: **"একেকটি রুম বা সিট এর ভাড়া দেয়া থাকবে"** —
 each room, and each seat, carries its own rent. It supersedes what §4.2 and §6.6
 said, and both now point here.)*
 

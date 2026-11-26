@@ -62,7 +62,7 @@
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ product.statement.view permission থাকলে।"] },
       { "heading": "রিপোর্ট দেখা", "menu": "Products → Products → Product Statement", "steps": ["Select Branch, Select Product, Start Date ও End Date দিন।", "Apply চাপুন।"] },
-      { "heading": "ফল পড়া", "steps": ["Sl. No., Name, Type, Inv. No., Inv. Date, Qty, Purchase Price, Sales Price, Amount ও Stock দেখা যায়।", "শুরুতে Opening ও শেষে Total সারি থাকে; Print কাগজ বের করে।"] },
+      { "heading": "ফল পড়া", "steps": ["Sl. No., Name, Type, Inv. No., Inv. Date, Qty, Purchase Price, Sales Price, Amount ও Stock দেখা যায়।", "শুরুতে Opening ও শেষে Total সারি থাকে; Print কাগজ বের করে।"] },
       { "heading": "সতর্কতা", "warning": "Branch ও তারিখ না দিলে রিপোর্ট আসবে না।" }
     ]
   },

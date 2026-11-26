@@ -990,7 +990,7 @@ export const FIELD_CATALOG: FieldDef[] = [
   { key: 'vehicle_no', name: 'Vehicle No', group: 'transport' },
   { key: 'driver_name', name: 'Driver Name', group: 'transport' },
   { key: 'driver_mobile', name: 'Driver Mobile', group: 'transport' },
-  // "মোট ভাড়া". What the lorry is paid to carry it, agreed at the gate after
+  // "মোট ভাড়া". What the lorry is paid to carry it, agreed at the gate after
   // the invoice was raised -- so it is a figure on the challan, not a posting,
   // and nothing in the accounts reads it.
   { key: 'truck_fare', name: 'Truck Fare', group: 'transport', numeric: true },
@@ -2719,7 +2719,7 @@ const bengaliPadChallan = (): PrintTemplate => {
     { field: 'vehicle_no', label: 'ট্রাক নং' },
     { field: 'driver_name', label: 'ড্রাইভারের নাম' },
     { field: 'driver_mobile', label: 'মোবাইল নং' },
-    { field: 'truck_fare', label: 'মোট ভাড়া' },
+    { field: 'truck_fare', label: 'মোট ভাড়া' },
     // Still blank lines. Unlike the fare and the account, the advance handed to
     // the driver and what is left owing are not recorded anywhere in the
     // system, so the paper carries the label and a rule and the gate writes
@@ -2743,7 +2743,7 @@ const bengaliPadChallan = (): PrintTemplate => {
   notes.show = true;
   notes.align = 'center';
   notes.text =
-    'বিঃদ্রঃ চালানে উল্লেখিত পণ্যের ওজন বা পরিমাণ কম হলে ট্রাক ভাড়া থেকে কর্তন করে ভাড়া প্রদান করার জন্য অনুরোধ করা হলো।';
+    'বিঃদ্রঃ চালানে উল্লেখিত পণ্যের ওজন বা পরিমাণ কম হলে ট্রাক ভাড়া থেকে কর্তন করে ভাড়া প্রদান করার জন্য অনুরোধ করা হলো।';
 
   const signature = template.bands.find((b) => b.id === 'signature') as SignatureBand;
   signature.items = [{ label: 'ড্রাইভারের স্বাক্ষর' }, { label: 'কর্তৃপক্ষের স্বাক্ষর' }];

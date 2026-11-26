@@ -204,11 +204,11 @@
           "Salary & Payroll ধাপে নিচে বেতনের খাতের প্যানেল আছে — এটি শুধু Edit স্ক্রিনে আসে, কারণ revision একটি তৈরি হওয়া কর্মচারীর সঙ্গে যুক্ত।",
           "Structure বাছলে তার খাতগুলো নিচে বসে যায়; অথবা Available pay heads থেকে একটি একটি করে যোগ করুন।",
           "Effective From শুধু মাস বাছা যায় — revision সবসময় মাসের ১ তারিখ থেকে শুরু হয়।",
-          "শাখায় Split Gross Salary চালু থাকলে Gross Salary ঘরে মোট বেতন লিখে ভাগ করুন চাপুন — মূল = (মোট − ভাতা) ÷ ভাজক, বাড়ি ভাড়া = মূলের %, আর ভাতাগুলো নিজে বসে যায়; পরে যেকোনো অঙ্ক বদলানো যায়। Monthly Gross নিজে হিসাব হয়। Save Revision চাপলে নতুন revision তৈরি হয় এবং পুরোনোটির শেষ তারিখ আগের দিন হয়ে বন্ধ হয়।",
+          "শাখায় Split Gross Salary চালু থাকলে Gross Salary ঘরে মোট বেতন লিখে ভাগ করুন চাপুন — মূল = (মোট − ভাতা) ÷ ভাজক, বাড়ি ভাড়া = মূলের %, আর ভাতাগুলো নিজে বসে যায়; পরে যেকোনো অঙ্ক বদলানো যায়। Monthly Gross নিজে হিসাব হয়। Save Revision চাপলে নতুন revision তৈরি হয় এবং পুরোনোটির শেষ তারিখ আগের দিন হয়ে বন্ধ হয়।",
           "নিচে Salary history-তে কে কোন মাস থেকে কত পেয়েছে তা দেখা যায়।",
           "প্যানেল খুললে সবচেয়ে নতুন revision-এর খাত ও অঙ্ক দেখায় — পরের মাস থেকে দেওয়া বেতনও। সেই মাসেই আবার Save করলে ওই মাসের revision বদলে যায়, নতুন সারি হয় না।"
         ],
-        "warning": "যে revision থেকে এখনও বেতন শিট হয়নি, Salary history-তে তার পাশে Edit ও Cancel থাকে — Edit চাপলে অঙ্ক ফর্মে আসে, ঠিক করে Save Revision চাপুন; ভুল বা দুবার হয়ে যাওয়া revision Cancel দিয়ে বাতিল করুন, তখন আগের revision আবার সেই মাসগুলো ধরে। বাতিল revision মোছে না — ইতিহাসের নিচে কাটা দাগসহ Cancelled লেখা থাকে, কে কবে বাতিল করেছে সহ, এবং কোনো বেতনে ধরা হয় না। একমাত্র revision বাতিল করা যায় না। শিট হয়ে গেলে পাশে Paid লেখা থাকে, তখন আর বদলানো যায় না — বেতন বাড়াতে পরের মাস থেকে নতুন revision দিন।"
+        "warning": "যে revision থেকে এখনও বেতন শিট হয়নি, Salary history-তে তার পাশে Edit ও Cancel থাকে — Edit চাপলে অঙ্ক ফর্মে আসে, ঠিক করে Save Revision চাপুন; ভুল বা দুবার হয়ে যাওয়া revision Cancel দিয়ে বাতিল করুন, তখন আগের revision আবার সেই মাসগুলো ধরে। বাতিল revision মোছে না — ইতিহাসের নিচে কাটা দাগসহ Cancelled লেখা থাকে, কে কবে বাতিল করেছে সহ, এবং কোনো বেতনে ধরা হয় না। একমাত্র revision বাতিল করা যায় না। শিট হয়ে গেলে পাশে Paid লেখা থাকে, তখন আর বদলানো যায় না — বেতন বাড়াতে পরের মাস থেকে নতুন revision দিন।"
       },
       {
         "heading": "যা মনে রাখবেন",
@@ -217,7 +217,7 @@
           "বেতনের অঙ্কে ভুল থাকলে পরের মাসের Salary Generate ভুল হবে।",
           "Salary Revision থেকে Save করলে Basic ও Others Allowance ঘর দুটিও সেই অঙ্কে ভরে যায়, যাতে পুরোনো ও নতুন হিসাব এক থাকে।"
         ],
-        "warning": "Attendance Type ভুল দিলে কর্মচারী হাজিরার হিসাবে ভুলভাবে পড়বে — Monthly, Daily Labour ও Shift Based-এর নিয়ম আলাদা।"
+        "warning": "Attendance Type ভুল দিলে কর্মচারী হাজিরার হিসাবে ভুলভাবে পড়বে — Monthly, Daily Labour ও Shift Based-এর নিয়ম আলাদা।"
       }
     ]
   },
@@ -522,15 +522,15 @@
         ]
       },
       {
-        "heading": "পাঞ্চ দেখা ও ডিভাইসের ঘড়ি",
+        "heading": "পাঞ্চ দেখা ও ডিভাইসের ঘড়ি",
         "steps": [
-          "Devices তালিকায় ঘড়ির আইকনে (Punches) চাপুন — From/To তারিখ দিয়ে ওই ডিভাইসের কাঁচা পাঞ্চ দেখা যায়: ডিভাইসের সময় ও সার্ভারে পৌঁছানোর সময় পাশাপাশি।",
-          "Sync Clock চাপুন — ডিভাইস পরের বার যোগাযোগ করলে সার্ভারের সময় নিয়ে নিজের ঘড়ি ঠিক করে নেবে।",
+          "Devices তালিকায় ঘড়ির আইকনে (Punches) চাপুন — From/To তারিখ দিয়ে ওই ডিভাইসের কাঁচা পাঞ্চ দেখা যায়: ডিভাইসের সময় ও সার্ভারে পৌঁছানোর সময় পাশাপাশি।",
+          "Sync Clock চাপুন — ডিভাইস পরের বার যোগাযোগ করলে সার্ভারের সময় নিয়ে নিজের ঘড়ি ঠিক করে নেবে।",
           "Pull Punches চাপুন — ডিভাইসে জমে থাকা পুরনো পাঞ্চ (দেওয়া তারিখ পরিসরের) আবার পাঠাতে বলবে।",
           "Rebuild Days চাপুন — দেওয়া তারিখ পরিসরের দিনের হাজিরা জমা থাকা পাঞ্চ থেকেই নতুন করে তৈরি হবে; ডিভাইসে কিছু পাঠানো হয় না।",
           "নিচের Command History-তে দেখা যায় কমান্ড কখন পাঠানো হলো, ডিভাইস কী উত্তর দিল।"
         ],
-        "warning": "ডিভাইসে সরাসরি কমান্ড পাঠানো যায় না — কমান্ড জমা থাকে, ডিভাইস পরের বার যোগাযোগ করলেই কার্যকর হয়। Last Contact-এ লাল করে \"Offline\" দেখালে ডিভাইস ১৫ মিনিটের বেশি যোগাযোগ করেনি; \"Clock … behind/ahead\" দেখালে ঘড়ি মিলছে না — Sync Clock চাপুন।"
+        "warning": "ডিভাইসে সরাসরি কমান্ড পাঠানো যায় না — কমান্ড জমা থাকে, ডিভাইস পরের বার যোগাযোগ করলেই কার্যকর হয়। Last Contact-এ লাল করে \"Offline\" দেখালে ডিভাইস ১৫ মিনিটের বেশি যোগাযোগ করেনি; \"Clock … behind/ahead\" দেখালে ঘড়ি মিলছে না — Sync Clock চাপুন।"
       },
       {
         "heading": "ডিভাইস সেটিংস",
@@ -540,7 +540,7 @@
           "Keep punches for (days) — ০ মানে সব পাঞ্চ চিরকাল থাকবে; সংখ্যা দিলে তার চেয়ে পুরনো কাঁচা পাঞ্চ রাতে মুছে যাবে (দিনের হাজিরা বা রিপোর্ট মুছবে না)।",
           "সেটিংস যে ব্রাঞ্চে বাছা আছে তার জন্য প্রযোজ্য; All Branches-এ রাখলে পুরো কোম্পানির।"
         ],
-        "warning": "Checklist অনুযায়ী সব ঠিক থাকলেও টার্মিনালের ঘড়ি আলাদা সেটিং — উপরের Last Contact-এর Clock সতর্কতা দেখুন।"
+        "warning": "Checklist অনুযায়ী সব ঠিক থাকলেও টার্মিনালের ঘড়ি আলাদা সেটিং — উপরের Last Contact-এর Clock সতর্কতা দেখুন।"
       },
       {
         "heading": "ডিভাইস থেকে মুখ মোছা",
@@ -651,10 +651,10 @@
         ]
       },
       {
-        "heading": "ফল পড়া",
+        "heading": "ফল পড়া",
         "steps": [
           "উপরে Active Employee, Attendance Entry, Absent/Missing, Present, Half Day, Leave, Late, Early Out ও Approval-এর সংখ্যা দেখা যায়।",
-          "Late রিপোর্টে Late Deduction Days, Early Out রিপোর্টে Early Out Deduction Days বাড়তি থাকে।",
+          "Late রিপোর্টে Late Deduction Days, Early Out রিপোর্টে Early Out Deduction Days বাড়তি থাকে।",
           "নিচের তালিকায় Date, ID, Employee, Branch, Shift, In, Out, Hour, Status ও Approval থাকে।",
           "Hour কলামে কাজের সময় ঘণ্টা-মিনিটে দেখায়, যেমন 8h 25m।"
         ],
@@ -680,7 +680,7 @@
         ]
       },
       {
-        "heading": "ফল পড়া",
+        "heading": "ফল পড়া",
         "steps": [
           "উপরে OT Hr. ও OT Amount সহ সারসংক্ষেপ দেখা যায়।",
           "গ্রিডে Name, প্রতিটি দিনের ঘণ্টা ও Total থাকে; নিচে Total সারি।",
@@ -708,7 +708,7 @@
         ]
       },
       {
-        "heading": "ফল পড়া",
+        "heading": "ফল পড়া",
         "steps": [
           "Total Days, Present, Absent, Leave, Late, Early Out, Half Day ও Holiday দেখা যায়।",
           "তালিকায় Date, Shift, In, Out, Minutes, Status, Approval ও Remarks থাকে।"
@@ -735,7 +735,7 @@
         ]
       },
       {
-        "heading": "ফল পড়া",
+        "heading": "ফল পড়া",
         "steps": [
           "উপরে Branches, Employees, Present, Absent, Leave, Late, Early Out ও Deduction দেখা যায়।",
           "তালিকায় কর্মচারী, Working, Present, Paid/Unpaid Leave, Absent, Late, Early Out, Half Day, Payable ও Deduction থাকে।"
@@ -763,7 +763,7 @@
         ]
       },
       {
-        "heading": "ফল পড়া",
+        "heading": "ফল পড়া",
         "steps": [
           "উপরে Total Days, Holiday, Weekly Holiday, Paid ও Optional দেখা যায়।",
           "ক্যালেন্ডারে Holiday, Weekly ও Optional রঙে আলাদা; এক দিনে বেশি থাকলে +n more লেখা আসে।"
@@ -848,7 +848,7 @@
         ]
       },
       {
-        "heading": "ফল পড়া",
+        "heading": "ফল পড়া",
         "steps": [
           "উপরে Total, Approved, Rejected ও Cleared সংখ্যা দেখা যায়।",
           "তালিকায় Entry ID, Action, Employee, Branch/Project, Attendance Date, Status, Action By, Action Time ও Remarks থাকে।"
@@ -958,7 +958,7 @@
           "তীর চিহ্ন দিয়ে খাতের ক্রম বদলান — শিটে এই ক্রমেই কলাম আসবে।",
           "Save চাপুন; বদলাতে Update চাপুন।"
         ],
-        "warning": "একটি কাঠামোয় অন্তত একটি খাত থাকতে হবে। Basic ছাড়া কাঠামো বেতন হিসাবে সমস্যা করবে।"
+        "warning": "একটি কাঠামোয় অন্তত একটি খাত থাকতে হবে। Basic ছাড়া কাঠামো বেতন হিসাবে সমস্যা করবে।"
       }
     ]
   },
@@ -982,7 +982,7 @@
         ]
       },
       {
-        "heading": "তালিকা পড়া",
+        "heading": "তালিকা পড়া",
         "steps": [
           "Name of Employee, Month Days, Working Day, Monthly Basic, Basic, Total, Loan Ded., Att. Ded ও Net Salary দেখা যায়।",
           "Overtime শিটে OT Rate ও OT ঘণ্টা থাকে।",

@@ -10,9 +10,9 @@
 
 `Add New Product` স্ক্রিনে বাংলা নাম লেখার ঘর নেই। এটা বাগ নয় — প্ল্যানে Product ধাপ ৬-এ, আর ধাপ ৩ (Chart of Account) ও ৪ (Customer/Supplier) শেষ হয়েছে। বাংলা *টাইপ* করা যায় (ফন্ট OK), শুধু ঘরটাই নেই।
 
-নিচের সব কিছু আসল কোড পড়ে লেখা, অনুমান নয়:
+নিচের সব কিছু আসল কোড পড়ে লেখা, অনুমান নয়:
 
-| কী | কোথা থেকে পড়া |
+| কী | কোথা থেকে পড়া |
 |---|---|
 | API রেপো | `F:\All_Database\www\cashbook_api`, branch `Language-API`, HEAD `ed343899` |
 | Frontend রেপো | `F:\All_Database\cashbookbd_react`, branch `Reseller-ui` |
@@ -30,13 +30,13 @@ product_items.bangla              -- পুরনো Bijoy বাংলা ন�
 product_items.description_bangla  -- পুরনো Bijoy বাংলা বর্ণনা
 ```
 
-এগুলো এখন **লেখা হয়** (`apiItem()` লাইন ১৯২২-১৯২৪, `update()` লাইন ৩৭৩-৩৭৫), আর **পড়াও হয়** (`item/bangla as bangla` — লাইন ৬৪৩, ৬৯০, ৭৫১, ৮৭৭, ৮৯৪)।
+এগুলো এখন **লেখা হয়** (`apiItem()` লাইন ১৯২২-১৯২৪, `update()` লাইন ৩৭৩-৩৭৫), আর **পড়াও হয়** (`item/bangla as bangla` — লাইন ৬৪৩, ৬৯০, ৭৫১, ৮৭৭, ৮৯৪)।
 
 ### ⚠️ নতুন কলাম যোগ করার সময় এই দুটো ছোঁয়া যাবে না
 
 প্ল্যান §৪.৪-এর নিয়ম স্পষ্ট: **নতুন `name_local`, পুরনো `bangla` অপরিবর্তিত।** কারণ:
 
-1. পুরনো সফটওয়্যার ও রিপোর্ট (`products_print`, `item` টেবিলের select) `bangla` পড়ে — সেগুলো ভাঙা যাবে না
+1. পুরনো সফটওয়্যার ও রিপোর্ট (`products_print`, `item` টেবিলের select) `bangla` পড়ে — সেগুলো ভাঙা যাবে না
 2. `bangla` Bijoy এনকোডিং, নতুন `name_local` হবে **Unicode** — এক কলামে দুটো এনকোডিং রাখা যাবে না
 3. §৪.৪-এর রূপান্তর ধাপ (`--bangla-convert`) আলাদা, সেটাও ধাপ ৬-এ নয়
 
@@ -72,7 +72,7 @@ if ($request->has('bangla')) {
 | Bank | ⚠️ **মডেল নেই** — খুঁজে পাননি | `name_local`, `address_local` |
 | Hotel room / Hall | ⚠️ যাচাই হয়নি | `name_local` |
 
-⚠️ Bank-এর কোনো Eloquent মডেল নেই (`app/Models`-এ পাওয়া যায়নি; শুধু `bank_reconciliations` টেবিল ব্যবহার হয়)। `BankReconciliationController` পড়ে বা `Schema::hasTable` দিয়ে আসল ব্যাংক টেবিলের নাম নিশ্চিত করুন। Hotel-ও একইভাবে বাকি। ভুল টেবিলে কলাম যোগ করলে patch নীরবে `warn` দিয়ে এগিয়ে যাবে, কিন্তু কাজ হবে না।
+⚠️ Bank-এর কোনো Eloquent মডেল নেই (`app/Models`-এ পাওয়া যায়নি; শুধু `bank_reconciliations` টেবিল ব্যবহার হয়)। `BankReconciliationController` পড়ে বা `Schema::hasTable` দিয়ে আসল ব্যাংক টেবিলের নাম নিশ্চিত করুন। Hotel-ও একইভাবে বাকি। ভুল টেবিলে কলাম যোগ করলে patch নীরবে `warn` দিয়ে এগিয়ে যাবে, কিন্তু কাজ হবে না।
 
 **ছোট রাখার পরামর্শ:** এক ধাপে সবগুলো নয়। **Product + Category + Unit** দিয়ে শুরু করুন (Product ফর্মের তিনটে ঘর এগুলোই) — বাকিগুলো পরের রিলিজে। প্রতিটা টেবিল আলাদা মেথড, আলাদা try/catch।
 
@@ -125,7 +125,7 @@ if ($this->indexExists('product_items', $index)) {
 $this->runMultiLanguageMasterDataSchema();
 ```
 
-**গুরুত্বপূর্ণ:** নতুন `try` ব্লক বানাবেন না — বিদ্যমান ব্লকে বসান। নাহলে বাকি patch-এর ভুলে এই ধাপ বাদ পড়তে পারে (প্ল্যান §৪.০)।
+**গুরুত্বপূর্ণ:** নতুন `try` ব্লক বানাবেন না — বিদ্যমান ব্লকে বসান। নাহলে বাকি patch-এর ভুলে এই ধাপ বাদ পড়তে পারে (প্ল্যান §৪.০)।
 
 ### A2. `apiStoreProducts` — Product সেভ
 
@@ -150,7 +150,7 @@ if ($request->has('description_local') && Schema::hasColumn('product_items', 'de
 
 লাইন ২২০৪-এর ব্লকে (যেখানে `if ($request->has('description'))` ইত্যাদি আছে) একই ঘরানায় যোগ করুন।
 
-### A4. পড়া — তালিকা, DDL, রিপোর্ট
+### A4. পড়া — তালিকা, DDL, রিপোর্ট
 
 **Product তালিকা** (`items()`/DataTables, লাইন ~৬৩৯):
 
@@ -275,7 +275,7 @@ const finalPayload = localCode ? { ...rest, name_local, description_local } : re
 | 9 | রিপোর্ট | আলাদা রিলিজেও চলবে |
 | 10 | বাকি টেবিল (Category, Unit…) — একই নিয়মে | |
 
-**১-৫ শেষ হলে** স্ক্রিনশটের ফর্মে ঘর আসবে এবং সেভ হবে। **৬ ছাড়া** ঘর থাকবে না — ঠিক এখন যেমন।
+**১-৫ শেষ হলে** স্ক্রিনশটের ফর্মে ঘর আসবে এবং সেভ হবে। **৬ ছাড়া** ঘর থাকবে না — ঠিক এখন যেমন।
 
 ---
 
@@ -290,7 +290,7 @@ const finalPayload = localCode ? { ...rest, name_local, description_local } : re
 - [ ] `name_local` না পাঠালে → `null` (খালি স্ট্রিং নয়)
 - [ ] `GET /api/product/ddl/list?q=সিমেন্ট` → পাওয়া যায়
 - [ ] patch না চালিয়ে সেভ → SQL error নয় (guard কাজ করছে)
-- [ ] পুরনো `bangla` কলাম আগের মতোই লেখা/পড়া হচ্ছে — **এটা ভাঙলে রিপোর্ট ভাঙবে**
+- [ ] পুরনো `bangla` কলাম আগের মতোই লেখা/পড়া হচ্ছে — **এটা ভাঙলে রিপোর্ট ভাঙবে**
 
 **Frontend:**
 

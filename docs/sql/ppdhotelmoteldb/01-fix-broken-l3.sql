@@ -3,7 +3,7 @@
 -- বিশ্লেষণ: docs/2026-11-03-ppdhotelmoteldb-chart-of-accounts-analysis.md (§২-ক, §৫ ধাপ ২)
 --
 -- সমস্যা: UI থেকে বানানো L3 49, 50, 51, 52, 54 status='0' (বন্ধ) আর acc_source_id=7 (Cash) অবস্থায় ছিল।
--- ফলে L4 366 Food Management আর 367 Washing & Cleaning Cash গোষ্ঠীতে পড়ে ছিল।
+-- ফলে L4 366 Food Management আর 367 Washing & Cleaning Cash গোষ্ঠীতে পড়ে ছিল।
 -- status একটা enum('0','1'), তাই মান অবশ্যই string '1' হিসেবে লিখতে হবে।
 
 USE ppdhotelmoteldb;

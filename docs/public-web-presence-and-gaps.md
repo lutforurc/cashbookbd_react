@@ -17,7 +17,7 @@
 শাখা `Lutfor-Rahman`, শেষ পুশ ২০২৬-০৯-০৬)। সেকশনগুলো আগেই আছে — Hero,
 Features, Pricing, Modules, Download, Tutorial, Contact, Footer।
 
-সাইট আর সফটওয়্যার আগেই জোড়া লাগানো: `src/components/PricingSection.tsx`
+সাইট আর সফটওয়্যার আগেই জোড়া লাগানো: `src/components/PricingSection.tsx`
 দাম সরাসরি ওই প্ল্যান API থেকে টানে, আর রেজিস্টার বোতাম নিয়ে যায়
 `app.cashbookbd.com/register?plan_id=<id>`-এ।
 
@@ -44,8 +44,8 @@ Android অ্যাপ লাইভ, আর সে-ও ওই পাবলি�
    ওঠে তা নথিবদ্ধ নয়।
 4. **`saas_plans` প্রতিটি ডেটাবেজে আলাদা কপি** — এক ইনস্টলে দাম বদলালে
    বাকিগুলোয় বদলায় না।
-5. **`PROJECT-AUDIT.md`-এর P0 ক্রস-টেন্যান্ট তালিকা** — ক্লায়েন্ট বাড়লে
-   ঝুঁকিও বাড়ে (দেখুন `tenant-model-is-per-client-database-copy.md`)।
+5. **`PROJECT-AUDIT.md`-এর P0 ক্রস-টেন্যান্ট তালিকা** — ক্লায়েন্ট বাড়লে
+   ঝুঁকিও বাড়ে (দেখুন `tenant-model-is-per-client-database-copy.md`)।
 
 ## প্রয়োগে
 

@@ -5,7 +5,7 @@
     "updated": "06/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "সাধারণ (General) ব্যবসার বিক্রয় চালান — গ্রাহক, গাড়ি নম্বর, রিসিভ ও ডিসকাউন্ট সহ।",
+    "intro": "সাধারণ (General) ব্যবসার বিক্রয় চালান — গ্রাহক, গাড়ি নম্বর, রিসিভ ও ডিসকাউন্ট সহ।",
     "sections": [
       { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Select Customer নির্বাচন করুন (Select an account), Vehicle Number ও Received Amount দিন।", "Discount Amount ও Notes লিখুন।", "Select Product, Select Warehouse (Not Applicable), Enter Quantity ও Enter Price দিয়ে Add New / Update করুন।", "Save (সম্পাদনায় Update), Reset, Print বা Home চাপুন।"] },
       { "heading": "তালিকা", "steps": ["Sl. No., Product Name, Quantity, Rate, Total ও Action; নিচে Grand Total।", "স্টক কম হলে Not Enough Stock জানালা আসে — Available, Requested দেখে Cancel বা Continue Save।"] },
@@ -22,7 +22,7 @@
     "sections": [
       { "heading": "ফর্ম", "menu": "Invoice → Sales", "steps": ["Select Customer, Vehicle Number, Select Purchase Order / Select Sales Order নির্বাচন করুন।", "Received Amount, Discount Amount ও Notes দিন।", "Select Product, Select Warehouse, Enter Bag Number, Weight Variance ও Variance Type (Not Applicable / (+) Increase / (-) Decrease) দিন।", "Enter Quantity ও Enter Price দিয়ে Add New / Update; Save বা Update চাপুন।"] },
       { "heading": "বিশেষ নিয়ম", "steps": ["Sales Order বাছলে Customer তার থেকেই আসে; বদলাতে Order বদলান বা খালি করুন।", "Select Product (Optional) দিয়ে ভাউচারটি কোন পণ্যের বিপরীতে তা যোগ করুন; খালি রাখলে আগের হিসাবই থাকে।"] },
-      { "heading": "সতর্কতা", "warning": "Weight Variance (+) হলে পরিমাণ বাড়ে, (-) হলে কমে — Variance Type না বাছলে ঘরটি বন্ধ থাকে। Approved ভাউচার বদলানো যায় না।" }
+      { "heading": "সতর্কতা", "warning": "Weight Variance (+) হলে পরিমাণ বাড়ে, (-) হলে কমে — Variance Type না বাছলে ঘরটি বন্ধ থাকে। Approved ভাউচার বদলানো যায় না।" }
     ]
   },
   "sales-tiles": {
@@ -153,7 +153,7 @@
     "updated": "06/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "কনস্ট্রাকশন শাখার ক্রয় চালান — সাধারণ ইনভয়েস, গাড়ি ও পেমেন্ট; কোনো বস্তা/ভ্যারিয়েন্স নেই।",
+    "intro": "কনস্ট্রাকশন শাখার ক্রয় চালান — সাধারণ ইনভয়েস, গাড়ি ও পেমেন্ট; কোনো বস্তা/ভ্যারিয়েন্স নেই।",
     "sections": [
       { "heading": "ফর্ম", "menu": "Invoice → Purchase", "steps": ["Select Supplier ও Notes দিন; Invoice Number, Invoice Date ও Vehicle Number লিখুন।", "Discount Amount ও Payment Amount দিন।", "Select Product, Select Warehouse, Quantity ও Price দিয়ে Add New / Update করুন।", "Save / Update, Reset, Print বা Home চাপুন।"] },
       { "heading": "মোট", "steps": ["Previous Balance, Current Invoice, Discount, Payment Amount ও Total Tk. দেখা যায়।", "Table: Sl. No., Product Name, Quantity, Rate, Total ও Grand Total।"] },
@@ -183,7 +183,7 @@
     "sections": [
       { "heading": "ফর্ম", "menu": "Invoice → Purchase", "steps": ["Select Supplier, Notes, Invoice Number, Invoice Date ও Vehicle Number দিন।", "Discount Amount ও Payment Amount দিন।", "Select Product, Select Warehouse, Enter Serial Number, Quantity ও Price দিন।", "Add New / Update দিয়ে লাইন যোগ করে Save বা Update চাপুন।"] },
       { "heading": "তালিকা", "steps": ["Sl. No., Product Name, Quantity, Rate, Total ও Grand Total দেখা যায়।", "Previous Balance, Current Invoice, Discount, Payment Amount ও Total Tk. উপরে থাকে।"] },
-      { "heading": "সতর্কতা", "warning": "সিরিয়াল নম্বর ছাড়া লাইন যোগ করলে পরে কোন মোবাইল কার তা বোঝা যাবে না। অনুমোদিত ভাউচার বদলানো যায় না এবং এখানে Print সুবিধা নেই।" }
+      { "heading": "সতর্কতা", "warning": "সিরিয়াল নম্বর ছাড়া লাইন যোগ করলে পরে কোন মোবাইল কার তা বোঝা যাবে না। অনুমোদিত ভাউচার বদলানো যায় না এবং এখানে Print সুবিধা নেই।" }
     ]
   },
   "purchase-return-construction": {

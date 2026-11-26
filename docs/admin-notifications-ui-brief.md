@@ -15,10 +15,10 @@ Platform admin একটা বার্তা লিখে নির্দি�
 
 ## API চুক্তি (ইতিমধ্যে লাইভ)
 
-সব route auth-এর ভেতরে, prefix `admin/notifications`, middleware `platform.admin`। Response সব `foundData` envelope — অর্থাৎ `axios.data.data.data`-তে payload (notification center যেভাবে পড়ে, ঠিক তেমন)।
+সব route auth-এর ভেতরে, prefix `admin/notifications`, middleware `platform.admin`। Response সব `foundData` envelope — অর্থাৎ `axios.data.data.data`-তে payload (notification center যেভাবে পড়ে, ঠিক তেমন)।
 
 ### 1) তালিকা — `GET admin/notifications`
-সর্বশেষ ২০০টা broadcast, প্রতিটার সাথে কতজন পড়েছে।
+সর্বশেষ ২০০টা broadcast, প্রতিটার সাথে কতজন পড়েছে।
 ```
 data.data.data.notifications: [
   { id, title, message, tone, audience_type,
@@ -89,7 +89,7 @@ export const API_ADMIN_NOTIFICATIONS_URL = `${API_BASE_URL}/admin/notifications`
 ## Acceptance criteria
 1. Non-platform-admin পেজটা/মেনু দেখবে না (বা খুললে 403 হ্যান্ডল হবে)।
 2. Global broadcast পাঠালে সব ইউজারের notification center-এ আসবে; Branch/Company/Role/User টার্গেট করলে শুধু তারাই পাবে।
-3. audience global ছাড়া অন্য কিছু, কিন্তু target না দিলে — সার্ভারের 422 মেসেজ ব্যবহারকারীকে দেখানো হবে।
+3. audience global ছাড়া অন্য কিছু, কিন্তু target না দিলে — সার্ভারের 422 মেসেজ ব্যবহারকারীকে দেখানো হবে।
 4. পাঠানোর পর list-এ নতুন row আসবে, read_count শুরুতে 0।
 5. Delete করলে list থেকে যাবে এবং টার্গেট ইউজারদের notification center থেকেও পরের রিফ্রেশে চলে যাবে।
 

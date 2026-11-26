@@ -9,7 +9,7 @@
     "sections": [
       { "heading": "মিলানো", "menu": "Accounts → Bank Reconciliation", "steps": ["Account ও Statement up to নির্বাচন করুন; Only what has not cleared টিক দিন।", "The bank says ঘরে ব্যাংকের ব্যালেন্স দিন।", "What the books say, cheques written not presented ও paid in not credited দেখে পার্থক্য মেলান।", "মিললে Close this month; ভুল হলে Open it again।"] },
       { "heading": "তালিকা", "steps": ["Date, Voucher, What it was, Paid in, Paid out ও On the statement দেখা যায়।", "Print দিয়ে মিলানোর শিট ছাপে; Months already done-এ আগের মাসের লিংক থাকে।"] },
-      { "heading": "সতর্কতা", "warning": "পার্থক্য সাধারণত ব্যাংক চার্জ বা সুদ — তার ভাউচার লিখুন বা বাদ পড়া এন্ট্রি টিক দিন। ব্যাংকের তারিখের ব্যালেন্স না দিলে মিলানো হবে না।" }
+      { "heading": "সতর্কতা", "warning": "পার্থক্য সাধারণত ব্যাংক চার্জ বা সুদ — তার ভাউচার লিখুন বা বাদ পড়া এন্ট্রি টিক দিন। ব্যাংকের তারিখের ব্যালেন্স না দিলে মিলানো হবে না।" }
     ]
   },
   "budget": {
@@ -58,7 +58,7 @@
     "intro": "পণ্য কেনার জন্য কর্মচারীকে আগাম টাকা দেওয়া, আর পরে মেমো অনুযায়ী তা সমন্বয় করা। কার হাতে কত টাকা আছে তা এক জায়গায় দেখা যায়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ purchase.advance.view permission থাকলে। অগ্রিম দেওয়া ও সমন্বয়ের জন্য purchase.advance.create লাগে।"] },
-      { "heading": "অগ্রিম দেওয়া", "menu": "Transaction → Purchase Advance", "steps": ["Give advance নির্বাচন করুন, Employee নির্বাচন করুন, Amount লিখুন।", "টাকা Cash থেকে গেলে Cash, ব্যাংক থেকে গেলে Bank বেছে Bank Account দিন।", "Note ঐচ্ছিক। Give advance চাপলে ভাউচার তৈরি হয় আর কর্মচারীর Balance বাড়ে।", "কর্মচারীর হাতে আগের অগ্রিম খোলা থাকলে স্ক্রিন তা জানিয়ে দেয়; তবু নতুন অগ্রিম দেওয়া যায়।"] },
+      { "heading": "অগ্রিম দেওয়া", "menu": "Transaction → Purchase Advance", "steps": ["Give advance নির্বাচন করুন, Employee নির্বাচন করুন, Amount লিখুন।", "টাকা Cash থেকে গেলে Cash, ব্যাংক থেকে গেলে Bank বেছে Bank Account দিন।", "Note ঐচ্ছিক। Give advance চাপলে ভাউচার তৈরি হয় আর কর্মচারীর Balance বাড়ে।", "কর্মচারীর হাতে আগের অগ্রিম খোলা থাকলে স্ক্রিন তা জানিয়ে দেয়; তবু নতুন অগ্রিম দেওয়া যায়।"] },
       { "heading": "অগ্রিমের টাকায় কেনা পণ্য", "steps": ["পণ্য এই স্ক্রিনে এন্ট্রি হয় না। Transaction → Accounts Transaction-এ ক্রয় লিখে Payment Details-এ Advance বেছে কর্মচারীকে নির্বাচন করুন।", "বিলের টাকা কর্মচারীর Balance থেকে নিজে থেকে কমে যায়।"] },
       { "heading": "সমন্বয় (Settle)", "steps": ["Settle বেছে Employee নির্বাচন করুন। স্ক্রিন বলে দেয় কোন দিকে টাকা যাবে।", "কর্মচারীর হাতে টাকা থাকলে Receive back: তিনি যা ফেরত দিলেন তা লিখুন (পুরোটা বা আংশিক)।", "বিল অগ্রিমের চেয়ে বেশি হয়ে থাকলে Pay the difference: তাঁকে যা দেওয়া হলো তা লিখুন।", "Balance-এর চেয়ে বেশি অঙ্ক নেওয়া বা দেওয়া যায় না।"] },
       { "heading": "তালিকা", "steps": ["তালিকায় শুধু যাঁদের Balance আছে তাঁরা দেখান; Show every employee সুইচ চালু করলে সবাই।", "Balance-এর পাশে owed to him লেখা থাকলে প্রতিষ্ঠান তাঁর কাছে দেনা। Days open হলো শেষ অগ্রিমের পর কত দিন গেছে।"] },
@@ -89,7 +89,7 @@
     "intro": "একজন কর্মচারীর ঋণের লেনদেন নির্দিষ্ট সময়ে দেখা ও ছাপা হয়।",
     "sections": [
       { "heading": "লেজার", "menu": "HRM → Loan → Loan Ledger", "steps": ["Select Branch, Select Employee, Start Date ও End Date দিন।", "Rows ও Font ঠিক করে Run চাপুন।", "Sl. No, VR No & Date, Remarks, Received, Payment ও Voucher দেখা যায়; প্রিন্ট আইকনে ছাপে।"] },
-      { "heading": "সতর্কতা", "warning": "কর্মচারী না বাছলে রিপোর্ট আসে না; তারিখের বাইরের লেনদেন বাদ পড়বে।" }
+      { "heading": "সতর্কতা", "warning": "কর্মচারী না বাছলে রিপোর্ট আসে না; তারিখের বাইরের লেনদেন বাদ পড়বে।" }
     ]
   },
   "inter-branch": {
@@ -216,7 +216,7 @@
     "intro": "ক্রয় ও বিক্রয় অর্ডার, তাদের লেনদেন, লিংক ও বাকি পরিমাণ দেখা যায়।",
     "sections": [
       { "heading": "তালিকা", "menu": "Admin → Orders → Orders", "steps": ["Order Type, Order Status, Account, Product ও Order Start/End Date দিন; Apply চাপুন।", "Order for, Product / Trx. Qty, Order No./Rate/Date, Contract/Order/Remaining Qty ও Order Amount দেখা যায়।", "Linked Orders-এ ক্লিক করলে সংযুক্ত অর্ডারের তালিকা খোলে।", "Print বা New Order ব্যবহার করুন।"] },
-      { "heading": "সতর্কতা", "warning": "Remaining Qty শূন্য হলে অর্ডার শেষ; নতুন লেনদেন যোগ করলে সীমা ছাড়িয়ে যাবে না।" }
+      { "heading": "সতর্কতা", "warning": "Remaining Qty শূন্য হলে অর্ডার শেষ; নতুন লেনদেন যোগ করলে সীমা ছাড়িয়ে যাবে না।" }
     ]
   },
   "order-form": {
@@ -232,15 +232,15 @@
     ]
   },
   "avg-price": {
-    "title": "গড় দাম",
+    "title": "গড় দাম",
     "module": "Orders",
     "updated": "06/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "ক্রয় ও অন্যান্য খরচ মিলিয়ে একটি অর্ডারের পণ্যের প্রকৃত গড় দাম বের করা হয়।",
+    "intro": "ক্রয় ও অন্যান্য খরচ মিলিয়ে একটি অর্ডারের পণ্যের প্রকৃত গড় দাম বের করা হয়।",
     "sections": [
       { "heading": "হিসাব", "menu": "Admin → Orders → Average Price", "steps": ["Select Branch, Select Order ও Report Type নির্বাচন করুন; Run চাপুন।", "{product} Purchase Cost-এ Total Quantity, Total Cost ও Average Per Unit দেখুন।", "Increase / Decrease ও Others Cost মিলিয়ে Net per unit দেখুন।"] },
-      { "heading": "সতর্কতা", "warning": "অর্ডার না বাছলে কোনো ফল আসে না; খরচের খাত বাদ পড়লে গড় দাম কম দেখাবে।" }
+      { "heading": "সতর্কতা", "warning": "অর্ডার না বাছলে কোনো ফল আসে না; খরচের খাত বাদ পড়লে গড় দাম কম দেখাবে।" }
     ]
   },
   "order-transactions": {
@@ -249,7 +249,7 @@
     "updated": "11/11/2026",
     "businessTypes": ["all"],
     "video": "",
-    "intro": "একটি অর্ডারের চালান, পণ্য, গাড়ি, টাকা ও বাকি একসাথে দেখা ও ছাপা হয়।",
+    "intro": "একটি অর্ডারের চালান, পণ্য, গাড়ি, টাকা ও বাকি একসাথে দেখা ও ছাপা হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ order.transaction.view permission থাকলে।"] },
       { "heading": "রিপোর্ট", "menu": "Admin → Orders → Order With Transaction", "steps": ["Select Branch ও Select Order নির্বাচন করুন; Apply চাপুন।", "Rows ও Font ঠিক করুন।", "SL. NO., CHAL. NO. & DATE, PRODUCT & DETAILS, VEHICLE, QUANTITY, RATE, TOTAL, DISCOUNT, RECEIVED/PAYMENT ও BALANCE দেখা যায়।", "প্রিন্ট আইকনে ছাপা হয়।"] },
@@ -265,7 +265,7 @@
     "intro": "নিজের কভার ছবি ও প্রোফাইল ছবি দেখা ও বদলানো হয়।",
     "sections": [
       { "heading": "ছবি", "menu": "Profile", "steps": ["কভার ছবির Edit চেপে নতুন ছবি নির্বাচন করুন।", "ক্যামেরা বোতামে (Change photo) প্রোফাইল ছবি বদলান।", "আপলোড শেষ হলে ছবি সাথে সাথে দেখা যায়।"] },
-      { "heading": "সতর্কতা", "warning": "শুধু ছবি ফাইল নেওয়া হয়; কভার সর্বোচ্চ ৪MB, প্রোফাইল ছবি ২MB। বড় ফাইল হলে আপলোড হবে না।" }
+      { "heading": "সতর্কতা", "warning": "শুধু ছবি ফাইল নেওয়া হয়; কভার সর্বোচ্চ ৪MB, প্রোফাইল ছবি ২MB। বড় ফাইল হলে আপলোড হবে না।" }
     ]
   },
   "my-devices": {

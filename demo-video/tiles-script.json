@@ -79,7 +79,7 @@
 ["wait","5000"],
 ["eval","window.__hl(null); window.__cap(6,'প্রয়োজনে ডিসকাউন্ট দিন','ডিসকাউন্ট দিতে চাইলে এখানে টাকার পরিমাণ লিখুন। ডিসকাউন্ট না থাকলে কিছু লিখতে হবে না।'); window.__hl('#discountAmt'); 'ok'"],
 ["wait","6500"],
-["eval","window.__hl(null); window.__cap(7,'কাস্টমারের হিসাব যাচাই করুন','Previous Balance = আগের বকেয়া · Current Invoice = বর্তমান ইনভয়েস · Discount = ছাড় · Received = পরিশোধিত · Total Tk. = মোট বকেয়া'); 'ok'"],
+["eval","window.__hl(null); window.__cap(7,'কাস্টমারের হিসাব যাচাই করুন','Previous Balance = আগের বকেয়া · Current Invoice = বর্তমান ইনভয়েস · Discount = ছাড় · Received = পরিশোধিত · Total Tk. = মোট বকেয়া'); 'ok'"],
 ["wait","2500"],
 ["eval","var leaf=Array.from(document.querySelectorAll('div,span,p')).find(function(e){return e.children.length===0 && (e.innerText||'').trim()==='Previous Balance';}); var box=leaf; for(var i=0;i<8 && box;i++){ if(/Total Tk/.test(box.innerText||'')) break; box=box.parentElement; } if(box){box.id='cb-summary'; box.scrollIntoView({block:'center'});} window.__hl('#cb-summary'); JSON.stringify({found:!!box, txt:box?(box.innerText||'').replace(/\\n+/g,' | ').slice(0,220):null})"],
 ["wait","14000"],

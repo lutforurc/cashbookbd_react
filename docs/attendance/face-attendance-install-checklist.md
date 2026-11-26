@@ -8,7 +8,7 @@
 ## ক. ব্রাঞ্চে যাওয়ার আগে (অফিস থেকে)
 
 - [ ] `php artisan patch:add-unit-type` চালানো হয়েছে (বা `patch:attendance-devices`) — `hrm_attendance_punches`, `hrm_attendance_device_commands` তৈরি
-- [ ] সার্ভারের ঘড়ি ঠিক আছে (`date` → Asia/Dhaka)
+- [ ] সার্ভারের ঘড়ি ঠিক আছে (`date` → Asia/Dhaka)
 - [ ] ক্লায়েন্টের পাবলিক URL-এ API পৌঁছায়:
 
       curl -i "https://<domain>/api/iclock/ping?SN=TEST-123"
@@ -48,8 +48,8 @@
 - [ ] প্রথম ১৫ মিনিটে **Offline** দেখালে: ডিভাইসের নেট, সার্ভার অ্যাড্রেস, পোর্ট, ফায়ারওয়াল দেখুন
 - [ ] **Users** আইকনে ঢুকে প্রতিটি কর্মচারীর **Device Code** ম্যাপ করুন
   - [ ] ম্যাপ করার বার্তায় কত দিন rebuild হলো দেখা
-- [ ] **Unmatched Punches**-এ কিছু পড়ে আছে কি না দেখুন
-- [ ] কেউ চাকরি ছাড়লে: Users → **Delete on Device** (ডিভাইস থেকে মুখ মোছার কমান্ড; হাজিরার ইতিহাস থাকে)
+- [ ] **Unmatched Punches**-এ কিছু পড়ে আছে কি না দেখুন
+- [ ] কেউ চাকরি ছাড়লে: Users → **Delete on Device** (ডিভাইস থেকে মুখ মোছার কমান্ড; হাজিরার ইতিহাস থাকে)
 
 ---
 
@@ -57,7 +57,7 @@
 
 - [ ] একজন কর্মচারী মুখ দেখান → Devices → **Punches**-এ সেই রেকর্ড (ডিভাইসের সময় সহ)
 - [ ] **Manual Attendance**-এ ওই দিনের সারি, **Source = Face**, Status/Approval দেখুন
-- [ ] ঘড়ি মিলছে না (**Clock … behind/ahead**) → **Sync Clock** → ডিভাইস পরের বার যোগাযোগের পর আবার দেখুন
+- [ ] ঘড়ি মিলছে না (**Clock … behind/ahead**) → **Sync Clock** → ডিভাইস পরের বার যোগাযোগের পর আবার দেখুন
 - [ ] ডিভাইসে জমে থাকা পুরনো পাঞ্চ দরকার হলে: **Pull Punches** (তারিখ পরিসর দিয়ে)
 - [ ] হাজিরা ভুল দেখালে: **Rebuild Days** (ওই তারিখ পরিসরে) — পাঞ্চ থেকেই নতুন করে তৈরি হবে
 
@@ -66,7 +66,7 @@
 ## ঙ. শেষ করার আগে
 
 - [ ] সব কর্মচারীর Device Code ম্যাপ হয়েছে (তালিকায় ০ Unmatched)
-- [ ] ডিভাইসের ঘড়ি সার্ভারের সাথে মিলছে (±২ মিনিট)
+- [ ] ডিভাইসের ঘড়ি সার্ভারের সাথে মিলছে (±২ মিনিট)
 - [ ] দিনের ৩টি সারি হাতে মিলিয়ে দেখা (in/out/দেরি)
 - [ ] অ্যাডমিনকে দেখানো: Approve কোথায়, Rebuild কোথায়, Unmatched কোথায়
 - [ ] সমস্যা হলে: ডিভাইসের পর্দায় Cloud Server লগ, আর সার্ভারে `storage/logs/laravel.log` (`ADMS attendance received`, `ADMS call from an unregistered device`)

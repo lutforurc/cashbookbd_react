@@ -57,14 +57,14 @@ TilesBusinessSales.tsx  (SalesIndex.tsx:31 — is_tiles_and_sanitary হলে)
 
 | তীব্রতা | সমস্যা | রেফারেন্স | প্রভাব | প্রস্তাবিত সমাধান |
 |---|---|---|---|---|
-| **উচ্চ (ডক-ত্রুটি)** | ডক বলে "তিনটি write-helper"-এ gate বসবে (Trading/Electronics/legacy)। Tiles-only সুযোগে write-path **একটাই** | `ElectronicsSalesController.php:49,80`; `Services/ElectronicsSales/InventoryService.php:13,31,67,88` | কাজ অকারণে তিন গুণ; ভুল ফাইলেও হাত পড়ার ঝুঁকি | gate শুধু `Services/ElectronicsSales/InventoryService.php`-এর `processInventoryMaster` (:13) ও `processInventoryMasterUpdate` (:67)-এ |
+| **উচ্চ (ডক-ত্রুটি)** | ডক বলে "তিনটি write-helper"-এ gate বসবে (Trading/Electronics/legacy)। Tiles-only সুযোগে write-path **একটাই** | `ElectronicsSalesController.php:49,80`; `Services/ElectronicsSales/InventoryService.php:13,31,67,88` | কাজ অকারণে তিন গুণ; ভুল ফাইলেও হাত পড়ার ঝুঁকি | gate শুধু `Services/ElectronicsSales/InventoryService.php`-এর `processInventoryMaster` (:13) ও `processInventoryMasterUpdate` (:67)-এ |
 | **উচ্চ (ডক-ত্রুটি)** | ভুল পথ: `Inventory/ElectronicsSales/InventoryService.php` | আসল: `app/Services/ElectronicsSales/InventoryService.php` (namespace `App\Services\ElectronicsSales`) | ভুল ফাইল খুঁজে সময় নষ্ট | পথ সংশোধন |
-| **উচ্চ (ডক-ত্রুটি)** | ডক বলে রিটার্ন `inventory_sales_details`-এ `is_return = 1` লাইন জন্মায়, তাই pending থেকে বাদ দিতে হবে | আসল: রিটার্ন লেখে **`inventory_sales_return_masters`/`inventory_sales_return_details`** (`CommonFunction/SalesReturn.php:20,71,94`); `is_return` শর্তসাপেক্ষ (:78), বিলের `inventory_sales_details` ছোঁয়ই না | pending কোয়েরি ও documented "খোলা প্রশ্ন" ভুল ভিত্তিতে দাঁড়ানো | রিটার্নকে আলাদা উৎস ধরে pending-নিয়ম ঠিক করুন (§D) |
+| **উচ্চ (ডক-ত্রুটি)** | ডক বলে রিটার্ন `inventory_sales_details`-এ `is_return = 1` লাইন জন্মায়, তাই pending থেকে বাদ দিতে হবে | আসল: রিটার্ন লেখে **`inventory_sales_return_masters`/`inventory_sales_return_details`** (`CommonFunction/SalesReturn.php:20,71,94`); `is_return` শর্তসাপেক্ষ (:78), বিলের `inventory_sales_details` ছোঁয়ই না | pending কোয়েরি ও documented "খোলা প্রশ্ন" ভুল ভিত্তিতে দাঁড়ানো | রিটার্নকে আলাদা উৎস ধরে pending-নিয়ম ঠিক করুন (§D) |
 | **মধ্যম (ডক-ত্রুটি)** | ডক §৫ ❌: "Trading dashboard-এ হাত দিতেই হবে" | Tiles ব্রাঞ্চে trading dashboard **৪২২ refusal** করে (`TradingDashboardController.php:110-118`, `TradingType.php:51`); `soldInPeriod()` শুধু ওখানেই (:123) | অপ্রয়োজনীয় কাজ ও ভুল প্রত্যাশা | Tiles-এর জন্য এই আইটেম বাদ দিন; `TradingStockLedger::closing()` (generic dashboard, `DashboardSummaryService.php:435`) নিরাপদ |
 | **মধ্যম (ডক-ত্রুটি)** | ডক §৫ ⚠️: "`StockCostLayers` রিটার্নে লাগে, ইনসার্শন ক্রমে sort করে, তাই রিটার্নের cost ভুল হতে পারে" | `StockCostLayers` **একমাত্র** ব্যবহার হয় branch transfer-এ (`InventoryTransferMaster.php:113`); রিটার্নে নয় (`SalesReturnController.php:249` শুধু কমেন্ট) | ভুয়া ঝুঁকি | আইটেম বাদ দিন |
-| **মধ্যম (ডক-ত্রুটি)** | ডক §৫ ⚠️: "Report Mismatch টিক-ছাড়া বিলকে ভাঙা দেখাতে পারে — রোলআউটের আগে বাধ্যতামূলক চেক" | `Reports/ReportMismatchController.php` শুধু দুইটা চেক করে — company-less (:95-118) ও unbalanced debit/credit (:120-150); `inventory_details`/stock row **কোথাও পড়ে না** (:168-176) | ভুয়া ঝুঁকি | আইটেম বাদ দিন |
+| **মধ্যম (ডক-ত্রুটি)** | ডক §৫ ⚠️: "Report Mismatch টিক-ছাড়া বিলকে ভাঙা দেখাতে পারে — রোলআউটের আগে বাধ্যতামূলক চেক" | `Reports/ReportMismatchController.php` শুধু দুইটা চেক করে — company-less (:95-118) ও unbalanced debit/credit (:120-150); `inventory_details`/stock row **কোথাও পড়ে না** (:168-176) | ভুয়া ঝুঁকি | আইটেম বাদ দিন |
 | **মধ্যম (ডক-ত্রুটি)** | ডক §৬: Sidebar পথ `src/components/modules/Sidebar/…` | আসল: `src/components/Sidebar/index.tsx`, `src/components/Sidebar/menuPermissions.ts` | ভুল ফাইল | পথ সংশোধন |
-| **মধ্যম (ডক-ত্রুটি)** | ডক §১.২/§৫: `rebuildStockTable` `:6548-6642`, "শুধু stock_in লেয়ার পড়ে" | আসল location `:7382`; balance subquery `SUM(stock_in)-SUM(stock_out)` ব্যবহার করে (:7412) | ভুল লাইন/অর্ধ-সত্য | সংখ্যা ও বাক্য ঠিক করুন |
+| **মধ্যম (ডক-ত্রুটি)** | ডক §১.২/§৫: `rebuildStockTable` `:6548-6642`, "শুধু stock_in লেয়ার পড়ে" | আসল location `:7382`; balance subquery `SUM(stock_in)-SUM(stock_out)` ব্যবহার করে (:7412) | ভুল লাইন/অর্ধ-সত্য | সংখ্যা ও বাক্য ঠিক করুন |
 | **নিম্ন (ডক-ত্রুটি)** | ডক §১.৩: `Sales/SalesOrderController.php:1841` | আসল `SalesOrder/SalesOrderController.php`, কমেন্ট `:1853-1855` | — | পথ/লাইন ঠিক করুন |
 | **নিম্ন (ডক-ত্রুটি)** | ডক §২.৩ `BranchController::apiUpdate` | মেথডের নাম `updateBranch` (`:1307`); warn/block লেখা `:1358-1359` | — | নাম ঠিক করুন |
 
@@ -73,9 +73,9 @@ TilesBusinessSales.tsx  (SalesIndex.tsx:31 — is_tiles_and_sanitary হলে)
 | তীব্রতা | সমস্যা | রেফারেন্স | প্রভাব | প্রস্তাবিত সমাধান |
 |---|---|---|---|---|
 | **অতি-উচ্চ (ব্লকার)** | এডিটে `inventory_sales_details` মুছে-বসানো ⇒ লাইন-`id` পাল্টায় ⇒ `inventory_delivery_details.sales_detail_id` **এতিম**; অতঃপর pending/over-delivery হিসাব ভুল | `Services/ElectronicsSales/SalesService.php:125,128`; ডক ঝুঁকি ২ | ডেলিভারির পর এডিট করলেই হিসাব নীরবে ভুল | v1-এ **ডেলিভারি থাকলে ইনভয়েস এডিট নিষেধ** (সহজ, সৎ); অথবা delivery-কে স্থির `inventory_sales_masters.id + product`-এ বাঁধা (একই প্রোডাক্ট দুই লাইন হলে সমস্যা) |
-| **উচ্চ** | gate বসানোর সময় `inventory_masters` row না থাকলে আপডেট পথে `->first()` **null** ফেরে, তারপর `$inventoryMaster->id` → fatal | `Services/ElectronicsSales/InventoryService.php:70,85` | টিক-ছাড়া বিল এডিট করলে ৫০০ | gate-এ null-safe শাখা: master না থাকলে কিছুই না লিখুন |
-| **উচ্চ** | স্টক-শর্টেজ চেক এখন ইনভয়েসে (`:62`)। টিক-ছাড়া বিলে স্টক নড়ে না, কিন্তু warningFor তখনো আটকাতে/জিজ্ঞাসা করতে পারে | `ElectronicsSalesController.php:62`; `StockShortageGuard.php:48,200-229` | অন্যায্য block/হুজুগ | টিক-ছাড়া বিলে ইনভয়েস-সময়ের guard skip; guard চালাবে **ডেলিভারি পোস্টিং**-এ |
-| **উচ্চ** | পোস্টিং-এর "৪. ইনভয়েস লাইভ ও stamp=0" যাচাই দরকার; নিয়ম ছাড়া দুইবার কাটার পথ | ডক §৪ | ডাবল ডিডাকশন | ডকের ৪-দরজা নীতি রাখুন (stamp + FOR UPDATE + `UNIQUE(main_trx_id)` + soft-delete) |
+| **উচ্চ** | gate বসানোর সময় `inventory_masters` row না থাকলে আপডেট পথে `->first()` **null** ফেরে, তারপর `$inventoryMaster->id` → fatal | `Services/ElectronicsSales/InventoryService.php:70,85` | টিক-ছাড়া বিল এডিট করলে ৫০০ | gate-এ null-safe শাখা: master না থাকলে কিছুই না লিখুন |
+| **উচ্চ** | স্টক-শর্টেজ চেক এখন ইনভয়েসে (`:62`)। টিক-ছাড়া বিলে স্টক নড়ে না, কিন্তু warningFor তখনো আটকাতে/জিজ্ঞাসা করতে পারে | `ElectronicsSalesController.php:62`; `StockShortageGuard.php:48,200-229` | অন্যায্য block/হুজুগ | টিক-ছাড়া বিলে ইনভয়েস-সময়ের guard skip; guard চালাবে **ডেলিভারি পোস্টিং**-এ |
+| **উচ্চ** | পোস্টিং-এর "৪. ইনভয়েস লাইভ ও stamp=0" যাচাই দরকার; নিয়ম ছাড়া দুইবার কাটার পথ | ডক §৪ | ডাবল ডিডাকশন | ডকের ৪-দরজা নীতি রাখুন (stamp + FOR UPDATE + `UNIQUE(main_trx_id)` + soft-delete) |
 | **মধ্যম** | ডেলিভারির godown ঠিক রাখা হয়নি ডকে। বিক্রি `stock_line_godown()` দিয়ে Tiles-এর নিজস্ব গুদামে যায় (`InventoryService.php:48`), রিটার্ন হার্ডকোড godown 1 (`CommonFunction/InventoryMasterIn.php:75`) | `helpers.php:746`, `helpers.php:737-752` | গুদাম-স্টক রিপোর্ট ভুল গুদামে | ডেলিভারি `stock_line_godown()`-ই ব্যবহার করবে; রিটার্নের godown-অসঙ্গতি আলাদা করে ঠিক করা |
 | **মধ্যম** | `inventory_sales_details.godown_id` (`SalesService.php:59`) আর `inventory_details.godown_id` (`InventoryService.php:48`) ইতিমধ্যে ভিন্ন পথে বসে | উপরের লাইন | আপেক্ষিক godown রিপোর্ট অসঙ্গত | ডেলিভারিতেও একই পথ কঠোরভাবে মানুন |
 | **মধ্যম** | ডেলিভারি চালানের driver/vehicle তথ্য আজ `inventory_sales_masters`-এ থাকে (`saveChallanDriver` `SalesController.php:923`; কলাম প্যাচ `2026_08_24_challan_driver_columns.sql`) | ডক §৩.০ columns | দুই জায়গায় একই তথ্যের দ্বিতীয় উৎস | ডেলিভারি চালানের তথ্য নতুন master-এ; checkbox-ON বিলে পুরনো পথ অপরিবর্তিত |
@@ -86,7 +86,7 @@ TilesBusinessSales.tsx  (SalesIndex.tsx:31 — is_tiles_and_sanitary হলে)
 | বিষয় | কেন অনিশ্চিত | কী লাগবে |
 |---|---|---|
 | `acc_vr_type`-এ `id 21 = "Challan"` আছে কি না | কোড/SQL প্যাচে পাওয়া যায় না; সম্ভবত লাইভ DB-তে | লাইভ dev DB-তে `SELECT id,name FROM acc_vr_type;` — max id ও 21 যাচাই |
-| প্যাচে proposed `id 24` ফাঁকা কি না (ডক বলে "২৩টা row, শেষটা ২৩") | লাইভ DB ছাড়া প্রমাণ হয়নি | উপরের কুয়েরিতে ২৩/২৪ যাচাই; প্রতি DB-তে আলাদা |
+| প্যাচে proposed `id 24` ফাঁকা কি না (ডক বলে "২৩টা row, শেষটা ২৩") | লাইভ DB ছাড়া প্রমাণ হয়নি | উপরের কুয়েরিতে ২৩/২৪ যাচাই; প্রতি DB-তে আলাদা |
 | `DC-` prefix কোনো ব্রাঞ্চে ব্যবহৃত কি না | কোডে সেটা নেই | `SELECT vr_no FROM main_trx_master WHERE vr_no LIKE 'DC-%'` প্রতি DB-তে |
 | Tiles ব্রাঞ্চের React মেনুতে ঠিক কোন রিপোর্ট স্ক্রিন দেখানো হয় | মেনু-ম্যাপ frontend-নির্ভর | `Sidebar`/`App.tsx` ম্যাপ যাচাই |
 | ডকের §১.২ "৪২ ত্রুটি ট্রিগার" ইত্যাদির লাইনগুলো | আংশিক যাচাই হয়েছে, বিস্তারিত নেই | রোলআউটের আগে চেক |
@@ -100,7 +100,7 @@ TilesBusinessSales.tsx  (SalesIndex.tsx:31 — is_tiles_and_sanitary হলে)
 **আবশ্যক (শুরু করার আগেই দরকার):**
 1. **এডিট বনাম ডেলিভারি-করা লাইন** — ডেলিভারি থাকলে এডিট নিষেধ (প্রস্তাব v1), নাকি in-place update?
 2. **চেকবক্স কখন লক** — প্রথম নিশ্চিত ডেলিভারির আগ পর্যন্ত এডিটে বদলানো যাবে (প্রস্তাব)।
-3. **টিক-ছাড়া বিলে স্টক-শর্টেজ** — ইনভয়েসে চুপ, নাকি শুধু তথ্য; ডেলিভারিতে বাধ্যতামূলক। (Tiles-এ আজ `stock_shortage`/`allow_negative` modal আছে — `TilesBusinessSales.tsx:125,782-792`।)
+3. **টিক-ছাড়া বিলে স্টক-শর্টেজ** — ইনভয়েসে চুপ, নাকি শুধু তথ্য; ডেলিভারিতে বাধ্যতামূলক। (Tiles-এ আজ `stock_shortage`/`allow_negative` modal আছে — `TilesBusinessSales.tsx:125,782-792`।)
 4. **অনুমোদন** — অননুমোদিত বিলের ডেলিভারি হবে কি না।
 
 **Tiles-নির্দিষ্ট নতুন সিদ্ধান্ত:**
@@ -132,12 +132,12 @@ TilesBusinessSales.tsx  (SalesIndex.tsx:31 — is_tiles_and_sanitary হলে)
 - **Guard:** `ElectronicsSalesController.php:62` — stamp 0 হলে ইনভয়েস-সময়ের `StockShortageGuard` skip; guard চালাবে ডেলিভারি পোস্টিং-এ।
 - **Delivery service/controller:** নতুন; নিজস্ব ভাউচার `apiMainTransactionMaster()`; `FOR UPDATE` দিয়ে sales-line lock; over-delivery refusal; `StockShortageGuard` (+ branch warn/block `StockShortageGuard.php:111,124`); `inventory_details.stock_out=qty` `stock_line_godown()` দিয়ে; এক ট্রানজেকশন; `rethrowIfPeriodClosed`।
 - **সুযোগ-সীমানা:** সব নতুন যুক্তি `TilesType::ofBranch($branchId)` (`TilesType.php:78`) দিয়ে গেট; অন্য trade অপরিবর্তিত।
-- **ব্রাঞ্চ-ডিফল্ট:** checkbox-এর ডিফল্ট পড়া `getBranchEdit` (`BranchController.php:920`) ও লিখা `updateBranch`/`apiStore` (:1307/:1591); `meta()` ক্যাশহীন (`helpers.php:227`)। (সিদ্ধান্ত: meta key, নাকি `com_branches` কলাম — warn/block-এর মতো।)
-- **রিটার্ন:** ডেলিভারির পরে ফেরতের interaction নিয়মিত (নতুন FK ছাড়াই)।
+- **ব্রাঞ্চ-ডিফল্ট:** checkbox-এর ডিফল্ট পড়া `getBranchEdit` (`BranchController.php:920`) ও লিখা `updateBranch`/`apiStore` (:1307/:1591); `meta()` ক্যাশহীন (`helpers.php:227`)। (সিদ্ধান্ত: meta key, নাকি `com_branches` কলাম — warn/block-এর মতো।)
+- **রিটার্ন:** ডেলিভারির পরে ফেরতের interaction নিয়মিত (নতুন FK ছাড়াই)।
 - **রিপোর্ট-বিপত্তি যাচাই:** godown stock, Product Stock, Closing Stock delivery-তারিখে ঠিক আসে কি না।
 
 ### E-৩ UI (`cashbookbd_react`)
-- **চেকবক্স:** `TilesBusinessSales.tsx` — `FormData` (:186-210)/`initialFormData` (:212) + JSX; payload `{...formData}` (:760, :825) স্বয়ংক্রিয়ভাবে বহন করে; **এডিট-লোডে stamp থেকে পড়া** (edit-effect :470-535; নজির `referrer_id`/`manual_voucher_no`)।
+- **চেকবক্স:** `TilesBusinessSales.tsx` — `FormData` (:186-210)/`initialFormData` (:212) + JSX; payload `{...formData}` (:760, :825) স্বয়ংক্রিয়ভাবে বহন করে; **এডিট-লোডে stamp থেকে পড়া** (edit-effect :470-535; নজির `referrer_id`/`manual_voucher_no`)।
 - **ব্রাঞ্চ-সেটিং:** `AddBranch.tsx` — "Invoice Setup → Stock" (:1644-1665)-এর পাশে `FormToggleField`; `buildBranchFormData` (:249-269) নিজেই key পাঠায়, তাই payload বদলাতে হবে না; edit-effect (:761-902) ও `initialBranch` (:447-584) ও interface (:49-238) — তিন জায়গায় key।
 - **ডেলিভারি মডিউল:** তালিকা/detail/create-edit/cancel/print + "ডেলিভারি বাকি (pending)" তালিকা (Orders-এর "Remaining Qty" ঘর নজির: `Orders.tsx:1217-1263`)।
 - **মেনু/রুট/পারমিশন:** `Sidebar/index.tsx` (:260-282), `Sidebar/menuPermissions.ts` (:20 — `invoice`-এ নতুন key যোগ না করলে শুধু নতুন key-ধারী গ্রুপ দেখবে না), `Sidebar/hasMenuPermission.ts:19-22`, `App.tsx:1239-1263`, `services/appRoutes.tsx:258-278`। দুটি ভিন্ন `hasPermission` implementation-এ সাবধান (`utils/permissionChecker.tsx` বনাম `Sidebar/permissionUtils.ts`)।
@@ -162,7 +162,7 @@ TilesBusinessSales.tsx  (SalesIndex.tsx:31 — is_tiles_and_sanitary হলে)
 | ৫ | Delivery CRUD + posting + cancellation | নতুন controller/service, `InventoryTransferMaster` ছাঁচে | ⚠️ `FOR UPDATE` + `UNIQUE(main_trx_id)` এখানেই |
 | ৬ | Pending/delivered হিসাব + "ডেলিভারি বাকি" তালিকা | React + একটা read endpoint | returns-নিয়ম মেনে |
 | ৭ | প্রিন্ট — `sales_challan`-এর নতুন data endpoint | `SalesController.php:1086` ছাঁচে | সেভ করা লে-আউট বাঁচে |
-| ৮ | মেনু, রুট, পারমিশন | `Sidebar/index.tsx`, `menuPermissions.ts`, `App.tsx`, `appRoutes.tsx`, permission তালিকা | key বাদ পড়লে গ্রুপ অদৃশ্য |
+| ৮ | মেনু, রুট, পারমিশন | `Sidebar/index.tsx`, `menuPermissions.ts`, `App.tsx`, `appRoutes.tsx`, permission তালিকা | key বাদ পড়লে গ্রুপ অদৃশ্য |
 | ৯ | হ্যারেস + স্ক্রিন যাচাই | G-এর চেক-স্ক্রিপ্ট | তারপর মালিকের হাতে |
 | ১০ | (প্রয়োজন হলে) রিটার্ন-godown অসঙ্গতি ঠিক | `CommonFunction/InventoryMasterIn.php:75` | আলাদা সিদ্ধান্ত |
 
@@ -174,28 +174,28 @@ TilesBusinessSales.tsx  (SalesIndex.tsx:31 — is_tiles_and_sanitary হলে)
 
 **চেক-স্ক্রিপ্ট যা প্রমাণ করতে হবে (API লেভেলে, Tiles ব্রাঞ্চে):**
 1. টিক-দেওয়া Tiles বিল: `inventory_details` আগের মতোই একবার `stock_out` লেখে; `invoice_deducts_stock = 1`।
-2. টিক-ছাড়া Tiles বিল: `inventory_masters`/`inventory_details` **একটিও row নেই**; মজুত অপরিবর্তিত; stamp `0`।
+2. টিক-ছাড়া Tiles বিল: `inventory_masters`/`inventory_details` **একটিও row নেই**; মজুত অপরিবর্তিত; stamp `0`।
 3. ৩০-এর বিল ২০ + ১০ দুই ডেলিভারিতে শেষ হয়; pending ৩০→১০→০ ঠিক থাকে; স্টক-কাটা row-এর `vr_date` = **ডেলিভারির** তারিখ।
 4. Over-delivery, ডাবল-সাবমিট, concurrent confirm — কোনোটাতেই দ্বিতীয়বার স্টক আউট হয় না (`UNIQUE(main_trx_id)` + `FOR UPDATE`)।
 5. টিক-দেওয়া বিলে ডেলিভারি পোস্ট করার চেষ্টা সাফ refusal পায়।
-6. ডেলিভারি বাতিলে (`main_trx_master.status=0`) স্টক হুবহু ফেরে এবং pending-ও ফেরে — নতুন reversal কোড ছাড়া।
+6. ডেলিভারি বাতিলে (`main_trx_master.status=0`) স্টক হুবহু ফেরে এবং pending-ও ফেরে — নতুন reversal কোড ছাড়া।
 7. ডেলিভারি-সময়ের স্টক ঘাটতিতে ব্রাঞ্চের warn/block (`warn_negative_stock_sale`/`block_negative_stock_sale`) ও `allow_negative` ফ্লো ঠিকভাবে চলে; ইনভয়েস-সময়ে আর অন্যায্য block হয় না।
 8. বিলের পরদিন ডেলিভারি হলে আগের দিনের stock রিপোর্ট অপরিবর্তিত; বন্ধ বছরে ডেলিভারি আটকায় (PERIOD_CLOSED)।
 9. ডেলিভারি-থাকা বিল এডিটে বাধা (v1 নিয়ম); বিল-এডিট কোন `sales_detail_id` এতিম করে না।
-10. চালান প্রিন্ট/রিপ্রিন্টে কোনো স্টক নড়াচড়া হয় না; পুরনো `sales_challan` লে-আউট হুবহু ছাপে।
+10. চালান প্রিন্ট/রিপ্রিন্টে কোনো স্টক নড়াচড়া হয় না; পুরনো `sales_challan` লে-আউট হুবহু ছাপে।
 11. পুরনো সব বিল (ডিফল্ট 1) আচরণ অভিন্ন; Electronics/Trading/General অপরিবর্তিত।
 12. রিপোর্ট মিলে: Product Stock, Closing Stock, Dashboard stock value, (Tiles-প্রযোজ্য) Godown Stock — ডেলিভারির পর সঠিক; রিটার্নের পরও সামঞ্জস্যপূর্ণ।
 13. **রিগ্রেশন:** বিদ্যমান `tiles_return_check.php`, `tiles_sales_manual_fields_check.php` পাস করে।
 
 ---
 
-## চূড়ান্ত রায় (Verdict)
+## চূড়ান্ত রায় (Verdict)
 
 **ডকটি এখনই বাস্তবায়নের জন্য প্রস্তুত নয় — আগে সংশোধন দরকার।**
 
 মূল কারণ:
 1. **সুযোগ-অসঙ্গতি:** ডক চারটি sেলস-ভ্যারিয়েন্ট ধরে লিখা; ফিচার শুধু Tiles-এ। write-helper তিনটি নয়, **একটি**; "Trading dashboard মেরামত" Tiles-এ অপ্রয়োজনীয়।
-2. **আসল ব্লকার স্পষ্ট নয়:** ইনভয়েস এডিটের delete-and-reinsert `sales_detail_id` এতিম করে (`Services/ElectronicsSales/SalesService.php:125-128`) — এই সিদ্ধান্ত (§১০.১/২) ছাড়া কোড শুরু করা যায় না।
+2. **আসল ব্লকার স্পষ্ট নয়:** ইনভয়েস এডিটের delete-and-reinsert `sales_detail_id` এতিম করে (`Services/ElectronicsSales/SalesService.php:125-128`) — এই সিদ্ধান্ত (§১০.১/২) ছাড়া কোড শুরু করা যায় না।
 3. **ভুল সমস্যা-নির্ণয়:** রিটার্নের `is_return` (আসলে আলাদা টেবিল), Report Mismatch ও `StockCostLayers` ঝুঁকি — ডকের ভিত্তি ভুল, বাদ দিতে হবে।
 4. **অনিশ্চিত id/prefix:** `acc_vr_type` id 21/24 ও `DC-` prefix প্রতি DB-তে যাচাই করা হয়নি (§C-৩)।
 5. **নতুন Tiles-নির্দিষ্ট সিদ্ধান্ত:** রিটার্নের সাথে pending, godown নির্বাচন, বাতিল বনাম ফেরত — স্থির হওয়া দরকার।
