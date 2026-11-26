@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
-import { FiCheckCircle, FiCornerUpLeft, FiHome, FiKey, FiRotateCcw } from 'react-icons/fi';
+import { FiCheckCircle, FiCornerUpLeft, FiFileText, FiHome, FiKey, FiRotateCcw } from 'react-icons/fi';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { FIELD_LABEL, FIELD_PADDING, FIELD_SELECT } from '../../../../theme/fieldStyles';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -17,6 +17,7 @@ import {
   API_UNIT_HANDOVER_BUILDINGS_URL,
   API_UNIT_HANDOVER_COMPLETE_URL,
   API_UNIT_HANDOVER_LANDOWNER_URL,
+  API_UNIT_HANDOVER_LETTER_URL,
   API_UNIT_HANDOVER_REVERSE_URL,
   API_UNIT_HANDOVER_STORE_URL,
   API_UNIT_HANDOVER_UNITS_URL,
@@ -95,6 +96,8 @@ const UnitHandover = () => {
   // The handover being taken back, and why. The reason is required: it goes on the voucher.
   const [reversing, setReversing] = useState<any>(null);
   const [reason, setReason] = useState('');
+  // A flat whose buyer still owes: asked about in the app's own dialog, not the browser's.
+  const [owing, setOwing] = useState<any>(null);
   const handlePrint = useReactToPrint({ contentRef: printRef, documentTitle: t('handover.printTitle') });
 
   const stateLabel: Record<UnitState, string> = {
@@ -150,6 +153,33 @@ const UnitHandover = () => {
     return false;
   };
 
+  /**
+   * The stored Handover Letter, as a PDF in a new tab. The tab is opened on the
+   * click itself (a popup blocker stops one opened after the request returns);
+   * a refusal comes back as JSON on a 2xx, so the blob's type is checked.
+   */
+  const openLetter = async (row: any) => {
+    const tab = window.open('', '_blank');
+    setBusy(`p${row.unit_id}`);
+    try {
+      const response = await httpService.get(`${API_UNIT_HANDOVER_LETTER_URL}/${row.handover.id}`, { responseType: 'blob' });
+      if (response.data?.type?.includes('json')) {
+        throw new Error(JSON.parse(await response.data.text())?.message || t('handover.noLetter'));
+      }
+      const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      if (tab) {
+        tab.location.href = url;
+      } else {
+        window.open(url, '_blank');
+      }
+    } catch (error: any) {
+      tab?.close();
+      toast.error(error?.message || t('handover.noLetter'));
+    } finally {
+      setBusy('');
+    }
+  };
+
   const confirmReverse = async () => {
     if (reason.trim().length < 3) {
       toast.error(t('handover.reasonRequired'));
@@ -188,10 +218,16 @@ const UnitHandover = () => {
       toast.error(t('handover.pickDate'));
       return;
     }
-    if (row.due > 0 && !window.confirm(t('handover.dueWarning', { due: money(row.due) }))) {
+    if (row.due > 0) {
+      setOwing(row);
       return;
     }
     post(`h${row.unit_id}`, API_UNIT_HANDOVER_STORE_URL, { unit_id: row.unit_id, handover_date: iso(date) });
+  };
+
+  const confirmOwing = async () => {
+    await post(`h${owing.unit_id}`, API_UNIT_HANDOVER_STORE_URL, { unit_id: owing.unit_id, handover_date: iso(date) });
+    setOwing(null);
   };
 
   return (
@@ -417,6 +453,17 @@ const UnitHandover = () => {
                               {t('handover.handOver')}
                             </button>
                           )}
+                          {row.handover?.letter && (
+                            <button
+                              type="button"
+                              onClick={() => openLetter(row)}
+                              disabled={busy === `p${row.unit_id}`}
+                              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-300 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:opacity-50 dark:text-indigo-200 dark:ring-indigo-400/40 dark:hover:bg-indigo-500/10"
+                            >
+                              <FiFileText />
+                              {t('handover.letter')}
+                            </button>
+                          )}
                           {row.handover && (
                             <button
                               type="button"
@@ -471,11 +518,24 @@ const UnitHandover = () => {
           </div>
 
           <ConfirmModal
+            show={Boolean(owing)}
+            title={t('handover.dueTitle')}
+            confirmLabel={t('handover.handOver')}
+            cancelLabel={t('handover.cancel')}
+            loading={Boolean(owing) && busy === `h${owing?.unit_id}`}
+            className="bg-indigo-600! text-white! hover:bg-indigo-700! dark:bg-indigo-500! dark:hover:bg-indigo-600!"
+            onCancel={() => setOwing(null)}
+            onConfirm={confirmOwing}
+            message={owing ? t('handover.dueWarning', { due: money(owing.due) }) : ''}
+          />
+
+          <ConfirmModal
             show={Boolean(reversing)}
             title={t('handover.reverseTitle')}
             confirmLabel={t('handover.reverse')}
             cancelLabel={t('handover.cancel')}
             loading={busy === 'r'}
+            className="bg-rose-600! text-white! hover:bg-rose-700! dark:bg-rose-500! dark:hover:bg-rose-600!"
             onCancel={() => setReversing(null)}
             onConfirm={confirmReverse}
             message={
@@ -499,7 +559,7 @@ const UnitHandover = () => {
                     onChange={(e) => setReason(e.target.value)}
                     rows={3}
                     maxLength={191}
-                    className="w-full rounded-md border border-[rgb(var(--c-border))] bg-transparent p-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                    className="w-full rounded-md border border-rose-300 bg-transparent p-2 text-sm outline-none focus:border-rose-300 focus:outline-none focus:ring-0 dark:border-rose-400/60 dark:focus:border-rose-400/60"
                   />
                 </div>
               ) : (

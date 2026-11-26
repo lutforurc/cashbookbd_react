@@ -1813,9 +1813,11 @@
     "total": "Total",
     "slNo": "#",
     "print": "Print",
+    "letter": "Handover Letter",
+    "noLetter": "The handover letter is not available.",
     "reverse": "Reverse",
     "reverseTitle": "Reverse this handover?",
-    "reverseExplain": "Unit {{unit}} goes back to sold, dated {{date}}. A reversal journal takes back the income and puts the cost back into WIP; nothing is deleted.",
+    "reverseExplain": "{{unit}} goes back to sold, dated {{date}}. A reversal journal takes back the income and puts the cost back into WIP; nothing is deleted.",
     "reverseVoucher": "Handover voucher {{vr}} stays; the reversal voucher cancels it.",
     "reason": "Reason",
     "reasonRequired": "Write the reason (at least 3 letters).",
@@ -1838,6 +1840,7 @@
     "unmarkLandowner": "Not landowner's",
     "pickDate": "Pick the date first.",
     "dueWarning": "This buyer still owes {{due}}. Hand over anyway?",
+    "dueTitle": "Buyer still owes",
     "saved": "Saved",
     "failed": "Could not save"
   }

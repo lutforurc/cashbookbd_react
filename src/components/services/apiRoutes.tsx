@@ -1050,6 +1050,7 @@ export const API_UNIT_HANDOVER_COMPLETE_URL = `${API_BASE_URL}/real-estate/unit-
 export const API_UNIT_HANDOVER_LANDOWNER_URL = `${API_BASE_URL}/real-estate/unit-handover/landowner`;
 export const API_UNIT_HANDOVER_STORE_URL = `${API_BASE_URL}/real-estate/unit-handover/store`;
 export const API_UNIT_HANDOVER_REVERSE_URL = `${API_BASE_URL}/real-estate/unit-handover/reverse`;
+export const API_UNIT_HANDOVER_LETTER_URL = `${API_BASE_URL}/real-estate/unit-handover/letter`;
 
 // What each project and each building has cost. Under the real-estate prefix
 // rather than with the other reports, because they read the real-estate
