@@ -13,6 +13,8 @@ import ReverseTransferModal, { ReversibleTransfer } from '../inter-branch-transf
 import CategoryDropdown from '../../utils/utils-functions/CategoryDropdown';
 import { formatDayMonthYear } from '../../utils/utils-functions/formatDate';
 import { interBranchDashboardVisible } from '../../utils/userFeatureSettings';
+import { getCurrentLanguage } from '../../../i18n/currentLanguage';
+import { toLocalMonth } from '../../../i18n/mapper';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -270,7 +272,12 @@ const InterBranchTransfersCard = ({ branchId, tick = 0, href, canAct = true, row
     },
   ];
 
-  const monthLabel = `${MONTHS[month - 1] ?? ''} ${year}`;
+  const lang = getCurrentLanguage();
+  const local = Boolean(lang) && lang !== 'en';
+  const monthLabel = local
+    ? toLocalMonth(`${year}-${String(month).padStart(2, '0')}`, lang)
+    : `${MONTHS[month - 1] ?? ''} ${year}`;
+  const transfers = (n: number) => (local ? `${count(n)} স্থানান্তর` : `${count(n)} transfer(s)`);
 
   // Hidden by the branch's "Show on dashboard" switch.
   if (!enabled) return null;
@@ -307,34 +314,34 @@ const InterBranchTransfersCard = ({ branchId, tick = 0, href, canAct = true, row
         <Tile
           label="Sent (gross)"
           value={money(summary?.sent_gross_this_month ?? summary?.sent_this_month)}
-          working={`${monthLabel} — payments dated this month`}
+          working={local ? `${monthLabel} — এই মাসের তারিখের পেমেন্ট` : `${monthLabel} — payments dated this month`}
           icon={<FiArrowUpRight />}
         />
         <Tile
           label="Reversed"
           value={money(summary?.sent_reversed_this_month)}
-          working={`${monthLabel} — reversals dated this month`}
+          working={local ? `${monthLabel} — এই মাসের তারিখের বিপরীতকরণ` : `${monthLabel} — reversals dated this month`}
           tone="text-rose-600 dark:text-rose-400"
           icon={<FiRotateCcw />}
         />
         <Tile
           label="Net Sent"
           value={money(summary?.sent_net_this_month)}
-          working={`${monthLabel} — this month's payments less those reversed`}
+          working={local ? `${monthLabel} — এই মাসের পেমেন্ট বাদ বিপরীতকৃত` : `${monthLabel} — this month's payments less those reversed`}
           icon={<FiArrowUpRight />}
         />
         <Tile label="Received" value={money(summary?.received_this_month)} working={monthLabel} icon={<FiArrowDownLeft />} />
         <Tile
           label="Outgoing Pending"
           value={money(summary?.outgoing_pending?.amount)}
-          working={`${count(summary?.outgoing_pending?.count)} transfer(s)`}
+          working={transfers(summary?.outgoing_pending?.count)}
           tone="text-amber-600 dark:text-amber-400"
           icon={<FiArrowUpRight />}
         />
         <Tile
           label="Incoming Pending"
           value={money(summary?.incoming_pending?.amount)}
-          working={`${count(summary?.incoming_pending?.count)} transfer(s)`}
+          working={transfers(summary?.incoming_pending?.count)}
           tone="text-amber-600 dark:text-amber-400"
           icon={<FiArrowDownLeft />}
         />
@@ -348,7 +355,7 @@ const InterBranchTransfersCard = ({ branchId, tick = 0, href, canAct = true, row
             columns={columns as any}
             data={rows}
             perPage={8}
-            noDataMessage="No inter-branch transfers this month."
+            noDataMessage={local ? 'এই মাসে কোনো আন্তঃশাখা স্থানান্তর নেই।' : 'No inter-branch transfers this month.'}
           />
         )}
       </div>
@@ -356,7 +363,9 @@ const InterBranchTransfersCard = ({ branchId, tick = 0, href, canAct = true, row
       <div className={`${CARD_FOOT} gap-1.5 border-t border-[rgb(var(--c-border))] bg-slate-50 text-slate-400 dark:bg-gray-700/50 dark:text-slate-400`}>
         <FiInbox className="shrink-0 text-[11px]" />
         <span className="min-w-0 truncate">
-          {monthLabel} — payments, receipts and reversals dated in this month.
+          {local
+            ? `${monthLabel} — এই মাসে তারিখের পেমেন্ট, প্রাপ্তি ও বিপরীতকরণ।`
+            : `${monthLabel} — payments, receipts and reversals dated in this month.`}
         </span>
       </div>
 

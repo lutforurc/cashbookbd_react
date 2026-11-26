@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import ActionButtons from '../../utils/fields/ActionButton';
 import { FiPlus } from 'react-icons/fi';
 import { hasPermission } from '../../utils/permissionChecker';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { displayName } from '../../../i18n/displayName';
 
 const BranchList = () => {
   const branchList = useSelector((state) => state.branchList);
@@ -24,6 +26,7 @@ const BranchList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [buttonLoading, setButtonLoading] = useState(false);
   const navigate = useNavigate();
+  const { code } = useLanguage();
 
   useEffect(() => {
     dispatch(getBranch({ page, perPage, searchValue }));
@@ -83,6 +86,7 @@ const BranchList = () => {
     {
       key: 'name',
       header: 'Branch Name',
+      render: (row: any) => displayName(row, 'name', code),
     },
     {
       key: 'contact_person',

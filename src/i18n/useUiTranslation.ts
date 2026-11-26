@@ -118,6 +118,29 @@ const buildResolver = (dict: Record<string, string>): Resolve => {
       return n ? `${n} (টাকা)` : undefined;
     }
 
+    // Count phrases on the dashboard cards ("0 parties", "0 products · 0 on
+    // hand", "Next 5 days"...). Digits may already be Bangla, so both sets are
+    // accepted and kept as they came.
+    if ((m = /^Next\s+([0-9০-৯]+)\s+days?$/i.exec(key))) return `পরবর্তী ${m[1]} দিন`;
+    if ((m = /^falling due inside\s+([0-9০-৯]+)\s+days$/i.exec(key))) return `${m[1]} দিনের মধ্যে বকেয়া`;
+    if ((m = /^([0-9০-৯]+)\s+installments?\s+falling due inside\s+([0-9০-৯]+)\s+days$/i.exec(key))) {
+      return `${m[1]} কিস্তি ${m[2]} দিনের মধ্যে বকেয়া`;
+    }
+    if ((m = /^([0-9০-৯]+)\s+installments?\s+(past the due date|due today)$/i.exec(key))) {
+      return `${m[1]} কিস্তি ${/due today/i.test(m[2]) ? 'আজ বকেয়া' : 'মেয়াদ শেষ হয়েছে'}`;
+    }
+    if ((m = /^across\s+([0-9০-৯]+)\s+part(?:y|ies)$/i.exec(key))) return `মোট ${m[1]} পক্ষ`;
+    if ((m = /^([0-9০-৯]+)\s+part(?:y|ies)\s+over 60 days$/i.exec(key))) return `৬০ দিনের বেশি বকেয়া ${m[1]} পক্ষ`;
+    if ((m = /^([0-9০-৯]+)\s+part(?:y|ies)$/i.exec(key))) return `${m[1]} পক্ষ`;
+    if ((m = /^([0-9০-৯]+)%\s+over 60 days$/i.exec(key))) return `৬০ দিনের বেশি ${m[1]}%`;
+    if ((m = /^([0-9০-৯]+)\s+products?\s*·\s*([0-9০-৯]+)\s+on hand$/i.exec(key))) {
+      return `${m[1]} পণ্য · হাতে ${m[2]}`;
+    }
+    if ((m = /^([0-9০-৯]+)\s+products?$/i.exec(key))) return `${m[1]} পণ্য`;
+    if ((m = /^Not sold in\s+([0-9০-৯]+)\s+days$/i.exec(key))) return `${m[1]} দিনে বিক্রি হয়নি`;
+    if ((m = /^([0-9০-৯]+)%\s+of the godown$/i.exec(key))) return `গুদামের ${m[1]}%`;
+    if ((m = /^([0-9০-৯]+)\s*d ago$/i.exec(key))) return `${m[1]} দিন আগে`;
+
     return undefined;
   };
 };

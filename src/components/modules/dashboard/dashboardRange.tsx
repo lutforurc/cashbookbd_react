@@ -14,6 +14,7 @@ import { Select } from '../../utils/fields/FormControls';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import { getCurrentLanguage } from '../../../i18n/currentLanguage';
 import { knownLabel } from '../../../i18n/displayName';
+import { toLocalDigits, toLocalMonth } from '../../../i18n/mapper';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
 
 /**
@@ -323,9 +324,21 @@ export const branchDisplayName = (branch: any) => {
 };
 
 /** "1 Sep 2026 to 22 Sep 2026 · updated 11:32 AM", for a page's subtitle. */
-export const rangeCaption = (from?: string, to?: string, refreshedAt?: Date | null) =>
-  (from && to ? `${dayjs(from).format('D MMM YYYY')} to ${dayjs(to).format('D MMM YYYY')}` : '') +
-  (refreshedAt ? ` · updated ${dayjs(refreshedAt).format('hh:mm A')}` : '');
+export const rangeCaption = (from?: string, to?: string, refreshedAt?: Date | null) => {
+  const lang = getCurrentLanguage();
+  const local = Boolean(lang) && lang !== 'en';
+  const joinWord = local ? 'থেকে' : 'to';
+  const updatedWord = local ? 'হালনাগাদ' : 'updated';
+  const when = (value: string | Date) => {
+    const at = dayjs(value);
+    return local ? toLocalDigits(`${at.date()} ${toLocalMonth(at.toDate(), lang)}`, lang) : at.format('D MMM YYYY');
+  };
+
+  return (
+    (from && to ? `${when(from)} ${joinWord} ${when(to)}` : '') +
+    (refreshedAt ? ` · ${updatedWord} ${dayjs(refreshedAt).format('hh:mm A')}` : '')
+  );
+};
 
 /**
  * The controls: the preset, the two boxes when Custom, the refresh button.

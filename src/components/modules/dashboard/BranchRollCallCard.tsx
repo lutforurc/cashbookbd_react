@@ -6,7 +6,8 @@ import httpService from '../../services/httpService';
 import { API_DASHBOARD_BRANCHES_URL } from '../../services/apiRoutes';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { CARD, CARD_HEAD } from './dashboardKit';
-import { useViewBranch } from './dashboardRange';
+import { branchDisplayName, useViewBranch } from './dashboardRange';
+import { getCurrentLanguage } from '../../../i18n/currentLanguage';
 
 /**
  * The morning roll-call: every branch on one line, for a head office.
@@ -110,6 +111,8 @@ const BranchRollCallCard = ({ tick, rowClass = 'px-3 py-2' }: { tick: number; ro
 
   if (!view.isHeadOffice) return null;
 
+  const local = getCurrentLanguage() !== 'en';
+
   const sortBy = (key: SortKey) =>
     setSort((current) => ({ key, desc: current.key === key ? !current.desc : key !== 'name' }));
 
@@ -118,8 +121,8 @@ const BranchRollCallCard = ({ tick, rowClass = 'px-3 py-2' }: { tick: number; ro
       <div className={CARD_HEAD}>
         <span className="truncate">All Branches</span>
         <span className="shrink-0 text-[11px] font-normal text-slate-400">
-          {rows ? `${rows.length} branches` : ''}
-          {readAt ? ` · read ${dayjs(readAt).format('hh:mm A')}` : ''}
+          {rows ? `${rows.length} ${local ? 'শাখা' : 'branches'}` : ''}
+          {readAt ? ` · ${local ? 'পড়া' : 'read'} ${dayjs(readAt).format('hh:mm A')}` : ''}
         </span>
       </div>
 
@@ -154,7 +157,7 @@ const BranchRollCallCard = ({ tick, rowClass = 'px-3 py-2' }: { tick: number; ro
                     onClick={() => view.setChosen(String(row.id))}
                     className="font-semibold text-slate-700 hover:underline dark:text-slate-100"
                   >
-                    {row.name}
+                    {branchDisplayName(row)}
                   </button>
                   {row.is_head_office ? (
                     <span className="ml-1.5 rounded bg-slate-100 px-1 text-[9px] uppercase text-slate-500 dark:bg-gray-700 dark:text-slate-300">

@@ -280,6 +280,8 @@ class BranchController extends Controller
         try {
             if ($branch) {
                 $branch->name                             = $request->name;
+                $branch->name_local                       = $request->name_local ?: null;
+                $branch->address_local                    = $request->address_local ?: null;
                 $branch->branch_types_id                  = $request->branchtype;
                 $branch->business_type_id                 = $request->businesstype;
                 $branch->have_customer_sl                 = isset($request->serialnumber)  ? $request->serialnumber : 0;
@@ -408,7 +410,7 @@ class BranchController extends Controller
 
     public function ddlactivebranch()
     {
-        $branch = Branch::select('id', 'name')
+        $branch = Branch::select('id', 'name', 'name_local')
             ->where('status', 1)->get();
         return $branch;
     }
@@ -513,6 +515,8 @@ class BranchController extends Controller
 
         $branch = [
             'name'                             => $request->name,
+            'name_local'                       => $request->name_local ?: null,
+            'address_local'                    => $request->address_local ?: null,
             'company_id'                       => \Auth::user()->company_id,
             'branch_types_id'                  => $request->branchtype ?? $request->branch_types_id,
             'business_type_id'                 => $request->businesstype ?? $request->business_type_id,
@@ -952,6 +956,7 @@ class BranchController extends Controller
             ->select([
                 'com_branches.id as id',
                 'com_branches.name as name',
+                'com_branches.name_local as name_local',
                 'com_branches.contact_person as contact_person',
                 'com_branches.phone as phone',
                 'com_branch_types.name as branch_type',
@@ -1599,6 +1604,8 @@ class BranchController extends Controller
 
             /* ---------------- Branch Update ---------------- */
             $branch->name                             = $request->name;
+            $branch->name_local                       = $request->name_local ?: null;
+            $branch->address_local                    = $request->address_local ?: null;
             $branch->branch_types_id                  = $request->branch_types_id;
             $branch->business_type_id                 = $request->business_type_id;
             $branch->inventory_system_id              = (int) ($request->inventory_system_id ?? $branch->inventory_system_id ?? 1);
@@ -2181,7 +2188,7 @@ class BranchController extends Controller
             ->orderBy('name', 'ASC')
             // address/phone ride along so a report printed for another branch can
             // head the page with that branch's details, not the caller's.
-            ->select('id', 'name', 'address', 'phone')
+            ->select('id', 'name', 'name_local', 'address', 'phone')
             ->get();
         // }else{
         //     $data = Branch::where('status', 1)
@@ -2215,14 +2222,14 @@ class BranchController extends Controller
                 ->orderBy('name', 'ASC')
                 // address/phone ride along so a report printed for another branch
                 // can head the page with that branch's details, not the caller's.
-                ->select('id', 'name', 'address', 'phone')
+                ->select('id', 'name', 'name_local', 'address', 'phone')
                 ->get();
         } else {
             $data = $this->companyRoleScope
                 ->branchesQuery($auth)
                 ->where('status', 1)
                 ->where('id',  $auth->branch_id)
-                ->select('id', 'name', 'address', 'phone')->orderBy('name')->get();
+                ->select('id', 'name', 'name_local', 'address', 'phone')->orderBy('name')->get();
         }
         if (empty($data)) {
             return notFound('No branch found!');
