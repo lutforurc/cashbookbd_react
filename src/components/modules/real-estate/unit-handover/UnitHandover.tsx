@@ -183,9 +183,11 @@ const UnitHandover = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[rgb(var(--c-border))] text-left">
+                  <th className="p-2 text-center">{t('handover.slNo')}</th>
                   <th className="p-2">{t('handover.unit')}</th>
                   <th className="p-2">{t('handover.customer')}</th>
                   <th className="p-2 text-right">{t('handover.salePrice')}</th>
+                  <th className="p-2 text-right">{t('handover.received')}</th>
                   <th className="p-2 text-right">{t('handover.due')}</th>
                   <th className="p-2 text-right">{t('handover.share')}</th>
                   <th className="p-2 text-right">{t('handover.cost')}</th>
@@ -194,14 +196,16 @@ const UnitHandover = () => {
                 </tr>
               </thead>
               <tbody>
-                {(data.rows || []).map((row: any) => (
+                {(data.rows || []).map((row: any, index: number) => (
                   <tr key={row.unit_id} className="border-b border-[rgb(var(--c-border))]">
+                    <td className="p-2 text-center">{index + 1}</td>
                     <td className="p-2">
                       {row.unit_no}
                       {row.parking_no ? ` + ${row.parking_no}` : ''}
                     </td>
                     <td className="p-2">{row.is_landowner_share ? t('handover.landowner') : row.customer || '-'}</td>
                     <td className="p-2 text-right">{money(row.sale_total)}</td>
+                    <td className="p-2 text-right">{money(row.received)}</td>
                     <td className={`p-2 text-right ${row.due > 0 ? 'text-red-600' : ''}`}>{money(row.due)}</td>
                     <td className="p-2 text-right">{(Number(row.share) * 100).toFixed(2)}%</td>
                     <td className="p-2 text-right">{money(row.handover ? row.handover.cost : row.cost)}</td>
@@ -242,6 +246,23 @@ const UnitHandover = () => {
                   </tr>
                 ))}
               </tbody>
+              <tfoot>
+                {(() => {
+                  const rows = data.rows || [];
+                  const sum = (pick: (row: any) => any) => rows.reduce((total: number, row: any) => total + (Number(pick(row)) || 0), 0);
+                  return (
+                    <tr className="border-t-2 border-[rgb(var(--c-border))] font-semibold">
+                      <td className="p-2" colSpan={3}>{t('handover.total')}</td>
+                      <td className="p-2 text-right">{money(sum((row) => row.sale_total))}</td>
+                      <td className="p-2 text-right">{money(sum((row) => row.received))}</td>
+                      <td className="p-2 text-right">{money(sum((row) => row.due))}</td>
+                      <td className="p-2 text-right">{(sum((row) => row.share) * 100).toFixed(2)}%</td>
+                      <td className="p-2 text-right">{money(sum((row) => (row.handover ? row.handover.cost : row.cost)))}</td>
+                      <td className="p-2" colSpan={2}></td>
+                    </tr>
+                  );
+                })()}
+              </tfoot>
             </table>
           </div>
         </>
