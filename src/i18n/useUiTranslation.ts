@@ -93,6 +93,26 @@ const buildResolver = (dict: Record<string, string>): Resolve => {
       const n = noun(m[1]);
       return n ? `${n} যোগ করুন` : undefined;
     }
+    if ((m = /^All\s+(.+)$/i.exec(key))) {
+      const n = noun(m[1]);
+      return n ? `সব ${n}` : undefined;
+    }
+    if ((m = /^Total\s+(.+)$/i.exec(key))) {
+      const n = noun(m[1]);
+      return n ? `মোট ${n}` : undefined;
+    }
+    if ((m = /^(.+?)\s+No\.?$/i.exec(key))) {
+      const n = noun(m[1]);
+      return n ? `${n} নং` : undefined;
+    }
+    if ((m = /^(.+?)\s+Number$/i.exec(key))) {
+      const n = noun(m[1]);
+      return n ? `${n} নম্বর` : undefined;
+    }
+    if ((m = /^(.+?)\s+Qty$/i.exec(key))) {
+      const n = noun(m[1]);
+      return n ? `${n} পরিমাণ` : undefined;
+    }
     if ((m = /^(.+?)\s*\(Tk\.\)$/i.exec(key))) {
       const n = noun(m[1]);
       return n ? `${n} (টাকা)` : undefined;
