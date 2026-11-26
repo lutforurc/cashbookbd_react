@@ -5,6 +5,7 @@ import { FiRotateCcw } from 'react-icons/fi';
 import { hasPermission } from '../permissionChecker';
 import { API_USER_DASHBOARD_PREFERENCES_URL } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
+import { useTabLabel } from '../../../i18n/tabLabel';
 
 // One menu's screens as tabs on one page; the groups live in services/tabGroups.
 // A tab the user may not open is not drawn.
@@ -122,6 +123,8 @@ const RouteTabs = ({ tabs }: { tabs: RouteTab[] }) => {
   const isPlatformAdmin = useSelector((s: any) => Boolean(s.settings?.data?.is_platform_admin));
   const businessTypeId = useSelector((s: any) => s.branchList?.currentBranch?.business_type_id);
   const { sort, move, reset, arranged } = useTabOrder();
+  // Tab names follow the screen's language; English reads back unchanged.
+  const tl = useTabLabel();
   const [dragging, setDragging] = useState('');
   const [over, setOver] = useState('');
 
@@ -170,8 +173,8 @@ const RouteTabs = ({ tabs }: { tabs: RouteTab[] }) => {
             {/* An invisible bold copy holds every tab at its bold width, so turning
                 bold on the active one never nudges its neighbours. */}
             <span className="grid">
-              <span aria-hidden className="invisible col-start-1 row-start-1 font-semibold">{tab.label}</span>
-              <span className="col-start-1 row-start-1 text-center">{tab.label}</span>
+              <span aria-hidden className="invisible col-start-1 row-start-1 font-semibold">{tl(tab.label)}</span>
+              <span className="col-start-1 row-start-1 text-center">{tl(tab.label)}</span>
             </span>
           </NavLink>
         ))}

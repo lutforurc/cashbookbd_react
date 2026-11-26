@@ -15,6 +15,8 @@ import { Button, ButtonLoading } from '../UiElements/CustomButtons';
 import HelmetTitle from '../../components/utils/others/HelmetTitle';
 import { FIELD_BASE, FIELD_SELECT, FIELD_TEXTAREA } from '../../theme/fieldStyles';
 import { Input, Select, Textarea } from '../../components/utils/fields/FormControls';
+import { displayName } from '../../i18n/displayName';
+import { getCurrentLanguage } from '../../i18n/currentLanguage';
 
 type RegistrationForm = {
   company_name: string;
@@ -62,7 +64,7 @@ const PublicRegistration: React.FC = () => {
   // ids are auto-increment and seeded per installation, so "Hotel / Motel" is 9
   // in one database and 11 in another. A list written into this file would send
   // whichever number it was compiled with.
-  const [businessTypes, setBusinessTypes] = useState<{ id: number; name: string }[]>([]);
+  const [businessTypes, setBusinessTypes] = useState<{ id: number; name: string; name_local?: string | null }[]>([]);
 
   React.useEffect(() => {
     let alive = true;
@@ -382,7 +384,7 @@ const PublicRegistration: React.FC = () => {
                   <option value="">Select Business Type</option>
                   {businessTypes.map((type) => (
                     <option key={type.id} value={type.id}>
-                      {type.name}
+                      {displayName(type, 'name', getCurrentLanguage())}
                     </option>
                   ))}
                 </Select>

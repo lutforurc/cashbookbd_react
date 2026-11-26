@@ -253,6 +253,7 @@ import { inTabGroup, tabsFor, useTabOrder } from '../utils/others/RouteTabs';
 import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESIGNATION_TABS, LOAN_TABS, SALARY_GENERATE_TABS, SALARY_REPORT_TABS, SALARY_SETUP_TABS, DAILY_CONTROL_TABS, ORDER_TABS, UPLOAD_TABS, COMPANY_BRANCH_TABS, USER_TABS, ROLE_TABS, ADMIN_SETTINGS_TABS, PLATFORM_TABS, SMS_TABS, PRODUCT_TABS, CLASSIFICATION_TABS, STOCK_ALERT_TABS, VR_CORRECTION_TABS, VR_AUDIT_TABS, PARTY_TABS, COA_TABS, REPORT_CASH_BANK_TABS, REPORT_LEDGER_TABS, REPORT_SALES_TABS, REPORT_STOCK_TABS, REPORT_INSTALLMENT_TABS, FIN_PROFIT_TABS, FIN_PERIODIC_TABS, FIN_TRIAL_BALANCE_TABS, FIN_FINAL_ACCOUNTS_TABS, RE_SETUP_TABS, RE_SALES_TABS, RE_PROJECT_ENTRY_TABS, RE_PROJECT_REPORT_TABS, BT_TRANSFER_TABS, BT_REPORT_TABS, BT_PRODUCT_OUT_TABS, BT_PRODUCT_IN_TABS } from '../services/tabGroups';
 import { branchFormVariant, branchInvoiceVariant, separateEntriesShown, unifiedEntryShown } from '../utils/userFeatureSettings';
 import { useSelector } from 'react-redux';
+import { useMenuLabel } from '../../i18n/menuLabel';
 import './Sidebar.css';
 import routes from '../services/appRoutes';
 import { isMenuActive } from './menuRoutes';
@@ -304,6 +305,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
   const location = useLocation();
   const { pathname } = location;
   const isTopbar = mode === 'topbar';
+  // Menu names follow the screen's language; English reads back unchanged.
+  const ml = useMenuLabel();
   const [permissions, setPermissions] = useState<any>([]);
   const settings = useSelector((s: any) => s.settings);
   // The API's own verdict on whether this account may use the platform tools
@@ -746,7 +749,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <FiGrid />
-                        Dashboard
+                        {ml("Dashboard")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -777,7 +780,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                             to="/dashboard"
                             className={subMenuLinkClass}
                           >
-                            Dashboard
+                            {ml("Dashboard")}
                           </NavLink>
                         </li>
                         {deductStockOnDelivery && hasPermission(permissions, 'delivery.dashboard.view') && (
@@ -786,7 +789,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               to={routes.delivery_dashboard}
                               className={subMenuLinkClass}
                             >
-                              Delivery System
+                              {ml("Delivery System")}
                             </NavLink>
                           </li>
                         )}
@@ -805,7 +808,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       }`}
                   >
                     <ResellerMenuIcon />
-                    Reseller Dashboard
+                    {ml("Reseller Dashboard")}
                   </NavLink>
                 </li>
               )}
@@ -833,7 +836,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <TransactionMenuIcon />
-                        Transaction
+                        {ml("Transaction")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -865,7 +868,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.cash_receive}
                                 className={subMenuLinkClass}
                               >
-                                Cash Received
+                                {ml("Cash Received")}
                               </NavLink>
                             </li>
                           )}
@@ -877,7 +880,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to="/accounts/cash/payment"
                                 className={subMenuLinkClass}
                               >
-                                Cash Payment
+                                {ml("Cash Payment")}
                               </NavLink>
                             </li>
                           )}
@@ -887,7 +890,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to="/accounts/bank/receive"
                                 className={subMenuLinkClass}
                               >
-                                Bank Received
+                                {ml("Bank Received")}
                               </NavLink>
                             </li>
                           )}
@@ -897,7 +900,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to="/accounts/bank/payment"
                                 className={subMenuLinkClass}
                               >
-                                Bank Payment
+                                {ml("Bank Payment")}
                               </NavLink>
                             </li>
                           )}
@@ -907,7 +910,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.bank_reconciliation}
                                 className={subMenuLinkClass}
                               >
-                                Bank Reconciliation
+                                {ml("Bank Reconciliation")}
                               </NavLink>
                             </li>
                           )}
@@ -917,7 +920,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.cheque_register}
                                 className={subMenuLinkClass}
                               >
-                                Cheque Register
+                                {ml("Cheque Register")}
                               </NavLink>
                             </li>
                           )}
@@ -931,7 +934,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.year_closing}
                                 className={subMenuLinkClass}
                               >
-                                Year Closing
+                                {ml("Year Closing")}
                               </NavLink>
                             </li>
                           )}
@@ -941,7 +944,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.budget}
                                 className={subMenuLinkClass}
                               >
-                                Budget
+                                {ml("Budget")}
                               </NavLink>
                             </li>
                           )}
@@ -952,7 +955,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.installment_list}
                                 className={subMenuLinkClass}
                               >
-                                Installments
+                                {ml("Installments")}
                               </NavLink>
                             </li>
                           )}
@@ -962,7 +965,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.employee_loan}
                                 className={subMenuLinkClass}
                               >
-                                Employee Loan
+                                {ml("Employee Loan")}
                               </NavLink>
                             </li>
                           )}
@@ -972,7 +975,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.purchase_advance}
                                 className={subMenuLinkClass}
                               >
-                                Advance for Purchase
+                                {ml("Advance for Purchase")}
                               </NavLink>
                             </li>
                           )}
@@ -987,7 +990,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {showUnifiedReceived && hasPermission(permissions, 'received.entry.create') && (
                             <li style={subSlot('transaction', 'hotel_received_entry')}>
                               <NavLink to={routes.hotel_received_entry} className={subMenuLinkClass}>
-                                Received Entry
+                                {ml("Received Entry")}
                               </NavLink>
                             </li>
                           )}
@@ -995,7 +998,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {showUnifiedPayment && hasPermission(permissions, 'payment.entry.create') && (
                             <li style={subSlot('transaction', 'hotel_payment_entry')}>
                               <NavLink to={routes.hotel_payment_entry} className={subMenuLinkClass}>
-                                Payment Entry
+                                {ml("Payment Entry")}
                               </NavLink>
                             </li>
                           )}
@@ -1007,7 +1010,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'hotel.accounts.transaction.create') && (
                             <li style={subSlot('transaction', 'hotel_asset_purchase')}>
                               <NavLink to={routes.hotel_asset_purchase} className={subMenuLinkClass}>
-                                Accounts Transaction
+                                {ml("Accounts Transaction")}
                               </NavLink>
                             </li>
                           )}
@@ -1018,7 +1021,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to="/accounts/journal"
                                 className={subMenuLinkClass}
                               >
-                                Journal
+                                {ml("Journal")}
                               </NavLink>
                             </li>
                           )}
@@ -1029,7 +1032,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.inter_branch}
                                 className={subMenuLinkClass}
                               >
-                                Inter-Branch Transfers
+                                {ml("Inter-Branch Transfers")}
                               </NavLink>
                             </li>
                           )}
@@ -1064,7 +1067,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <InvoiceMenuIcon />
-                        Invoice
+                        {ml("Invoice")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -1096,7 +1099,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to="/invoice/purchase"
                                 className={subMenuLinkClass}
                               >
-                                Purchase
+                                {ml("Purchase")}
                               </NavLink>
                             </li>
                           )}
@@ -1106,7 +1109,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.inv_purchase_import}
                                 className={subMenuLinkClass}
                               >
-                                Purchase Import
+                                {ml("Purchase Import")}
                               </NavLink>
                             </li>
                           )}
@@ -1117,7 +1120,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to="/invoice/sales"
                                 className={subMenuLinkClass}
                               >
-                                Sales
+                                {ml("Sales")}
                               </NavLink>
                             </li>
                           )}
@@ -1127,7 +1130,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.inv_sales_import}
                                 className={subMenuLinkClass}
                               >
-                                Sales Import
+                                {ml("Sales Import")}
                               </NavLink>
                             </li>
                           )}
@@ -1137,7 +1140,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.inv_purchase_return}
                                 className={subMenuLinkClass}
                               >
-                                Purchase Return
+                                {ml("Purchase Return")}
                               </NavLink>
                             </li>
                           )}
@@ -1147,7 +1150,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.inv_sales_return}
                                 className={subMenuLinkClass}
                               >
-                                Sales Return
+                                {ml("Sales Return")}
                               </NavLink>
                             </li>
                           )}
@@ -1157,7 +1160,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.inv_delivery}
                                 className={subMenuLinkClass}
                               >
-                                Delivery
+                                {ml("Delivery")}
                               </NavLink>
                             </li>
                           )}
@@ -1169,7 +1172,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to="/invoice/labour-invoice"
                                 className={subMenuLinkClass}
                               >
-                                Labour Invoice
+                                {ml("Labour Invoice")}
                               </NavLink>
                             </li>
                           )}
@@ -1180,7 +1183,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   to={routes.inv_trading_combined}
                                   className={subMenuLinkClass}
                                 >
-                                  Combined Invoice
+                                  {ml("Combined Invoice")}
                                 </NavLink>
                               </li>
                             )}
@@ -1194,7 +1197,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   to={routes.inv_tiles_combined}
                                   className={subMenuLinkClass}
                                 >
-                                  Combined Invoice
+                                  {ml("Combined Invoice")}
                                 </NavLink>
                               </li>
                             )}
@@ -1255,7 +1258,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <BranchTransferMenuIcon />
-                        Branch Transfer
+                        {ml("Branch Transfer")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -1288,7 +1291,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(BT_TRANSFER_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(BT_TRANSFER_TABS, pathname) })}
                               >
-                                Transfer
+                                {ml("Transfer")}
                               </NavLink>
                             </li>
                           )}
@@ -1298,7 +1301,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(BT_REPORT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(BT_REPORT_TABS, pathname) })}
                               >
-                                Transfer Reports
+                                {ml("Transfer Reports")}
                               </NavLink>
                             </li>
                           )}
@@ -1308,7 +1311,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(BT_PRODUCT_OUT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(BT_PRODUCT_OUT_TABS, pathname) })}
                               >
-                                Product Out
+                                {ml("Product Out")}
                               </NavLink>
                             </li>
                           )}
@@ -1318,7 +1321,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(BT_PRODUCT_IN_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(BT_PRODUCT_IN_TABS, pathname) })}
                               >
-                                Product In
+                                {ml("Product In")}
                               </NavLink>
                             </li>
                           )}
@@ -1353,7 +1356,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <ReportsMenuIcon />
-                        Reports
+                        {ml("Reports")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -1385,7 +1388,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(REPORT_CASH_BANK_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_CASH_BANK_TABS, pathname) })}
                               >
-                                Cash & Bank
+                                {ml("Cash & Bank")}
                               </NavLink>
                             </li>
                           )}
@@ -1395,7 +1398,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(REPORT_INSTALLMENT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_INSTALLMENT_TABS, pathname) })}
                               >
-                                Installment & Somity
+                                {ml("Installment & Somity")}
                               </NavLink>
                             </li>
                           )}
@@ -1405,7 +1408,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(REPORT_LEDGER_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_LEDGER_TABS, pathname) })}
                               >
-                                Ledger & Due
+                                {ml("Ledger & Due")}
                               </NavLink>
                             </li>
                           )}
@@ -1415,7 +1418,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(REPORT_STOCK_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_STOCK_TABS, pathname) })}
                               >
-                                Stock
+                                {ml("Stock")}
                               </NavLink>
                             </li>
                           )}
@@ -1425,7 +1428,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(REPORT_SALES_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(REPORT_SALES_TABS, pathname) })}
                               >
-                                Purchase & Sales
+                                {ml("Purchase & Sales")}
                               </NavLink>
                             </li>
                           )}
@@ -1464,7 +1467,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <FiPieChart />
-                        Financial Statement
+                        {ml("Financial Statement")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -1496,7 +1499,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(FIN_PROFIT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(FIN_PROFIT_TABS, pathname) })}
                               >
-                                Profit Analysis
+                                {ml("Profit Analysis")}
                               </NavLink>
                             </li>
                           )}
@@ -1506,7 +1509,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(FIN_PERIODIC_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(FIN_PERIODIC_TABS, pathname) })}
                               >
-                                Periodic Statements
+                                {ml("Periodic Statements")}
                               </NavLink>
                             </li>
                           )}
@@ -1516,7 +1519,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(FIN_TRIAL_BALANCE_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(FIN_TRIAL_BALANCE_TABS, pathname) })}
                               >
-                                Trial Balance
+                                {ml("Trial Balance")}
                               </NavLink>
                             </li>
                           )}
@@ -1526,7 +1529,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(FIN_FINAL_ACCOUNTS_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(FIN_FINAL_ACCOUNTS_TABS, pathname) })}
                               >
-                                Final Accounts
+                                {ml("Final Accounts")}
                               </NavLink>
                             </li>
                           )}
@@ -1574,7 +1577,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <FiArchive />
-                        Old Software
+                        {ml("Old Software")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -1607,7 +1610,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'legacy.record.view') && (
                             <li style={subSlot('legacy', 'legacy/records')}>
                               <NavLink to={routes.legacy_record} className={subMenuLinkClass}>
-                                Old ERP Record 1
+                                {ml("Old ERP Record 1")}
                               </NavLink>
                             </li>
                           )}
@@ -1615,7 +1618,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'legacy.old.record.view') && (
                             <li style={subSlot('legacy', 'legacy/old-records')}>
                               <NavLink to={routes.legacy_old_record} className={subMenuLinkClass}>
-                                Old ERP Record 2
+                                {ml("Old ERP Record 2")}
                               </NavLink>
                             </li>
                           )}
@@ -1626,7 +1629,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'legacy.accounts.view') && (
                             <li style={subSlot('legacy', 'legacy/accounts')}>
                               <NavLink to={routes.legacy_accounts} className={subMenuLinkClass}>
-                                Old ERP Account
+                                {ml("Old ERP Account")}
                               </NavLink>
                             </li>
                           )}
@@ -1667,7 +1670,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <ProductTrackingMenuIcon />
-                        Product Tracking
+                        {ml("Product Tracking")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -1699,7 +1702,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.product_tracking_settings}
                                 className={subMenuLinkClass}
                               >
-                                Tracking
+                                {ml("Tracking")}
                               </NavLink>
                             </li>
                           )}
@@ -1709,7 +1712,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.product_financial_statement}
                                 className={subMenuLinkClass}
                               >
-                                Statement
+                                {ml("Statement")}
                               </NavLink>
                             </li>
                           )}
@@ -1719,7 +1722,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.product_tracking_summary}
                                 className={subMenuLinkClass}
                               >
-                                Receivable & Payable
+                                {ml("Receivable & Payable")}
                               </NavLink>
                             </li>
                           )}
@@ -1755,7 +1758,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <CompanySchemeMenuIcon />
-                        Company Scheme
+                        {ml("Company Scheme")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -1787,7 +1790,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.company_scheme_receivable}
                                 className={subMenuLinkClass}
                               >
-                                Receivable
+                                {ml("Receivable")}
                               </NavLink>
                             </li>
                           )}
@@ -1797,7 +1800,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.company_scheme_receipts}
                                 className={subMenuLinkClass}
                               >
-                                Receipts
+                                {ml("Receipts")}
                               </NavLink>
                             </li>
                           )}
@@ -1839,7 +1842,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <FiTool />
-                        Production
+                        {ml("Production")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -1856,7 +1859,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_entry}
                                 className={subMenuLinkClass}
                               >
-                                Production Entry
+                                {ml("Production Entry")}
                               </NavLink>
                             </li>
                           )}
@@ -1866,7 +1869,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_sales}
                                 className={subMenuLinkClass}
                               >
-                                Sales
+                                {ml("Sales")}
                               </NavLink>
                             </li>
                           )}
@@ -1876,7 +1879,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_purchase}
                                 className={subMenuLinkClass}
                               >
-                                Purchase
+                                {ml("Purchase")}
                               </NavLink>
                             </li>
                           )}
@@ -1886,7 +1889,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_sales_return}
                                 className={subMenuLinkClass}
                               >
-                                Sales Return
+                                {ml("Sales Return")}
                               </NavLink>
                             </li>
                           )}
@@ -1896,7 +1899,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_scheme}
                                 className={subMenuLinkClass}
                               >
-                                Scheme
+                                {ml("Scheme")}
                               </NavLink>
                             </li>
                           )}
@@ -1906,7 +1909,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_recipe}
                                 className={subMenuLinkClass}
                               >
-                                Recipe
+                                {ml("Recipe")}
                               </NavLink>
                             </li>
                           )}
@@ -1916,7 +1919,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_register}
                                 className={subMenuLinkClass}
                               >
-                                Register
+                                {ml("Register")}
                               </NavLink>
                             </li>
                           )}
@@ -1926,7 +1929,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_free_goods}
                                 className={subMenuLinkClass}
                               >
-                                Free Goods
+                                {ml("Free Goods")}
                               </NavLink>
                             </li>
                           )}
@@ -1936,7 +1939,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.production_expiry}
                                 className={subMenuLinkClass}
                               >
-                                Near Expiry
+                                {ml("Near Expiry")}
                               </NavLink>
                             </li>
                           )}
@@ -1971,7 +1974,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <RequisitionMenuIcon />
-                        Requisition
+                        {ml("Requisition")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -2003,7 +2006,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.requisition}
                                 className={subMenuLinkClass}
                               >
-                                Requisitions
+                                {ml("Requisitions")}
                               </NavLink>
                             </li>
                           )}
@@ -2013,7 +2016,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.requisition_create}
                                 className={subMenuLinkClass}
                               >
-                                Create
+                                {ml("Create")}
                               </NavLink>
                             </li>
                           )}
@@ -2023,7 +2026,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.requisition_comparison}
                                 className={subMenuLinkClass}
                               >
-                                Comparison
+                                {ml("Comparison")}
                               </NavLink>
                             </li>
                           )}
@@ -2061,7 +2064,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }}
                         >
                           <FiMapPin />
-                          Real Estate
+                          {ml("Real Estate")}
                           <FiChevronRight
                             className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                               }`}
@@ -2094,7 +2097,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   to={tabsFor(sortTabs(RE_SETUP_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                   className={() => subMenuLinkClass({ isActive: inTabGroup(RE_SETUP_TABS, pathname) })}
                                 >
-                                  Setup
+                                  {ml("Setup")}
                                 </NavLink>
                               </li>
                             )}
@@ -2104,7 +2107,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   to={tabsFor(sortTabs(RE_SALES_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                   className={() => subMenuLinkClass({ isActive: inTabGroup(RE_SALES_TABS, pathname) })}
                                 >
-                                  Sales
+                                  {ml("Sales")}
                                 </NavLink>
                               </li>
                             )}
@@ -2114,7 +2117,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   to={tabsFor(sortTabs(RE_PROJECT_ENTRY_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                   className={() => subMenuLinkClass({ isActive: inTabGroup(RE_PROJECT_ENTRY_TABS, pathname) })}
                                 >
-                                  Project Entry
+                                  {ml("Project Entry")}
                                 </NavLink>
                               </li>
                             )}
@@ -2124,7 +2127,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                   to={tabsFor(sortTabs(RE_PROJECT_REPORT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                   className={() => subMenuLinkClass({ isActive: inTabGroup(RE_PROJECT_REPORT_TABS, pathname) })}
                                 >
-                                  Project Reports
+                                  {ml("Project Reports")}
                                 </NavLink>
                               </li>
                             )}
@@ -2173,7 +2176,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <AssetsMenuIcon />
-                        Assets
+                        {ml("Assets")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -2203,7 +2206,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {(hasPermission(permissions, 'asset.category.view') || hasPermission(permissions, 'asset.register.view')) && (
                           <li style={subSlot('asset', 'asset_setup')}>
                             <NavLink to={routes.asset_setup} className={subMenuLinkClass}>
-                              Categories &amp; Register
+                              {ml("Categories & Register")}
                             </NavLink>
                           </li>
                           )}
@@ -2252,7 +2255,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <HotelMenuIcon />
-                        Hotel
+                        {ml("Hotel")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -2284,7 +2287,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'hotel.booking.view') && (
                           <li style={subSlot('hotel', 'hotel_bookings')}>
                             <NavLink to={routes.hotel_bookings} className={subMenuLinkClass}>
-                              Bookings
+                              {ml("Bookings")}
                             </NavLink>
                           </li>
                           )}
@@ -2307,7 +2310,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'hotel.calendar.view') && (
                           <li style={subSlot('hotel', 'hotel_calendar')}>
                             <NavLink to={routes.hotel_calendar} className={subMenuLinkClass}>
-                              Calendar
+                              {ml("Calendar")}
                             </NavLink>
                           </li>
                           )}
@@ -2317,7 +2320,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'hotel.housekeeping.view') && (
                           <li style={subSlot('hotel', 'hotel_housekeeping')}>
                             <NavLink to={routes.hotel_housekeeping} className={subMenuLinkClass}>
-                              Housekeeping
+                              {ml("Housekeeping")}
                             </NavLink>
                           </li>
                           )}
@@ -2330,7 +2333,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'hotel.amenity.issue.view') && (
                           <li style={subSlot('hotel', 'hotel_amenity_issue')}>
                             <NavLink to={routes.hotel_amenity_issue} className={subMenuLinkClass}>
-                              Amenity Issue &amp; Stock
+                              {ml("Amenity Issue & Stock")}
                             </NavLink>
                           </li>
                           )}
@@ -2341,7 +2344,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'hotel.report.view') && (
                           <li style={subSlot('hotel', 'hotel_reports')}>
                             <NavLink to={routes.hotel_reports} className={subMenuLinkClass}>
-                              Reports
+                              {ml("Reports")}
                             </NavLink>
                           </li>
                           )}
@@ -2350,7 +2353,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'hotel.booking.due.view') && (
                           <li style={subSlot('hotel', 'hotel_booking_due')}>
                             <NavLink to={routes.hotel_booking_due} className={subMenuLinkClass}>
-                              Booking-wise Due
+                              {ml("Booking-wise Due")}
                             </NavLink>
                           </li>
                           )}
@@ -2358,7 +2361,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {(hasPermission(permissions, 'hotel.building.view') || hasPermission(permissions, 'hotel.floor.view') || hasPermission(permissions, 'hotel.room.type.view') || hasPermission(permissions, 'hotel.resource.view')) && (
                           <li style={subSlot('hotel', 'hotel_setup')}>
                             <NavLink to={routes.hotel_setup} className={subMenuLinkClass}>
-                              Rooms &amp; Seats Setup
+                              {ml("Rooms & Seats Setup")}
                             </NavLink>
                           </li>
                           )}
@@ -2395,7 +2398,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <ProductsMenuIcon />
-                        Products
+                        {ml("Products")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -2428,7 +2431,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(CLASSIFICATION_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(CLASSIFICATION_TABS, pathname) })}
                               >
-                                Classification
+                                {ml("Classification")}
                               </NavLink>
                             </li>
                           )}
@@ -2438,7 +2441,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(PRODUCT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(PRODUCT_TABS, pathname) })}
                               >
-                                Products
+                                {ml("Products")}
                               </NavLink>
                             </li>
                           )}
@@ -2448,7 +2451,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(STOCK_ALERT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(STOCK_ALERT_TABS, pathname) })}
                               >
-                                Stock Alerts
+                                {ml("Stock Alerts")}
                               </NavLink>
                             </li>
                           )}
@@ -2483,7 +2486,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <LabourItemsMenuIcon />
-                        Labour Items
+                        {ml("Labour Items")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -2516,7 +2519,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.labour_category}
                                 className={subMenuLinkClass}
                               >
-                                Category
+                                {ml("Category")}
                               </NavLink>
                             </li>
                           )}
@@ -2527,7 +2530,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={routes.labour_item}
                                 className={subMenuLinkClass}
                               >
-                                Item
+                                {ml("Item")}
                               </NavLink>
                             </li>
                           )}
@@ -2562,7 +2565,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <AdminMenuIcon />
-                        Admin
+                        {ml("Admin")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -2595,7 +2598,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(COMPANY_BRANCH_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(COMPANY_BRANCH_TABS, pathname) })}
                               >
-                                Company & Branch
+                                {ml("Company & Branch")}
                               </NavLink>
                             </li>
                           )}
@@ -2606,7 +2609,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(ADMIN_SETTINGS_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ADMIN_SETTINGS_TABS, pathname) })}
                               >
-                                Settings
+                                {ml("Settings")}
                               </NavLink>
                             </li>
                           )}
@@ -2617,7 +2620,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(USER_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(USER_TABS, pathname) })}
                               >
-                                Users
+                                {ml("Users")}
                               </NavLink>
                             </li>
                           )}
@@ -2627,7 +2630,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(PLATFORM_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(PLATFORM_TABS, pathname) })}
                               >
-                                Platform
+                                {ml("Platform")}
                               </NavLink>
                             </li>
                           )}
@@ -2637,7 +2640,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(ROLE_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ROLE_TABS, pathname) })}
                               >
-                                Roles & Permissions
+                                {ml("Roles & Permissions")}
                               </NavLink>
                             </li>
                           )}
@@ -2647,7 +2650,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(DAILY_CONTROL_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(DAILY_CONTROL_TABS, pathname) })}
                               >
-                                Daily Control
+                                {ml("Daily Control")}
                               </NavLink>
                             </li>
                           )}
@@ -2657,7 +2660,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(ORDER_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ORDER_TABS, pathname) })}
                               >
-                                Orders
+                                {ml("Orders")}
                               </NavLink>
                             </li>
                           )}
@@ -2673,7 +2676,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(UPLOAD_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(UPLOAD_TABS, pathname) })}
                               >
-                                Uploads
+                                {ml("Uploads")}
                               </NavLink>
                             </li>
                           )}
@@ -2685,7 +2688,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(SMS_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(SMS_TABS, pathname) })}
                               >
-                                SMS
+                                {ml("SMS")}
                               </NavLink>
                             </li>
                           )}
@@ -2724,7 +2727,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <VrSettingsMenuIcon />
-                        VR Settings
+                        {ml("VR Settings")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -2757,7 +2760,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(VR_CORRECTION_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(VR_CORRECTION_TABS, pathname) })}
                               >
-                                Corrections
+                                {ml("Corrections")}
                               </NavLink>
                             </li>
                           )}
@@ -2769,7 +2772,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(VR_AUDIT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(VR_AUDIT_TABS, pathname) })}
                               >
-                                Audit
+                                {ml("Audit")}
                               </NavLink>
                             </li>
                           )}
@@ -2801,7 +2804,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <HrmMenuIcon />
-                        HRM
+                        {ml("HRM")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -2833,7 +2836,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to="/hrms/employees"
                                 className={subMenuLinkClass}
                               >
-                                Employees
+                                {ml("Employees")}
                               </NavLink>
                             </li>
                           )}
@@ -2843,7 +2846,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(DESIGNATION_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(DESIGNATION_TABS, pathname) })}
                               >
-                                Structure
+                                {ml("Structure")}
                               </NavLink>
                             </li>
                           )}
@@ -2853,7 +2856,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(ATTENDANCE_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_TABS, pathname) })}
                               >
-                                Attendance
+                                {ml("Attendance")}
                               </NavLink>
                             </li>
                           )}
@@ -2863,7 +2866,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(ATTENDANCE_REPORT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_REPORT_TABS, pathname) })}
                               >
-                                Attendance Reports
+                                {ml("Attendance Reports")}
                               </NavLink>
                             </li>
                           )}
@@ -2873,7 +2876,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(ATTENDANCE_SETTINGS_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(ATTENDANCE_SETTINGS_TABS, pathname) })}
                               >
-                                Attendance Settings
+                                {ml("Attendance Settings")}
                               </NavLink>
                             </li>
                           )}
@@ -2883,7 +2886,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(SALARY_SETUP_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_SETUP_TABS, pathname) })}
                               >
-                                Salary Setup
+                                {ml("Salary Setup")}
                               </NavLink>
                             </li>
                           )}
@@ -2893,7 +2896,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(SALARY_GENERATE_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_GENERATE_TABS, pathname) })}
                               >
-                                Salary & Bonus Generate
+                                {ml("Salary & Bonus Generate")}
                               </NavLink>
                             </li>
                           )}
@@ -2903,7 +2906,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(LOAN_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(LOAN_TABS, pathname) })}
                               >
-                                Loan
+                                {ml("Loan")}
                               </NavLink>
                             </li>
                           )}
@@ -2913,7 +2916,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(SALARY_REPORT_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(SALARY_REPORT_TABS, pathname) })}
                               >
-                                Salary Reports
+                                {ml("Salary Reports")}
                               </NavLink>
                             </li>
                           )}
@@ -2949,7 +2952,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           }}
                         >
                           <FiUsers />
-                          Customers
+                          {ml("Customers")}
                           <FiChevronRight
                             className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                               }`}
@@ -2981,7 +2984,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(PARTY_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(PARTY_TABS, pathname) })}
                               >
-                                Customers
+                                {ml("Customers")}
                               </NavLink>
                             </li>
                           )}
@@ -2991,7 +2994,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to={tabsFor(sortTabs(COA_TABS), permissions, isPlatformAdmin, currentBranch?.business_type_id)[0].path}
                                 className={() => subMenuLinkClass({ isActive: inTabGroup(COA_TABS, pathname) })}
                               >
-                                Chart of Accounts
+                                {ml("Chart of Accounts")}
                               </NavLink>
                             </li>
                           )}
@@ -3028,7 +3031,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                         }}
                       >
                         <FiBarChart2 />
-                        Analytics
+                        {ml("Analytics")}
                         <FiChevronRight
                           className={`absolute right-4 top-1/2 -translate-y-1/2 transition-transform duration-200 ${open ? 'rotate-90' : ''
                             }`}
@@ -3060,7 +3063,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                                 to="/item/item-chart"
                                 className={subMenuLinkClass}
                               >
-                                Comparison
+                                {ml("Comparison")}
                               </NavLink>
                             </li>
                           )}
@@ -3082,7 +3085,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                       }`}
                   >
                     <FiUser />
-                    Customer Dashboard
+                    {ml("Customer Dashboard")}
                   </NavLink>
                 </li>
               )}
@@ -3098,7 +3101,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                     }`}
                 >
                   <FiHelpCircle />
-                  Help
+                  {ml("Help")}
                 </NavLink>
               </li>
               )}

@@ -1,7 +1,14 @@
 import React from 'react';
-import ReactDatePicker from 'react-datepicker';
+import ReactDatePicker, { registerLocale } from 'react-datepicker';
+import { bn as banglaLocale } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FIELD_BASE, FIELD_LABEL } from '../../../theme/fieldStyles';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { toLocalDigits } from '../../../i18n/mapper';
+
+// The calendar's month names and weekday headings come from a date-fns locale,
+// so Bangla is registered once and drawn when the screen is in Bangla.
+registerLocale('bn', banglaLocale);
 
 // react-datepicker 7 ships no `exports` map, and under Vite 8's rolldown its
 // default import can arrive as the module object rather than the component —
@@ -9,6 +16,41 @@ import { FIELD_BASE, FIELD_LABEL } from '../../../theme/fieldStyles';
 // Unwrap one level when that happens; under Vite 4 this is a no-op.
 const DatePicker: typeof ReactDatePicker =
   ((ReactDatePicker as any).default ?? ReactDatePicker) as typeof ReactDatePicker;
+
+/**
+ * The date field's own input, so a chosen date reads in Bangla digits
+ * ("২৪/১১/২০২৬") while the screen is in a local language.
+ *
+ * The digits are only changed while the field is idle. On focus it shows the
+ * Latin value it parses against dd/MM/yyyy, so typing, backspacing and the
+ * picker's own parsing are untouched; on blur it goes back to Bangla. The date
+ * handed to the caller is still the Date object, never a formatted string.
+ */
+const BanglaDateInput = React.forwardRef<HTMLInputElement, any>((props, ref) => {
+  const { code } = useLanguage();
+  const [focused, setFocused] = React.useState(false);
+
+  const { onFocus, onBlur, value, ...rest } = props;
+  const raw = value == null ? '' : String(value);
+  const display = !focused && code && code !== 'en' ? toLocalDigits(raw, code) : raw;
+
+  return (
+    <input
+      {...rest}
+      ref={ref}
+      value={display}
+      onFocus={(event: React.FocusEvent<HTMLInputElement>) => {
+        setFocused(true);
+        onFocus?.(event);
+      }}
+      onBlur={(event: React.FocusEvent<HTMLInputElement>) => {
+        setFocused(false);
+        onBlur?.(event);
+      }}
+    />
+  );
+});
+BanglaDateInput.displayName = 'BanglaDateInput';
 
 interface DatePickerProps {
   id?: string; // ID for the date picker component
@@ -34,6 +76,7 @@ interface DatePickerProps {
 
 const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate, setCurrentDate, className, id, name, onKeyDown, label, placeholder, month = false, year = false, showTime = false, disabled = false, isClearable = false, minDate = null }) => {
   const datePickerRef = React.useRef<ReactDatePicker>(null);
+  const { code } = useLanguage();
   const safeSelectedDate =
     selectedDate instanceof Date && !Number.isNaN(selectedDate.getTime()) ? selectedDate : null;
 
@@ -101,6 +144,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         ref={datePickerRef}
         id={id}
         name={name || id}
+        locale={code && code !== 'en' ? 'bn' : undefined}
         selected={safeSelectedDate}
         onChange={handleDateChange} // Update state when a new date is selected
         onFocus={openCalendar}
@@ -121,6 +165,7 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
         disabled={disabled}
         isClearable={isClearable}
         minDate={minDate ?? undefined}
+        customInput={<BanglaDateInput />}
         className={`${FIELD_BASE} pl-3 ${className}`}
         showMonthYearPicker={month}
         showYearPicker={year}
@@ -133,6 +178,17 @@ const InputDatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedD
             .cashbook-month-picker-popper,
             .cashbook-year-picker-popper {
               z-index: 9999;
+              /* The calendar reads its month names and day names in Bangla, so
+                 it is drawn in the Bangla face the rest of the app falls back
+                 to. Satoshi carries no Bangla glyphs, so without this the popup
+                 borrowed whatever the OS offered. */
+              font-family: 'NikoshBAN', sans-serif;
+            }
+
+            .cashbook-date-picker-popper *,
+            .cashbook-month-picker-popper *,
+            .cashbook-year-picker-popper * {
+              font-family: 'NikoshBAN', sans-serif;
             }
 
             /* react-datepicker ships a light-only stylesheet, so on a dark page

@@ -8,6 +8,8 @@ import thousandSeparator from '../utils-functions/thousandSeparator';
 import numberToWords from '../utils-functions/numberToWords';
 import { formatMobile, useMobileFormat } from '../utils-functions/mobileFormat';
 import { formatTransportationNumber } from '../utils-functions/formatRoleName';
+import { useLocalDigits } from '../../../i18n/useLocalDigits';
+import { getCurrentLanguage } from '../../../i18n/currentLanguage';
 import type { PrintBranch } from '../utils-functions/printBranch';
 import {
   Align,
@@ -224,6 +226,13 @@ const MONEY_ROW_MERGE_FIELDS = ['vehicle_no', 'qty', 'unit', 'qty_unit', 'price'
 const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
   ({ template, data, preview = false }, ref) => {
     const mobileFormat = useMobileFormat();
+
+    // Every figure on the paper -- amounts, dates, phone, voucher no -- reads in
+    // Bangla digits when a local language is on. Done here, on the one root
+    // every printed document shares, rather than in each formatter.
+    const rootRef = React.useRef<HTMLDivElement>(null);
+    React.useImperativeHandle(ref, () => rootRef.current as HTMLDivElement);
+    useLocalDigits(rootRef, getCurrentLanguage() !== 'en');
 
     /**
      * Who is at the printer.
@@ -460,7 +469,11 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
      * one at the call site, so a half-translated book still prints.
      */
     const localOf = (source: any, key: string): any => {
-      if (template?.language !== 'local' || !source) return undefined;
+      // The paper prints local names when its own language says so, or when the
+      // screen is in Bangla -- a branch that has filled in Bangla names expects
+      // them on the paper, not only after a separate print-language setting.
+      const localPaper = template?.language === 'local' || getCurrentLanguage() !== 'en';
+      if (!localPaper || !source) return undefined;
 
       const local = source[`${key}_local`];
 
@@ -1822,7 +1835,7 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
     // paints the white sheet behind this instead, which is where a sheet of
     // paper belongs.
     return (
-      <div ref={ref} className="print-root text-black">
+      <div ref={rootRef} className="print-root text-black">
         <PrintStyles orientation={template.orientation} pageSize={template.pageSize} />
 
         {/*

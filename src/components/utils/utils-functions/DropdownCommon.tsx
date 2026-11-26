@@ -1,6 +1,8 @@
 import React from 'react';
 import { FIELD_HELP, FIELD_LABEL, fieldClass } from '../../../theme/fieldStyles';
 import { Select } from '../fields/FormControls';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { displayName } from '../../../i18n/displayName';
 
 interface SelectOptionProps {
   id?: string;
@@ -14,7 +16,7 @@ interface SelectOptionProps {
   className?: string;
   /** Shut the box: it still shows the saved choice, but will not change it. */
   disabled?: boolean;
-  data: { id: number | string; name: string; disabled?: boolean }[];
+  data: { id: number | string; name: string; name_local?: string | null; disabled?: boolean }[];
   /** A line under the box saying what the choice decides. */
   description?: React.ReactNode;
 }
@@ -33,6 +35,8 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
   data = [],
   description,
 }) => {
+  const { code } = useLanguage();
+
   return (
     <div className="w-full">
       {label && (
@@ -57,7 +61,7 @@ const DropdownCommon: React.FC<SelectOptionProps> = ({
       >
         {data.map((item) => (
           <option key={item.id} value={item.id} disabled={item.disabled}>
-            {item.name}
+            {displayName(item, 'name', code)}
           </option>
         ))}
       </Select>

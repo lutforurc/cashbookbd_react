@@ -11,6 +11,7 @@ import InAppMessageHost from '../components/modules/in-app-messages/InAppMessage
 import { isUserFeatureEnabled } from '../components/utils/userFeatureSettings';
 import useCtrlUUpdate from '../components/utils/hooks/useCtrlUUpdate';
 import HelpProvider from '../components/help/HelpProvider';
+import UiTranslator from '../i18n/UiTranslator';
 
 interface DefaultLayoutProps {
   isLoggedIn: boolean;
@@ -38,6 +39,8 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ isLoggedIn, isLoading, us
 
   return isLoggedIn ? (
     <div className="bg-[rgb(var(--c-page))] dark:text-[rgb(var(--c-text-muted))]">
+      {/* Fixed form words (labels, placeholders, options) follow the language. */}
+      <UiTranslator />
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       <div className="flex h-screen overflow-hidden">
         {/* <!-- ===== Sidebar Start ===== --> */}

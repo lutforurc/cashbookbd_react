@@ -67,6 +67,8 @@ import { useTrackedProducts } from '../../product-tracking/useTrackedProducts';
 import { useNavigate } from 'react-router-dom';
 import { branchLabel } from '../../../utils/userFeatureSettings';
 import { getServiceList } from '../../settings/settingsSlice';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { accountName } from '../../../../i18n/displayName';
 interface Product {
   id: number;
   product: number;
@@ -125,9 +127,13 @@ const TradingBusinessPurchase = () => {
   const isTilesBranch = Boolean(currentBranch?.is_tiles_and_sanitary);
   const fieldLabel = (key: string, fallback: string) =>
     branchLabel(settings, key, fallback);
-  // The name a chart-of-accounts row carries on this branch's setup.
-  const serviceList = (id: number, list: any[] = []) =>
-    list.find((item) => item.id === id)?.name || '';
+  // The name a chart-of-accounts row carries on this branch's setup, in the
+  // screen's language -- the same local name the CoA list shows.
+  const { code } = useLanguage();
+  const serviceList = (id: number, list: any[] = []) => {
+    const item = list.find((entry) => entry.id === id);
+    return accountName(item, code);
+  };
   const dispatch = useDispatch<any>();
   const [buttonLoading, setButtonLoading] = useState(false);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);

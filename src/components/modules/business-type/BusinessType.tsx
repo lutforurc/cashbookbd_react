@@ -5,11 +5,15 @@ import { FiPlus, FiRefreshCw, FiSave, FiX } from 'react-icons/fi';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import InputElement from '../../utils/fields/InputElement';
+import BilingualInput from '../../utils/fields/BilingualInput';
 import ActionButtons from '../../utils/fields/ActionButton';
 import { Select, Textarea } from '../../utils/fields/FormControls';
 import { FIELD_OPTION, FIELD_SELECT } from '../../../theme/fieldStyles';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { knownLabel } from '../../../i18n/displayName';
 import {
   BusinessType as BusinessTypeRow,
+  BusinessTypePayload,
   createBusinessType,
   fetchBusinessTypes,
   toggleBusinessType,
@@ -35,12 +39,32 @@ import {
 
 const labelClass = 'mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200';
 
-const emptyForm = { id: 0, name: '', status: 1, description: '' };
+const emptyForm = { id: 0, name: '', name_local: '', status: 1, description: '', description_local: '' };
 
 const BusinessType = () => {
   const [rows, setRows] = useState<BusinessTypeRow[]>([]);
   const [loadingList, setLoadingList] = useState(false);
   const [saving, setSaving] = useState(false);
+  const { code } = useLanguage();
+  // Whether the server carries a local name for business types. Until its table
+  // and API do, the Bangla boxes are not shown and the field is not sent -- a
+  // payload with a column the server does not have made every Update fail.
+  const [supportsLocal, setSupportsLocal] = useState(false);
+
+  // A row's own Bangla name when it has one; otherwise the app's known Bangla
+  // for a standard trade ("Real Estate"); otherwise the English it was saved as.
+  const localActive = Boolean(code) && code !== 'en';
+  const nameOf = (row: BusinessTypeRow) => {
+    if (!localActive) return row.name;
+    const local = (row.name_local ?? '').trim();
+    return local || knownLabel(row.name, code);
+  };
+  const descriptionOf = (row: BusinessTypeRow) => {
+    if (!localActive) return row.description || '-';
+    const local = (row.description_local ?? '').trim();
+    if (local) return local;
+    return knownLabel(row.description ?? '', code) || '-';
+  };
 
   const [form, setForm] = useState({ ...emptyForm });
   const isEditing = form.id > 0;
@@ -49,7 +73,11 @@ const BusinessType = () => {
     setLoadingList(true);
 
     try {
-      setRows(await fetchBusinessTypes());
+      const list = await fetchBusinessTypes();
+      setRows(list);
+      setSupportsLocal(
+        list.some((row) => Object.prototype.hasOwnProperty.call(row, 'name_local')),
+      );
     } catch {
       setRows([]);
       toast.error('Could not load business types.');
@@ -68,8 +96,10 @@ const BusinessType = () => {
     setForm({
       id: row.id,
       name: row.name,
+      name_local: row.name_local ?? '',
       status: Number(row.status),
       description: row.description ?? '',
+      description_local: row.description_local ?? '',
     });
 
   const handleSave = async () => {
@@ -78,11 +108,18 @@ const BusinessType = () => {
       return;
     }
 
-    const payload = {
+    const payload: BusinessTypePayload = {
       name: form.name.trim(),
       status: Number(form.status),
       description: form.description.trim() || null,
     };
+
+    // Only send the local fields when the server has been shown to carry them;
+    // an unknown column would make the whole update fail.
+    if (supportsLocal) {
+      payload.name_local = form.name_local.trim() || null;
+      payload.description_local = form.description_local.trim() || null;
+    }
 
     setSaving(true);
 
@@ -146,20 +183,43 @@ const BusinessType = () => {
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className={labelClass}>
-              Name <span className="text-rose-500">*</span>
-            </label>
-            <InputElement
-              id="business-type-name"
-              name="name"
-              label=""
-              value={form.name}
-              placeholder="e.g. Hotel / Motel"
-              className="w-full!"
-              onChange={(e: any) =>
-                setForm((f) => ({ ...f, name: e.target.value.slice(0, 128) }))
-              }
-            />
+            {supportsLocal ? (
+              <BilingualInput
+                name="name"
+                kind="name"
+                label={
+                  <>
+                    Name <span className="text-rose-500">*</span>
+                  </>
+                }
+                value={form.name}
+                localValue={form.name_local}
+                placeholder="e.g. Hotel / Motel"
+                onChange={(e: any) =>
+                  setForm((f) => ({ ...f, name: e.target.value.slice(0, 128) }))
+                }
+                onLocalChange={(value) =>
+                  setForm((f) => ({ ...f, name_local: value.slice(0, 128) }))
+                }
+              />
+            ) : (
+              <>
+                <label className={labelClass}>
+                  Name <span className="text-rose-500">*</span>
+                </label>
+                <InputElement
+                  id="business-type-name"
+                  name="name"
+                  label=""
+                  value={form.name}
+                  placeholder="e.g. Hotel / Motel"
+                  className="w-full!"
+                  onChange={(e: any) =>
+                    setForm((f) => ({ ...f, name: e.target.value.slice(0, 128) }))
+                  }
+                />
+              </>
+            )}
             {/* The name is the only thing telling two trades apart on a
                 dropdown -- the id is not shown, and would not help if it were. */}
             <span className="mt-1 block text-xs text-slate-400">
@@ -187,16 +247,37 @@ const BusinessType = () => {
           </div>
 
           <div className="md:col-span-2">
-            <label className={labelClass}>Description</label>
-            <Textarea
-              value={form.description}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, description: e.target.value.slice(0, 512) }))
-              }
-              rows={2}
-              placeholder="Optional note about this trade"
-              className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-white px-3 py-2 text-sm text-[rgb(var(--c-text))] outline-none focus:border-blue-500 dark:bg-transparent dark:text-[rgb(var(--c-text))]"
-            />
+            {supportsLocal ? (
+              <BilingualInput
+                name="description"
+                kind="description"
+                label="Description"
+                rows={2}
+                value={form.description}
+                localValue={form.description_local}
+                placeholder="Optional note about this trade"
+                onChange={(e: any) =>
+                  setForm((f) => ({ ...f, description: e.target.value.slice(0, 512) }))
+                }
+                onLocalChange={(value) =>
+                  setForm((f) => ({ ...f, description_local: value.slice(0, 512) }))
+                }
+                textareaClassName="w-full rounded-sm border border-[rgb(var(--c-border))] bg-white px-3 py-2 text-sm text-[rgb(var(--c-text))] outline-none focus:border-blue-500 dark:bg-transparent dark:text-[rgb(var(--c-text))]"
+              />
+            ) : (
+              <>
+                <label className={labelClass}>Description</label>
+                <Textarea
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, description: e.target.value.slice(0, 512) }))
+                  }
+                  rows={2}
+                  placeholder="Optional note about this trade"
+                  className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-white px-3 py-2 text-sm text-[rgb(var(--c-text))] outline-none focus:border-blue-500 dark:bg-transparent dark:text-[rgb(var(--c-text))]"
+                />
+              </>
+            )}
           </div>
         </div>
 
@@ -257,10 +338,10 @@ const BusinessType = () => {
                     >
                       <td className="px-4 py-3 text-center tabular-nums">{index + 1}</td>
                       <td className="px-4 py-3 font-semibold text-[rgb(var(--c-text))]">
-                        {row.name}
+                        {nameOf(row)}
                       </td>
                       <td className="max-w-md px-4 py-3 text-slate-500 dark:text-slate-400">
-                        {row.description || '-'}
+                        {descriptionOf(row)}
                       </td>
                       {/* What disabling costs and what deleting is refused for,
                           on the row rather than found out afterwards. */}

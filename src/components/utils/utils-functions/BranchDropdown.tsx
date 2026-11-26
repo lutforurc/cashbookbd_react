@@ -3,6 +3,8 @@ import { useDispatch } from 'react-redux';
 import { clearPrintBranch, setPrintBranchId } from './printBranchSlice';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { Select } from '../fields/FormControls';
+import { useLanguage } from '../../../i18n/useLanguage';
+import { displayName } from '../../../i18n/displayName';
 
 interface SelectOptionProps {
   name?: string;
@@ -31,6 +33,7 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>(defaultValue || '');
   const dispatch = useDispatch();
+  const { code } = useLanguage();
 
   // Update selected value when defaultValue changes
   useEffect(() => {
@@ -77,7 +80,7 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
       {branchDdl &&
         branchDdl.map((item: any, index: number) => (
           <option key={index} value={item.id}>
-            {item.name}
+            {displayName(item, 'name', code)}
           </option>
         ))}
     </Select>

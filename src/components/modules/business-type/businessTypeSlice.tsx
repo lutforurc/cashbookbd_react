@@ -4,16 +4,20 @@ import { API_ADMIN_BUSINESS_TYPES_URL } from '../../services/apiRoutes';
 export type BusinessType = {
   id: number;
   name: string;
+  name_local?: string | null;
   status: number;
   description: string | null;
+  description_local?: string | null;
   /** How many branches run on this trade. Decides what disabling it costs. */
   branches_count?: number;
 };
 
 export type BusinessTypePayload = {
   name: string;
+  name_local?: string | null;
   status?: number;
   description?: string | null;
+  description_local?: string | null;
 };
 
 // Plain httpService calls, like the inventory systems screen beside it: the

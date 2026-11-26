@@ -39,7 +39,7 @@ import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
 import { formatDate } from "../../../utils/utils-functions/formatDate";
 import { Button } from '../../../../pages/UiElements/CustomButtons';
 import { useLanguage } from '../../../../i18n/useLanguage';
-import { localizeReport } from '../../../../i18n/displayName';
+import { localizeReport, displayName } from '../../../../i18n/displayName';
 import { useLocalDigits } from '../../../../i18n/useLocalDigits';
 import { rl } from '../../../../i18n/reportLabel';
 
@@ -442,15 +442,15 @@ const BalanceSheet = (user: any) => {
     const selected = dropdownData.find(
       (branch: any) => Number(branch.id) === Number(branchId),
     );
-    return selected?.name || "Selected Branch";
-  }, [dropdownData, branchId]);
+    return selected ? displayName(selected, 'name', languageCode) : "Selected Branch";
+  }, [dropdownData, branchId, languageCode]);
 
   const appliedBranchName = useMemo(() => {
     const selected = dropdownData.find(
       (branch: any) => Number(branch.id) === Number(netProfitDebug.filters.branchId),
     );
-    return selected?.name || branchName;
-  }, [branchName, dropdownData, netProfitDebug.filters.branchId]);
+    return selected ? displayName(selected, 'name', languageCode) : branchName;
+  }, [branchName, dropdownData, netProfitDebug.filters.branchId, languageCode]);
 
   const reportDates = useMemo(() => {
     return {

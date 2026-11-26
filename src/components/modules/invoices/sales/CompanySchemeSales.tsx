@@ -32,7 +32,9 @@ import {
   electronicsSalesStore,
   electronicsSalesUpdate,
 } from './electronicsSalesSlice';
-import { getServiceList } from '../../settings/settingsSlice'; 
+import { getServiceList } from '../../settings/settingsSlice';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { accountName } from '../../../../i18n/displayName'; 
 import { VoucherPrintRegistry } from '../../vouchers/VoucherPrintRegistry';
 import { useVoucherPrint } from '../../vouchers';
 import QuickCustomerModal from './QuickCustomerModal';
@@ -1161,8 +1163,10 @@ const CompanySchemeSales = () => {
   ]);
 
 
+  const { code } = useLanguage();
   const serviceList = (id: number, list: any[]) => {
-    return list.find((item) => item.id === id)?.name || "";
+    const item = list.find((entry) => entry.id === id);
+    return accountName(item, code);
   };
 
 

@@ -68,3 +68,25 @@ export const toLocalMonth = (value: string | number | Date | null | undefined, l
 
   return text;
 };
+
+/**
+ * Unicode decimal digits -> Latin digits: "১০০০" -> "1000", "١٢٣" -> "123".
+ *
+ * The screen writes Bangla digits, but a number a form saves (an amount, a
+ * quantity, a date part) has to be Latin: the API and every parse we do read
+ * ASCII. This is the inverse of toLocalDigits and is applied AS the user types
+ * into a numeric field, so a Bangla digit never reaches the state.
+ */
+const LATIN_DIGIT: Record<number, string> = {};
+[
+  0x0660, 0x06f0, 0x0966, 0x09e6, 0x0a66, 0x0ae6, 0x0b66, 0x0be6, 0x0c66,
+  0x0ce6, 0x0d66, 0x0e50, 0x0ed0, 0x0f20, 0x1040, 0x17e0, 0x1810, 0xff10,
+].forEach((zero) => {
+  for (let digit = 0; digit < 10; digit += 1) LATIN_DIGIT[zero + digit] = String(digit);
+});
+
+export const toLatinDigits = (text: string): string =>
+  text.replace(
+    /[\u0660-\u0669\u06F0-\u06F9\u0966-\u096F\u09E6-\u09EF\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0BE6-\u0BEF\u0C66-\u0C6F\u0CE6-\u0CEF\u0D66-\u0D6F\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F29\uFF10-\uFF19]/g,
+    (digit) => LATIN_DIGIT[digit.charCodeAt(0)] ?? digit,
+  );

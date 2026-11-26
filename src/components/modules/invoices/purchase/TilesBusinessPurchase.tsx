@@ -53,6 +53,8 @@ import { useNavigate } from 'react-router-dom';
 import { branchLabel } from '../../../utils/userFeatureSettings';
 import { useTilesWarehouseField } from '../../../utils/hooks/useTilesWarehouseField';
 import { getServiceList } from '../../settings/settingsSlice';
+import { useLanguage } from '../../../../i18n/useLanguage';
+import { accountName } from '../../../../i18n/displayName';
 /**
  * The Purchase Invoice for a Tiles and Sanitary shop -- the mirror of
  * TilesBusinessSales, with purchase accounting behind it.
@@ -138,10 +140,13 @@ const TilesBusinessPurchase = () => {
   const { showWarehouse, defaultWarehouseId, branchWarehouseIds } = useTilesWarehouseField();
   const fieldLabel = (key: string, fallback: string) =>
     branchLabel(settings, key, fallback);
-  // The name a chart-of-accounts row carries on this branch's setup, so a
-  // charge is labelled by the account it posts to rather than by a word here.
-  const serviceList = (id: number, list: any[] = []) =>
-    list.find((item) => item.id === id)?.name || '';
+  // The name a chart-of-accounts row carries on this branch's setup, in the
+  // screen's language, so a charge is labelled by the account it posts to.
+  const { code } = useLanguage();
+  const serviceList = (id: number, list: any[] = []) => {
+    const item = list.find((entry) => entry.id === id);
+    return accountName(item, code);
+  };
   const dispatch = useDispatch<any>();
   const [buttonLoading, setButtonLoading] = useState(false);
   const [warehouseDdlData, setWarehouseDdlData] = useState<any[]>([]);
