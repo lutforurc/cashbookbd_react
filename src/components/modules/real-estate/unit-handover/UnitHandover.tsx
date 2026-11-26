@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import { FiCheckCircle, FiHome, FiKey, FiRotateCcw } from 'react-icons/fi';
-import { FIELD_SELECT, FIELD_SIZE } from '../../../../theme/fieldStyles';
+import { FIELD_LABEL, FIELD_PADDING, FIELD_SELECT } from '../../../../theme/fieldStyles';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
 import InputDatePicker from '../../../utils/fields/DatePicker';
 import { Select } from '../../../utils/fields/FormControls';
-import { ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../../pages/UiElements/CustomButtons';
+import PrintRowsInput from '../../../utils/fields/PrintRowsInput';
+import PrintFontInput from '../../../utils/fields/PrintFontInput';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import httpService from '../../../services/httpService';
 import {
@@ -16,6 +19,7 @@ import {
   API_UNIT_HANDOVER_STORE_URL,
   API_UNIT_HANDOVER_UNITS_URL,
 } from '../../../services/apiRoutes';
+import UnitHandoverPrint from './UnitHandoverPrint';
 
 /**
  * Unit Handover (real estate step 4). The building is marked complete first;
@@ -82,6 +86,11 @@ const UnitHandover = () => {
   const [data, setData] = useState<any>(null);
   const [date, setDate] = useState<Date | null>(new Date());
   const [busy, setBusy] = useState<string>('');
+  const printRef = useRef<HTMLDivElement>(null);
+  // Rows per printed sheet (0 = all on one sheet) and the print type size, as on every report.
+  const [perPage, setPerPage] = useState<number>(0);
+  const [fontSize, setFontSize] = useState<number>(10);
+  const handlePrint = useReactToPrint({ contentRef: printRef, documentTitle: t('handover.printTitle') });
 
   const stateLabel: Record<UnitState, string> = {
     handed: t('handover.handedOver'),
@@ -162,13 +171,16 @@ const UnitHandover = () => {
     <>
       <HelmetTitle title={t('handover.title')} />
 
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-        <div>
-          <label htmlFor="building_id">{t('handover.building')}</label>
+      {/* One row that wraps: building takes what is left, the date a fixed
+          width, the print group pushed right. Every control at the project's
+          one height (FIELD_SELECT and the date picker carry it; no h-* here). */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="min-w-0 sm:min-w-[16rem] sm:flex-1">
+          <label htmlFor="building_id" className={`${FIELD_LABEL} text-sm`}>{t('handover.building')}</label>
           <Select
             id="building_id"
             name="building_id"
-            className={`${FIELD_SELECT} ${FIELD_SIZE.md} w-full`}
+            className={`${FIELD_SELECT} ${FIELD_PADDING} w-full`}
             value={buildingId}
             onChange={(e) => setBuildingId(e.target.value)}
           >
@@ -180,17 +192,38 @@ const UnitHandover = () => {
             ))}
           </Select>
         </div>
-        <div>
-          <label htmlFor="handover_date">{t('handover.date')}</label>
+        <div className="sm:w-44">
           <InputDatePicker
             id="handover_date"
             name="handover_date"
+            label={t('handover.date')}
             className="w-full px-3 py-1"
             selectedDate={date}
             setSelectedDate={setDate}
             setCurrentDate={setDate}
           />
         </div>
+        {data && (
+          <div className="flex flex-nowrap items-end gap-2 sm:ml-auto">
+            <PrintRowsInput
+              type="number"
+              id="handover-per-page"
+              label=""
+              value={perPage}
+              onChange={(e: any) => setPerPage(Number(e.target.value) || 0)}
+              className="w-20! text-center"
+            />
+            <PrintFontInput
+              type="number"
+              id="handover-font-size"
+              label=""
+              value={fontSize}
+              onChange={(e: any) => setFontSize(Number(e.target.value) || 10)}
+              className="w-20! text-center"
+            />
+            <PrintButton label={t('handover.print')} onClick={handlePrint} className="px-6" />
+          </div>
+        )}
       </div>
 
       {!data && (
@@ -395,6 +428,38 @@ const UnitHandover = () => {
                 </tr>
               </tfoot>
             </table>
+          </div>
+
+          <div className="hidden">
+            <UnitHandoverPrint
+              ref={printRef}
+              data={data}
+              rowsPerPage={perPage}
+              fontSize={fontSize}
+              stateLabel={stateLabel}
+              buildingName={(() => {
+                const b = buildings.find((x) => String(x.id) === String(buildingId));
+                return b ? `${b.project_name} — ${b.name}` : data?.building?.name || '';
+              })()}
+              labels={{
+                title: t('handover.printTitle'),
+                completedOn: t('handover.completedOn', { date: completedOn }),
+                notCompleteShort: t('handover.notCompleteShort'),
+                buildingCost: t('handover.buildingCost'),
+                costSplit: t('handover.costSplit', { direct: money(data.cost?.direct), common: money(data.cost?.common_share) }),
+                slNo: t('handover.slNo'),
+                unit: t('handover.unit'),
+                customer: t('handover.customer'),
+                salePrice: t('handover.salePrice'),
+                received: t('handover.received'),
+                due: t('handover.due'),
+                share: t('handover.share'),
+                cost: t('handover.cost'),
+                state: t('handover.state'),
+                landowner: t('handover.landowner'),
+                total: t('handover.total'),
+              }}
+            />
           </div>
         </>
       )}
