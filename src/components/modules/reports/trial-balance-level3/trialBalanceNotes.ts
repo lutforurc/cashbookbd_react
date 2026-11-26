@@ -103,9 +103,9 @@ export const buildTrialBalanceNotes = ({
         n: 3,
         title: "গ্রুপের মোট",
         body:
-          "প্রতিটি নম্বরযুক্ত সারি একটি হিসাব-গ্রুপ। প্রারম্ভিক ও সমাপনী ডেবিট-ক্রেডিট ব্যালেন্স প্রতিটি খাতার জন্য " +
-          "আলাদা হিসাব করে গ্রুপের মধ্যে আলাদাভাবে যোগ করা হয়। এক খাতার ডেবিট ব্যালেন্স অন্য খাতার ক্রেডিট " +
-          "ব্যালেন্সের সাথে কাটাকাটি হয় না। খাতাভিত্তিক বিস্তারিত বিস্তারিত রিপোর্টে পাওয়া যাবে।",
+          "প্রতিটি নম্বরযুক্ত সারি একটি হিসাব-গ্রুপ। প্রারম্ভিক ও সমাপনী ব্যালেন্স গ্রুপের সব খাতার ডেবিট থেকে " +
+          "ক্রেডিট বাদ দিয়ে নিট হিসেবে এক পাশে (ডেবিট অথবা ক্রেডিট) দেখানো হয়। লেনদেন (Movement) মোট ডেবিট ও " +
+          "মোট ক্রেডিট দুই পাশেই থাকে। খাতাভিত্তিক বিস্তারিত বিস্তারিত রিপোর্টে পাওয়া যাবে।",
       },
       {
         n: 4,
@@ -157,10 +157,10 @@ export const buildTrialBalanceNotes = ({
       n: 3,
       title: "Group totals",
       body:
-        "Each numbered row represents an account group. Opening and Closing debit " +
-        "and credit balances are calculated for each ledger and then summed " +
-        "separately within the group. Debit balances of one ledger are not offset " +
-        "against credit balances of another. Ledger details are available in the " +
+        "Each numbered row represents an account group. Opening and Closing are " +
+        "shown as the group's net balance -- its ledgers' debits less their " +
+        "credits -- on one side only. Movement shows the period's total debits " +
+        "and total credits on both sides. Ledger details are available in the " +
         "detailed report.",
     },
     {

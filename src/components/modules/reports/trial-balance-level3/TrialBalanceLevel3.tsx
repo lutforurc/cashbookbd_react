@@ -164,7 +164,29 @@ const normalizeRows = (items: any[]): TrialBalanceRow[] => {
       // and normalizing them here would only be undone again on the way out.
       children: Array.isArray(item?.children) ? item.children : [],
     }))
+    .map(oneSided)
     .filter(carriesFigures);
+};
+
+/**
+ * Opening and Closing are balances, so a group shows each on one side only:
+ * its members' Dr less their Cr, on whichever side the net falls (owner's rule
+ * 2026-11-27, replacing the both-sides group of 2026-10-10). Movement stays
+ * gross -- it is the period's turnover, not a balance. The net, and so the
+ * report's Dr/Cr agreement, is unchanged.
+ */
+const oneSided = <T extends { openingDebit: number; openingCredit: number; closingDebit: number; closingCredit: number }>(
+  row: T,
+): T => {
+  const opening = row.openingDebit - row.openingCredit;
+  const closing = row.closingDebit - row.closingCredit;
+  return {
+    ...row,
+    openingDebit: opening > 0 ? opening : 0,
+    openingCredit: opening < 0 ? -opening : 0,
+    closingDebit: closing > 0 ? closing : 0,
+    closingCredit: closing < 0 ? -closing : 0,
+  };
 };
 
 const normalizeLevel4Rows = (items: any[]): TrialBalanceLevel4Row[] => {
@@ -348,12 +370,11 @@ const TrialBalanceLevel3 = (user: any) => {
     const totalsSource = rawReportData?.totals || rawReportData?.summary || {};
 
     return {
-      openingDebit:
-        toNum(pickFirst(totalsSource, ["opening_debit_bal", "opening_debit"])) ||
-        rows.reduce((sum, row) => sum + row.openingDebit, 0),
-      openingCredit:
-        toNum(pickFirst(totalsSource, ["opening_credit_bal", "opening_credit"])) ||
-        rows.reduce((sum, row) => sum + row.openingCredit, 0),
+      // Opening and closing are summed from the one-sided rows: the server's
+      // totals add each group's Dr and Cr separately, which no longer matches
+      // what the rows show.
+      openingDebit: rows.reduce((sum, row) => sum + row.openingDebit, 0),
+      openingCredit: rows.reduce((sum, row) => sum + row.openingCredit, 0),
       movementDebit:
         toNum(pickFirst(totalsSource, ["movement_debit_bal", "movement_debit"])) ||
         rows.reduce((sum, row) => sum + row.movementDebit, 0),
@@ -361,12 +382,8 @@ const TrialBalanceLevel3 = (user: any) => {
         toNum(
           pickFirst(totalsSource, ["movement_credit_bal", "movement_credit"]),
         ) || rows.reduce((sum, row) => sum + row.movementCredit, 0),
-      closingDebit:
-        toNum(pickFirst(totalsSource, ["debit_bal", "closing_debit_bal"])) ||
-        rows.reduce((sum, row) => sum + row.closingDebit, 0),
-      closingCredit:
-        toNum(pickFirst(totalsSource, ["credit_bal", "closing_credit_bal"])) ||
-        rows.reduce((sum, row) => sum + row.closingCredit, 0),
+      closingDebit: rows.reduce((sum, row) => sum + row.closingDebit, 0),
+      closingCredit: rows.reduce((sum, row) => sum + row.closingCredit, 0),
     };
   }, [rawReportData, rows]);
 
