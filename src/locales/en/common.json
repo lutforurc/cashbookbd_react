@@ -1812,6 +1812,8 @@
     "received": "Received Amt",
     "total": "Total",
     "slNo": "Sl No.",
+    "emptyHint": "Select a building to see its flats, cost and handovers.",
+    "strip": "Units of the building by state, each as wide as its cost share",
     "due": "Due",
     "share": "Cost Share",
     "cost": "Cost",
