@@ -1694,7 +1694,10 @@
     "Advance received": "Advance received",
     "What each installment still owes, after early-payment discounts and receipts — the same rule the": "What each installment still owes, after early-payment discounts and receipts — the same rule the",
     "uses, counted on the branch's transaction date rather than today's calendar date.": "uses, counted on the branch's transaction date rather than today's calendar date.",
-    "due list": "due list"
+    "due list": "due list",
+    "Remaining Qty": "Remaining Qty",
+    "Remaining Amount": "Remaining Amount",
+    "Pending Deliveries Report": "Pending Deliveries Report"
   },
   "customerLocal": {
     "father": "Relation's Name",

@@ -2,19 +2,16 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FiCheckSquare, FiRefreshCw } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
-import Table from '../../utils/others/Table';
-import type { Column, TableFooterCell } from '../../utils/others/Table';
 import SearchInput from '../../utils/fields/SearchInput';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
-import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import httpService from '../../services/httpService';
 import { API_ORDERS_LIST_URL } from '../../services/apiRoutes';
 
 /**
- * Undelivery Report.
+ * Pending Deliveries Report.
  *
  * The Order List's product column already knows, line by line, what has gone
  * out against an order and what has not (`items[].delivered_qty` and
@@ -22,9 +19,10 @@ import { API_ORDERS_LIST_URL } from '../../services/apiRoutes';
  * but ask that same endpoint for the orders and keep the lines with something
  * still to deliver -- so the answer cannot drift from the list it is read off.
  *
- * One row per product line, not per order: a multi-product order part delivered
- * has some lines finished and some not, and an order-level row would have to
- * pick one of them.
+ * The report is laid out the way the printed sheet is read: one block per
+ * order, its number, date and party merged down the side of the block, one row
+ * per product line, and a Total row closing each block. A single In Total row
+ * under the table sums the blocks.
  */
 
 const toNumber = (value: any) => {
@@ -32,9 +30,23 @@ const toNumber = (value: any) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const formatNumber = (value: any) => {
+/** A quantity: no forced decimals, and a nought is shown as a dash. */
+const formatQty = (value: any) => {
   const numeric = toNumber(value);
-  return numeric === 0 ? '-' : thousandSeparator(numeric);
+  return numeric === 0
+    ? '-'
+    : numeric.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+};
+
+/** Money and rates print to two places, in the lakh grouping the sheet uses. */
+const formatMoney = (value: any) => {
+  const numeric = toNumber(value);
+  return numeric === 0
+    ? '-'
+    : numeric.toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
 };
 
 const formatDateValue = (date: Date | null) => {
@@ -45,17 +57,25 @@ const formatDateValue = (date: Date | null) => {
   return `${year}-${month}-${day}`;
 };
 
-interface UndeliveredRow {
+interface UndeliveredLine {
+  key: string;
+  product_name: string;
+  order_qty: number;
+  delivered_qty: number;
+  remaining_qty: number;
+  order_rate: number;
+  remaining_amount: number;
+}
+
+interface UndeliveredGroup {
   key: string;
   order_number: string;
   order_date: string;
   order_for: string;
-  product_name: string;
+  lines: UndeliveredLine[];
   order_qty: number;
-  contract_qty: number | null;
   delivered_qty: number;
   remaining_qty: number;
-  order_rate: number;
   remaining_amount: number;
 }
 
@@ -75,7 +95,7 @@ const readOrders = (body: any) => {
 };
 
 /**
- * One row per product line with something still to come.
+ * The orders, each turned into a block of its own lines.
  *
  * A single-product order written by an older client may carry no `items` at
  * all; its flat rate and quantities are the same truth, so it is read the same
@@ -83,15 +103,16 @@ const readOrders = (body: any) => {
  *
  * [onlyUndelivered] is the report's default and its whole point. Turned off it
  * keeps every line, delivered ones included — which is how a reader checks that
- * a delivery was seen at all. A line that is finished has nothing to show in
- * this report's own columns (its remaining is nought), so the switch exists to
- * make the DELIVERED column say what it saw.
+ * a delivery was seen at all. A finished line's remainder is nought, so it
+ * never shows beside its delivered quantity otherwise.
  */
-const flattenUndelivered = (orders: any[], onlyUndelivered: boolean): UndeliveredRow[] => {
-  const rows: UndeliveredRow[] = [];
+const buildGroups = (orders: any[], onlyUndelivered: boolean): UndeliveredGroup[] => {
+  const groups: UndeliveredGroup[] = [];
 
   orders.forEach((order) => {
+    if (!order) return;
     const items = Array.isArray(order?.items) ? order.items : [];
+    const lines: UndeliveredLine[] = [];
 
     if (items.length === 0) {
       const ordered = toNumber(order?.total_order);
@@ -99,51 +120,58 @@ const flattenUndelivered = (orders: any[], onlyUndelivered: boolean): Undelivere
       const remaining = order?.remaining_quantity != null
         ? toNumber(order.remaining_quantity)
         : ordered - delivered;
-      if (onlyUndelivered && remaining <= 0) return;
 
-      const rate = toNumber(order?.order_rate);
-      rows.push({
-        key: `order-${order?.id ?? rows.length}`,
-        order_number: order?.order_number ?? '-',
-        order_date: order?.order_date ?? '-',
-        order_for: order?.order_for ?? '-',
-        product_name: order?.product_name ?? '-',
-        order_qty: ordered,
-        contract_qty: order?.contract_order_qty != null ? toNumber(order.contract_order_qty) : null,
-        delivered_qty: delivered,
-        remaining_qty: remaining,
-        order_rate: rate,
-        remaining_amount: remaining * rate,
+      if (!onlyUndelivered || remaining > 0) {
+        const rate = toNumber(order?.order_rate);
+        lines.push({
+          key: `order-${order?.id ?? 'line'}`,
+          product_name: order?.product_name ?? '-',
+          order_qty: ordered,
+          delivered_qty: delivered,
+          remaining_qty: remaining,
+          order_rate: rate,
+          remaining_amount: remaining * rate,
+        });
+      }
+    } else {
+      items.forEach((item: any, index: number) => {
+        const ordered = toNumber(item?.total_order);
+        const delivered = toNumber(item?.delivered_qty);
+        const remaining = item?.remaining_qty != null
+          ? toNumber(item.remaining_qty)
+          : ordered - delivered;
+
+        if (onlyUndelivered && remaining <= 0) return;
+
+        const rate = toNumber(item?.order_rate);
+        lines.push({
+          key: `item-${order?.id ?? 'order'}-${item?.id ?? index}`,
+          product_name: item?.product_name ?? '-',
+          order_qty: ordered,
+          delivered_qty: delivered,
+          remaining_qty: remaining,
+          order_rate: rate,
+          remaining_amount: remaining * rate,
+        });
       });
-      return;
     }
 
-    items.forEach((item: any, index: number) => {
-      const ordered = toNumber(item?.total_order);
-      const delivered = toNumber(item?.delivered_qty);
-      const remaining = item?.remaining_qty != null
-        ? toNumber(item.remaining_qty)
-        : ordered - delivered;
-      if (onlyUndelivered && remaining <= 0) return;
+    if (!lines.length) return;
 
-      const rate = toNumber(item?.order_rate);
-      rows.push({
-        key: `item-${order?.id ?? 'order'}-${item?.id ?? index}`,
-        order_number: order?.order_number ?? '-',
-        order_date: order?.order_date ?? '-',
-        order_for: order?.order_for ?? '-',
-        product_name: item?.product_name ?? '-',
-        order_qty: ordered,
-        contract_qty: item?.contract_order_qty != null ? toNumber(item.contract_order_qty) : null,
-        delivered_qty: delivered,
-        remaining_qty: remaining,
-        order_rate: rate,
-        remaining_amount: remaining * rate,
-      });
+    groups.push({
+      key: `order-${order?.id ?? order?.order_number ?? groups.length}`,
+      order_number: order?.order_number ?? '-',
+      order_date: order?.order_date ?? '-',
+      order_for: order?.order_for ?? '-',
+      lines,
+      order_qty: lines.reduce((sum, line) => sum + line.order_qty, 0),
+      delivered_qty: lines.reduce((sum, line) => sum + line.delivered_qty, 0),
+      remaining_qty: lines.reduce((sum, line) => sum + line.remaining_qty, 0),
+      remaining_amount: lines.reduce((sum, line) => sum + line.remaining_amount, 0),
     });
   });
 
-  return rows;
+  return groups;
 };
 
 const OrdersUndelivery: React.FC = () => {
@@ -245,104 +273,31 @@ const OrdersUndelivery: React.FC = () => {
     });
   };
 
-  const rows = useMemo(
-    () => flattenUndelivered(orders, applied.onlyUndelivered),
+  const groups = useMemo(
+    () => buildGroups(orders, applied.onlyUndelivered),
     [orders, applied.onlyUndelivered],
   );
 
-  const totals = useMemo(
+  const grandTotal = useMemo(
     () =>
-      rows.reduce(
-        (acc, row) => {
-          acc.orderQty += row.order_qty;
-          acc.contractQty += row.contract_qty ?? 0;
-          acc.deliveredQty += row.delivered_qty;
-          acc.remainingQty += row.remaining_qty;
-          acc.remainingAmount += row.remaining_amount;
+      groups.reduce(
+        (acc, group) => {
+          acc.orderQty += group.order_qty;
+          acc.deliveredQty += group.delivered_qty;
+          acc.remainingQty += group.remaining_qty;
+          acc.remainingAmount += group.remaining_amount;
           return acc;
         },
-        { orderQty: 0, contractQty: 0, deliveredQty: 0, remainingQty: 0, remainingAmount: 0 },
+        { orderQty: 0, deliveredQty: 0, remainingQty: 0, remainingAmount: 0 },
       ),
-    [rows],
+    [groups],
   );
 
-  const columns: Column[] = [
-    {
-      key: 'sl',
-      header: 'SL. NO.',
-      width: 64,
-      headerClass: 'text-center',
-      cellClass: 'text-center',
-      render: (_row, index) => index + 1,
-    },
-    { key: 'order_number', header: 'ORDER NO.', width: '9%' },
-    { key: 'order_date', header: 'ORDER DATE', width: '8%' },
-    { key: 'order_for', header: 'ORDER FOR', width: '14%' },
-    { key: 'product_name', header: 'PRODUCT', width: '18%' },
-    {
-      key: 'order_qty',
-      header: 'ORDER QTY',
-      width: '8%',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: (row: UndeliveredRow) => formatNumber(row.order_qty),
-    },
-    {
-      key: 'contract_qty',
-      header: 'CONTRACT QTY',
-      width: '8%',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: (row: UndeliveredRow) =>
-        row.contract_qty == null ? '-' : formatNumber(row.contract_qty),
-    },
-    {
-      key: 'delivered_qty',
-      header: 'DELIVERED QTY',
-      width: '8%',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: (row: UndeliveredRow) => formatNumber(row.delivered_qty),
-    },
-    {
-      key: 'remaining_qty',
-      header: 'Remaining Qty',
-      width: '8%',
-      headerClass: 'text-right',
-      cellClass: 'text-right font-semibold text-emerald-600 dark:text-emerald-400',
-      render: (row: UndeliveredRow) => formatNumber(row.remaining_qty),
-    },
-    {
-      key: 'order_rate',
-      header: 'RATE',
-      width: '7%',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: (row: UndeliveredRow) => formatNumber(row.order_rate),
-    },
-    {
-      key: 'remaining_amount',
-      header: 'REMAINING AMOUNT',
-      width: '9%',
-      headerClass: 'text-right',
-      cellClass: 'text-right font-semibold',
-      render: (row: UndeliveredRow) => formatNumber(row.remaining_amount),
-    },
-  ];
+  const lineCount = groups.reduce((sum, group) => sum + group.lines.length, 0);
 
-  const footerRows: TableFooterCell[][] = rows.length
-    ? [
-        [
-          { label: 'Total', colSpan: 5, className: 'text-right font-semibold' },
-          { label: formatNumber(totals.orderQty), className: 'text-right font-semibold' },
-          { label: formatNumber(totals.contractQty), className: 'text-right font-semibold' },
-          { label: formatNumber(totals.deliveredQty), className: 'text-right font-semibold' },
-          { label: formatNumber(totals.remainingQty), className: 'text-right font-semibold' },
-          { label: '', className: 'text-right' },
-          { label: formatNumber(totals.remainingAmount), className: 'text-right font-semibold' },
-        ],
-      ]
-    : [];
+  const cell = 'border border-[rgb(var(--c-border))] px-3 py-2';
+  const headCell =
+    'border border-[rgb(var(--c-border))] bg-[rgb(var(--c-table-head))] px-3 py-3 text-xs font-semibold uppercase text-gray-800 dark:text-gray-300';
 
   return (
     <div>
@@ -429,9 +384,8 @@ const OrdersUndelivery: React.FC = () => {
 
           {/* The two readings of this report, in the card's own empty space so
               a reader sees that lines have been dropped and can bring them
-              back. "Only undelivered" is what the report is for; "All lines"
-              is how a delivery is checked -- a finished line's remainder is
-              nought, so it never shows beside its delivered quantity otherwise. */}
+              back. "Pending Only" is what the report is for; "All Lines" is
+              how a delivery is checked. */}
           <div className="flex items-center gap-2">
             {[
               { key: true, label: 'Pending Only' },
@@ -442,13 +396,11 @@ const OrdersUndelivery: React.FC = () => {
                 <Button
                   key={String(option.key)}
                   type="button"
-                  // The theme's own pair: the reading in force is the primary
-                  // button, the other a quiet one beside it.
                   variant={active ? 'primary' : 'ghost'}
                   className={`px-3 text-sm ${active ? '' : 'border border-[rgb(var(--c-border))]'}`}
                   onClick={() => {
-                    // Both readings are of the SAME fetched rows, so this takes
-                    // effect at once -- no Apply, nothing refetched.
+                    // Both readings are of the SAME fetched orders, so this
+                    // takes effect at once -- no Apply, nothing refetched.
                     setOnlyUndelivered(option.key);
                     setApplied((prev) => ({ ...prev, onlyUndelivered: option.key }));
                   }}
@@ -461,25 +413,158 @@ const OrdersUndelivery: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative overflow-x-auto">
+      <div className="relative overflow-x-auto bg-[rgb(var(--c-table-body))]">
         {isLoading ? <Loader /> : ''}
-        <Table
-          columns={columns}
-          data={rows}
-          footerRows={footerRows}
-          noDataMessage={
-            applied.onlyUndelivered
-              ? 'Every ordered product has been delivered.'
-              : 'No order line matched these filters.'
-          }
-        />
+
+        <table className="w-full table-fixed border-collapse text-sm text-gray-700 dark:text-gray-300">
+          <colgroup>
+            <col style={{ width: '5%' }} />
+            <col style={{ width: '12%' }} />
+            <col style={{ width: '14%' }} />
+            <col style={{ width: '23%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '8%' }} />
+            <col style={{ width: '10%' }} />
+          </colgroup>
+
+          <thead>
+            <tr>
+              <th className={`${headCell} text-center`}>SL. NO.</th>
+              {/* The order's date is read on its number rather than in a
+                  column of its own -- one fewer column between the reader and
+                  the products. */}
+              <th className={headCell}>
+                <span className="block">ORDER NO.</span>
+                <span className="block">ORDER DATE</span>
+              </th>
+              <th className={headCell}>ORDER FOR</th>
+              <th className={headCell}>PRODUCT</th>
+              <th className={`${headCell} text-right`}>ORDER QTY</th>
+              <th className={`${headCell} text-right`}>DELIVERED QTY</th>
+              <th className={`${headCell} text-right`}>Remaining Qty</th>
+              <th className={`${headCell} text-right`}>RATE</th>
+              <th className={`${headCell} text-right`}>REMAINING AMOUNT</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {groups.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={9}
+                  className="border border-[rgb(var(--c-border))] px-3 py-6 text-center text-gray-500 dark:text-gray-400"
+                >
+                  {applied.onlyUndelivered
+                    ? 'Every ordered product has been delivered.'
+                    : 'No order line matched these filters.'}
+                </td>
+              </tr>
+            ) : (
+              groups.map((group) => (
+                <React.Fragment key={group.key}>
+                  {group.lines.map((line, lineIndex) => (
+                    <tr
+                      key={line.key}
+                      className="hover:bg-indigo-50 dark:hover:bg-gray-700"
+                    >
+                      <td className={`${cell} text-center align-top`}>{lineIndex + 1}</td>
+                      {lineIndex === 0 ? (
+                        <>
+                          {/* The block's identity, merged down every line and
+                              the Total row beside them, the way the printed
+                              sheet reads. The date sits under its number.
+                              These two cells end at the block's own foot, so
+                              they carry the same heavier rule the Total row
+                              does -- otherwise the block's line stops at the
+                              columns they cover. */}
+                          <td
+                            rowSpan={group.lines.length + 1}
+                            className={`${cell} border-b-2 border-b-slate-400 text-center align-middle dark:border-b-gray-500`}
+                          >
+                            <span className="block font-medium">{group.order_number}</span>
+                            <span className="block text-xs text-slate-500 dark:text-slate-400">
+                              {group.order_date}
+                            </span>
+                          </td>
+                          <td
+                            rowSpan={group.lines.length + 1}
+                            className={`${cell} border-b-2 border-b-slate-400 align-middle dark:border-b-gray-500`}
+                          >
+                            {group.order_for}
+                          </td>
+                        </>
+                      ) : null}
+                      <td className={cell}>{line.product_name}</td>
+                      <td className={`${cell} text-right`}>{formatQty(line.order_qty)}</td>
+                      <td className={`${cell} text-right`}>{formatQty(line.delivered_qty)}</td>
+                      <td
+                        className={`${cell} text-right font-semibold text-emerald-600 dark:text-emerald-400`}
+                      >
+                        {formatQty(line.remaining_qty)}
+                      </td>
+                      <td className={`${cell} text-right`}>{formatMoney(line.order_rate)}</td>
+                      <td className={`${cell} text-right font-semibold`}>
+                        {formatMoney(line.remaining_amount)}
+                      </td>
+                    </tr>
+                  ))}
+
+                  {/* The block's own total, closed with a heavier rule so the
+                      next order reads as a block of its own. */}
+                  <tr className="bg-slate-50/70 dark:bg-slate-900/40">
+                    <td className={`${cell} border-b-2 border-b-slate-400 dark:border-b-gray-500`} />
+                    <td className={`${cell} border-b-2 border-b-slate-400 text-right font-semibold dark:border-b-gray-500`}>
+                      Total:
+                    </td>
+                    <td className={`${cell} border-b-2 border-b-slate-400 text-right font-semibold dark:border-b-gray-500`}>
+                      {formatQty(group.order_qty)}
+                    </td>
+                    <td className={`${cell} border-b-2 border-b-slate-400 text-right font-semibold dark:border-b-gray-500`}>
+                      {formatQty(group.delivered_qty)}
+                    </td>
+                    <td className={`${cell} border-b-2 border-b-slate-400 text-right font-semibold dark:border-b-gray-500`}>
+                      {formatQty(group.remaining_qty)}
+                    </td>
+                    <td className={`${cell} border-b-2 border-b-slate-400 dark:border-b-gray-500`} />
+                    <td className={`${cell} border-b-2 border-b-slate-400 text-right font-semibold dark:border-b-gray-500`}>
+                      {formatMoney(group.remaining_amount)}
+                    </td>
+                  </tr>
+                </React.Fragment>
+              ))
+            )}
+          </tbody>
+
+          {groups.length > 0 ? (
+            <tfoot>
+              <tr className="bg-slate-100 font-semibold text-slate-800 dark:bg-slate-900 dark:text-slate-100">
+                <td colSpan={4} className={`${cell} text-right font-bold`}>
+                  In Total
+                </td>
+                <td className={`${cell} text-right font-bold`}>{formatQty(grandTotal.orderQty)}</td>
+                <td className={`${cell} text-right font-bold`}>
+                  {formatQty(grandTotal.deliveredQty)}
+                </td>
+                <td className={`${cell} text-right font-bold`}>
+                  {formatQty(grandTotal.remainingQty)}
+                </td>
+                <td className={cell} />
+                <td className={`${cell} text-right font-bold`}>
+                  {formatMoney(grandTotal.remainingAmount)}
+                </td>
+              </tr>
+            </tfoot>
+          ) : null}
+        </table>
       </div>
 
       <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
         {searchFilter ? `Search: ${searchFilter} · ` : ''}
         {applied.onlyUndelivered
-          ? `${rows.length} line${rows.length === 1 ? '' : 's'} still to deliver.`
-          : `${rows.length} line${rows.length === 1 ? '' : 's'} in all, delivered and outstanding.`}
+          ? `${lineCount} line${lineCount === 1 ? '' : 's'} still to deliver in ${groups.length} order${groups.length === 1 ? '' : 's'}.`
+          : `${lineCount} line${lineCount === 1 ? '' : 's'} in ${groups.length} order${groups.length === 1 ? '' : 's'}, delivered and outstanding.`}
       </p>
     </div>
   );

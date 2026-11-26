@@ -1694,7 +1694,10 @@
     "Advance received": "অগ্রিম প্রাপ্তি",
     "What each installment still owes, after early-payment discounts and receipts — the same rule the": "প্রতিটি কিস্তিতে যা বাকি, আগাম পরিশোধের ছাড় ও প্রাপ্তি বাদ দিয়ে — যে নিয়ম",
     "uses, counted on the branch's transaction date rather than today's calendar date.": "ব্যবহার করে, যা শাখার লেনদেনের তারিখে গণনা করা, আজকের ক্যালেন্ডার তারিখে নয়।",
-    "due list": "বাকি তালিকা"
+    "due list": "বাকি তালিকা",
+    "Remaining Qty": "অবশিষ্ট পরিমাণ",
+    "Remaining Amount": "অবশিষ্ট টাকা",
+    "Pending Deliveries Report": "বাকি ডেলিভারি রিপোর্ট"
   },
   "customerLocal": {
     "father": "সম্পর্কের নাম",
