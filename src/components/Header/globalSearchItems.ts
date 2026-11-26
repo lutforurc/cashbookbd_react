@@ -239,6 +239,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Sold Units', path: routes.real_estate_sold_units, group: 'Real Estate', permissions: ['real.estate.sold.unit.view'] },
   { title: 'Sales Summary', path: routes.report_sales_summary, group: 'Real Estate', permissions: ['real.estate.sales.summary'] },
   { title: 'Installment Create', path: routes.real_estate_installment_create, group: 'Real Estate', permissions: ['real.estate.installment.create'] },
+  { title: 'Unit Handover', path: routes.real_estate_unit_handover, group: 'Real Estate', permissions: ['real.estate.unit.handover.view'] },
   { title: 'Project Expense', path: routes.real_estate_project_expense, group: 'Real Estate', permissions: ['real.estate.project.expense.view'] },
   { title: 'Project Income', path: routes.real_estate_project_income, group: 'Real Estate', permissions: ['real.estate.project.income.view'] },
   { title: 'Project Purchase', path: routes.real_estate_project_purchase, group: 'Real Estate', permissions: ['real.estate.project.purchase.view'] },

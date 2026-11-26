@@ -244,6 +244,7 @@ export const MENU_PERMISSIONS = {
     'real.estate.project.income.view',
     'real.estate.project.purchase.view',
     'real.estate.project.labour.view',
+    'real.estate.unit.handover.view',
     'real.estate.project.summary.view',
     'real.estate.project.cost.view',
     'real.estate.project.income.report.view',

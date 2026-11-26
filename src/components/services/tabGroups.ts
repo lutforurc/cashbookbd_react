@@ -289,6 +289,7 @@ export const RE_SALES_TABS: RouteTab[] = [
   { label: 'Installment Create', path: routes.real_estate_installment_create, permission: 'real.estate.installment.create' },
   { label: 'Check Register', path: routes.unit_payment_list, permission: 'check.register.view' },
   { label: 'Sales Summary', path: routes.report_sales_summary, permission: 'real.estate.sales.summary' },
+  { label: 'Unit Handover', path: routes.real_estate_unit_handover, permission: 'real.estate.unit.handover.view' },
 ];
 
 export const RE_PROJECT_ENTRY_TABS: RouteTab[] = [

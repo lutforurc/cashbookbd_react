@@ -241,6 +241,7 @@
 | real_estate_project_income | Real Estate → Project Income | `/real-estate/project-income` | `realestate-project-expense-income` | done |
 | real_estate_project_income_report | Real Estate → Project Income Report | `/real-estate/project-income-report` | `realestate-project-income-report` | done |
 | real_estate_project_labour | Real Estate → Project Labour | `/real-estate/project-labour` | `realestate-project-purchase-labour` | done |
+| real_estate_unit_handover | Real Estate → Sales → Unit Handover | `/real-estate/unit-handover` | `realestate-unit-handover` | done |
 | real_estate_project_list | Real Estate → Project | `/real-estate/project-list` | `realestate-project` | done |
 | real_estate_project_purchase | Real Estate → Project Purchase | `/real-estate/project-purchase` | `realestate-project-purchase-labour` | done |
 | real_estate_project_summary_report | Real Estate → Project Summary Report | `/real-estate/project-summary-report` | `realestate-project-summary-report` | done |

@@ -182,6 +182,8 @@ interface branchItem {
   warn_negative_stock_sale: boolean;
   block_negative_stock_sale: boolean;
   deduct_stock_on_delivery: boolean;
+  re_sale_to_advance: boolean;
+  re_cost_to_wip: boolean;
   manufactur_control: boolean;
   sms_service: boolean;
   received_sms: boolean;
@@ -849,6 +851,8 @@ const AddBranch = () => {
     warn_negative_stock_sale: false,
     block_negative_stock_sale: false,
     deduct_stock_on_delivery: false,
+    re_sale_to_advance: false,
+    re_cost_to_wip: false,
     manufactur_control: false,
     sms_service: false,
     received_sms: false,
@@ -1179,6 +1183,8 @@ const AddBranch = () => {
         warn_negative_stock_sale: toBooleanFlag(b.warn_negative_stock_sale),
         block_negative_stock_sale: toBooleanFlag(b.block_negative_stock_sale),
         deduct_stock_on_delivery: toBooleanFlag(b.deduct_stock_on_delivery),
+        re_sale_to_advance: toBooleanFlag(b.re_sale_to_advance),
+        re_cost_to_wip: toBooleanFlag(b.re_cost_to_wip),
         manufactur_control: toBooleanFlag(b.manufactur_control),
         warranty_controll: toBooleanFlag(b.warranty_controll),
         have_warehouse: toBooleanFlag(b.have_warehouse),
@@ -3294,6 +3300,31 @@ const AddBranch = () => {
 
                 {currentStep === stepIndex('Real Estate Setup') && (
                   <>
+                    {/* ---------- Accounting ---------- */}
+                    <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      {t('branch.reAccountingHeading')}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                      {/* Only new sales follow it; a past sale keeps its head. */}
+                      <FormToggleField
+                        label={t('branch.reSaleToAdvanceLabel')}
+                        description={t('branch.reSaleToAdvanceHint')}
+                        checked={Boolean(formData.re_sale_to_advance)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('re_sale_to_advance', checked)
+                        }
+                      />
+                      {/* Takes effect as a project voucher is next saved. */}
+                      <FormToggleField
+                        label={t('branch.reCostToWipLabel')}
+                        description={t('branch.reCostToWipHint')}
+                        checked={Boolean(formData.re_cost_to_wip)}
+                        onChange={(checked) =>
+                          handleToggleFieldChange('re_cost_to_wip', checked)
+                        }
+                      />
+                    </div>
+
                     {/* ---------- Allotment Letter ---------- */}
                     <h4 className="mb-2 mt-4 border-t border-[rgb(var(--c-border))] pt-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       Allotment Letter

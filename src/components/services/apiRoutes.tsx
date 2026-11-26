@@ -1044,6 +1044,11 @@ export const API_PROJECT_PURCHASE_UPDATE_URL = `${API_BASE_URL}/real-estate/proj
 export const API_PROJECT_LABOUR_STORE_URL = `${API_BASE_URL}/real-estate/project-labour/store`;
 export const API_PROJECT_LABOUR_EDIT_URL = `${API_BASE_URL}/real-estate/project-labour/edit`;
 export const API_PROJECT_LABOUR_UPDATE_URL = `${API_BASE_URL}/real-estate/project-labour/update`;
+export const API_UNIT_HANDOVER_BUILDINGS_URL = `${API_BASE_URL}/real-estate/unit-handover/buildings`;
+export const API_UNIT_HANDOVER_UNITS_URL = `${API_BASE_URL}/real-estate/unit-handover/units`;
+export const API_UNIT_HANDOVER_COMPLETE_URL = `${API_BASE_URL}/real-estate/unit-handover/complete`;
+export const API_UNIT_HANDOVER_LANDOWNER_URL = `${API_BASE_URL}/real-estate/unit-handover/landowner`;
+export const API_UNIT_HANDOVER_STORE_URL = `${API_BASE_URL}/real-estate/unit-handover/store`;
 
 // What each project and each building has cost. Under the real-estate prefix
 // rather than with the other reports, because they read the real-estate
