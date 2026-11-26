@@ -195,14 +195,14 @@
   "realestate-project-income-report": {
     "title": "প্রকল্পের আয়",
     "module": "Real Estate",
-    "updated": "11/11/2026",
+    "updated": "27/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "প্রতিটি প্রকল্প কত আয় করেছে, কোনটি বিল্ডিংয়ের এবং কোনটি পুরো প্রকল্পের — তা দেখা যায়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ real.estate.project.income.report.view permission থাকলে।"] },
       { "heading": "রিপোর্ট দেখা", "menu": "Real Estate → Project Reports → Project Income Report", "steps": ["Select Branch, Start Date ও End Date দিন।", "Apply চাপুন।"] },
-      { "heading": "ট্যাব", "steps": ["Project Summary — Building, Project-wide ও Total।", "Income Detail — Project, Building, Head ও Amount।", "Income Without a Project — Date, Voucher, Head, Remarks ও Amount।"] },
+      { "heading": "ট্যাব", "steps": ["Project Summary — Booked (বিক্রিত), Building, Project-wide, Total, এর মধ্যে হস্তান্তরে, আর অগ্রিম, এখনো আয় নয়।", "Booked — এই সময়ে যত বিক্রয় হয়েছে তার চুক্তিমূল্য (আয় হোক বা না হোক)। Total — হিসাবে আয় হিসেবে যা এসেছে; এর মধ্যে হস্তান্তরে — তার কতটা ফ্ল্যাট হস্তান্তর থেকে স্বীকৃত। অগ্রিম, এখনো আয় নয় — শেষ তারিখ পর্যন্ত বিক্রিত কিন্তু হস্তান্তর হয়নি এমন বিক্রয় (দাম Advance against Unit Sale-এ)।", "পুরোনো নিয়মে বিক্রয় বিক্রয়ের দিনেই আয় হত; সেগুলো Advance-এ সরানোর জার্নাল যে তারিখে দেওয়া হয় সেই বছরে Total কম (এমনকি ঋণাত্মক) দেখাতে পারে — সেটাই সঠিক সমন্বয়।", "Income Detail — Project, Building, Head ও Amount।", "Income Without a Project — Date, Voucher, Head, Remarks ও Amount।"] },
       { "heading": "সতর্কতা", "warning": "Project-wide আয় বিল্ডিংয়ে ভাগ করা হয় না — একটি হোর্ডিংয়ের ভাড়া ফ্ল্যাটের মাপে ভাগ হবে না।" }
     ]
   },

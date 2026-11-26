@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import { useReactToPrint } from 'react-to-print';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { FiCheckSquare, FiEdit2, FiRotateCcw } from 'react-icons/fi';
 
@@ -213,6 +214,7 @@ const ProjectIncomeReport = ({ user }: any) => {
 
   const handleReset = () => setFilterOpen(false);
 
+  const { t } = useTranslation('common');
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: 'Project Income Report',
@@ -227,6 +229,9 @@ const ProjectIncomeReport = ({ user }: any) => {
         direct: current.reduce((s, r) => s + Number(r.direct_income || 0), 0),
         common: current.reduce((s, r) => s + Number(r.common_income || 0), 0),
         total: current.reduce((s, r) => s + Number(r.total_income || 0), 0),
+        booked: current.reduce((s, r) => s + Number(r.booked || 0), 0),
+        handover: current.reduce((s, r) => s + Number(r.handover_revenue || 0), 0),
+        advance: current.reduce((s, r) => s + Number(r.advance_unearned || 0), 0),
       };
     }
 
@@ -234,6 +239,9 @@ const ProjectIncomeReport = ({ user }: any) => {
       direct: 0,
       common: 0,
       total: current.reduce((s, r) => s + Number(r.amount || 0), 0),
+      booked: 0,
+      handover: 0,
+      advance: 0,
     };
   }, [current, section]);
 
@@ -243,6 +251,14 @@ const ProjectIncomeReport = ({ user }: any) => {
       header: 'Project',
       cellClass: 'w-72',
       render: (row: any) => <div className="whitespace-normal">{row.project_name}</div>,
+    },
+    // What was sold in the window -- the contract value, earned or not yet.
+    {
+      key: 'booked',
+      header: t('projectIncome.booked'),
+      headerClass: 'text-right',
+      cellClass: 'text-right w-40',
+      render: (row: any) => <div>{amount(row.booked)}</div>,
     },
     {
       key: 'direct_income',
@@ -264,6 +280,22 @@ const ProjectIncomeReport = ({ user }: any) => {
       headerClass: 'text-right',
       cellClass: 'text-right w-40 font-semibold',
       render: (row: any) => <div>{amount(row.total_income)}</div>,
+    },
+    // Of the total, what handovers recognised (a reversal nets it out).
+    {
+      key: 'handover_revenue',
+      header: t('projectIncome.atHandover'),
+      headerClass: 'text-right',
+      cellClass: 'text-right w-40',
+      render: (row: any) => <div>{amount(row.handover_revenue)}</div>,
+    },
+    // Sold, price held in Advance, not handed over by the end date.
+    {
+      key: 'advance_unearned',
+      header: t('projectIncome.advance'),
+      headerClass: 'text-right',
+      cellClass: 'text-right w-40',
+      render: (row: any) => <div>{amount(row.advance_unearned)}</div>,
     },
   ];
 
@@ -369,9 +401,12 @@ const ProjectIncomeReport = ({ user }: any) => {
       ? [
           [
             { label: 'Total', className: 'text-left font-semibold' },
+            { label: amount(totals.booked), className: 'text-right font-semibold' },
             { label: amount(totals.direct), className: 'text-right font-semibold' },
             { label: amount(totals.common), className: 'text-right font-semibold' },
             { label: amount(totals.total), className: 'text-right font-semibold' },
+            { label: amount(totals.handover), className: 'text-right font-semibold' },
+            { label: amount(totals.advance), className: 'text-right font-semibold' },
           ],
         ]
       : section === 'detail'
@@ -502,6 +537,9 @@ const ProjectIncomeReport = ({ user }: any) => {
         </div>
 
         <p className="px-1 text-sm text-slate-500 dark:text-slate-400">{active.blurb}</p>
+        {section === 'summary' && (
+          <p className="px-1 text-sm text-slate-500 dark:text-slate-400">{t('projectIncome.columnsHint')}</p>
+        )}
 
         {loading ? (
           <div className="rounded-sm border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default">
@@ -544,6 +582,7 @@ const ProjectIncomeReport = ({ user }: any) => {
           section={section}
           rows={current}
           totals={totals}
+          labels={{ booked: t('projectIncome.booked'), atHandover: t('projectIncome.atHandover'), advance: t('projectIncome.advance') }}
           startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : ''}
           endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : ''}
           rowsPerPage={Number(perPage)}

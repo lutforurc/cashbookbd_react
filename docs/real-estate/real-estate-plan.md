@@ -1,7 +1,7 @@
 # Real Estate — অবস্থা, সমস্যা ও পরিকল্পনা
 
 > তারিখ: ২২/১১/২০২৬ · ভিত্তি: `kbrrealestatedb` (KB Real Estate, শাখা ১) সরাসরি পড়ে
-> অবস্থা (২৭/১১/২০২৬): **ধাপ ১–৫ তৈরি ও লোকালে পরীক্ষিত**, হস্তান্তর বাতিলসহ; ধাপ ৫ লোকালে চালানো, শাখা ১-এ দুটি সুইচ চালু। লাইভে এখনো যায়নি (§৬)। পরের কাজ ধাপ ৬ (রিপোর্ট) — §৫। সিদ্ধান্ত §৩ (ক–ড)।
+> অবস্থা (২৭/১১/২০২৬, শেষ হালনাগাদ): **ধাপ ১–৫ তৈরি ও লোকালে পরীক্ষিত** — হস্তান্তর বাতিল ও Handover Letter-সহ; ধাপ ৫ লোকালে চালানো, শাখা ১-এ দুটি সুইচ চালু। সব commit হয়েছে, কয়েকটি push বাকি (§৯); লাইভে এখনো যায়নি (§৬)। পরের কাজ ধাপ ৬ (রিপোর্ট) — §৫। সিদ্ধান্ত §৩ (ক–ড)।
 
 ---
 
@@ -124,7 +124,7 @@ Krishi Bitan Tiles & Sanitary Corner (Loan) — ৩৩,০০,০০০ ডে�
 | ১ | হিসাবের খাত | ✅ তৈরি, লোকালে পরীক্ষিত, commit + push |
 | ২ | বিক্রয় → Advance | ✅ তৈরি, commit + push |
 | ৩ | নির্মাণ খরচ → WIP | ✅ তৈরি (সরাসরি পথ), commit + push; Material Issue পথ বাকি |
-| ৪ | Unit Handover (+ বাতিল, প্রিন্ট, রঙিন নকশা) | ✅ তৈরি, commit; কিছু commit push বাকি (§৯) |
+| ৪ | Unit Handover (+ বাতিল, Handover Letter, প্রিন্ট, রঙিন নকশা) | ✅ তৈরি, commit; কয়েকটি commit push বাকি (§৯) |
 | ৫ | পুরোনো ডেটা সরানো | ✅ কমান্ড তৈরি; লোকালে চালানো হয়েছে; লাইভে বাকি |
 | ৬ | রিপোর্ট | ⏳ শুরু হয়নি |
 | ৭ | পুরোনো কোড-ত্রুটি | ⏳ শুরু হয়নি |
@@ -180,6 +180,12 @@ Krishi Bitan Tiles & Sanitary Corner (Loan) — ৩৩,০০,০০০ ডে�
 - **বিক্রয় তালাবদ্ধ:** হস্তান্তরিত (বাতিল নয়) বা ধাপ ৫-এ সরানো বিক্রয় এডিট/বাতিল করা যায় না।
 - **স্ক্রিন:** কলাম # / Unit / Customer / Sale Price / Received Amt / Due / Cost Share / Cost / State, নিচে Total। রঙ = অবস্থা (হস্তান্তরিত indigo, বিক্রিত amber, জমির মালিক violet, অবিক্রিত emerald), বিল্ডিং-স্ট্রিপ (প্রতিটি ইউনিট এক টুকরো, প্রস্থ = খরচের ভাগ), পার্কিং teal badge।
 - **প্রিন্ট:** "ইউনিটভিত্তিক হস্তান্তর ও খরচ বিবরণী" — প্যাড, খরচ, অবস্থার সংখ্যা, স্ট্রিপ, টেবিল, Total। All / font / Print ঘর (All = এক পাতায়)।
+- **Handover Letter (হস্তান্তর পত্র):** বিক্রয়ের হস্তান্তরের মুহূর্তে তৈরি হয়ে `unit_handovers.letter_html`-এ জমা থাকে; সারির "হস্তান্তর পত্র" বোতামে PDF খোলে, পরে যতবার খুলুন সেদিনের কপিই আসে (Allotment Letter-এর মতো)।
+  - Ref No: শাখার letter prefix-এর প্রথম অংশ + `/Handover/<বছর>/<সেই বছরের ক্রমিক>`, যেমন `BST/Handover/2026/01`।
+  - বিষয়বস্তু (মালিকের অনুমোদিত খসড়া, ২৭/১১): প্রাপক, বিষয়, Sale Agreement ও সর্বশেষ Allotment Letter-এর Ref-এর উল্লেখ, ১. Property Details, ২. Payment Status (মোট মূল্য, এ পর্যন্ত জমা, বাকি), ৩. ১৫টি Handover Terms (পরিদর্শন ও গ্রহণ, চাবি ও কাগজ, দায়িত্ব, ইউটিলিটি সংযোগ, Owners' Association, সাধারণ এলাকা, পার্কিং, কাঠামো পরিবর্তন, ব্যবহার, ৬ মাসের ত্রুটি, বকেয়া, রেজিস্ট্রেশন, হস্তান্তর/পুনঃবিক্রয়, মেরামতে প্রবেশ, Sale Agreement প্রাধান্য), কোম্পানির সই ও "Received possession" (দখল বুঝে পেলাম) — ক্রেতার সই। ২ পাতা।
+  - জমির মালিকের হস্তান্তরে চিঠি নেই। হস্তান্তর বাতিল হলে চিঠি জমা থাকে কিন্তু দেখায় না; আবার হস্তান্তরে নতুন নম্বরে নতুন চিঠি।
+  - শর্ত বদলালে শুধু নতুন হস্তান্তরের চিঠিতে আসে (লোকালের 2/A-এর চিঠিতে পুরোনো ৪টি শর্ত)।
+- **নিজস্ব dialog:** বাকি থাকা ক্রেতার সতর্কবার্তা আর হস্তান্তর বাতিল — দুটিই প্রকল্পের ConfirmModal-এ (ব্রাউজারের alert নয়); নিশ্চিত করার বোতাম যথাক্রমে indigo আর rose; বাতিলের কারণের ঘরে সবসময় হালকা লাল বর্ডার।
 
 ### ধাপ ৫ — পুরোনো ডেটা ✅ কমান্ড তৈরি
 ```
@@ -224,6 +230,7 @@ php artisan realestate:move-old-data --branch=<id> --building=<id> [--dry-run] [
 - Received Amt / Due ক্রেতার পুরো লেজার থেকে — একজন ক্রেতার দুটি ফ্ল্যাট হলে দুই সারিতেই মোট দেখাবে।
 - খরচের ভাগ পয়সায় গোল করায় মোটে কয়েক পয়সা WIP-এ থেকে যায়।
 - ধাপ ৫-এ সরানো বিক্রয় আর এডিট করা যায় না (দাম বদলালে সমন্বয় জার্নাল মিলবে না)।
+- Handover Letter শুধু ইংরেজিতে; বাংলা সংস্করণ চাইলে আলাদা template লাগবে।
 
 ---
 
@@ -255,8 +262,9 @@ php artisan realestate:move-old-data --branch=<id> --building=<id> [--dry-run] [
 - **ধাপ ২:** `Realestate/RealEstateController.php` — `saleCreditHead()`, `saleCreditHeads()`, `lockedByRealEstateBooks()`।
 - **ধাপ ৩:** `Services/Realestate/ExpenseDimension.php` — `capitalise($mainTrxId)`; ডাকে `ProjectPurchaseController`, `ProjectExpenseController`, `ProjectLabourController` (store/update)।
 - **ধাপ ৪:** `Realestate/UnitHandoverController.php` — `buildings`, `units`, `complete`, `landowner`, `store`, `reverse`; স্ক্রিন `src/components/modules/real-estate/unit-handover/` (`UnitHandover.tsx`, `UnitHandoverPrint.tsx`)।
+- **Handover Letter:** `resources/views/pdf/handover-letter.blade.php`; তথ্য `UnitSaleController::handoverLetterHtml()` (ভিতরে `buildAllotmentLetterData()`), প্রিন্ট `UnitSaleController::printHandoverLetter()`। Letterhead/CSS allotment-letter থেকে কপি করা — Blade `@include`-এর `@php` variable মূল template-এ ফেরে না, তাই partial-এ ভাগ করা যায়নি।
 - **ধাপ ৫:** `app/Console/Commands/RealEstateMoveOldData.php`।
-- **schema:** `buildings.completed_on`, `building_units.is_landowner_share`, `unit_sales_master.advance_moved_trx_id`, `unit_handovers` (reversal কলামসহ; `unit_id`-এ সাধারণ index — "একটি চালু হস্তান্তর" কোড নিশ্চিত করে, ইউনিট সারি lock করে)। সব `patch:add-unit-type`-এ; হাতে চালানোর বিকল্প `database/sql/2026_11_26_*.sql`, `2026_11_27_unit_handover.sql`।
+- **schema:** `buildings.completed_on`, `building_units.is_landowner_share`, `unit_sales_master.advance_moved_trx_id`, `unit_handovers` (reversal কলাম ও `letter_ref_no`/`letter_html`সহ; `unit_id`-এ সাধারণ index — "একটি চালু হস্তান্তর" কোড নিশ্চিত করে, ইউনিট সারি lock করে)। সব `patch:add-unit-type`-এ; হাতে চালানোর বিকল্প `database/sql/2026_11_26_*.sql`, `2026_11_27_unit_handover.sql`।
 - **রিপোর্ট:** Project Cost-এর Untagged Expense `RE_COST_TO_WIP` ও `RE_UNIT_COST` বাদ দেয়। WIP লাইনে tag নেই (integrity check "not a cost" বলত)।
 - `installments.main_trx_id` চুক্তির ভাউচারে নোঙর করা — সেই ভাউচার মোছা/বদলানো যাবে না।
 - কিস্তি-মোছার ত্রুটি: `VoucherSettingsController` মোছার সময় `firstPay->installment_id` থেকে আগে-আসা-আগে কমায়; ঠিক পদ্ধতি — প্রতিটি `installment_payments` সারি অনুযায়ী কমানো।
@@ -272,9 +280,13 @@ php artisan realestate:move-old-data --branch=<id> --building=<id> [--dry-run] [
 | API | 6acb12e5 | Received, অবিক্রিত পার্কিং সারি | ✅ |
 | API | 5c3bb4f5 | schema patch কমান্ডে | ✅ |
 | API | 50d52fb5 | হস্তান্তর বাতিল | ❌ বাকি |
+| API | fd876343 | Handover Letter | ❌ বাকি |
 | UI `Manufacturing-UI` | b73d60ba | Unit Handover স্ক্রিন, দুটি সুইচ | ✅ |
 | UI | 46057e3e | Trial Balance Group এক পাশে (আলাদা কাজ) | ✅ |
 | UI | e7693068 | #, Received, Total | ✅ |
 | UI | 92b0fe0a | রঙিন নকশা | ❌ বাকি |
 | UI | a26fb838 | প্রিন্ট, উপরের সারি | ❌ বাকি |
 | UI | d4aeff96 | হস্তান্তর বাতিলের বোতাম | ❌ বাকি |
+| UI | ebb462dc | Handover Letter বোতাম, নিজস্ব dialog, plan | ❌ বাকি |
+
+লাইভে যেতে: push → API `main`, UI `react-main`-এ merge (§৬)।

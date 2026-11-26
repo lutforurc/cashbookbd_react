@@ -1843,5 +1843,11 @@
     "dueTitle": "Buyer still owes",
     "saved": "Saved",
     "failed": "Could not save"
+  },
+  "projectIncome": {
+    "booked": "Booked (sold)",
+    "atHandover": "of which at handover",
+    "advance": "Advance, not yet income",
+    "columnsHint": "Booked is the value of flats sold in these dates; of which at handover is the part of Total that handovers made income; advance, not yet income is sold but not yet handed over by the end date. Booked = income at handover + advance."
   }
 }

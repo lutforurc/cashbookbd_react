@@ -9,7 +9,8 @@ type Section = 'summary' | 'detail' | 'untagged';
 type Props = {
   section: Section;
   rows: any[];
-  totals: { direct: number; common: number; total: number };
+  totals: { direct: number; common: number; total: number; booked: number; handover: number; advance: number };
+  labels: { booked: string; atHandover: string; advance: string };
   title?: string;
   startDate?: string;
   endDate?: string;
@@ -36,12 +37,15 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
  */
 const amount = (value: any) => (Number(value) === 0 ? '0.00' : thousandSeparator(Number(value)));
 
-const COLUMNS: Record<Section, { label: string; align?: string; get: (row: any) => React.ReactNode }[]> = {
+const columnsFor = (labels: Props['labels']): Record<Section, { label: string; align?: string; get: (row: any) => React.ReactNode }[]> => ({
   summary: [
     { label: 'Project', get: (r) => r.project_name },
+    { label: labels.booked, align: 'text-right', get: (r) => amount(r.booked) },
     { label: 'Building', align: 'text-right', get: (r) => amount(r.direct_income) },
     { label: 'Project-wide', align: 'text-right', get: (r) => amount(r.common_income) },
     { label: 'Total', align: 'text-right', get: (r) => amount(r.total_income) },
+    { label: labels.atHandover, align: 'text-right', get: (r) => amount(r.handover_revenue) },
+    { label: labels.advance, align: 'text-right', get: (r) => amount(r.advance_unearned) },
   ],
   detail: [
     { label: 'Project', get: (r) => r.project_name },
@@ -56,14 +60,14 @@ const COLUMNS: Record<Section, { label: string; align?: string; get: (row: any) 
     { label: 'Remarks', get: (r) => r.remarks },
     { label: 'Amount', align: 'text-right', get: (r) => amount(r.amount) },
   ],
-};
+});
 
 const ProjectIncomeReportPrint = React.forwardRef<HTMLDivElement, Props>(
   (
-    { section, rows, totals, title = 'Project Income', startDate, endDate, rowsPerPage = 20, fontSize = 10 },
+    { section, rows, totals, labels, title = 'Project Income', startDate, endDate, rowsPerPage = 20, fontSize = 10 },
     ref,
   ) => {
-    const columns = COLUMNS[section];
+    const columns = columnsFor(labels)[section];
     const pages = chunkRows(rows || [], rowsPerPage);
 
     return (
@@ -123,6 +127,9 @@ const ProjectIncomeReportPrint = React.forwardRef<HTMLDivElement, Props>(
                         <>
                           <td className="border border-gray-400 px-1 py-1">Total</td>
                           <td className="border border-gray-400 px-1 py-1 text-right">
+                            {amount(totals.booked)}
+                          </td>
+                          <td className="border border-gray-400 px-1 py-1 text-right">
                             {amount(totals.direct)}
                           </td>
                           <td className="border border-gray-400 px-1 py-1 text-right">
@@ -130,6 +137,12 @@ const ProjectIncomeReportPrint = React.forwardRef<HTMLDivElement, Props>(
                           </td>
                           <td className="border border-gray-400 px-1 py-1 text-right">
                             {amount(totals.total)}
+                          </td>
+                          <td className="border border-gray-400 px-1 py-1 text-right">
+                            {amount(totals.handover)}
+                          </td>
+                          <td className="border border-gray-400 px-1 py-1 text-right">
+                            {amount(totals.advance)}
                           </td>
                         </>
                       ) : (
