@@ -572,3 +572,17 @@ html {
 html.dark {
   background-color: rgb(var(--c-boxdark-2));
 }
+
+/* ---------------------------------------------------------------------------
+ * The reading size a branch chose (Branch Settings -> Language Settings) is
+ * written onto <html> as a percentage by theme/fontScale.ts. Paper does not
+ * follow it: a report is laid out in px for its own sheet, and a printed page
+ * that grew with a screen setting would fall off the paper. Restated here so
+ * printing stays at the size the reports were designed at.
+ * ------------------------------------------------------------------------ */
+@media print {
+  html,
+  html.dark {
+    font-size: 100% !important;
+  }
+}

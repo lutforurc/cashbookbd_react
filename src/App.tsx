@@ -124,6 +124,7 @@ import ConstructionLabourInvoice from './components/modules/invoices/labour/Cons
 import RemoveApproval from './components/modules/voucher_approval/RemoveApproval';
 import FaviconUpdater from './components/utils/components/FaviconUpdater';
 import { useUserTheme } from './theme/userTheme';
+import { useFontScale } from './theme/fontScale';
 import { useLanguage } from './i18n/useLanguage';
 import BulkImageUpload from './components/modules/image-upload/BulkImageUpload';
 import GroupPurchaseSales from './components/modules/reports/group-report/GroupPurchaseSales';
@@ -373,6 +374,10 @@ function App() {
   // user's choice, the branch default and the company's local language. A
   // side effect only; the header pill reads the same hook on its own.
   useLanguage();
+
+  // The size this branch reads at (Branch Settings -> Language Settings). One
+  // root percentage, so every rem-based size in the app moves together.
+  useFontScale(settings?.data?.branch?.id, settings?.data?.branch?.font_scale);
 
 
 

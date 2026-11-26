@@ -109,9 +109,9 @@ const buildResolver = (dict: Record<string, string>): Resolve => {
       const n = noun(m[1]);
       return n ? `${n} নম্বর` : undefined;
     }
-    if ((m = /^(.+?)\s+Qty$/i.exec(key))) {
+    if ((m = /^(.+?)\s+Qty\.?$/i.exec(key))) {
       const n = noun(m[1]);
-      return n ? `${n} পরিমাণ` : undefined;
+      return n ? `${n} সংখ্যা` : undefined;
     }
     if ((m = /^(.+?)\s*\(Tk\.\)$/i.exec(key))) {
       const n = noun(m[1]);

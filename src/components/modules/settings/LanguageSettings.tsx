@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import i18next from 'i18next';
@@ -12,6 +12,16 @@ import httpService from '../../services/httpService';
 import { API_LANGUAGE_SETTINGS_URL } from '../../services/apiRoutes';
 import { getSettings } from './settingsSlice';
 import type { LanguageInfo } from '../../../i18n/languages';
+import {
+  applyFontScale,
+  cacheFontScale,
+  clampFontScale,
+  FONT_SCALE_DEFAULT,
+  FONT_SCALE_MAX,
+  FONT_SCALE_MIN,
+  FONT_SCALE_STEP,
+  resolveFontScale,
+} from '../../../theme/fontScale';
 
 type UiLanguage = 'en' | 'local';
 type DigitStyle = 'auto' | 'latin' | 'native';
@@ -70,6 +80,18 @@ const LanguageSettings = ({ branchId }: { branchId: number }) => {
   const [uiLanguage, setUiLanguage] = useState<UiLanguage>('en');
   const [printLanguage, setPrintLanguage] = useState<UiLanguage>('en');
   const [digitStyle, setDigitStyle] = useState<DigitStyle>('auto');
+  /**
+   * The size this branch reads the software at. A display setting rather than a
+   * language one, but it saves itself with this panel, so it lives here -- see
+   * theme/fontScale.ts for how it reaches every screen.
+   */
+  const [fontScale, setFontScale] = useState<number>(FONT_SCALE_DEFAULT);
+  /**
+   * The value the branch is actually saved at. Dragging the slider resizes the
+   * whole screen at once -- a real preview, not a sample box -- so leaving the
+   * panel without saving has to put the saved size back.
+   */
+  const savedScale = useRef<number>(FONT_SCALE_DEFAULT);
   const [languages, setLanguages] = useState<LanguageInfo[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -93,6 +115,9 @@ const LanguageSettings = ({ branchId }: { branchId: number }) => {
             ? payload.digit_style
             : 'auto',
         );
+        const stored = resolveFontScale(payload.font_scale, id);
+        setFontScale(stored);
+        savedScale.current = stored;
       } else {
         toast.error(body?.message || body?.error?.message || i18next.t('language.settings.loadFailed'));
       }
@@ -108,6 +133,10 @@ const LanguageSettings = ({ branchId }: { branchId: number }) => {
   useEffect(() => {
     if (branchId) load(branchId);
   }, [branchId, load]);
+
+  // The slider previews on the whole screen, so leaving without Save puts the
+  // size the branch is actually saved at back on the page.
+  useEffect(() => () => applyFontScale(savedScale.current), []);
 
   // The one local language this company can have (Bangla in Phase 1). The
   // active list decides which, so adding Arabic later needs no panel change.
@@ -161,21 +190,28 @@ const LanguageSettings = ({ branchId }: { branchId: number }) => {
   };
 
   const save = () =>
-    post(
-      localLanguage
+    post({
+      local_language: localLanguage || null,
+      branch_id: branchId,
+      font_scale: fontScale,
+      // The three below only mean anything while the local language is on.
+      ...(localLanguage
         ? {
-            local_language: localLanguage,
-            branch_id: branchId,
             ui_language: uiLanguage,
             print_language: printLanguage,
             digit_style: digitStyle,
           }
-        : { local_language: null, branch_id: branchId },
-    );
+        : {}),
+    }, () => {
+      // Kept here as well: the session refetch may not yet carry the value back.
+      cacheFontScale(branchId, fontScale);
+      savedScale.current = fontScale;
+    });
 
   /** Confirmed "turn it off": only the company switch is written. */
   const turnOff = () =>
-    post({ local_language: null, branch_id: branchId }, () => {
+    post({ local_language: null, branch_id: branchId, font_scale: fontScale }, () => {
+      cacheFontScale(branchId, fontScale);
       setConfirmOff(false);
       setLocalLanguage('');
     });
@@ -274,6 +310,53 @@ const LanguageSettings = ({ branchId }: { branchId: number }) => {
           </div>
         </div>
       ) : null}
+
+      {/* The branch's own reading size. It is a display setting rather than a
+          language one, but it saves itself with this panel -- and the whole
+          screen follows the slider as it moves, so what is being chosen is the
+          page itself rather than a sample of it. */}
+      <div className="mt-5 border-t border-[rgb(var(--c-border))] pt-4">
+        <p className="mb-1 text-sm font-medium text-[rgb(var(--c-text))]">
+          {t('language.settings.fontSize')}
+        </p>
+        <p className="mb-3 text-xs leading-relaxed text-[rgb(var(--c-text-muted))]">
+          {t('language.settings.fontSizeHint')}
+        </p>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-xs text-[rgb(var(--c-text-muted))]">{FONT_SCALE_MIN}%</span>
+          <input
+            id="branch_font_scale"
+            type="range"
+            min={FONT_SCALE_MIN}
+            max={FONT_SCALE_MAX}
+            step={FONT_SCALE_STEP}
+            value={fontScale}
+            onChange={(e) => {
+              const next = clampFontScale(e.target.value);
+              setFontScale(next);
+              // The whole screen is the preview, at once.
+              applyFontScale(next);
+            }}
+            aria-label={t('language.settings.fontSize')}
+            className="w-full max-w-md"
+          />
+          <span className="text-xs text-[rgb(var(--c-text-muted))]">{FONT_SCALE_MAX}%</span>
+          <span className="min-w-14 text-right text-sm font-semibold text-[rgb(var(--c-text))]">
+            {fontScale}%
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setFontScale(FONT_SCALE_DEFAULT);
+              applyFontScale(FONT_SCALE_DEFAULT);
+            }}
+            className="rounded-sm border border-[rgb(var(--c-border))] px-2 py-1 text-xs text-[rgb(var(--c-text-muted))] hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            {t('language.settings.fontSizeReset')}
+          </button>
+        </div>
+      </div>
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-[rgb(var(--c-border))] pt-4">
         <p className="text-xs text-[rgb(var(--c-text-muted))]">{t('language.settings.savesItself')}</p>

@@ -20,6 +20,8 @@ import { getDdlProtectedBranch } from "../../branch/ddlBranchSlider";
 import { fetchProfitLossDateWise } from "./profitLossDateWiseSlice";
 import ProfitLossDateWisePrint from "./ProfitLossDateWisePrint";
 import { isUserFeatureEnabled } from "../../../utils/userFeatureSettings";
+import { useLanguage } from "../../../../i18n/useLanguage";
+import { useLocalDigits } from "../../../../i18n/useLocalDigits";
 
 const ZERO_TOTALS = { purchase: 0, sales: 0, profit: 0, loss: 0 };
 
@@ -47,6 +49,11 @@ const ProfitLossDateWise = (user: any) => {
   const [filterOpen, setFilterOpen] = useState(false);
 
   const printRef = useRef<HTMLDivElement>(null);
+  const { code: languageCode } = useLanguage();
+  const digitsRef = useRef<HTMLDivElement>(null);
+  // Bangla digits on the figures while the screen is in Bangla, the way the
+  // sibling reports (Balance Sheet, Profit & Loss, Trial Balance) already do.
+  useLocalDigits(digitsRef, languageCode !== 'en');
 
   useEffect(() => {
     dispatch(getDdlProtectedBranch());
@@ -340,7 +347,7 @@ const ProfitLossDateWise = (user: any) => {
       </div>
 
       {/* TABLE */}
-      <div className="overflow-auto">
+      <div className="overflow-auto" ref={digitsRef}>
         {profitLossDateWise?.isLoading ? <Loader /> : null}
         <Table
           columns={columns}
