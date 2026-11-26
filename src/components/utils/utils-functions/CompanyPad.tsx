@@ -4,6 +4,7 @@ import { PrintBranch, hasPrintBranch, usePrintBranch } from './printBranch';
 import { formatMobile, useMobileFormat } from './mobileFormat';
 import PadLogo from './PadLogo';
 import { usePadLogo } from './padLogoLayout';
+import { getCurrentLanguage } from '../../../i18n/currentLanguage';
 
 type Props = {
   /** The branch the report is about; falls back to the logged-in user's. */
@@ -18,7 +19,13 @@ const CompanyPad: React.FC<Props> = ({ branch }) => {
   // session's, which belongs to a different branch.
   const printBranch = usePrintBranch(branch);
   const overridden = hasPrintBranch(printBranch);
-  const branchName = overridden ? printBranch?.name : settings?.branch?.name;
+  const localOn = getCurrentLanguage() !== 'en';
+  const branchNameRaw = overridden ? printBranch?.name : settings?.branch?.name;
+  const branchLocal = overridden ? printBranch?.name_local : settings?.branch?.name_local;
+  const branchName = localOn && branchLocal ? branchLocal : branchNameRaw;
+  const companyName = localOn
+    ? settings?.company?.name_local || settings?.company?.name
+    : settings?.company?.name;
   const branchAddress = overridden ? printBranch?.address : settings?.branch?.address;
   // The same mark, position and margins the branch set for its own pad heading.
   const logo = usePadLogo();
@@ -28,7 +35,7 @@ const CompanyPad: React.FC<Props> = ({ branch }) => {
       <div className="mb-0">
         <PadLogo config={logo}>
           <h1 className="text-2xl font-bold text-center uppercase">
-            {settings?.company?.name}
+            {companyName}
           </h1>
           <div className="text-center">
             <div>

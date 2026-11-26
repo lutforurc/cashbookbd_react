@@ -138,6 +138,7 @@ export const toReturnDocumentData = (data: any, kind: ReturnKind): DocumentData 
     }),
     branch: {
       name: data?.branch?.name,
+      name_local: data?.branch?.name_local,
       address: data?.branch?.address,
       phone: data?.branch?.phone,
     } as any,

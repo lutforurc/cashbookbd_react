@@ -4,7 +4,6 @@ import { clearPrintBranch, setPrintBranchId } from './printBranchSlice';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { Select } from '../fields/FormControls';
 import { useLanguage } from '../../../i18n/useLanguage';
-import { displayName } from '../../../i18n/displayName';
 
 interface SelectOptionProps {
   name?: string;
@@ -65,6 +64,14 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
     onChange(event); // Call the parent onChange function
   };
 
+  const optionLabel = (item: any) => {
+    if (code && code !== 'en') {
+      const local = item?.name_local ?? item?.branch_name_local ?? item?.local_name;
+      if (local !== null && local !== undefined && String(local).trim() !== '') return String(local);
+    }
+    return item?.name ?? '';
+  };
+
   return (
     <Select
       id={id}
@@ -80,7 +87,7 @@ const BranchDropdown: React.FC<SelectOptionProps> = ({
       {branchDdl &&
         branchDdl.map((item: any, index: number) => (
           <option key={index} value={item.id}>
-            {displayName(item, 'name', code)}
+            {optionLabel(item)}
           </option>
         ))}
     </Select>

@@ -26,6 +26,7 @@ import DashboardCustomizeButton, {
 import {
   DashboardRangeBar,
   businessTypeName,
+  branchDisplayName,
   rangeCaption,
   useAutoRefresh,
   useCashBookRange,
@@ -568,7 +569,7 @@ const RealEstateDashboard = () => {
           dashboard?.data ? (
           <div className={CARD}>
             <div className={CARD_HEAD}>
-              <CardTitle href={links.cashBook}>{dashboard?.data?.branch?.name}</CardTitle>
+              <CardTitle href={links.cashBook}>{branchDisplayName(dashboard?.data?.branch)}</CardTitle>
               <FaWallet className="shrink-0 text-indigo-500" />
             </div>
 

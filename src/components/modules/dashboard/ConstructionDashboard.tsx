@@ -42,6 +42,7 @@ import DashboardCustomizeButton, {
 import {
   DashboardRangeBar,
   businessTypeName,
+  branchDisplayName,
   rangeCaption,
   useAutoRefresh,
   useCashBookRange,
@@ -413,7 +414,7 @@ const ConstructionDashboard = () => {
             >
               <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] bg-white px-4 py-3 dark:bg-gray-800">
                 <span className="min-w-0 text-sm font-bold tracking-wide text-slate-700 dark:text-slate-100">
-                  <CardTitle href={links.cashBook}>{dashboard?.data?.branch?.name}</CardTitle>
+                  <CardTitle href={links.cashBook}>{branchDisplayName(dashboard?.data?.branch)}</CardTitle>
                 </span>
                 <FaWallet className="shrink-0 text-indigo-500" />
               </div>

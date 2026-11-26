@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
  */
 export type PrintBranch = {
   name?: string | null;
+  name_local?: string | null;
   address?: string | null;
   phone?: string | null;
 };
@@ -53,5 +54,5 @@ export const usePrintBranch = (explicit?: PrintBranch): PrintBranch | undefined 
 
   if (!found?.name) return undefined;
 
-  return { name: found.name, address: found.address, phone: found.phone };
+  return { name: found.name, name_local: found.name_local, address: found.address, phone: found.phone };
 };

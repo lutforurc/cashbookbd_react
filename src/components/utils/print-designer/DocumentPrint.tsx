@@ -534,8 +534,12 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         // only the old Bijoy column keeps printing that instead.
         case 'bangla_name':
           return String(localOf(basic, 'party_name') ?? basic?.bangla_name ?? '');
-        case 'branch_name':
-          return String(data?.branch?.name ?? basic?.branch_name ?? '');
+        case 'branch_name': {
+          const branchNode = data?.branch;
+          const localBranch = branchNode?.name_local;
+          const localPaper = template?.language === 'local' || getCurrentLanguage() !== 'en';
+          return String(localPaper && localBranch ? localBranch : (branchNode?.name ?? basic?.branch_name ?? ''));
+        }
         case 'branch_address':
           return String(data?.branch?.address ?? basic?.branch_address ?? '');
         case 'mobile':

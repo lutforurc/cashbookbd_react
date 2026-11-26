@@ -85,7 +85,8 @@ const ProductTrackingSettings = () => {
   const branchOptions = useMemo(
     () => [
       { id: '0', name: 'All Branch' },
-      ...((branchDdl?.protectedData?.data ?? []) as Array<{ id: any; name: string }>).map((b) => ({
+      ...((branchDdl?.protectedData?.data ?? []) as Array<{ id: any; name: string; name_local?: string }>).map((b) => ({
+        ...b,
         id: String(b.id),
         name: b.name,
       })),

@@ -5,6 +5,7 @@ import { PrintBranch, hasPrintBranch, usePrintBranch } from './printBranch';
 import { formatMobile, useMobileFormat } from './mobileFormat';
 import PadLogo from './PadLogo';
 import { usePadLogo } from './padLogoLayout';
+import { getCurrentLanguage } from '../../../i18n/currentLanguage';
 
 const loadedImageUrls = new Set<string>();
 const imageLoadPromises = new Map<string, Promise<string>>();
@@ -101,7 +102,10 @@ const BranchPad: React.FC<Props> = ({ branch: printBranch }) => {
   const resolvedBranch = usePrintBranch(printBranch);
   const overridden = hasPrintBranch(resolvedBranch);
   const mobileFormat = useMobileFormat();
-  const headingName = overridden ? resolvedBranch?.name : branch?.name;
+  const localOn = getCurrentLanguage() !== 'en';
+  const headingNameRaw = overridden ? resolvedBranch?.name : branch?.name;
+  const headingLocal = overridden ? resolvedBranch?.name_local : branch?.name_local;
+  const headingName = localOn && headingLocal ? headingLocal : headingNameRaw;
   const headingAddress = overridden ? resolvedBranch?.address : branch?.address;
   const headingPhone = formatMobile(overridden ? resolvedBranch?.phone : branch?.phone, mobileFormat);
 

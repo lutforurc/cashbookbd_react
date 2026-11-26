@@ -13,6 +13,7 @@ import {
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import {
   DashboardRangeBar,
+  branchDisplayName,
   rangeCaption,
   reportLinks,
   useAutoRefresh,
@@ -824,7 +825,7 @@ const TradingDashboard = () => {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-slate-700 dark:text-slate-100">
-            {payload?.branch?.name || currentBranch?.name || 'The trade'}
+            {branchDisplayName(payload?.branch || currentBranch) || 'The trade'}
           </h1>
           <p className="text-xs text-slate-400">
             {payload?.from && payload?.to
