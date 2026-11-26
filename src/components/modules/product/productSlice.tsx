@@ -196,7 +196,8 @@ export const getDdlProduct =
     async (dispatch: any) => {
       try {
         const token = getToken();
-        const response = await fetch(API_PRODUCT_DDL_LIST_URL + `?q=${search}`, {
+        // Encoded: a Bangla (or Arabic) search word is not URL-safe as typed.
+        const response = await fetch(API_PRODUCT_DDL_LIST_URL + `?q=${encodeURIComponent(search)}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

@@ -785,6 +785,19 @@ export type PrintTemplate = {
   /** Bumped when the shape changes; normalise() migrates anything older. */
   version: 1;
   docType: DocType;
+  /**
+   * Which language the paper prints in.
+   *
+   * 'local' takes the Unicode local name (`*_local`) for the party and the
+   * product lines wherever the data carries one, and falls back to the English
+   * value when it does not. The labels themselves are the layout's own text,
+   * so a Bangla paper is designed with Bangla labels -- this switch is about
+   * the names and figures the books supply.
+   *
+   * Absent on every layout saved before this field existed, and read as 'en',
+   * so no existing paper changes.
+   */
+  language?: 'en' | 'local';
   orientation: 'portrait' | 'landscape';
   /**
    * A4 unless the paper is meant to be a small receipt -- 'half' is exactly
@@ -5088,6 +5101,8 @@ export const normalizeTemplate = (raw: any, docType: DocType = 'sales_challan'):
   return {
     version: 1,
     docType,
+    // A layout saved before the field existed prints exactly as it did.
+    language: raw.language === 'local' ? 'local' : 'en',
     orientation: raw.orientation === 'landscape' ? 'landscape' : 'portrait',
     // Read back with the same "trust nothing, fall back to this paper's own
     // default" discipline as orientation beside it -- a template saved before

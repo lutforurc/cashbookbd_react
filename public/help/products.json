@@ -2,13 +2,13 @@
   "product-list": {
     "title": "পণ্যের তালিকা",
     "module": "Products",
-    "updated": "06/11/2026",
+    "updated": "26/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "শাখার সব পণ্য ক্যাটাগরি ধরে দেখা যায়। এখান থেকেই পণ্যের opening stock (শুরুর স্টক) সারিতে সারিতে লেখা বা ঠিক করা হয়।",
     "sections": [
       { "heading": "তালিকা দেখা", "menu": "Products → Products → Product List", "steps": ["Brand, Category ও Group নির্বাচন করুন, নাহলে All Brand / All Categories / All Groups রাখুন।", "Search বক্সে নাম, কোড, বারকোড, ক্যাটাগরি, ইউনিট বা ব্র্যান্ড লিখে Enter চাপুন। কয়েকটা শব্দ লিখলে প্রতিটা শব্দ যেকোনো ক্রমে মিলিয়ে খোঁজে — যেমন \"tiles 12x16\" — ঠিক Sales Invoice-এর Select Product-এর মতো।", "Sl, Product, Category, Unit ও স্টকের ঘরগুলো দেখা যায়; Category: নাম (সংখ্যা) দলে ভাগ থাকে।"] },
-      { "heading": "Opening stock ও বাটন", "steps": ["Stock Qty, IMEI/Serial, Qty ও Rate ঘরে শুরুর স্টক লিখে সারির Save চাপুন; ভুল হলে Cancel বা Delete opening stock।", "New দিয়ে নতুন পণ্য, Edit/Delete দিয়ে সারির পণ্য, Change log দিয়ে বদলের ইতিহাস দেখা যায়।", "Print দিয়ে Product List ছাপা হয়; Excel দিয়ে পুরো তালিকা opening import শিট হিসেবে নামে।"] },
+      { "heading": "Opening stock ও বাটন", "steps": ["Stock Qty, IMEI/Serial, Qty ও Rate ঘরে শুরুর স্টক লিখে সারির Save চাপুন; ভুল হলে Cancel বা Delete opening stock।", "New দিয়ে নতুন পণ্য, Edit/Delete দিয়ে সারির পণ্য, Change log দিয়ে বদলের ইতিহাস দেখা যায়।", "Print দিয়ে Product List ছাপা হয়; Excel দিয়ে পুরো তালিকা opening import শিট হিসেবে নামে।", "Excel শিটে Product Name (Bangla) কলামও থাকে — সেখানে বাংলা নাম লিখে বা ঠিক করে Opening Import স্ক্রিনে ফাইলটি ফেরত দিলে বাংলা নাম সেভ হয়।"] },
       { "heading": "সতর্কতা", "warning": "Qty ও Rate ঋণাত্মক হতে পারে না। Opening stock মুছলে ওই ভাউচার Recycle Bin-এ যায়, পণ্য মোছে না; বিক্রি হয়ে যাওয়া স্টক এভাবে সরানো যায় না।" }
     ]
   },
@@ -69,13 +69,13 @@
   "product-opening-import": {
     "title": "পণ্যের শুরুর স্টক আপলোড",
     "module": "Products",
-    "updated": "11/11/2026",
+    "updated": "26/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "Excel শিট থেকে অনেক পণ্যের শুরুর স্টক একসাথে লেখা হয়; প্রতিটি সারি যাচাই করে তবেই Save হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ product.opening.edit permission থাকলে।"] },
-      { "heading": "আপলোড ও যাচাই", "menu": "Products → Products → Opening Import", "steps": ["Download Format দিয়ে শিটের নমুনা নামান, অথবা Paste Rows দিয়ে Excel থেকে সারি পেস্ট করুন।", "Product Type (for new products) নির্বাচন করুন এবং Load Rows চাপুন।", "Check চাপলে প্রতিটি সারির অবস্থা দেখা যায় — New product, Existing, Will create বা To fix।", "সব ঠিক হলে Ok চেপে Save করুন।"] },
+      { "heading": "আপলোড ও যাচাই", "menu": "Products → Products → Opening Import", "steps": ["Download Format দিয়ে শিটের নমুনা নামান, অথবা Paste Rows দিয়ে Excel থেকে সারি পেস্ট করুন।", "Product Type (for new products) নির্বাচন করুন এবং Load Rows চাপুন।", "Check চাপলে প্রতিটি সারির অবস্থা দেখা যায় — New product, Existing, Will create বা To fix।", "সব ঠিক হলে Ok চেপে Save করুন।", "Product Name (Bangla) কলামে বাংলা নাম দিলে নতুন পণ্যে সেটাই বসে; আগের পণ্যের বাংলা নাম বদলালে সেটাও সেভ হয়। ঘর খালি রাখলে আগের বাংলা নাম মুছে যায় না।"] },
       { "heading": "সতর্কতা", "warning": "শাখায় opening বন্ধ থাকলে উপরে বার্তা আসবে। To fix থাকা সারি ঠিক না করে Ok চাপলে সেগুলো Save হবে না।" }
     ]
   },

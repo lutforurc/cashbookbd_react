@@ -69,6 +69,9 @@ export const toReturnDocumentData = (data: any, kind: ReturnKind): DocumentData 
   return {
     basic: {
       party_name: master?.name || party?.name || '-',
+      // The Unicode local name, for a Bangla paper. Blank falls back to the
+      // English name above.
+      party_name_local: party?.name_local || '',
       mobile: master?.mobile || party?.mobile || '',
       manual_address:
         party?.manual_address || party?.address || master?.manual_address || master?.address || '',
@@ -119,7 +122,9 @@ export const toReturnDocumentData = (data: any, kind: ReturnKind): DocumentData 
       return {
         sl: index + 1,
         product_name: row?.product?.name || '',
+        product_name_local: row?.product?.name_local || '',
         category: row?.product?.category?.name || '',
+        category_local: row?.product?.category?.name_local || '',
         brand: row?.product?.brand?.name || '',
         group: row?.product?.group?.name || '',
         code: row?.product?.code || '',

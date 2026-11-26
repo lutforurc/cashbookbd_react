@@ -38,6 +38,7 @@ import { FIELD_TEXTAREA, FIELD_TRANSPARENT, fieldClass } from '../../../theme/fi
 const SHEET_HEADINGS = [
   'sl_no',
   'name',
+  'name_local',
   'type',
   'mobile',
   'customer_number',
@@ -46,10 +47,19 @@ const SHEET_HEADINGS = [
   'opening',
 ];
 
-type Field = 'name' | 'type' | 'mobile' | 'customer_number' | 'address' | 'ledger_page' | 'opening';
+type Field =
+  | 'name'
+  | 'name_local'
+  | 'type'
+  | 'mobile'
+  | 'customer_number'
+  | 'address'
+  | 'ledger_page'
+  | 'opening';
 
 const FIELDS: { key: Field; header: string; className: string; numeric?: boolean }[] = [
   { key: 'name', header: 'Name', className: 'min-w-56' },
+  { key: 'name_local', header: 'Name (Bangla)', className: 'min-w-56' },
   { key: 'type', header: 'Type', className: 'min-w-28' },
   { key: 'mobile', header: 'Mobile', className: 'min-w-28' },
   { key: 'customer_number', header: 'Customer No.', className: 'min-w-28' },
@@ -67,6 +77,9 @@ const FIELDS: { key: Field; header: string; className: string; numeric?: boolean
  */
 const HEADING_ALIASES: Record<Field, string[]> = {
   name: ['name', 'customername', 'partyname', 'customer', 'party'],
+  // The Unicode Bangla (local-language) name. Both `name_local` and a
+  // `name_bangla` heading are accepted, so an older or newer sheet opens.
+  name_local: ['namelocal', 'namebangla', 'localname'],
   type: ['type', 'partytype', 'customertype'],
   mobile: ['mobile', 'mobilenumber', 'phone', 'contactnumber', 'contactno', 'cell'],
   customer_number: ['customernumber', 'customerno', 'idfrcode', 'code', 'accountcode', 'ledgercode'],
@@ -187,13 +200,13 @@ const CustomerOpeningImport = () => {
   const downloadFormat = () => {
     const worksheet = XLSX.utils.aoa_to_sheet([
       SHEET_HEADINGS,
-      // One row the owner can read over before typing their own: the first
-      // three columns are what a customer is matched by, the last is the
-      // figure, and the page is the one the paper ledger has them on —
-      // written the way the owner's book writes it, so the shape is plain.
-      ['1', 'Rahim Traders', 'Customer', '01711223344', 'C-001', 'Mirpur, Dhaka', 'Page # 01, Ledger # 12', '15000'],
+      // One row the owner can read over before typing their own: the name and
+      // mobile are what a customer is matched by, the Bangla name is optional,
+      // the last column is the figure, and the page is the one the paper ledger
+      // has them on — written the way the owner's book writes it.
+      ['1', 'Rahim Traders', 'রহিম ট্রেডার্স', 'Customer', '01711223344', 'C-001', 'Mirpur, Dhaka', 'Page # 01, Ledger # 12', '15000'],
     ]);
-    worksheet['!cols'] = [8, 32, 22, 18, 18, 32, 24, 14].map((wch) => ({ wch }));
+    worksheet['!cols'] = [8, 32, 32, 22, 18, 18, 32, 24, 14].map((wch) => ({ wch }));
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Customer Opening');
     XLSX.writeFile(workbook, 'customer-opening-import-format.xlsx');
@@ -415,10 +428,11 @@ const CustomerOpeningImport = () => {
             A row is matched by its customer number, else by its name and mobile together — a name
             or a mobile alone never matches. A row that matches nobody is made into a customer —
             type, mobile, address and ledger page are used for that. On a customer that already
-            exists only the opening and the ledger page are written; leave the ledger page blank
-            to keep the page the list has. Write the page as your book has it, e.g. "Page # 01,
-            Ledger # 12". A positive opening is what the customer owes; enter a minus when the
-            books owe them.
+            exists the opening and the ledger page are written, and the Name (Bangla) field is
+            corrected too when you fill it — leave it blank to keep the Bangla name the record has.
+            Leave the ledger page blank to keep the page the list has. Write the page as your book
+            has it, e.g. "Page # 01, Ledger # 12". A positive opening is what the customer owes;
+            enter a minus when the books owe them.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <ButtonLoading

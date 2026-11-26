@@ -7,10 +7,14 @@ import useLocalStorage from '../../../hooks/useLocalStorage';
 import { hasPermission } from '../permissionChecker';
 import { settingOn } from '../userFeatureSettings';
 import { FIELD_HEIGHT_REM, withFieldHeight } from '../../../theme/fieldStyles';
+import { useLanguage } from '../../../i18n/useLanguage';
 
 interface OptionType {
   value: string;
   label: string;
+  /** The Unicode Bangla (local-language) name, when the company has one. The
+      API already searches it; this is what puts it on screen. */
+  name_local?: string | null;
   label_2?: string;
   label_3?: string;
   label_4?: string;
@@ -71,7 +75,6 @@ const ProductDropdown: React.FC<DropdownProps> = ({
   className,
 }) => {
   const selectRef = useRef(null);
-  const [isSelected, setIsSelected] = React.useState(false);
   // Read inside a key handler, where a state value would be a render behind.
   const isMenuOpenRef = useRef(false);
   const [isControlFocused, setIsControlFocused] = React.useState(false);
@@ -84,6 +87,9 @@ const ProductDropdown: React.FC<DropdownProps> = ({
   // the purchase screens fill their rate from it -- so this hides the line,
   // and only the line.
   const settings = useSelector((state: any) => state.settings);
+  // The company's local language. Null when it is switched off, and the Bangla
+  // line is then not drawn at all -- the picker reads as it did.
+  const { localCode } = useLanguage();
   const permissions = settings?.data?.permissions || [];
   const canSeePurchasePrice = hasPermission(permissions, 'product.purchase.price.view');
 
@@ -144,16 +150,36 @@ const ProductDropdown: React.FC<DropdownProps> = ({
    * because it is the `value` prop, so the code has to be put back on it here.
    */
   const codeByValue = useRef<Record<string, string>>({});
+  /**
+   * The Bangla name travels the same way as the code: the screens hand the box
+   * back a bare `{value, label}`, so the name the list already answered with has
+   * to be put back on it -- otherwise the picked box loses its Bangla line the
+   * moment the screen takes the value over.
+   */
+  const localByValue = useRef<Record<string, string>>({});
 
-  /** The screen's own `{value, label}`, with the code the list already knows. */
+  /** The screen's own `{value, label}`, with the code and Bangla name the list already knows. */
   const withCode = (option: OptionType | null | undefined): OptionType | null => {
-    if (!option || option.code || !option.value) {
+    if (!option || !option.value) {
       return option ?? null;
     }
+    if (option.code && option.name_local) {
+      return option;
+    }
 
-    const code = codeByValue.current[String(option.value)];
+    const key = String(option.value);
+    const code = option.code || codeByValue.current[key];
+    const nameLocal = option.name_local || localByValue.current[key];
 
-    return code ? { ...option, code } : option;
+    if (!code && !nameLocal) {
+      return option;
+    }
+
+    return {
+      ...option,
+      ...(code ? { code } : {}),
+      ...(nameLocal ? { name_local: nameLocal } : {}),
+    };
   };
 
   React.useEffect(() => {
@@ -193,6 +219,9 @@ const ProductDropdown: React.FC<DropdownProps> = ({
           const formattedOptions: OptionType[] = response.payload.map((item: any) => ({
             value: item.value,
             label: item.label,
+            // Kept beside `label`, never folded into it: the invoice line and
+            // the Excel imports still read the English name.
+            name_local: item.name_local,
             label_2: item.label_2,
             label_3: item.label_3,
             label_4: item.label_4,
@@ -214,11 +243,14 @@ const ProductDropdown: React.FC<DropdownProps> = ({
             // truthiness filter in ddlDetails above, `'0'` is not.
             balance: item.balance === null || item.balance === undefined ? '' : String(item.balance),
           }));
-          // Remembered so the box keeps the code after the screen takes over
-          // the value -- see withCode().
+          // Remembered so the box keeps the code and the Bangla name after the
+          // screen takes over the value -- see withCode().
           formattedOptions.forEach((option) => {
             if (option.code) {
               codeByValue.current[String(option.value)] = option.code;
+            }
+            if (option.name_local) {
+              localByValue.current[String(option.value)] = String(option.name_local);
             }
           });
           callback(formattedOptions);
@@ -355,19 +387,15 @@ const ProductDropdown: React.FC<DropdownProps> = ({
         }}
         onMenuOpen={() => {
           isMenuOpenRef.current = true;
-          setIsSelected(true);
         }}
         onMenuClose={() => {
           isMenuOpenRef.current = false;
-          setIsSelected(false);
         }}
         onFocus={() => setIsControlFocused(true)}
         onBlur={() => setIsControlFocused(false)}
         onKeyDown={handleKeyDown}
         getOptionLabel={(option) => option.label}
-        formatOptionLabel={(option) => {
-          const details = ddlDetails(option);
-
+        formatOptionLabel={(option, { context }) => {
           // getOptionLabel above is what the picked value and the search read,
           // and it stays the plain name whatever the branch shows.
           // "CODE - NAME" while there is a code, the bare name when there is
@@ -380,6 +408,31 @@ const ProductDropdown: React.FC<DropdownProps> = ({
             : option.code
               ? `${option.code} - ${option.label}`
               : option.label;
+          // The Bangla (local-language) name: only where the company has the
+          // local language on AND this product has a name in it. Empty draws
+          // nothing at all, not a blank line.
+          const localName =
+            localCode && option.name_local && String(option.name_local).trim() !== ''
+              ? String(option.name_local)
+              : '';
+
+          // The picked value is one control high, so the Bangla name rides on
+          // the same line as the English one.
+          if (context === 'value') {
+            return (
+              <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
+                {head}
+                {localName && (
+                  <span lang={localCode || undefined} className="text-gray-600 dark:text-[rgb(var(--c-text))]">
+                    {' — '}
+                    {localName}
+                  </span>
+                )}
+              </div>
+            );
+          }
+
+          const details = ddlDetails(option);
 
           return (
             <div>
@@ -387,14 +440,20 @@ const ProductDropdown: React.FC<DropdownProps> = ({
                 {/* Code and name are one item, so the comma comes after them.
                     Each detail keeps its label: a row of bare numbers says
                     nothing about which price is which. */}
-                {singleLine && isSelected
-                  ? [head, ...details.map((field) => `${field.short}: ${field.value}`)].join(', ')
+                {singleLine
+                  ? [head, ...(localName ? [localName] : []), ...details.map((field) => `${field.short}: ${field.value}`)].join(', ')
                   : head}
               </div>
-              {/* Single Line has already spent its one line, and there is
-                  nothing to add before the list is open. */}
-              {!singleLine && isSelected && (
+              {!singleLine && (localName || details.length > 0) && (
                 <div className="additional-info">
+                  {localName && (
+                    <div
+                      lang={localCode || undefined}
+                      className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm"
+                    >
+                      {localName}
+                    </div>
+                  )}
                   {details.map((field) => (
                     <div key={field.label} className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                       {field.label}: {field.value}

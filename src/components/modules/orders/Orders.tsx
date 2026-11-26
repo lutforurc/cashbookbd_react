@@ -294,6 +294,16 @@ const normalizeOrderPrintPayload = (baseOrder: any, payload: any) => {
     order_for:
       pickFirstValue(sources, ['order_for', 'party_name', 'supplier_name', 'customer_name', 'company_name', 'name']) ??
       baseOrder?.order_for,
+    // The Unicode local name, for a layout whose Print language is Bangla.
+    // Blank falls back to the English name above.
+    order_for_local:
+      pickFirstValue(sources, [
+        'order_for_local',
+        'party_name_local',
+        'customer_name_local',
+        'supplier_name_local',
+        'name_local',
+      ]) ?? baseOrder?.order_for_local,
     address:
       pickFirstValue(sources, ['address', 'party_address', 'supplier_address', 'customer_address']) ??
       baseOrder?.address,
@@ -309,6 +319,9 @@ const normalizeOrderPrintPayload = (baseOrder: any, payload: any) => {
     product_name:
       pickFirstValue(sources, ['product_name', 'item_name', 'product']) ??
       baseOrder?.product_name,
+    product_name_local:
+      pickFirstValue(sources, ['product_name_local', 'item_name_local']) ??
+      baseOrder?.product_name_local,
     total_order:
       pickFirstValue(sources, ['total_order', 'order_qty', 'quantity', 'qty']) ??
       baseOrder?.total_order,

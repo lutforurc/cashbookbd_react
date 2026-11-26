@@ -29,13 +29,13 @@
   "customer-opening-import": {
     "title": "গ্রাহকের শুরুর ব্যালেন্স আপলোড",
     "module": "Customers",
-    "updated": "11/11/2026",
+    "updated": "26/11/2026",
     "businessTypes": ["all"],
     "video": "",
     "intro": "Excel থেকে অনেক গ্রাহকের শুরুর ব্যালেন্স একসাথে আনা হয়; প্রতিটি সারি যাচাই করে তবেই Save হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ party.opening.edit permission থাকলে।"] },
-      { "heading": "আপলোড", "menu": "Customer & Supplier → Customers → Opening Import", "steps": ["Download Format দিয়ে নমুনা নামান, অথবা Paste Rows দিয়ে সারি পেস্ট করুন।", "Load Rows চাপুন, তারপর Check।", "প্রতিটি সারিতে New customer, Existing, Will create বা To fix দেখা যায়।", "সব ঠিক হলে Ok চাপুন।"] },
+      { "heading": "আপলোড", "menu": "Customer & Supplier → Customers → Opening Import", "steps": ["Download Format দিয়ে নমুনা নামান, অথবা Paste Rows দিয়ে সারি পেস্ট করুন।", "Load Rows চাপুন, তারপর Check।", "প্রতিটি সারিতে New customer, Existing, Will create বা To fix দেখা যায়।", "সব ঠিক হলে Ok চাপুন।", "Name (Bangla) কলামে বাংলা নাম দিলে নতুন গ্রাহকে সেটাই বসে; আগের গ্রাহকের বাংলা নাম বদলালে সেটাও সেভ হয়। ঘর খালি রাখলে আগের বাংলা নাম মুছে যায় না।"] },
       { "heading": "মিলানোর নিয়ম", "steps": ["সারি আগে Customer No. দিয়ে মেলে; না মিললে Name ও Mobile একসাথে মিলতে হয়।", "ধনাত্মক Opening মানে গ্রাহক আমাদের কাছে ঋণী; ঋণাত্মক দিলে বই তাদের কাছে ঋণী।"] },
       { "heading": "সতর্কতা", "warning": "শাখায় opening বন্ধ থাকলে আপলোড হবে না। মোবাইল নম্বরের সতর্কতা থাকলে তবুও import করা যায়।" }
     ]

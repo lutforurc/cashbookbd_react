@@ -451,7 +451,27 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
     const onOneLine = (...parts: string[]): string =>
       parts.filter((part) => !blank(part)).join(', ');
 
+    /**
+     * A local-language value, when this paper prints in the local language.
+     *
+     * `party_name` reads `party_name_local`, `product_name` reads
+     * `product_name_local`, and so on -- the adapters put the Unicode names
+     * under those keys. A row with no local value falls back to the English
+     * one at the call site, so a half-translated book still prints.
+     */
+    const localOf = (source: any, key: string): any => {
+      if (template?.language !== 'local' || !source) return undefined;
+
+      const local = source[`${key}_local`];
+
+      return blank(local) ? undefined : local;
+    };
+
     const value = (key: string): string => {
+      // Any field the books have a local version of prints that one.
+      const localValue = localOf(basic, key);
+      if (localValue !== undefined) return String(localValue);
+
       switch (key) {
         // A label the software has no answer for, and is not meant to have --
         // it is a rule for somebody to write on. See FIELD_CATALOG.
@@ -462,9 +482,9 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         case 'rule':
           return '';
         case 'product_names':
-          return listOf((row) => row?.product_name);
+          return listOf((row) => localOf(row, 'product_name') ?? row?.product_name);
         case 'product_categories':
-          return listOf((row) => row?.category);
+          return listOf((row) => localOf(row, 'category') ?? row?.category);
         case 'product_qty_list':
           return listOf((row) => {
             const quantity = thousandSeparator(num(row?.qty));
@@ -496,6 +516,11 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
         // twice. See the note beside bill_date in HOTEL_BILL_FIELDS.
         case 'bill_date':
           return dayjs().format('DD/MM/YYYY');
+        // The legacy "Party Name (Bangla)" field. On a local-language paper it
+        // prints the Unicode local name the books now hold; a database with
+        // only the old Bijoy column keeps printing that instead.
+        case 'bangla_name':
+          return String(localOf(basic, 'party_name') ?? basic?.bangla_name ?? '');
         case 'branch_name':
           return String(data?.branch?.name ?? basic?.branch_name ?? '');
         case 'branch_address':
@@ -609,6 +634,11 @@ const DocumentPrint = React.forwardRef<HTMLDivElement, Props>(
 
     /** One cell of the product table. */
     const cell = (row: any, index: number, key: string): string => {
+      // Any column the line has a local version of prints that one -- a
+      // product_name cell reads product_name_local on a Bangla paper.
+      const localValue = localOf(row, key);
+      if (localValue !== undefined) return String(localValue);
+
       switch (key) {
         case 'sl':
           return String(index + 1);

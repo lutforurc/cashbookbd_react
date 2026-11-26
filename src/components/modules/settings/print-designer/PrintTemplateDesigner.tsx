@@ -24,6 +24,7 @@ import { getDdlProtectedBranch } from '../../branch/ddlBranchSlider';
 import httpService from '../../../services/httpService';
 import { API_PRINT_TEMPLATE_URL } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
+import { useLanguage } from '../../../../i18n/useLanguage';
 import DocumentPrint from '../../../utils/print-designer/DocumentPrint';
 import {
   ADDABLE_BANDS,
@@ -194,6 +195,9 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
   const settings = useSelector((state: any) => state.settings?.data);
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const sessionBranchId = settings?.branch?.id;
+  // The company's local language. Null when it is switched off, and the Print
+  // language control is then not offered at all -- the paper stays English.
+  const { localCode, localName, localInfo } = useLanguage();
 
   const [branchId, setBranchId] = useState<string>('');
   /**
@@ -652,9 +656,10 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
           Text size sits under Branch rather than wherever it happened to fall.
 
           Two rows by arithmetic rather than by a break: 3 + 3 + 6 fills the
-          first, 2 + 2 + 8 the second. The actions take that last eight and
-          align right inside it, which is where a toolbar's spare room belongs
-          and how Reset stays a long way from anything else.
+          first, 2 + 2 + 2 + 6 the second (2 + 2 + 8 on a company with no local
+          language). The actions take the last share and align right inside it,
+          which is where a toolbar's spare room belongs and how Reset stays a
+          long way from anything else.
 
           Below `lg` it steps to two columns and then to one, so a phone gets a
           stack of full-width controls. */}
@@ -773,15 +778,43 @@ const PrintTemplateDesigner = ({ paper = 'sales_challan' }: { paper?: DocType })
             />
           </div>
 
+          {/* Only where the company has a local language at all. With it off
+              there is nothing to choose between, and the paper stays English
+              exactly as before. */}
+          {localCode ? (
+            <div className="lg:col-span-2">
+              <span className={SUB_LABEL}>Print language</span>
+              <Select
+                id="print_template_language"
+                name="language"
+                value={template.language ?? 'en'}
+                onChange={(event) =>
+                  patch({ language: event.target.value === 'local' ? 'local' : 'en' })
+                }
+                className="w-full rounded-sm border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-sm text-[rgb(var(--c-text))] outline-none dark:bg-boxdark"
+              >
+                <option value="en">English</option>
+                <option value="local">{localInfo?.native_name || localName || 'বাংলা'}</option>
+              </Select>
+              <p className="mt-0.5 text-[0.65rem] leading-snug text-gray-500 dark:text-gray-400">
+                Takes the party and product names from their local names.
+              </p>
+            </div>
+          ) : null}
+
           {/* ⚠️ The spare width of a wide screen lands HERE, inside the last
-              eight columns, rather than in the fields -- which is how a branch
-              name came to be five hundred pixels across.
+              columns, rather than in the fields -- which is how a branch name
+              came to be five hundred pixels across.
 
               The empty label above keeps the buttons on the inputs' line: the
               grid aligns cells to the top, so without it they would ride up
               beside the LABELS instead. aria-hidden because there is nothing in
               it to announce. */}
-          <div className="sm:col-span-2 lg:col-span-8">
+          <div
+            className={
+              localCode ? 'sm:col-span-2 lg:col-span-6' : 'sm:col-span-2 lg:col-span-8'
+            }
+          >
             <span className={SUB_LABEL} aria-hidden="true">
               &nbsp;
             </span>

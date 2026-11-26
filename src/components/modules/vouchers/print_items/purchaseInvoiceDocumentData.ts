@@ -87,6 +87,9 @@ export const toPurchaseInvoiceDocumentData = (data: any): DocumentData => {
   return {
     basic: {
       party_name: purchaseMaster?.name || supplierFallback?.name || '-',
+      // The Unicode local name, for a Bangla paper. Blank falls back to the
+      // English name above.
+      party_name_local: supplierFallback?.name_local || '',
       mobile: purchaseMaster?.mobile || supplierFallback?.mobile || '',
       manual_address:
         supplierFallback?.manual_address ||
@@ -137,7 +140,11 @@ export const toPurchaseInvoiceDocumentData = (data: any): DocumentData => {
       // The supplier's gift on a Production Purchase, marked by the API. The
       // word rides on the name, as it does on the sales paper.
       product_name: `${row?.product?.name || ''}${row?.is_free ? ' (ফ্রি)' : ''}`,
+      product_name_local: row?.product?.name_local
+        ? `${row.product.name_local}${row?.is_free ? ' (ফ্রি)' : ''}`
+        : '',
       category: row?.product?.category?.name || '',
+      category_local: row?.product?.category?.name_local || '',
       brand: row?.product?.brand?.name || '',
       group: row?.product?.group?.name || '',
       code: row?.product?.code || '',

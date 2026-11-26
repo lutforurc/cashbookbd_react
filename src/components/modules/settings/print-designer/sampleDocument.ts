@@ -13,6 +13,7 @@ import type { DocumentData } from '../../../utils/print-designer/DocumentPrint';
 export const SAMPLE_DOCUMENT: DocumentData = {
   basic: {
     party_name: 'Sample Traders Ltd.',
+    party_name_local: 'স্যাম্পল ট্রেডার্স লিমিটেড',
     bangla_name: 'স্যাম্পল ট্রেডার্স লিমিটেড',
     idfr_code: 'C-0142',
     manual_address: '12 Station Road, Sample Bazar, Dhaka',
@@ -42,6 +43,7 @@ export const SAMPLE_DOCUMENT: DocumentData = {
     {
       id: 1,
       product_name: 'Deshi Atta 50 Kg',
+      product_name_local: 'দেশি আটা ৫০ কেজি',
       category: 'Flour',
       description: 'Premium grade',
       qty: 320,
@@ -57,6 +59,7 @@ export const SAMPLE_DOCUMENT: DocumentData = {
     {
       id: 2,
       product_name: 'Maida 50 Kg',
+      product_name_local: 'ময়দা ৫০ কেজি',
       category: 'Flour',
       description: 'Fine milled',
       qty: 120,
@@ -69,6 +72,7 @@ export const SAMPLE_DOCUMENT: DocumentData = {
     {
       id: 3,
       product_name: 'Soyabean Oil 5 Ltr',
+      product_name_local: 'সয়াবিন তেল ৫ লিটার',
       category: 'Edible Oil',
       description: 'Refined',
       qty: 40,
@@ -101,6 +105,7 @@ export const SAMPLE_ORDER_DOCUMENT: DocumentData = {
     party_label: 'Customer Name',
     received_label: 'Received',
     order_for: 'Sample Poultry Group',
+    order_for_local: 'স্যাম্পল পোল্ট্রি গ্রুপ',
     address: 'Sample House, Mohakhali CA, Dhaka',
     mobile: '01700000000',
     order_number: 'ORD-001/PO-72',
@@ -109,6 +114,7 @@ export const SAMPLE_ORDER_DOCUMENT: DocumentData = {
     delivery_location: 'Sample Poultry Division, Baniarchala',
     transaction_account: 'City Bank - CD-1102',
     product_name: 'DORB',
+    product_name_local: 'ডিওআরবি',
     order_rate: 26,
     total_order: 100000,
     order_amount: 2600000,
@@ -319,6 +325,7 @@ export const HOTEL_RECEIPT_SAMPLE: DocumentData = {
 export const SALES_INVOICE_SAMPLE: DocumentData = {
   basic: {
     party_name: 'MD. Sample Islam',
+    party_name_local: 'মোঃ স্যাম্পল ইসলাম',
     mobile: '01700000000',
     manual_address: 'Sample Bazar, Sample Sadar, Sample District',
     notes: 'Sales By Installments.',
@@ -356,6 +363,7 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
     {
       sl: 1,
       product_name: 'Xiaomi Redmi Note 15 6/128GB Variant',
+      product_name_local: 'জিয়াওমি রেডমি নোট ১৫ ৬/১২৮জিবি',
       brand: 'Xiaomi',
       category: 'Mobile',
       group: 'Smartphone',
@@ -374,6 +382,7 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
     {
       sl: 2,
       product_name: 'Sample Mobile Shop Service Charge (Stamp with Locker)',
+      product_name_local: 'স্যাম্পল মোবাইল সার্ভিস চার্জ',
       brand: '',
       category: 'Service',
       group: '',
@@ -406,6 +415,7 @@ export const SALES_INVOICE_SAMPLE: DocumentData = {
 export const PURCHASE_INVOICE_SAMPLE: DocumentData = {
   basic: {
     party_name: 'Sample Wholesale Traders',
+    party_name_local: 'স্যাম্পল হোলসেল ট্রেডার্স',
     mobile: '01700000000',
     manual_address: 'Sample Bazar, Sample Sadar',
     notes: 'Purchased against PO-1100025951.',
@@ -436,6 +446,7 @@ export const PURCHASE_INVOICE_SAMPLE: DocumentData = {
     {
       sl: 1,
       product_name: 'Xiaomi Redmi Note 15 6/128GB Variant',
+      product_name_local: 'জিয়াওমি রেডমি নোট ১৫ ৬/১২৮জিবি',
       brand: 'Xiaomi',
       category: 'Mobile',
       group: 'Smartphone',
@@ -456,6 +467,7 @@ export const PURCHASE_INVOICE_SAMPLE: DocumentData = {
     {
       sl: 2,
       product_name: 'Screen Guard (Pack of 10)',
+      product_name_local: 'স্ক্রিন গার্ড (১০টির প্যাক)',
       brand: '',
       category: 'Accessories',
       group: '',

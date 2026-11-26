@@ -107,7 +107,6 @@ const DdlMultiline: React.FC<DropdownProps> = ({
   isDisabled,
   applyBranchSettings,
 }) => {
-  const [isSelected, setIsSelected] = React.useState(false);
   const [isControlFocused, setIsControlFocused] = React.useState(false);
   const [inputValue, setInputValue] = React.useState('');
   const [internalSelectedOption, setInternalSelectedOption] = React.useState<OptionType | null>(
@@ -117,7 +116,14 @@ const DdlMultiline: React.FC<DropdownProps> = ({
     document.documentElement.classList.contains('dark')
   );
   const dispatch = useDispatch();
-  const { code } = useLanguage();
+  const { code, localCode } = useLanguage();
+  /**
+   * The Bangla name by value. The screens keep only the id and the English name
+   * of the party they picked, so this is what puts the name the list already
+   * answered with back on the `{value, label}` they hand over -- otherwise the
+   * picked box loses its Bangla line the moment it is filled.
+   */
+  const localByValue = React.useRef<Record<string, string>>({});
 
   // Branch Setup -> Customer / Supplier Dropdown: how many lines each party
   // takes in this box, and which of them the branch wants shown.
@@ -149,6 +155,38 @@ const DdlMultiline: React.FC<DropdownProps> = ({
     ddlOn('party_ddl_show_code') && option.label_4 && Number(option.label_4) > 0
       ? option.label_4
       : '';
+
+  /**
+   * The row's Bangla name beside its English one on an English screen.
+   *
+   * Only where the company has its local language on AND this row has a name
+   * in it -- no local name draws nothing. A Bangla screen already reads the
+   * local name from displayName(), so it is not repeated there.
+   */
+  const localNameOf = (option: OptionType) => {
+    const local = (option.name_local || '').trim();
+
+    return code === 'en' && localCode && local ? local : '';
+  };
+
+  /** Keeps the Bangla name the list answered with, by value. */
+  const rememberLocalNames = (options: OptionType[]) =>
+    options.forEach((option) => {
+      if (option.name_local) {
+        localByValue.current[String(option.value)] = String(option.name_local);
+      }
+    });
+
+  /** The screen's own `{value, label}`, with the Bangla name put back on it. */
+  const withLocalName = (option: OptionType | null | undefined): OptionType | null | undefined => {
+    if (!option || option.name_local || !option.value) {
+      return option;
+    }
+
+    const local = localByValue.current[String(option.value)];
+
+    return local ? { ...option, name_local: local } : option;
+  };
 
   /**
    * The lines the branch wants under a party's name, in the order the owner
@@ -220,7 +258,9 @@ const DdlMultiline: React.FC<DropdownProps> = ({
 
     if (fetchOptions) {
       try {
-        callback(withActionOption(await fetchOptions(inputValue)));
+        const options = withActionOption(await fetchOptions(inputValue));
+        rememberLocalNames(options);
+        callback(options);
       } catch (error) {
         console.error('Error loading options:', error);
         callback([]);
@@ -253,6 +293,7 @@ const DdlMultiline: React.FC<DropdownProps> = ({
               isAction: true,
             });
           }
+          rememberLocalNames(formattedOptions);
           callback(formattedOptions);
         } else {
           callback([]);
@@ -413,32 +454,57 @@ const DdlMultiline: React.FC<DropdownProps> = ({
           }
           return nextValue;
         }}
-        onMenuOpen={() => setIsSelected(true)}
-        onMenuClose={() => setIsSelected(false)}
         onFocus={() => setIsControlFocused(true)}
         onBlur={() => setIsControlFocused(false)}
         onKeyDown={onKeyDown}
         getOptionLabel={(option) => displayName({ name: option.label, name_local: option.name_local }, 'name', code)}
-        formatOptionLabel={(option) => {
+        formatOptionLabel={(option, { context }) => {
           const optionLabel = displayName(
             { name: option.label, name_local: option.name_local },
             'name',
             code,
           );
+          // The Bangla name beside the English one -- only where the company
+          // has its local language on and this row carries a name in it.
+          const localName = localNameOf(option);
+          const partyCodeValue = partyCode(option);
+
+          // The picked value is one control high; the Bangla name rides on the
+          // same line rather than stacking a second one into the box.
+          if (context === 'value') {
+            return (
+              <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
+                {optionLabel}
+                {localName && (
+                  <span lang={localCode || undefined} className="text-gray-600 dark:text-[rgb(var(--c-text))]">
+                    {' — '}
+                    {localName}
+                  </span>
+                )}
+                {partyCodeValue && (
+                  <span className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
+                    {' '}({partyCodeValue})
+                  </span>
+                )}
+              </div>
+            );
+          }
+
           // Single Line spends the party's one line on everything the branch
           // asked for, so it is drawn on its own: the markup below puts a colour
-          // on the code and cannot be packed into a string. Nothing is added
-          // before the list is open -- a closed box is one control high, and the
-          // packed line overflows it.
+          // on the code and cannot be packed into a string.
           if (singleLine) {
-            const code = partyCode(option);
-            const head = code ? `${optionLabel} (${code})` : optionLabel;
+            const head = partyCodeValue ? `${optionLabel} (${partyCodeValue})` : optionLabel;
 
             return (
               <div className="text-sm text-gray-900 dark:text-[rgb(var(--c-text))]">
-                {isSelected && !option.isAction
-                  ? [head, ...partyDetails(option).map((field) => `${field.label}: ${field.value}`)].join(', ')
-                  : head}
+                {option.isAction
+                  ? head
+                  : [
+                      head,
+                      ...(localName ? [localName] : []),
+                      ...partyDetails(option).map((field) => `${field.label}: ${field.value}`),
+                    ].join(', ')}
               </div>
             );
           }
@@ -449,19 +515,24 @@ const DdlMultiline: React.FC<DropdownProps> = ({
                 {optionLabel}
                 {option.isAction ? null : (
                   <>
-                    {partyCode(option) && (
+                    {partyCodeValue && (
                       <span className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
-                        {' '}({partyCode(option)})
+                        {' '}({partyCodeValue})
                       </span>
                     )}
                   </>
                 )}
               </div>
-              {isSelected && !option.isAction && (
+              {!option.isAction && (localName || partyDetails(option).length > 0) && (
                 <div className="additional-info">
                   {/* Labelled, unlike the product box: a party's address and its
                     father's name are both bare words, and three unlabelled lines
                     under a name say nothing about which is which. */}
+                  {localName && (
+                    <div lang={localCode || undefined} className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
+                      {localName}
+                    </div>
+                  )}
                   {partyDetails(option).map((field) => (
                     <div key={field.label} className="text-gray-600 dark:text-[rgb(var(--c-text))] text-sm">
                       {field.label}: {field.value}
@@ -475,8 +546,8 @@ const DdlMultiline: React.FC<DropdownProps> = ({
         getOptionValue={(option) => option.value}
         placeholder={placeholder || 'Select an account'}
         styles={withFieldHeight(customStyles, controlHeight)}
-        defaultValue={defaultValue}
-        value={value ?? internalSelectedOption}
+        defaultValue={withLocalName(defaultValue) ?? null}
+        value={withLocalName(value ?? internalSelectedOption) ?? null}
         menuPortalTarget={document.body} // Fix Dropdown Render Issue
       />
     </div>

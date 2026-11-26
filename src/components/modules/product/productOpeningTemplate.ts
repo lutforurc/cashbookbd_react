@@ -10,7 +10,14 @@
  */
 export const PRODUCT_OPENING_SHEET = 'Product Opening';
 
-/** The headings, in the owner's order. `sl_no` is the owner's own count and is not saved. */
+/**
+ * The headings, in the owner's order. `sl_no` is the owner's own count and is not saved.
+ *
+ * `name_local` is the Unicode Bangla (or other local-language) name, beside the
+ * English `product_name`. The import writes it for a new product and corrects
+ * it on an existing one, so a sheet exported from the Product List can have its
+ * Bangla names filled in and sent straight back.
+ */
 export const PRODUCT_OPENING_HEADINGS: string[] = [
   'sl_no',
   'brand_name',
@@ -18,6 +25,7 @@ export const PRODUCT_OPENING_HEADINGS: string[] = [
   'category',
   'code',
   'product_name',
+  'name_local',
   'unit',
   'purchase_price',
   'sales_price',
@@ -25,7 +33,7 @@ export const PRODUCT_OPENING_HEADINGS: string[] = [
 ];
 
 /** The column widths the template sheet opens with. */
-export const PRODUCT_OPENING_COL_WIDTHS: number[] = [8, 16, 14, 14, 14, 36, 10, 14, 14, 10];
+export const PRODUCT_OPENING_COL_WIDTHS: number[] = [8, 16, 14, 14, 14, 36, 36, 10, 14, 14, 10];
 
 const amount = (value: unknown): number => {
   const parsed = Number(value ?? 0);
@@ -50,6 +58,7 @@ export const productOpeningImportRows = (products: any[]): (string | number)[][]
     row?.category ?? '',
     row?.code ?? '',
     row?.name ?? '',
+    row?.name_local ?? '',
     row?.unit ?? '',
     amount(row?.purchase),
     amount(row?.sales),

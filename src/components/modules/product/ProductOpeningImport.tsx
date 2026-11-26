@@ -52,6 +52,7 @@ type Field =
   | 'category'
   | 'code'
   | 'product_name'
+  | 'name_local'
   | 'unit'
   | 'purchase_price'
   | 'sales_price'
@@ -63,6 +64,7 @@ const FIELDS: { key: Field; header: string; className: string; numeric?: boolean
   { key: 'category', header: 'Category', className: 'min-w-24' },
   { key: 'code', header: 'Code', className: 'min-w-24' },
   { key: 'product_name', header: 'Product Name', className: 'min-w-56' },
+  { key: 'name_local', header: 'Product Name (Bangla)', className: 'min-w-56' },
   { key: 'unit', header: 'Unit', className: 'min-w-16' },
   { key: 'purchase_price', header: 'P. Price', className: 'min-w-20 text-right', numeric: true },
   { key: 'sales_price', header: 'Sales Price', className: 'min-w-20 text-right', numeric: true },
@@ -80,6 +82,10 @@ const HEADING_ALIASES: Record<Field, string[]> = {
   category: ['category', 'categoryname'],
   code: ['code', 'productcode', 'itemcode'],
   product_name: ['productname', 'name', 'product', 'itemname'],
+  // The Bangla (local-language) name. Both the database's own `name_local` and
+  // a `product_name_local` heading are accepted, so a sheet exported from an
+  // older or newer Product List opens either way.
+  name_local: ['namelocal', 'productnamelocal', 'productnamebangla', 'localname'],
   unit: ['unit', 'unitname'],
   purchase_price: ['purchaseprice', 'pprice', 'purchase', 'purchaserate'],
   sales_price: ['salesprice', 'saleprice', 'sprice', 'sales', 'salesrate'],

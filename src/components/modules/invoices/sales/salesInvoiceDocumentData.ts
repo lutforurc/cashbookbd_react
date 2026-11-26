@@ -68,6 +68,10 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
   return {
     basic: {
       party_name: salesMaster?.name || customerInfo?.name || customerDetail?.coa_l4?.name || '-',
+      // The Unicode local name, for a layout whose Print language is Bangla.
+      // Blank when the party has none, and the renderer falls back to the
+      // English name above.
+      party_name_local: customerInfo?.name_local || customerDetail?.coa_l4?.name_local || '',
       mobile: salesMaster?.mobile || customerInfo?.mobile || '',
       manual_address:
         customerInfo?.manual_address ||
@@ -125,7 +129,11 @@ export const toSalesInvoiceDocumentData = (data: any): DocumentData => {
       // marks it (v4 খ-৯). The designer has no free column, so the word rides
       // on the name -- the only field every saved layout already prints.
       product_name: `${row?.product?.name || ''}${row?.is_free ? ' (ফ্রি)' : ''}`,
+      product_name_local: row?.product?.name_local
+        ? `${row.product.name_local}${row?.is_free ? ' (ফ্রি)' : ''}`
+        : '',
       category: row?.product?.category?.name || '',
+      category_local: row?.product?.category?.name_local || '',
       brand: row?.product?.brand?.name || '',
       group: row?.product?.group?.name || '',
       code: row?.product?.code || '',
