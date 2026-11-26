@@ -12,6 +12,8 @@ import { reportUrl } from '../../utils/hooks/useReportQuery';
 import { Button } from '../../../pages/UiElements/CustomButtons';
 import { Select } from '../../utils/fields/FormControls';
 import InputDatePicker from '../../utils/fields/DatePicker';
+import { getCurrentLanguage } from '../../../i18n/currentLanguage';
+import { knownLabel } from '../../../i18n/displayName';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
 
 /**
@@ -296,8 +298,29 @@ export const reportLinks = (branchId: number | string | null | undefined, from: 
  * business type was added, and `fallback` is the last resort: an empty heading
  * reads as a page that failed to load.
  */
-export const businessTypeName = (branch: any, fallback = 'Dashboard') =>
-  branch?.business_type || branch?.name || fallback;
+export const businessTypeName = (branch: any, fallback = 'Dashboard') => {
+  const english = branch?.business_type || branch?.name || fallback;
+  const lang = getCurrentLanguage();
+  if (lang && lang !== 'en') {
+    const local = String(branch?.business_type_local || branch?.name_local || '').trim();
+    if (local) return local;
+    // The trade's own Bangla name, where the app already knows it (a seeded
+    // business type with no local name yet).
+    return knownLabel(String(english), lang);
+  }
+  return english;
+};
+
+/** A branch's own name in the screen's language, English fallback. */
+export const branchDisplayName = (branch: any) => {
+  const english = branch?.name || branch?.branch_name || '';
+  const lang = getCurrentLanguage();
+  if (lang && lang !== 'en') {
+    const local = String(branch?.name_local || '').trim();
+    if (local) return local;
+  }
+  return english;
+};
 
 /** "1 Sep 2026 to 22 Sep 2026 · updated 11:32 AM", for a page's subtitle. */
 export const rangeCaption = (from?: string, to?: string, refreshedAt?: Date | null) =>

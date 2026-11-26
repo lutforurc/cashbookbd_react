@@ -254,6 +254,7 @@ import { ATTENDANCE_REPORT_TABS, ATTENDANCE_SETTINGS_TABS, ATTENDANCE_TABS, DESI
 import { branchFormVariant, branchInvoiceVariant, separateEntriesShown, unifiedEntryShown } from '../utils/userFeatureSettings';
 import { useSelector } from 'react-redux';
 import { useMenuLabel } from '../../i18n/menuLabel';
+import { getCurrentLanguage } from '../../i18n/currentLanguage';
 import './Sidebar.css';
 import routes from '../services/appRoutes';
 import { isMenuActive } from './menuRoutes';
@@ -366,11 +367,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
       'tiles.combined.create',
     ].some((key) => hasPermission(permissions, key)) ||
     (deductStockOnDelivery && hasPermission(permissions, 'delivery.view'));
-  const companyName =
+  const companyNameEn =
     settings?.data?.company?.name ||
     currentBranch?.company?.name ||
     settings?.data?.branch?.name ||
     'CashbookBD';
+  const companyNameLocal =
+    settings?.data?.company?.name_local ||
+    currentBranch?.company?.name_local ||
+    settings?.data?.branch?.name_local;
+  const companyName =
+    getCurrentLanguage() !== 'en' && companyNameLocal ? companyNameLocal : companyNameEn;
   // Empty when the company has not uploaded one. Falling back to the bundled
   // logo.svg would brand every such tenant "TailAdmin", so show the company
   // name as text instead. Each theme variant falls back to the other, so a

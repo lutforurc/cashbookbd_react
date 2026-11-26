@@ -8,6 +8,8 @@ import HotelDashboard from './HotelDashboard';
 import RealEstateDashboard from './RealEstateDashboard';
 import TradingDashboard from './TradingDashboard';
 import { ViewBranchProvider, useViewBranch } from './dashboardRange';
+import { useLocalDigits } from '../../../i18n/useLocalDigits';
+import { getCurrentLanguage } from '../../../i18n/currentLanguage';
 
 /**
  * The page is chosen for the branch being LOOKED AT, not the one logged in.
@@ -30,6 +32,11 @@ function DashboardPage() {
   const ownBranch = useSelector((state: any) => state.branchList.currentBranch);
   const view = useViewBranch();
   const currentBranch = view.viewBranch;
+
+  // Every figure on the page -- amounts, dates, counts -- in Bangla digits
+  // when a local language is on.
+  const digitsRef = React.useRef<HTMLDivElement>(null);
+  useLocalDigits(digitsRef, getCurrentLanguage() !== 'en');
 
   useEffect(() => {
     if (!ownBranch?.business_type_id) {
@@ -60,7 +67,7 @@ function DashboardPage() {
    * that read nought forever.
    */
   if (currentBranch?.is_lodging === true) {
-    return <HotelDashboard />;
+    return <div ref={digitsRef}><HotelDashboard /></div>;
   }
 
   /**
@@ -76,7 +83,7 @@ function DashboardPage() {
    * business type's NAME instead, and the answer travels.
    */
   if (currentBranch?.is_real_estate === true) {
-    return <RealEstateDashboard />;
+    return <div ref={digitsRef}><RealEstateDashboard /></div>;
   }
 
   /**
@@ -97,7 +104,7 @@ function DashboardPage() {
    * precedence, and any of them may be moved.
    */
   if (currentBranch?.is_trading === true) {
-    return <TradingDashboard />;
+    return <div ref={digitsRef}><TradingDashboard /></div>;
   }
 
   const components: { [key: number]: JSX.Element } = {
@@ -106,7 +113,7 @@ function DashboardPage() {
     8: <ComputerAccessories />, // 8 for Trading Business — see is_trading above
   };
 
-  return components[currentBranch.business_type_id] || <ComputerAccessories />;
+  return <div ref={digitsRef}>{components[currentBranch.business_type_id] || <ComputerAccessories />}</div>;
 }
 
 export default DashboardIndex

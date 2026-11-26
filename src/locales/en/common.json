@@ -867,7 +867,20 @@
     "Manual Voucher No": "Manual Voucher No",
     "Authorized Signature": "Authorized Signature",
     "Net Amount in Word": "Net Amount in Word",
-    "Net Amount in Word:": "Net Amount in Word:"
+    "Net Amount in Word:": "Net Amount in Word:",
+    "Tiles and Sanitary": "Tiles and Sanitary",
+    "Trade Business": "Trade Business",
+    "Trx Date": "Trx Date",
+    "Today Received": "Today Received",
+    "Today Payment": "Today Payment",
+    "Book Balance": "Book Balance",
+    "Book Balance ·": "Book Balance ·",
+    "Range": "Range",
+    "Cash Book · Range": "Cash Book · Range",
+    "Cash Book (Range)": "Cash Book (Range)",
+    "over the range": "over the range",
+    "Last updated:": "Last updated:",
+    "Last updated": "Last updated"
   },
   "customerLocal": {
     "father": "Relation's Name",

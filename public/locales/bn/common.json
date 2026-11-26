@@ -867,7 +867,20 @@
     "Manual Voucher No": "ম্যানুয়াল ভাউচার নং",
     "Authorized Signature": "অনুমোদিত স্বাক্ষর",
     "Net Amount in Word": "কথায় নিট পরিমাণ",
-    "Net Amount in Word:": "কথায় নিট পরিমাণ"
+    "Net Amount in Word:": "কথায় নিট পরিমাণ",
+    "Tiles and Sanitary": "টাইলস ও স্যানিটারি",
+    "Trade Business": "ট্রেড ব্যবসা",
+    "Trx Date": "লেনদেনের তারিখ",
+    "Today Received": "আজ প্রাপ্ত",
+    "Today Payment": "আজ পরিশোধ",
+    "Book Balance": "বই ব্যালেন্স",
+    "Book Balance ·": "বই ব্যালেন্স ·",
+    "Range": "পরিসীমা",
+    "Cash Book · Range": "নগদ বই · পরিসীমা",
+    "Cash Book (Range)": "নগদ বই (পরিসীমা)",
+    "over the range": "এই সময়কালে",
+    "Last updated:": "সর্বশেষ হালনাগাদ:",
+    "Last updated": "সর্বশেষ হালনাগাদ"
   },
   "customerLocal": {
     "father": "সম্পর্কের নাম",
