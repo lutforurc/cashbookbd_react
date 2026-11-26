@@ -20,8 +20,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const enDir = path.join(root, 'src', 'locales', 'en');
-const publicLocalesDir = path.join(root, 'public', 'locales');
+const localesDir = path.join(root, 'src', 'locales');
+const enDir = path.join(localesDir, 'en');
 const srcDir = path.join(root, 'src');
 
 const problems = [];
@@ -95,12 +95,12 @@ if (Object.keys(enNamespaces).length === 0) {
 
 const languages = [];
 
-if (fs.existsSync(publicLocalesDir)) {
-  for (const entry of fs.readdirSync(publicLocalesDir, { withFileTypes: true })) {
-    if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
+if (fs.existsSync(localesDir)) {
+  for (const entry of fs.readdirSync(localesDir, { withFileTypes: true })) {
+    if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name === 'en') continue;
 
     const code = entry.name;
-    const languageDir = path.join(publicLocalesDir, code);
+    const languageDir = path.join(localesDir, code);
     const namespaceKeys = {};
 
     for (const file of listJson(languageDir)) {
