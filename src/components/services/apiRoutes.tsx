@@ -1068,6 +1068,7 @@ export const API_REPORT_PROJECT_UNTAGGED_URL = `${API_BASE_URL}/real-estate/repo
 export const API_REPORT_PROJECT_INCOME_SUMMARY_URL = `${API_BASE_URL}/real-estate/reports/income-summary`;
 export const API_REPORT_PROJECT_INCOME_DETAIL_URL = `${API_BASE_URL}/real-estate/reports/income-detail`;
 export const API_REPORT_PROJECT_INCOME_UNTAGGED_URL = `${API_BASE_URL}/real-estate/reports/untagged-income`;
+export const API_REPORT_UNIT_PROFIT_URL = `${API_BASE_URL}/real-estate/reports/unit-profit`;
 
 // The developer's front page. One call, because the pieces agree with each
 // other: inventory and the sales book are standing positions, the takings band

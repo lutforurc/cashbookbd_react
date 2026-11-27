@@ -1888,5 +1888,14 @@
     "kind_issue": "Issue",
     "kind_issueAt": "Issue {{name}}",
     "all": "All"
+  },
+  "unitProfit": {
+    "unit": "Unit",
+    "customer": "Customer",
+    "handoverDate": "Handover Date",
+    "revenue": "Revenue",
+    "cost": "Cost",
+    "profit": "Profit",
+    "margin": "Margin"
   }
 }

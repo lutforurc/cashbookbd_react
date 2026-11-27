@@ -4,13 +4,13 @@ import PadPrinting from '../../../utils/utils-functions/PadPrinting';
 import PrintFooter from '../../../utils/utils-functions/PrintFooter';
 import PrintStyles from '../../../utils/utils-functions/PrintStyles';
 
-type Section = 'summary' | 'detail' | 'untagged';
+type Section = 'summary' | 'detail' | 'untagged' | 'profit';
 
 type Props = {
   section: Section;
   rows: any[];
-  totals: { direct: number; common: number; total: number; booked: number; handover: number; advance: number };
-  labels: { booked: string; atHandover: string; advance: string };
+  totals: { direct: number; common: number; total: number; booked: number; handover: number; advance: number; revenue?: number; cost?: number; profit?: number };
+  labels: { booked: string; atHandover: string; advance: string; unit: string; customer: string; handoverDate: string; revenue: string; cost: string; profit: string; margin: string };
   title?: string;
   startDate?: string;
   endDate?: string;
@@ -37,6 +37,9 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
  */
 const amount = (value: any) => (Number(value) === 0 ? '0.00' : thousandSeparator(Number(value)));
 
+const marginOf = (profit: any, revenue: any) =>
+  Number(revenue) > 0 ? `${((Number(profit) / Number(revenue)) * 100).toFixed(1)}%` : '-';
+
 const columnsFor = (labels: Props['labels']): Record<Section, { label: string; align?: string; get: (row: any) => React.ReactNode }[]> => ({
   summary: [
     { label: 'Project', get: (r) => r.project_name },
@@ -52,6 +55,18 @@ const columnsFor = (labels: Props['labels']): Record<Section, { label: string; a
     { label: 'Building', get: (r) => r.building_name || 'Whole project' },
     { label: 'Head', get: (r) => r.head_name },
     { label: 'Amount', align: 'text-right', get: (r) => amount(r.amount) },
+  ],
+  profit: [
+    { label: 'Project', get: (r) => r.project_name },
+    { label: 'Building', get: (r) => r.building_name },
+    { label: labels.unit, get: (r) => `${r.unit_no}${r.parking_no ? ` + ${r.parking_no}` : ''}` },
+    { label: labels.customer, get: (r) => r.customer },
+    { label: labels.handoverDate, get: (r) => (r.handover_date ? String(r.handover_date).slice(0, 10).split('-').reverse().join('/') : '') },
+    { label: 'Voucher', get: (r) => r.vr_no },
+    { label: labels.revenue, align: 'text-right', get: (r) => amount(r.revenue) },
+    { label: labels.cost, align: 'text-right', get: (r) => amount(r.cost) },
+    { label: labels.profit, align: 'text-right', get: (r) => amount(r.profit) },
+    { label: labels.margin, align: 'text-right', get: (r) => marginOf(r.profit, r.revenue) },
   ],
   untagged: [
     { label: 'Date', get: (r) => r.vr_date },
@@ -144,6 +159,14 @@ const ProjectIncomeReportPrint = React.forwardRef<HTMLDivElement, Props>(
                           <td className="border border-gray-400 px-1 py-1 text-right">
                             {amount(totals.advance)}
                           </td>
+                        </>
+                      ) : section === 'profit' ? (
+                        <>
+                          <td className="border border-gray-400 px-1 py-1" colSpan={6}>Total</td>
+                          <td className="border border-gray-400 px-1 py-1 text-right">{amount(totals.revenue)}</td>
+                          <td className="border border-gray-400 px-1 py-1 text-right">{amount(totals.cost)}</td>
+                          <td className="border border-gray-400 px-1 py-1 text-right">{amount(totals.profit)}</td>
+                          <td className="border border-gray-400 px-1 py-1 text-right">{marginOf(totals.profit, totals.revenue)}</td>
                         </>
                       ) : (
                         <>

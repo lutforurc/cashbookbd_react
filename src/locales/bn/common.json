@@ -1888,5 +1888,14 @@
     "kind_issue": "ইস্যু",
     "kind_issueAt": "ইস্যু — {{name}}",
     "all": "সব"
+  },
+  "unitProfit": {
+    "unit": "ইউনিট",
+    "customer": "ক্রেতা",
+    "handoverDate": "হস্তান্তরের তারিখ",
+    "revenue": "আয়",
+    "cost": "খরচ",
+    "profit": "লাভ",
+    "margin": "লাভের হার"
   }
 }

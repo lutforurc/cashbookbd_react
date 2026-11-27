@@ -24,11 +24,12 @@ import {
   API_REPORT_PROJECT_INCOME_DETAIL_URL,
   API_REPORT_PROJECT_INCOME_SUMMARY_URL,
   API_REPORT_PROJECT_INCOME_UNTAGGED_URL,
+  API_REPORT_UNIT_PROFIT_URL,
 } from '../../../services/apiRoutes';
 import routes from '../../../services/appRoutes';
 import ProjectIncomeReportPrint from './ProjectIncomeReportPrint';
 
-type Section = 'summary' | 'detail' | 'untagged';
+type Section = 'summary' | 'detail' | 'untagged' | 'profit';
 
 const SECTIONS: { key: Section; title: string; blurb: string }[] = [
   {
@@ -43,6 +44,12 @@ const SECTIONS: { key: Section; title: string; blurb: string }[] = [
       'Every earning by project, building and head. Project-wide income is left where it is rather than split across buildings by area — rent on a hoarding is not owed to a flat in proportion to its floor space.',
   },
   {
+    key: 'profit',
+    title: 'Unit Profit',
+    blurb:
+      'Profit on each handed-over flat: the price recognised at handover, less its share of the building\'s actual cost fixed that day. A reversed handover drops out.',
+  },
+  {
     key: 'untagged',
     title: 'Income Without a Project',
     blurb:
@@ -54,6 +61,7 @@ const URL_FOR: Record<Section, string> = {
   summary: API_REPORT_PROJECT_INCOME_SUMMARY_URL,
   detail: API_REPORT_PROJECT_INCOME_DETAIL_URL,
   untagged: API_REPORT_PROJECT_INCOME_UNTAGGED_URL,
+  profit: API_REPORT_UNIT_PROFIT_URL,
 };
 
 /** foundData() double-wraps, so the payload sits at data.data.data. */
@@ -99,11 +107,13 @@ const ProjectIncomeReport = ({ user }: any) => {
     summary: [],
     detail: [],
     untagged: [],
+    profit: [],
   });
   const [loaded, setLoaded] = useState<Record<Section, boolean>>({
     summary: false,
     detail: false,
     untagged: false,
+    profit: false,
   });
 
   const [loading, setLoading] = useState(false);
@@ -235,6 +245,20 @@ const ProjectIncomeReport = ({ user }: any) => {
       };
     }
 
+    if (section === 'profit') {
+      return {
+        direct: 0,
+        common: 0,
+        total: 0,
+        booked: 0,
+        handover: 0,
+        advance: 0,
+        revenue: current.reduce((s, r) => s + Number(r.revenue || 0), 0),
+        cost: current.reduce((s, r) => s + Number(r.cost || 0), 0),
+        profit: current.reduce((s, r) => s + Number(r.profit || 0), 0),
+      };
+    }
+
     return {
       direct: 0,
       common: 0,
@@ -244,6 +268,31 @@ const ProjectIncomeReport = ({ user }: any) => {
       advance: 0,
     };
   }, [current, section]);
+
+  /** Profit as a share of the price, one decimal; nothing when there is no price. */
+  const margin = (profit: any, revenue: any) =>
+    Number(revenue) > 0 ? `${((Number(profit) / Number(revenue)) * 100).toFixed(1)}%` : '-';
+
+  const profitColumns = [
+    { key: 'project_name', header: 'Project', render: (row: any) => <div>{row.project_name}</div> },
+    { key: 'building_name', header: 'Building', render: (row: any) => <div>{row.building_name}</div> },
+    {
+      key: 'unit_no',
+      header: t('unitProfit.unit'),
+      render: (row: any) => <div>{row.unit_no}{row.parking_no ? ` + ${row.parking_no}` : ''}</div>,
+    },
+    { key: 'customer', header: t('unitProfit.customer'), render: (row: any) => <div className="whitespace-normal">{row.customer}</div> },
+    {
+      key: 'handover_date',
+      header: t('unitProfit.handoverDate'),
+      render: (row: any) => <div>{row.handover_date ? dayjs(row.handover_date).format('DD/MM/YYYY') : ''}</div>,
+    },
+    { key: 'vr_no', header: 'Voucher', render: (row: any) => <div>{row.vr_no}</div> },
+    { key: 'revenue', header: t('unitProfit.revenue'), headerClass: 'text-right', cellClass: 'text-right', render: (row: any) => <div>{amount(row.revenue)}</div> },
+    { key: 'cost', header: t('unitProfit.cost'), headerClass: 'text-right', cellClass: 'text-right', render: (row: any) => <div>{amount(row.cost)}</div> },
+    { key: 'profit', header: t('unitProfit.profit'), headerClass: 'text-right', cellClass: 'text-right font-semibold', render: (row: any) => <div>{amount(row.profit)}</div> },
+    { key: 'margin', header: t('unitProfit.margin'), headerClass: 'text-right', cellClass: 'text-right', render: (row: any) => <div>{margin(row.profit, row.revenue)}</div> },
+  ];
 
   const summaryColumns = [
     {
@@ -393,7 +442,13 @@ const ProjectIncomeReport = ({ user }: any) => {
   ];
 
   const columns =
-    section === 'summary' ? summaryColumns : section === 'detail' ? detailColumns : untaggedColumns;
+    section === 'summary'
+      ? summaryColumns
+      : section === 'detail'
+        ? detailColumns
+        : section === 'profit'
+          ? profitColumns
+          : untaggedColumns;
 
   const footerRows = !hasData
     ? undefined
@@ -409,6 +464,16 @@ const ProjectIncomeReport = ({ user }: any) => {
             { label: amount(totals.advance), className: 'text-right font-semibold' },
           ],
         ]
+      : section === 'profit'
+        ? [
+            [
+              { label: 'Total', colSpan: 6, className: 'text-left font-semibold' },
+              { label: amount((totals as any).revenue), className: 'text-right font-semibold' },
+              { label: amount((totals as any).cost), className: 'text-right font-semibold' },
+              { label: amount((totals as any).profit), className: 'text-right font-semibold' },
+              { label: margin((totals as any).profit, (totals as any).revenue), className: 'text-right font-semibold' },
+            ],
+          ]
       : section === 'detail'
         ? [
             [
@@ -582,7 +647,7 @@ const ProjectIncomeReport = ({ user }: any) => {
           section={section}
           rows={current}
           totals={totals}
-          labels={{ booked: t('projectIncome.booked'), atHandover: t('projectIncome.atHandover'), advance: t('projectIncome.advance') }}
+          labels={{ booked: t('projectIncome.booked'), atHandover: t('projectIncome.atHandover'), advance: t('projectIncome.advance'), unit: t('unitProfit.unit'), customer: t('unitProfit.customer'), handoverDate: t('unitProfit.handoverDate'), revenue: t('unitProfit.revenue'), cost: t('unitProfit.cost'), profit: t('unitProfit.profit'), margin: t('unitProfit.margin') }}
           startDate={startDate ? dayjs(startDate).format('DD/MM/YYYY') : ''}
           endDate={endDate ? dayjs(endDate).format('DD/MM/YYYY') : ''}
           rowsPerPage={Number(perPage)}
