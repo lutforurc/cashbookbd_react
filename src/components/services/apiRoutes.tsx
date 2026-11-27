@@ -305,6 +305,7 @@ export const API_BRANCH_RECEIVED_STORE_URL = `${API_BASE_URL}/warehouse/transfer
 export const API_MATERIAL_ISSUE_LIST_URL = `${API_BASE_URL}/material-issue/list`;
 export const API_MATERIAL_ISSUE_DETAILS_URL = `${API_BASE_URL}/material-issue/details`;
 export const API_MATERIAL_ISSUE_STORE_URL = `${API_BASE_URL}/material-issue/store`;
+export const API_MATERIAL_ISSUE_UPDATE_URL = `${API_BASE_URL}/material-issue/update/`;
 export const API_MATERIAL_ISSUE_PRODUCT_WISE_REPORT_URL = `${API_BASE_URL}/material-issue/report/product-wise`;
 export const API_MATERIAL_ISSUE_SUMMARY_REPORT_URL = `${API_BASE_URL}/material-issue/report/summary`;
 

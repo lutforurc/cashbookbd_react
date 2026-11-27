@@ -5,6 +5,7 @@ import {
   API_MATERIAL_ISSUE_PRODUCT_WISE_REPORT_URL,
   API_MATERIAL_ISSUE_STORE_URL,
   API_MATERIAL_ISSUE_SUMMARY_REPORT_URL,
+  API_MATERIAL_ISSUE_UPDATE_URL,
 } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
 
@@ -35,6 +36,8 @@ interface MaterialIssueListPayload {
 interface MaterialIssueStorePayload {
   data: any;
   callback?: (response: any) => void;
+  /** Sent for an existing issue: the save then corrects it instead of raising a second one. */
+  id?: number | string;
 }
 
 const initialState: MaterialIssueState = {
@@ -145,9 +148,14 @@ const storeMaterialIssueThunk = createAsyncThunk<
   any,
   MaterialIssueStorePayload,
   { rejectValue: string }
->('materialIssue/storeMaterialIssue', async ({ data, callback }, thunkAPI) => {
+>('materialIssue/storeMaterialIssue', async ({ data, callback, id }, thunkAPI) => {
   try {
-    const res = await httpService.post(API_MATERIAL_ISSUE_STORE_URL, data);
+    // An id turns the same save into a correction of that issue -- the pattern
+    // the branch transfer form already uses.
+    const url = id
+      ? `${API_MATERIAL_ISSUE_UPDATE_URL}${id}`
+      : API_MATERIAL_ISSUE_STORE_URL;
+    const res = await httpService.post(url, data);
     const responseData = res.data;
 
     if (typeof callback === 'function') {
@@ -176,8 +184,8 @@ const storeMaterialIssueThunk = createAsyncThunk<
 });
 
 export const storeMaterialIssue =
-  (data: any, callback?: (response: any) => void) => (dispatch: any) =>
-    dispatch(storeMaterialIssueThunk({ data, callback }));
+  (data: any, callback?: (response: any) => void, id?: number | string) => (dispatch: any) =>
+    dispatch(storeMaterialIssueThunk({ data, callback, id }));
 
 /**
  * Shared loader for the two report endpoints. Same callback shape as

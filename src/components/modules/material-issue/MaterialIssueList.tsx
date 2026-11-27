@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiCheckSquare, FiPrinter } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { FiCheckSquare, FiEdit2, FiPrinter } from 'react-icons/fi';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -9,6 +10,8 @@ import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import { hasPermission } from '../../utils/permissionChecker';
+import ROUTES from '../../services/appRoutes';
 import { getMaterialIssues } from './materialIssueSlice';
 import MaterialIssuePrintModal from './MaterialIssuePrintModal';
 
@@ -18,7 +21,12 @@ interface MaterialIssueListProps {
 
 const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
   const materialIssue = useSelector((s: any) => s.materialIssue);
+  const permissions = useSelector((s: any) => s.settings?.data?.permissions ?? []);
+  // Correcting an issue opens the issue form, which the create permission
+  // guards; a reader who may only view the list is not offered the edit.
+  const canEdit = hasPermission(permissions, 'material.issue.create');
 
   const [search, setSearchValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -108,17 +116,31 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
     {
       key: 'action',
       header: 'Action',
-      headerClass: 'text-center w-20',
-      cellClass: 'text-center w-20',
+      headerClass: 'text-center w-24',
+      cellClass: 'text-center w-24',
       render: (row: any) => (
-        <Button
-          type="button"
-          onClick={() => setPrintId(row?.id)}
-          title="Print"
-          className="text-primary hover:text-blue-700"
-        >
-          <FiPrinter className="mx-auto cursor-pointer text-lg" />
-        </Button>
+        <div className="flex items-center justify-center gap-2">
+          {canEdit ? (
+            <Button
+              type="button"
+              onClick={() =>
+                navigate(ROUTES.material_issue, { state: { editIssueId: row?.id } })
+              }
+              title="Edit this issue"
+              className="text-amber-500 hover:text-amber-700"
+            >
+              <FiEdit2 className="mx-auto cursor-pointer text-lg" />
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            onClick={() => setPrintId(row?.id)}
+            title="Print"
+            className="text-primary hover:text-blue-700"
+          >
+            <FiPrinter className="mx-auto cursor-pointer text-lg" />
+          </Button>
+        </div>
       ),
     },
   ];

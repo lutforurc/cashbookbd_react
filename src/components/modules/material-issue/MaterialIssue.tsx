@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FIELD_SELECT } from '../../../theme/fieldStyles';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2 } from 'react-icons/fi';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FiEdit2, FiPlus, FiRefreshCcw, FiSave, FiTrash2, FiX } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
 import HelmetTitle from '../../utils/others/HelmetTitle';
@@ -13,8 +14,9 @@ import WarehouseDropdown from '../../utils/utils-functions/WarehouseDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import httpService from '../../services/httpService';
 import { API_PROJECT_DDL_LIST_URL } from '../../services/apiRoutes';
+import ROUTES from '../../services/appRoutes';
 import { getDdlWarehouse } from '../warehouse/ddlWarehouseSlider';
-import { storeMaterialIssue } from './materialIssueSlice';
+import { getMaterialIssueDetails, storeMaterialIssue } from './materialIssueSlice';
 import { Select } from '../../utils/fields/FormControls';
 
 type ProductOption = {
@@ -59,8 +61,16 @@ const newIdempotencyKey = () =>
 
 const MaterialIssue = () => {
   const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
+  const location = useLocation();
   const warehouseState = useSelector((s: any) => s.activeWarehouse);
   const warehouseOptions = Array.isArray(warehouseState?.data) ? warehouseState.data : [];
+
+  // The Issue List sends the challan here to be corrected.
+  const editIssueId = (location.state as any)?.editIssueId ?? null;
+  const [editingId, setEditingId] = useState<number | string | null>(null);
+  const [editingIssueNo, setEditingIssueNo] = useState('');
+  const [loadingVoucher, setLoadingVoucher] = useState(false);
 
   const [saveButtonLoading, setSaveButtonLoading] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState<string>(() => newIdempotencyKey());
@@ -98,6 +108,49 @@ const MaterialIssue = () => {
       })
       .catch(() => setProjectOptions([]));
   }, [dispatch]);
+
+  // The challan the Issue List named, read back into the form.
+  useEffect(() => {
+    if (!editIssueId) return;
+
+    setLoadingVoucher(true);
+    dispatch(
+      getMaterialIssueDetails(editIssueId, (response: any) => {
+        if (!response?.success) {
+          toast.error(response?.message || 'Could not load this issue.');
+          setLoadingVoucher(false);
+          return;
+        }
+
+        const master = response.data?.master ?? {};
+        const details = Array.isArray(response.data?.details) ? response.data.details : [];
+        const iso = master?.issue_date ? dayjs(master.issue_date).format('YYYY-MM-DD') : '';
+
+        setFormData({
+          issueDate: iso,
+          warehouseId: String(master?.from_warehouse_id ?? master?.warehouse_id ?? ''),
+          projectId: String(master?.project_id ?? ''),
+          receivedBy: master?.received_by ?? '',
+          note: master?.note ?? '',
+          items: details.map((row: any, index: number) => ({
+            id: index + 1,
+            productId: String(row?.product_id ?? ''),
+            productName: row?.product_name ?? '',
+            unit: row?.unit_name ?? '',
+            quantity: String(Number(row?.quantity ?? 0)),
+            building: row?.building ?? '',
+            workItem: row?.work_item ?? '',
+            note: row?.note ?? '',
+          })),
+        });
+        setIssueDate(iso ? dayjs(iso).toDate() : null);
+        setEditingId(editIssueId);
+        setEditingIssueNo(master?.issue_no || '');
+        setLoadingVoucher(false);
+      }),
+    );
+    // Loaded once, for the issue the list named.
+  }, [dispatch, editIssueId]);
 
   const handleFormInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -156,6 +209,10 @@ const MaterialIssue = () => {
     });
     setIssueDate(today.toDate());
     clearLineForm();
+    // A reset leaves the voucher being corrected: what is typed next is a new
+    // issue, not a second rewrite of the same one.
+    setEditingId(null);
+    setEditingIssueNo('');
     // A reset starts a new submission: its own token, so a later save is not
     // mistaken for a retry of the one just finished.
     setIdempotencyKey(newIdempotencyKey());
@@ -269,22 +326,59 @@ const MaterialIssue = () => {
     savingRef.current = true;
     setSaveButtonLoading(true);
     dispatch(
-      storeMaterialIssue(payload, (response: any) => {
-        if (response?.success) {
-          toast.success(response?.message || 'Material issue saved');
-          resetForm();
-        } else {
-          toast.error(response?.message || 'Failed to save material issue');
-        }
-        savingRef.current = false;
-        setSaveButtonLoading(false);
-      }),
+      storeMaterialIssue(
+        payload,
+        (response: any) => {
+          if (response?.success) {
+            toast.success(
+              response?.message ||
+                (editingId ? 'Material issue updated' : 'Material issue saved'),
+            );
+            if (editingId) {
+              // Back to the list, which reloads: the corrected row is the proof
+              // the update landed.
+              navigate(ROUTES.material_issue_list);
+            } else {
+              resetForm();
+            }
+          } else {
+            toast.error(
+              response?.message ||
+                (editingId ? 'Failed to update material issue' : 'Failed to save material issue'),
+            );
+          }
+          savingRef.current = false;
+          setSaveButtonLoading(false);
+        },
+        editingId ?? undefined,
+      ),
     );
   };
 
   return (
     <div>
-      <HelmetTitle title="Material Issue" />
+      <HelmetTitle title={editingId ? 'Edit Material Issue' : 'Material Issue'} />
+
+      {/* Says which challan is on the screen, and offers the way out of it. A
+          form that looks exactly like a blank one but saves over an existing
+          issue is how the wrong voucher gets rewritten. */}
+      {editingId ? (
+        <div className="mb-3 flex items-center justify-between gap-3 rounded-sm border border-amber-300 bg-amber-50 px-3 py-2 dark:border-amber-900/50 dark:bg-amber-900/20">
+          <span className="text-sm font-medium text-amber-800 dark:text-amber-100">
+            Editing issue {editingIssueNo || `#${editingId}`}
+            {loadingVoucher ? ' — loading…' : ''}
+          </span>
+          <Button
+            type="button"
+            onClick={() => navigate(ROUTES.material_issue_list)}
+            className="inline-flex items-center gap-1 rounded-sm border border-amber-400 px-2 py-1 text-xs font-medium text-amber-800 transition hover:bg-amber-100 dark:text-amber-100 dark:hover:bg-amber-900/40"
+          >
+            <FiX className="h-3.5 w-3.5" />
+            Cancel
+          </Button>
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-2 mb-4">
         <InputDatePicker
  id="issueDate"
@@ -440,7 +534,9 @@ const MaterialIssue = () => {
           onClick={handleSave}
           buttonLoading={saveButtonLoading}
           disabled={saveButtonLoading}
-          label={saveButtonLoading ? 'Saving...' : 'Save'}
+          label={
+            saveButtonLoading ? 'Saving...' : editingId ? 'Update' : 'Save'
+          }
           className="whitespace-nowrap text-center mr-0 py-2"
           icon={<FiSave className="text-lg mr-2" />}
         />
