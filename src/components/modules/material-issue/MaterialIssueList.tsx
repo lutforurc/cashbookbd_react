@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FiCheckSquare, FiEdit2, FiPrinter } from 'react-icons/fi';
+import { FiCheckSquare, FiEdit2, FiPrinter, FiTrash2 } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
 import Loader from '../../../common/Loader';
 import SearchInput from '../../utils/fields/SearchInput';
@@ -10,7 +11,12 @@ import Table from '../../utils/others/Table';
 import SelectOption from '../../utils/utils-functions/SelectOption';
 import Pagination from '../../utils/utils-functions/Pagination';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
+import InlineConfirm, {
+  InlineConfirmPosition,
+} from '../../utils/components/InlineConfirm';
 import { hasPermission } from '../../utils/permissionChecker';
+import httpService from '../../services/httpService';
+import { API_MATERIAL_ISSUE_DESTROY_URL } from '../../services/apiRoutes';
 import ROUTES from '../../services/appRoutes';
 import { getMaterialIssues } from './materialIssueSlice';
 import MaterialIssuePrintModal from './MaterialIssuePrintModal';
@@ -34,6 +40,12 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
   const [perPage, setPerPage] = useState<number | string>(10);
   const [searchLoading, setSearchLoading] = useState(false);
   const [printId, setPrintId] = useState<number | string | null>(null);
+  // Which row is being asked about, and where its button is, so the confirm
+  // opens against that row rather than in the middle of the list.
+  const [pendingDelete, setPendingDelete] = useState<
+    { id: number | string; issueNo: string; at: InlineConfirmPosition } | null
+  >(null);
+  const [deletingId, setDeletingId] = useState<number | string | null>(null);
 
   useEffect(() => {
     dispatch(getMaterialIssues({ page, perPage, search }));
@@ -57,6 +69,36 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage);
     setCurrentPage(nextPage);
+  };
+
+  /** Sends the issue to the recycle bin, where it can be restored. */
+  const deleteIssue = async (id: number | string) => {
+    setDeletingId(id);
+
+    try {
+      const response = await httpService.post(`${API_MATERIAL_ISSUE_DESTROY_URL}${id}`);
+
+      if (response?.data?.success) {
+        toast.success(response.data.message || 'Material issue deleted.');
+        // Anything opened against the row that has just gone would be reading a
+        // challan no longer in the list.
+        setPrintId(null);
+        dispatch(getMaterialIssues({ page, perPage, search }));
+        return;
+      }
+
+      // A refusal -- a closed year, another branch's voucher -- carries the
+      // reason, and the reason is the whole point of showing it.
+      toast.error(
+        response?.data?.message || response?.data?.error?.message || 'Could not delete this issue.',
+      );
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || error?.message || 'Could not delete this issue.',
+      );
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const totalPages = Number(materialIssue?.pagination?.lastPage || 1);
@@ -116,8 +158,8 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
     {
       key: 'action',
       header: 'Action',
-      headerClass: 'text-center w-24',
-      cellClass: 'text-center w-24',
+      headerClass: 'text-center w-28',
+      cellClass: 'text-center w-28',
       render: (row: any) => (
         <div className="flex items-center justify-center gap-2">
           {canEdit ? (
@@ -130,6 +172,24 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
               className="text-amber-500 hover:text-amber-700"
             >
               <FiEdit2 className="mx-auto cursor-pointer text-lg" />
+            </Button>
+          ) : null}
+          {canEdit ? (
+            <Button
+              type="button"
+              onClick={(event) => {
+                const rect = event.currentTarget.getBoundingClientRect();
+                setPendingDelete({
+                  id: row?.id,
+                  issueNo: String(row?.issue_no || ''),
+                  at: { top: rect.bottom + 10, left: rect.left + rect.width / 2 },
+                });
+              }}
+              title="Delete this issue"
+              disabled={deletingId === row?.id}
+              className="text-red-500 hover:text-red-700 disabled:opacity-40"
+            >
+              <FiTrash2 className="mx-auto cursor-pointer text-lg" />
             </Button>
           ) : null}
           <Button
@@ -183,6 +243,22 @@ const MaterialIssueList = ({ refreshKey = 0 }: MaterialIssueListProps) => {
           ''
         )}
       </div>
+
+      <InlineConfirm
+        position={pendingDelete?.at ?? null}
+        question={
+          pendingDelete?.issueNo
+            ? `Delete ${pendingDelete.issueNo}?`
+            : 'Delete this issue?'
+        }
+        tone="danger"
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          const pending = pendingDelete;
+          setPendingDelete(null);
+          if (pending) deleteIssue(pending.id);
+        }}
+      />
 
       {printId !== null && (
         <MaterialIssuePrintModal id={printId} onClose={() => setPrintId(null)} />
