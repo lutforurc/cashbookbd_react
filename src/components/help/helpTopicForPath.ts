@@ -134,6 +134,8 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
   '/inventory/branch-received': 'branch-receive',
   '/inventory/material-issue': 'material-issue',
   '/inventory/material-issue-list': 'material-issue',
+  '/inventory/material-issue/report/product-wise': 'material-issue-product-wise-report',
+  '/inventory/material-issue/report/summary': 'material-issue-summary-report',
   '/branch/branch-list': 'branch-list',
 
   // Chart of Accounts

@@ -362,6 +362,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
       'sales.import',
       'purchase.return.view',
       'sales.return',
+      'sales.return.create',
+      'sales.return.view',
       'labour.invoice.create',
       'trading.combined.create',
       'tiles.combined.create',
@@ -1151,7 +1153,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                               </NavLink>
                             </li>
                           )}
-                          {hasPermission(permissions, 'sales.return') && (
+                          {/* The Roles screen grants sales.return.create / .edit / .delete / .view;
+                              the bare sales.return is legacy. Any of them opens the menu. */}
+                          {['sales.return', 'sales.return.create', 'sales.return.view', 'sales.return.edit'].some((key) => hasPermission(permissions, key)) && (
                             <li style={subSlot('invoice', 'inv_sales_return')}>
                               <NavLink
                                 to={routes.inv_sales_return}

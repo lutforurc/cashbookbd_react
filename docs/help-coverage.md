@@ -156,6 +156,8 @@
 | branch_transfer | Inventory → Branch Issue | `/inventory/branch-transfer` | `branch-issue` | done |
 | material_issue | Inventory → Material Issue | `/inventory/material-issue` | `material-issue` | done |
 | material_issue_list | Inventory → Issue List | `/inventory/material-issue-list` | `material-issue` | done |
+| material_issue_product_wise_report | Inventory → Material Issue → Product-wise Report | `/inventory/material-issue/report/product-wise` | `material-issue-product-wise-report` | done |
+| material_issue_summary_report | Inventory → Material Issue → Summary Report | `/inventory/material-issue/report/summary` | `material-issue-summary-report` | done |
 | product_in | Inventory → Product In | `/inventory/product-in` | `product-in` | done |
 | product_in_reason | Inventory → Product In → Reasons | `/inventory/product-in/reasons` | `product-in-reasons` | done |
 | product_in_report | Inventory → Product In Register | `/inventory/product-in/register` | `product-in-register` | done |

@@ -49,7 +49,7 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Purchase Return', path: routes.inv_purchase_return, group: 'Invoice', permissions: ['purchase.return.view'] },
   { title: 'Sales Invoice', path: routes.inv_sales, group: 'Invoice', keywords: ['new sale', 'sell', 'sales entry'], permissions: ['sales.create'] },
   { title: 'Sales Import', path: routes.inv_sales_import, group: 'Invoice', permissions: ['sales.import'] },
-  { title: 'Sales Return', path: routes.inv_sales_return, group: 'Invoice', permissions: ['sales.return'] },
+  { title: 'Sales Return', path: routes.inv_sales_return, group: 'Invoice', permissions: ['sales.return', 'sales.return.create', 'sales.return.view', 'sales.return.edit'] },
   { title: 'Labour Invoice', path: routes.inv_labour, group: 'Invoice', permissions: ['labour.invoice.create'] },
 
   { title: 'Product List', path: routes.product_list, group: 'Products', permissions: ['products.view'] },
@@ -195,6 +195,8 @@ const globalSearchItems: GlobalSearchItem[] = [
   { title: 'Branch Stock', path: routes.report_branch_stock, group: 'Branch Transfer', permissions: ['branch.stock.view'] },
   { title: 'Material Issue', path: routes.material_issue, group: 'Branch Transfer', permissions: ['material.issue.create'] },
   { title: 'Issue List', path: routes.material_issue_list, group: 'Branch Transfer', permissions: ['asset.issue.view'] },
+  { title: 'Materials Issue Product-wise Report', path: routes.material_issue_product_wise_report, group: 'Branch Transfer', keywords: ['material issue report', 'purchase issue ledger'], permissions: ['material.issue.create'] },
+  { title: 'Materials Issue Summary Report', path: routes.material_issue_summary_report, group: 'Branch Transfer', keywords: ['material stock summary', 'issue summary'], permissions: ['material.issue.create'] },
   { title: 'Product Out', path: routes.product_out, group: 'Branch Transfer', keywords: ['damage', 'lost', 'write off', 'stock out'], permissions: ['product.out.create'] },
   { title: 'Product Out Register', path: routes.product_out_report, group: 'Branch Transfer', keywords: ['write-off register', 'damage list'], permissions: ['product.out.report.view'] },
   { title: 'Product Out Reasons', path: routes.product_out_reason, group: 'Branch Transfer', permissions: ['product.out.reason.manage'] },

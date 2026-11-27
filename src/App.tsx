@@ -276,6 +276,8 @@ import BranchReceiveListReport from './components/modules/reports/branch-receive
 import BranchStockReport from './components/modules/reports/branch-stock-report/BranchStockReport';
 import MaterialIssue from './components/modules/material-issue/MaterialIssue';
 import MaterialIssueListPage from './components/modules/material-issue/MaterialIssueListPage';
+import MaterialIssueProductWiseReport from './components/modules/material-issue/MaterialIssueProductWiseReport';
+import MaterialIssueSummaryReport from './components/modules/material-issue/MaterialIssueSummaryReport';
 import ProductOut from './components/modules/product-out/ProductOut';
 import ProductOutReason from './components/modules/product-out/ProductOutReason';
 import ProductOutReport from './components/modules/product-out/ProductOutReport';
@@ -1178,6 +1180,10 @@ function App() {
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['asset.issue.view']} loading={permissionsLoading} />}>
                 <Route path={routes.material_issue_list} element={<MaterialIssueListPage />} />
               </Route>
+              <Route element={<RequirePermission permissions={userPermissions} anyOf={['material.issue.create']} loading={permissionsLoading} />}>
+                <Route path={routes.material_issue_product_wise_report} element={<MaterialIssueProductWiseReport />} />
+                <Route path={routes.material_issue_summary_report} element={<MaterialIssueSummaryReport />} />
+              </Route>
               <Route element={<RequirePermission permissions={userPermissions} anyOf={['product.out.create']} loading={permissionsLoading} />}>
                 <Route path={routes.product_out} element={<ProductOut />} />
               </Route>
@@ -1619,7 +1625,7 @@ function App() {
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.import']} loading={permissionsLoading} />}>
               <Route path={routes.inv_sales_import} element={<TradingSalesImport />} />
             </Route>
-            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.return']} loading={permissionsLoading} />}>
+            <Route element={<RequirePermission permissions={userPermissions} anyOf={['sales.return', 'sales.return.create', 'sales.return.view', 'sales.return.edit']} loading={permissionsLoading} />}>
               <Route path={routes.inv_sales_return} element={<GeneralBusinessSalesReturn />} />
             </Route>
             <Route element={<RequirePermission permissions={userPermissions} anyOf={['delivery.view']} loading={permissionsLoading} />}>

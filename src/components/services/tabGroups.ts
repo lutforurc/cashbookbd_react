@@ -326,6 +326,8 @@ export const BT_PRODUCT_OUT_TABS: RouteTab[] = [
   // form as well, but a reader checking what has gone out should not have to
   // pass a form first. It answers to the list endpoint's own permission.
   { label: 'Issue List', path: routes.material_issue_list, permission: 'asset.issue.view' },
+  { label: 'Product-wise Report', path: routes.material_issue_product_wise_report, permission: 'material.issue.create' },
+  { label: 'Summary Report', path: routes.material_issue_summary_report, permission: 'material.issue.create' },
   { label: 'Product Out', path: routes.product_out, permission: 'product.out.create' },
   { label: 'Write-off Register', path: routes.product_out_report, permission: 'product.out.report.view' },
   { label: 'Out Reasons', path: routes.product_out_reason, permission: 'product.out.reason.manage' },

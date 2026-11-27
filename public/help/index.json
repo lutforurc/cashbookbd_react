@@ -184,6 +184,8 @@
         "branch-issue",
         "branch-receive",
         "material-issue",
+        "material-issue-product-wise-report",
+        "material-issue-summary-report",
         "branch-list"
       ]
     },

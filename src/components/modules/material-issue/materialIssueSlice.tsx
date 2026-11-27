@@ -2,7 +2,9 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
   API_MATERIAL_ISSUE_DETAILS_URL,
   API_MATERIAL_ISSUE_LIST_URL,
+  API_MATERIAL_ISSUE_PRODUCT_WISE_REPORT_URL,
   API_MATERIAL_ISSUE_STORE_URL,
+  API_MATERIAL_ISSUE_SUMMARY_REPORT_URL,
 } from '../../services/apiRoutes';
 import httpService from '../../services/httpService';
 
@@ -17,6 +19,10 @@ interface MaterialIssueState {
     currentPage: number;
   };
   storeData: any;
+  productWiseReport: any;
+  summaryReport: any;
+  reportLoading: boolean;
+  reportError: string | null;
 }
 
 interface MaterialIssueListPayload {
@@ -42,6 +48,10 @@ const initialState: MaterialIssueState = {
     currentPage: 1,
   },
   storeData: {},
+  productWiseReport: null,
+  summaryReport: null,
+  reportLoading: false,
+  reportError: null,
 };
 
 const normalizeListPayload = (payload: any): MaterialIssueListPayload => {
@@ -169,10 +179,74 @@ export const storeMaterialIssue =
   (data: any, callback?: (response: any) => void) => (dispatch: any) =>
     dispatch(storeMaterialIssueThunk({ data, callback }));
 
+/**
+ * Shared loader for the two report endpoints. Same callback shape as
+ * getMaterialIssueDetails(): the screen is told whether the call succeeded and
+ * gets the unwrapped payload, while state is filled by the reducers below.
+ */
+const loadReport = async (
+  url: string,
+  params: any,
+  callback: ((response: any) => void) | undefined,
+  thunkAPI: any,
+) => {
+  try {
+    const res = await httpService.get(url, { params });
+    const responseData = res.data;
+
+    if (responseData?.success) {
+      const payload = responseData?.data?.data ?? responseData?.data ?? {};
+      if (typeof callback === 'function') callback({ success: true, data: payload });
+      return payload;
+    }
+
+    const message =
+      responseData?.error?.message ||
+      responseData?.message ||
+      'Failed to load the report';
+    if (typeof callback === 'function') callback({ success: false, message });
+    return thunkAPI.rejectWithValue(message);
+  } catch (err: any) {
+    const message = err?.response?.data?.message || err?.message || 'Something went wrong';
+    if (typeof callback === 'function') callback({ success: false, message });
+    return thunkAPI.rejectWithValue(message);
+  }
+};
+
+const getMaterialIssueProductWiseReportThunk = createAsyncThunk<
+  any,
+  { params: any; callback?: (response: any) => void },
+  { rejectValue: string }
+>('materialIssue/getMaterialIssueProductWiseReport', ({ params, callback }, thunkAPI) =>
+  loadReport(API_MATERIAL_ISSUE_PRODUCT_WISE_REPORT_URL, params, callback, thunkAPI),
+);
+
+export const getMaterialIssueProductWiseReport =
+  (params: any, callback?: (response: any) => void) => (dispatch: any) =>
+    dispatch(getMaterialIssueProductWiseReportThunk({ params, callback }));
+
+const getMaterialIssueSummaryReportThunk = createAsyncThunk<
+  any,
+  { params: any; callback?: (response: any) => void },
+  { rejectValue: string }
+>('materialIssue/getMaterialIssueSummaryReport', ({ params, callback }, thunkAPI) =>
+  loadReport(API_MATERIAL_ISSUE_SUMMARY_REPORT_URL, params, callback, thunkAPI),
+);
+
+export const getMaterialIssueSummaryReport =
+  (params: any, callback?: (response: any) => void) => (dispatch: any) =>
+    dispatch(getMaterialIssueSummaryReportThunk({ params, callback }));
+
 const materialIssueSlice = createSlice({
   name: 'materialIssue',
   initialState,
-  reducers: {},
+  reducers: {
+    clearMaterialIssueReports(state) {
+      state.productWiseReport = null;
+      state.summaryReport = null;
+      state.reportError = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getMaterialIssues.pending, (state) => {
@@ -203,8 +277,34 @@ const materialIssueSlice = createSlice({
       .addCase(storeMaterialIssueThunk.rejected, (state, action) => {
         state.isSaving = false;
         state.errors = action.payload || 'Failed to save material issue';
+      })
+      .addCase(getMaterialIssueProductWiseReportThunk.pending, (state) => {
+        state.reportLoading = true;
+        state.reportError = null;
+      })
+      .addCase(getMaterialIssueProductWiseReportThunk.fulfilled, (state, action) => {
+        state.reportLoading = false;
+        state.productWiseReport = action.payload;
+      })
+      .addCase(getMaterialIssueProductWiseReportThunk.rejected, (state, action) => {
+        state.reportLoading = false;
+        state.reportError = action.payload || 'Failed to load the report';
+      })
+      .addCase(getMaterialIssueSummaryReportThunk.pending, (state) => {
+        state.reportLoading = true;
+        state.reportError = null;
+      })
+      .addCase(getMaterialIssueSummaryReportThunk.fulfilled, (state, action) => {
+        state.reportLoading = false;
+        state.summaryReport = action.payload;
+      })
+      .addCase(getMaterialIssueSummaryReportThunk.rejected, (state, action) => {
+        state.reportLoading = false;
+        state.reportError = action.payload || 'Failed to load the report';
       });
   },
 });
+
+export const { clearMaterialIssueReports } = materialIssueSlice.actions;
 
 export default materialIssueSlice.reducer;

@@ -112,6 +112,32 @@
       { "heading": "সতর্কতা", "warning": "ছাপার চালান Material Issue Challan; প্রকল্প না বাছলে সেভ হবে না। কাজ শেষে Received By-এর নাম রাখুন, নাহলে দায় মেলানো কঠিন।" }
     ]
   },
+  "material-issue-product-wise-report": {
+    "title": "মালামাল ইস্যু — পণ্যভিত্তিক রিপোর্ট",
+    "module": "Inventory",
+    "updated": "27/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "একটি মালামালের ক্রয় ও ইস্যু তারিখ অনুযায়ী, সাথে চলতি জমা — কোন তারিখে কত ঢুকল, কত গেল, কত রইল।",
+    "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ material.issue.create permission থাকলে।"] },
+      { "heading": "রিপোর্ট", "menu": "Branch Transfer → Product Out → Product-wise Report", "steps": ["From ও To তারিখ দিন, Material নির্বাচন করুন (চাইলে Warehouse), তারপর Apply চাপুন।", "সারিতে Date, Description (Purchase with supplier / Purchase Return / Issue work item), Unit, Total Quantity, Issue Quantity, Remaining ও Notes দেখা যায়।", "From-এর আগে কিছু এসে থাকলে বা গিয়ে থাকলে প্রথমে Opening Balance সারি আসে: Total Quantity-তে আগের ক্রয় ও ওপেনিং স্টক (ফেরত বাদে), Issue Quantity-তে আগের ইস্যু। Remaining তার উপর চলতে থাকে।", "Purchase Return আলাদা সারিতে আসে, Total Quantity-তে বিয়োগ (মাইনাস) হিসেবে।", "নিচের মোট = প্রতিটি কলামের যোগফল (Opening সারিসহ), তাই Total − Issued = Remaining, আর Summary Report-এর একই মালামালের সংখ্যার সাথে মেলে।", "Print চাপলে প্যাডে শিরোনাম ও মালামালের নামসহ ছাপা হয়।"] },
+      { "heading": "সতর্কতা", "warning": "Total Quantity আসে Purchase invoice, ওপেনিং স্টক ও Purchase Return থেকে; Product In, Product Out ও Branch Transfer এতে ধরা হয় না। Warehouse নির্বাচন করলে ওপেনিং স্টক ও Purchase Return বাদ পড়ে, কারণ এগুলোতে গুদাম লেখা থাকে না।" }
+    ]
+  },
+  "material-issue-summary-report": {
+    "title": "মালামাল ইস্যু — সারসংক্ষেপ রিপোর্ট",
+    "module": "Inventory",
+    "updated": "27/11/2026",
+    "businessTypes": ["all"],
+    "video": "",
+    "intro": "নির্বাচিত সময় শেষে প্রতিটি মালামালের মোট ক্রয়, মোট ইস্যু ও অবশিষ্ট — আগের সময়ের জেরসহ, এক পাতায়।",
+    "sections": [
+      { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ material.issue.create permission থাকলে।"] },
+      { "heading": "রিপোর্ট", "menu": "Branch Transfer → Product Out → Summary Report", "steps": ["From ও To তারিখ দিন (চাইলে Warehouse), তারপর Apply চাপুন।", "প্রতিটি সারিতে Materials Name, Unit, Total Quantity, Issue Quantity ও Remaining দেখা যায়।", "Total Quantity ও Issue Quantity হলো To তারিখ পর্যন্ত মোট (From-এর আগেরটাসহ), তাই Remaining প্রকৃত মজুদ; যে মালামাল এই সময়ে নড়েনি সেটিও তালিকায় থাকে।", "সব মালামালের Unit এক হলে নিচে মোট সারি আসে; Unit আলাদা হলে (যেমন kg ও pcs) মোট দেখানো হয় না, কারণ সেগুলো যোগ করা যায় না।"] },
+      { "heading": "সতর্কতা", "warning": "Total Quantity = Purchase invoice + ওপেনিং স্টক − Purchase Return; Product In, Product Out ও Branch Transfer এতে ধরা হয় না। Warehouse নির্বাচন করলে ওপেনিং স্টক ও Purchase Return বাদ পড়ে।" }
+    ]
+  },
   "branch-list": {
     "title": "শাখার তালিকা",
     "module": "Inventory",
