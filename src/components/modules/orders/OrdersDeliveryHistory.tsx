@@ -1,16 +1,20 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FiCheckSquare, FiRefreshCw } from 'react-icons/fi';
+import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import Table from '../../utils/others/Table';
 import type { Column, TableFooterCell } from '../../utils/others/Table';
 import OrderDropdown from '../../utils/utils-functions/OrderDropdown';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
-import { ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
+import PrintRowsInput from '../../utils/fields/PrintRowsInput';
+import PrintFontInput from '../../utils/fields/PrintFontInput';
 import Loader from '../../../common/Loader';
 import httpService from '../../services/httpService';
 import { API_ORDERS_TRANSACTION_URL } from '../../services/apiRoutes';
+import OrdersDeliveryHistoryPrint from './OrdersDeliveryHistoryPrint';
 
 /**
  * Delivery History Report.
@@ -37,7 +41,7 @@ const formatNumber = (value: any) => {
   return numeric === 0 ? '-' : thousandSeparator(numeric);
 };
 
-interface DeliveryLine {
+export interface DeliveryLine {
   key: string;
   vr_no: string;
   date: string;
@@ -51,7 +55,7 @@ interface DeliveryLine {
   due: number;
 }
 
-interface DeliveryHistory {
+export interface DeliveryHistory {
   orderNumber: string;
   orderType: string;
   orderFor: string;
@@ -137,6 +141,27 @@ const OrdersDeliveryHistory: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [history, setHistory] = useState<DeliveryHistory | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // The Cash Book's print boxes: 0 rows means one unbroken sheet and the
+  // browser breaks it.
+  const [printRowsPerPage, setPrintRowsPerPage] = useState<number>(0);
+  const [printFontSize, setPrintFontSize] = useState<number>(10);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: 'Delivery History',
+  });
+
+  const handlePrintRowsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintRowsPerPage(Number.isNaN(value) ? 0 : value);
+  };
+
+  const handlePrintFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintFontSize(Number.isNaN(value) ? 10 : value);
+  };
 
   const load = useCallback(async (order: any) => {
     if (!order?.value) {
@@ -332,6 +357,34 @@ const OrdersDeliveryHistory: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Rows, Font and Print -- the Cash Book's own three controls. */}
+        <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+          <PrintRowsInput
+            id="delivery_history_print_rows"
+            name="delivery_history_print_rows"
+            label=""
+            value={String(printRowsPerPage)}
+            onChange={handlePrintRowsChange}
+            type="text"
+            className="w-20! text-center"
+          />
+          <PrintFontInput
+            id="delivery_history_print_font"
+            name="delivery_history_print_font"
+            label=""
+            value={String(printFontSize)}
+            onChange={handlePrintFontSizeChange}
+            type="text"
+            className="w-20! text-center"
+          />
+          <PrintButton
+            onClick={handlePrint}
+            label="Print"
+            className="px-6"
+            disabled={!history || history.lines.length === 0}
+          />
+        </div>
       </div>
 
       {isLoading ? <Loader /> : null}
@@ -395,6 +448,15 @@ const OrdersDeliveryHistory: React.FC = () => {
           </div>
         </>
       ) : null}
+
+      <div className="hidden">
+        <OrdersDeliveryHistoryPrint
+          ref={printRef}
+          history={history}
+          rowsPerPage={printRowsPerPage}
+          fontSize={printFontSize}
+        />
+      </div>
     </div>
   );
 };

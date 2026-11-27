@@ -1,14 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FiCheckSquare, FiRefreshCw } from 'react-icons/fi';
+import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
 import HelmetTitle from '../../utils/others/HelmetTitle';
 import SearchInput from '../../utils/fields/SearchInput';
 import InputDatePicker from '../../utils/fields/DatePicker';
 import OrderTypes from '../../utils/utils-functions/OrderTypes';
-import { Button, ButtonLoading } from '../../../pages/UiElements/CustomButtons';
+import { Button, ButtonLoading, PrintButton } from '../../../pages/UiElements/CustomButtons';
+import PrintRowsInput from '../../utils/fields/PrintRowsInput';
+import PrintFontInput from '../../utils/fields/PrintFontInput';
 import Loader from '../../../common/Loader';
 import httpService from '../../services/httpService';
 import { API_ORDERS_LIST_URL } from '../../services/apiRoutes';
+import OrdersUndeliveryPrint from './OrdersUndeliveryPrint';
 
 /**
  * Pending Deliveries Report.
@@ -67,7 +71,7 @@ interface UndeliveredLine {
   remaining_amount: number;
 }
 
-interface UndeliveredGroup {
+export interface UndeliveredGroup {
   key: string;
   order_number: string;
   order_date: string;
@@ -202,6 +206,27 @@ const OrdersUndelivery: React.FC = () => {
 
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // The Cash Book's print boxes: 0 rows means one unbroken sheet and the
+  // browser breaks it.
+  const [printRowsPerPage, setPrintRowsPerPage] = useState<number>(0);
+  const [printFontSize, setPrintFontSize] = useState<number>(10);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: 'Pending Deliveries Report',
+  });
+
+  const handlePrintRowsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintRowsPerPage(Number.isNaN(value) ? 0 : value);
+  };
+
+  const handlePrintFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setPrintFontSize(Number.isNaN(value) ? 10 : value);
+  };
 
   const load = useCallback(
     async (filters: typeof applied) => {
@@ -386,7 +411,7 @@ const OrdersUndelivery: React.FC = () => {
               a reader sees that lines have been dropped and can bring them
               back. "Pending Only" is what the report is for; "All Lines" is
               how a delivery is checked. */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {[
               { key: true, label: 'Pending Only' },
               { key: false, label: 'All Lines' },
@@ -409,6 +434,32 @@ const OrdersUndelivery: React.FC = () => {
                 </Button>
               );
             })}
+
+            {/* Rows, Font and Print -- the Cash Book's own three controls. */}
+            <PrintRowsInput
+              id="undelivery_print_rows"
+              name="undelivery_print_rows"
+              label=""
+              value={String(printRowsPerPage)}
+              onChange={handlePrintRowsChange}
+              type="text"
+              className="w-20! text-center"
+            />
+            <PrintFontInput
+              id="undelivery_print_font"
+              name="undelivery_print_font"
+              label=""
+              value={String(printFontSize)}
+              onChange={handlePrintFontSizeChange}
+              type="text"
+              className="w-20! text-center"
+            />
+            <PrintButton
+              onClick={handlePrint}
+              label="Print"
+              className="px-6"
+              disabled={groups.length === 0}
+            />
           </div>
         </div>
       </div>
@@ -462,78 +513,84 @@ const OrdersUndelivery: React.FC = () => {
                 </td>
               </tr>
             ) : (
-              groups.map((group) => (
-                <React.Fragment key={group.key}>
-                  {group.lines.map((line, lineIndex) => (
-                    <tr
-                      key={line.key}
-                      className="hover:bg-indigo-50 dark:hover:bg-gray-700"
-                    >
-                      <td className={`${cell} text-center align-top`}>{lineIndex + 1}</td>
-                      {lineIndex === 0 ? (
-                        <>
-                          {/* The block's identity, merged down every line and
-                              the Total row beside them, the way the printed
-                              sheet reads. The date sits under its number.
-                              These two cells end at the block's own foot, so
-                              they carry the same heavier rule the Total row
-                              does -- otherwise the block's line stops at the
-                              columns they cover. */}
-                          <td
-                            rowSpan={group.lines.length + 1}
-                            className={`${cell} border-b-2 border-b-slate-400 text-center align-middle dark:border-b-gray-500`}
-                          >
-                            <span className="block font-medium">{group.order_number}</span>
-                            <span className="block text-xs text-slate-500 dark:text-slate-400">
-                              {group.order_date}
-                            </span>
-                          </td>
-                          <td
-                            rowSpan={group.lines.length + 1}
-                            className={`${cell} border-b-2 border-b-slate-400 align-middle dark:border-b-gray-500`}
-                          >
-                            {group.order_for}
-                          </td>
-                        </>
-                      ) : null}
-                      <td className={cell}>{line.product_name}</td>
-                      <td className={`${cell} text-right`}>{formatQty(line.order_qty)}</td>
-                      <td className={`${cell} text-right`}>{formatQty(line.delivered_qty)}</td>
-                      <td
-                        className={`${cell} text-right font-semibold text-emerald-600 dark:text-emerald-400`}
-                      >
-                        {formatQty(line.remaining_qty)}
-                      </td>
-                      <td className={`${cell} text-right`}>{formatMoney(line.order_rate)}</td>
-                      <td className={`${cell} text-right font-semibold`}>
-                        {formatMoney(line.remaining_amount)}
-                      </td>
-                    </tr>
-                  ))}
+              groups.map((group) => {
+                // A single-product block needs no Total row: it would only
+                // repeat the one line above it. The block's heavier closing rule
+                // then falls on that line.
+                const hasTotalRow = group.lines.length > 1;
 
-                  {/* The block's own total, closed with a heavier rule so the
-                      next order reads as a block of its own. */}
-                  <tr className="bg-slate-50/70 dark:bg-slate-900/40">
-                    <td className={`${cell} border-b-2 border-b-slate-400 dark:border-b-gray-500`} />
-                    <td className={`${cell} border-b-2 border-b-slate-400 text-right font-semibold dark:border-b-gray-500`}>
-                      Total:
-                    </td>
-                    <td className={`${cell} border-b-2 border-b-slate-400 text-right font-semibold dark:border-b-gray-500`}>
-                      {formatQty(group.order_qty)}
-                    </td>
-                    <td className={`${cell} border-b-2 border-b-slate-400 text-right font-semibold dark:border-b-gray-500`}>
-                      {formatQty(group.delivered_qty)}
-                    </td>
-                    <td className={`${cell} border-b-2 border-b-slate-400 text-right font-semibold dark:border-b-gray-500`}>
-                      {formatQty(group.remaining_qty)}
-                    </td>
-                    <td className={`${cell} border-b-2 border-b-slate-400 dark:border-b-gray-500`} />
-                    <td className={`${cell} border-b-2 border-b-slate-400 text-right font-semibold dark:border-b-gray-500`}>
-                      {formatMoney(group.remaining_amount)}
-                    </td>
-                  </tr>
-                </React.Fragment>
-              ))
+                return (
+                  <React.Fragment key={group.key}>
+                    {group.lines.map((line, lineIndex) => {
+                      return (
+                        <tr
+                          key={line.key}
+                          className="hover:bg-indigo-50 dark:hover:bg-gray-700"
+                        >
+                          <td className={`${cell} text-center align-top`}>{lineIndex + 1}</td>
+                          {lineIndex === 0 ? (
+                            <>
+                              {/* The block's identity, merged down every line and
+                                  the Total row beside them, the way the printed
+                                  sheet reads. The date sits under its number. */}
+                              <td
+                                rowSpan={group.lines.length + (hasTotalRow ? 1 : 0)}
+                                className={`${cell} text-center align-middle`}
+                              >
+                                <span className="block font-medium">{group.order_number}</span>
+                                <span className="block text-xs text-slate-500 dark:text-slate-400">
+                                  {group.order_date}
+                                </span>
+                              </td>
+                              <td
+                                rowSpan={group.lines.length + (hasTotalRow ? 1 : 0)}
+                                className={`${cell} align-middle`}
+                              >
+                                {group.order_for}
+                              </td>
+                            </>
+                          ) : null}
+                          <td className={cell}>{line.product_name}</td>
+                          <td className={`${cell} text-right`}>{formatQty(line.order_qty)}</td>
+                          <td className={`${cell} text-right`}>{formatQty(line.delivered_qty)}</td>
+                          <td
+                            className={`${cell} text-right font-semibold text-emerald-600 dark:text-emerald-400`}
+                          >
+                            {formatQty(line.remaining_qty)}
+                          </td>
+                          <td className={`${cell} text-right`}>{formatMoney(line.order_rate)}</td>
+                          <td className={`${cell} text-right font-semibold`}>
+                            {formatMoney(line.remaining_amount)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {/* The block's own total, where it has more than one line. */}
+                    {hasTotalRow ? (
+                      <tr className="bg-slate-50/70 dark:bg-slate-900/40">
+                        <td className={cell} />
+                        <td className={`${cell} text-right font-semibold`}>
+                          Total:
+                        </td>
+                        <td className={`${cell} text-right font-semibold`}>
+                          {formatQty(group.order_qty)}
+                        </td>
+                        <td className={`${cell} text-right font-semibold`}>
+                          {formatQty(group.delivered_qty)}
+                        </td>
+                        <td className={`${cell} text-right font-semibold`}>
+                          {formatQty(group.remaining_qty)}
+                        </td>
+                        <td className={cell} />
+                        <td className={`${cell} text-right font-semibold`}>
+                          {formatMoney(group.remaining_amount)}
+                        </td>
+                      </tr>
+                    ) : null}
+                  </React.Fragment>
+                );
+              })
             )}
           </tbody>
 
@@ -566,6 +623,19 @@ const OrdersUndelivery: React.FC = () => {
           ? `${lineCount} line${lineCount === 1 ? '' : 's'} still to deliver in ${groups.length} order${groups.length === 1 ? '' : 's'}.`
           : `${lineCount} line${lineCount === 1 ? '' : 's'} in ${groups.length} order${groups.length === 1 ? '' : 's'}, delivered and outstanding.`}
       </p>
+
+      <div className="hidden">
+        <OrdersUndeliveryPrint
+          ref={printRef}
+          groups={groups}
+          startDate={applied.startDate}
+          endDate={applied.endDate}
+          searchText={searchFilter}
+          onlyUndelivered={applied.onlyUndelivered}
+          rowsPerPage={printRowsPerPage}
+          fontSize={printFontSize}
+        />
+      </div>
     </div>
   );
 };
