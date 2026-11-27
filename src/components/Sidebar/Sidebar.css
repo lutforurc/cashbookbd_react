@@ -32,12 +32,23 @@
   overflow: hidden;
 }
 
-.app-sidebar-menu nav > div > ul > li > div[class*='max-h-'] > ul > li:first-child {
-  padding-top: 0.5rem;
+/* Room above the first entry and below the last, as SHOWN. The entries are
+   placed with flex `order` (Arrange Menu), so :first-child / :last-child named
+   whichever came first in the markup -- Company & Branch took the top padding
+   from the middle of the Admin list, SMS the bottom. Two empty flex items at
+   the very ends hold the space instead; the list's own gap-2.5 (0.625rem)
+   sits between each and its neighbour, so the top is that gap alone and the
+   bottom item adds the rest of 1.375rem. Inside the collapsing panel, so they
+   are clipped with it. */
+.app-sidebar-menu nav > div > ul > li > div[class*='max-h-'] > ul::before {
+  content: '';
+  order: -2147483647;
 }
 
-.app-sidebar-menu nav > div > ul > li > div[class*='max-h-'] > ul > li:last-child {
-  padding-bottom: 1.375rem;
+.app-sidebar-menu nav > div > ul > li > div[class*='max-h-'] > ul::after {
+  content: '';
+  order: 2147483647;
+  height: 0.75rem;
 }
 
 /* Hover settles at 150ms rather than 300ms. */
@@ -150,12 +161,9 @@
   }
 
   /* The flyout keeps its own list spacing; undo the panel's row padding. */
-  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul > li:first-child {
-    padding-top: 0 !important;
-  }
-
-  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul > li:last-child {
-    padding-bottom: 0 !important;
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul::before,
+  .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul::after {
+    display: none;
   }
 
   .app-sidebar-menu.app-sidebar-collapsed nav > div > ul > li > div > ul {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
-import { FiCheckCircle, FiCornerUpLeft, FiFileText, FiHome, FiKey, FiRotateCcw } from 'react-icons/fi';
+import { FiCheckCircle, FiCornerUpLeft, FiFileText, FiHome, FiKey, FiRefreshCw, FiRotateCcw } from 'react-icons/fi';
 import ConfirmModal from '../../../utils/components/ConfirmModalProps';
 import { FIELD_LABEL, FIELD_PADDING, FIELD_SELECT } from '../../../../theme/fieldStyles';
 import HelmetTitle from '../../../utils/others/HelmetTitle';
@@ -19,6 +19,7 @@ import {
   API_UNIT_HANDOVER_LANDOWNER_URL,
   API_UNIT_HANDOVER_LETTER_URL,
   API_UNIT_HANDOVER_REVERSE_URL,
+  API_UNIT_HANDOVER_TRUE_UP_URL,
   API_UNIT_HANDOVER_STORE_URL,
   API_UNIT_HANDOVER_UNITS_URL,
 } from '../../../services/apiRoutes';
@@ -183,6 +184,31 @@ const UnitHandover = () => {
     }
   };
 
+  /** Post-completion cost true-up: preview first, then post on confirm. */
+  const [trueUp, setTrueUp] = useState<any>(null);
+  const openTrueUp = async () => {
+    setBusy('t');
+    try {
+      const response = await httpService.post(API_UNIT_HANDOVER_TRUE_UP_URL, { building_id: buildingId });
+      const refused = refusedWith(response);
+      if (refused) {
+        toast.error(refused);
+        return;
+      }
+      setTrueUp(payloadOf(response));
+    } finally {
+      setBusy('');
+    }
+  };
+  const confirmTrueUp = async () => {
+    if (!iso(date)) {
+      toast.error(t('handover.pickDate'));
+      return;
+    }
+    const done = await post('t', API_UNIT_HANDOVER_TRUE_UP_URL, { building_id: buildingId, post: 1, date: iso(date) });
+    if (done) setTrueUp(null);
+  };
+
   const confirmReverse = async () => {
     if (reason.trim().length < 3) {
       toast.error(t('handover.reasonRequired'));
@@ -340,12 +366,22 @@ const UnitHandover = () => {
                   <span className="max-w-xl text-sm text-amber-900 dark:text-amber-50">{t('handover.notComplete')}</span>
                 )}
                 {completedOn ? (
-                  <ButtonLoading
-                    onClick={() => post('c', API_UNIT_HANDOVER_COMPLETE_URL, { building_id: buildingId, completed_on: null })}
-                    buttonLoading={busy === 'c'}
-                    label={t('handover.undoComplete')}
-                    icon={<FiRotateCcw />}
-                  />
+                  <div className="flex flex-wrap gap-2">
+                    {rows.some((r) => r.handover && r.sale_id) && (
+                      <ButtonLoading
+                        onClick={openTrueUp}
+                        buttonLoading={busy === 't'}
+                        label={t('handover.trueUp')}
+                        icon={<FiRefreshCw />}
+                      />
+                    )}
+                    <ButtonLoading
+                      onClick={() => post('c', API_UNIT_HANDOVER_COMPLETE_URL, { building_id: buildingId, completed_on: null })}
+                      buttonLoading={busy === 'c'}
+                      label={t('handover.undoComplete')}
+                      icon={<FiRotateCcw />}
+                    />
+                  </div>
                 ) : (
                   <ButtonLoading
                     onClick={() => {
@@ -527,6 +563,54 @@ const UnitHandover = () => {
               </tfoot>
             </table>
           </div>
+
+          <ConfirmModal
+            show={Boolean(trueUp)}
+            title={t('handover.trueUpTitle')}
+            confirmLabel={t('handover.trueUpPost')}
+            cancelLabel={t('handover.cancel')}
+            loading={busy === 't'}
+            disabled={!trueUp || Math.abs(Number(trueUp?.net || 0)) < 0.01}
+            onCancel={() => setTrueUp(null)}
+            onConfirm={confirmTrueUp}
+            className="bg-indigo-600! text-white! hover:bg-indigo-700! dark:bg-indigo-500! dark:hover:bg-indigo-600!"
+            message={
+              trueUp ? (
+                <div className="space-y-3 text-left text-sm">
+                  <p>{t('handover.trueUpExplain', { cost: money(trueUp.building_cost), date: dmy(iso(date)) })}</p>
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-gray-500">
+                        <th className="p-1 text-left font-medium">{t('handover.unit')}</th>
+                        <th className="p-1 text-right font-medium">{t('handover.trueUpCarried')}</th>
+                        <th className="p-1 text-right font-medium">{t('handover.trueUpTarget')}</th>
+                        <th className="p-1 text-right font-medium">{t('handover.trueUpDiff')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(trueUp.rows || []).map((r: any) => (
+                        <tr key={r.handover_id} className="border-t border-[rgb(var(--c-border))]">
+                          <td className="p-1">{r.unit_no}</td>
+                          <td className="p-1 text-right tabular-nums">{money(r.carried)}</td>
+                          <td className="p-1 text-right tabular-nums">{money(r.target)}</td>
+                          <td className="p-1 text-right tabular-nums font-medium">{money(r.difference)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-t-2 border-[rgb(var(--c-border))] font-semibold">
+                        <td className="p-1" colSpan={3}>{t('handover.total')}</td>
+                        <td className="p-1 text-right tabular-nums">{money(trueUp.net)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                  {Math.abs(Number(trueUp.net || 0)) < 0.01 && <p className="text-emerald-700 dark:text-emerald-300">{t('handover.trueUpNothing')}</p>}
+                </div>
+              ) : (
+                ''
+              )
+            }
+          />
 
           <ConfirmModal
             show={Boolean(owing)}

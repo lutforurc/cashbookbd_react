@@ -316,9 +316,7 @@ export const FIELD_COLOR = `${FIELD_BASE} cursor-pointer p-0!`;
 
 /** A tick box. Sized to the text beside it rather than to a form row. */
 export const FIELD_CHECKBOX = [
-  'h-4 w-4 shrink-0 cursor-pointer rounded-xs',
-  'border border-gray-300 bg-white text-primary',
-  'dark:border-gray-600 dark:bg-boxdark',
+  'cb-pretty shrink-0 cursor-pointer',
   'focus:outline-none focus:ring-1 focus:ring-blue-500',
   'disabled:cursor-not-allowed disabled:opacity-60',
 ].join(' ');
