@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FIELD_HEIGHT, FIELD_SELECT, FIELD_SIZE } from '../../../../theme/fieldStyles';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { FiEdit2, FiHome, FiPlus, FiSave, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
 
@@ -10,6 +11,7 @@ import InputOnly from '../../../utils/fields/InputOnly';
 import RemarkAutocomplete from '../../../utils/fields/RemarkAutocomplete';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
+import CategoryDropdown from '../../../utils/utils-functions/CategoryDropdown';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import httpService from '../../../services/httpService';
@@ -21,6 +23,7 @@ import {
   API_PROJECT_EXPENSE_REMARKS_SUGGESTIONS_URL,
   API_PROJECT_EXPENSE_STORE_URL,
   API_PROJECT_EXPENSE_UPDATE_URL,
+  API_COAL3_ID_BY_L4_URL,
 } from '../../../services/apiRoutes';
 import { Select } from '../../../utils/fields/FormControls';
 
@@ -91,8 +94,25 @@ const focusField = (id: string) => {
  * reports spread those across the buildings rather than pretending they were
  * one building's.
  */
-const ProjectExpense = () => {
+/**
+ * `bank`: the Bank Expense tab -- the same form, paid out of a bank picked at
+ * the top, saved as a Bank Payment. The Cash Expense tab has no bank box.
+ */
+const ProjectExpense = ({ bank = false }: { bank?: boolean }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
+  // Bank accounts (level-3 id 2), the list Bank Payment offers. Empty = cash.
+  const [banks, setBanks] = useState<{ id: number; name: string }[]>([]);
+  useEffect(() => {
+    httpService
+      .get(`${API_COAL3_ID_BY_L4_URL}2`)
+      .then((res) => {
+        // The list itself, as the coal3 slice stores it for Bank Payment.
+        const list = res?.data?.data?.data;
+        setBanks(Array.isArray(list) ? list : []);
+      })
+      .catch(() => setBanks([]));
+  }, []);
   const [searchParams] = useSearchParams();
 
   const [projects, setProjects] = useState<Option[]>([]);
@@ -114,6 +134,7 @@ const ProjectExpense = () => {
     id: null,
     name: '',
   });
+  const isBank = Boolean(paidFrom.id) && banks.some((b) => Number(b.id) === Number(paidFrom.id));
   // Which line of the table is currently open in the form, if any. Distinct
   // from `editing` above, which is about the whole voucher.
   const [editingRowKey, setEditingRowKey] = useState<string | null>(null);
@@ -373,7 +394,8 @@ const ProjectExpense = () => {
     setEditingRowKey(null);
     setNote('');
     setSelectedOrder(null);
-    setPaidFrom({ id: null, name: '' });
+    // The bank tab keeps its bank for the next voucher, as it keeps the site.
+    if (!bank) setPaidFrom({ id: null, name: '' });
     // Project and building outlive the voucher, as they outlive each line: the
     // next voucher is nearly always for the same site.
     setForm((prev) => ({
@@ -400,6 +422,10 @@ const ProjectExpense = () => {
   });
 
   const handleSave = async () => {
+    if (bank && !isBank) {
+      toast.error(t('projectExpense.pickBank'));
+      return;
+    }
     if (rows.length === 0) {
       toast.error('Add at least one line before saving.');
       return;
@@ -512,14 +538,14 @@ const ProjectExpense = () => {
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-        <HelmetTitle title="Cash Payment" screen="cash-payment.project-expense" />
+        <HelmetTitle title={bank ? 'Bank Payment' : 'Cash Payment'} screen="cash-payment.project-expense" />
       </div>
 
 
 
       {/* Worth saying out loud, because the form has no field for it and the
           voucher would otherwise look like a cash payment on screen. */}
-      {editing && paidFrom.id && paidFrom.id !== CASH_COA4_ID ? (
+      {!bank && editing && paidFrom.id && paidFrom.id !== CASH_COA4_ID ? (
         <p className="mb-3 text-center text-sm text-amber-600 dark:text-amber-400">
           Paid from {paidFrom.name} — not cash. Saving keeps it that way.
         </p>
@@ -559,6 +585,20 @@ const ProjectExpense = () => {
                 />
               </div>
             </div>
+
+            {bank && (<div>
+              <label htmlFor="paid_from">{t('projectExpense.paidFrom')}</label>
+              {/* The same dropdown and list Bank Payment shows. */}
+              <CategoryDropdown
+                ariaLabel={t('projectExpense.paidFrom')}
+                className="w-full font-medium text-sm"
+                categoryDdl={[{ id: '', name: t('projectExpense.pickBank') }, ...banks]}
+                value={paidFrom.id && paidFrom.id !== CASH_COA4_ID ? String(paidFrom.id) : null}
+                onChange={(option: any) =>
+                  setPaidFrom({ id: Number(option?.value) || null, name: option?.label || '' })
+                }
+              />
+            </div>)}
 
             <div>
               <label htmlFor="purchaseOrderNumber">Select Order (Optional)</label>

@@ -1930,5 +1930,9 @@
     "advanceHint": "buyers' money for flats not handed over",
     "handedOver": "Handed over",
     "handedHint": "income {{revenue}} · profit {{profit}} · landowner {{landowner}}"
+  },
+  "projectExpense": {
+    "paidFrom": "Bank Payment Account",
+    "pickBank": "Select a bank account"
   }
 }

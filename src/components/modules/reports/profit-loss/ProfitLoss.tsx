@@ -388,9 +388,14 @@ const ProfitLoss = (user: any) => {
       })
       .filter((r) => toNum(r.debit) > 0);
 
+    // An expense group whose net is a credit (Real Estate's Construction Cost
+    // to WIP, which takes building cost back out of the expenses) is income for
+    // this account: dropped, it left the net loss short by the whole credit.
     const incomeRows = netprofit
-      .filter(isIncomeGroup)
-      .map((r) => ({ ...r, credit: toNum(r.credit) - toNum(r.debit) }))
+      .map((r) => {
+        const moved = isIncomeGroup(r) ? 0 : productionCostByGroup.get(toNum(r.coal3_id)) ?? 0;
+        return { ...r, credit: Math.round((toNum(r.credit) - toNum(r.debit) + moved) * 100) / 100 };
+      })
       .filter((r) => toNum(r.credit) > 0);
 
     const totalExpense = expenseRows.reduce((s, r) => s + toNum(r.debit), 0);
@@ -429,9 +434,11 @@ const ProfitLoss = (user: any) => {
      * group. Only heads with a credit this period are kept; the group's own
      * line is the server's figure and does not depend on this list.
      */
+    // A crossed-over expense group nets debits and credits, so its credit heads
+    // alone would not add up to it: it prints as one line.
     const incomesWithChildren = incomeRows.map((r) => ({
       ...r,
-      children: headRows
+      children: !isIncomeGroup(r) ? [] : headRows
         .filter((h) => toNum(h.coal3_id) === toNum(r.coal3_id))
         .map((h) => ({
           ...h,

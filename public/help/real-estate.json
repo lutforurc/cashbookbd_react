@@ -159,7 +159,7 @@
     "intro": "প্রকল্প ও বিল্ডিং ধরে খরচ (Project Expense) বা আয় (Project Income) লেখা হয়। দুই স্ক্রিনের ঘরগুলো একই।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["Project Expense মেনু দেখা যায় শুধু Roles-এ real.estate.project.expense.view permission থাকলে।", "Project Income মেনু দেখা যায় শুধু Roles-এ real.estate.project.income.view permission থাকলে।"] },
-      { "heading": "লেখার ধাপ", "menu": "Real Estate → Project Entry → Project Expense / Project Income", "steps": ["Select Account নির্বাচন করুন।", "Select Project (Optional) ও Select Building নির্বাচন করুন।", "Enter Remarks ও Amount (Tk.) দিন; Voucher Note লিখুন।", "Add New দিয়ে লাইন যোগ করুন, তারপর Save/Update চাপুন।"] },
+      { "heading": "লেখার ধাপ", "menu": "Real Estate → Project Entry → Cash Expense / Bank Expense / Project Income", "steps": ["ক্যাশে খরচ হলে Cash Expense ট্যাব, ব্যাংক থেকে হলে Bank Expense ট্যাব। Bank Expense-এ আগে Bank Payment Account নির্বাচন করুন — ভাউচারটি Bank Payment হয়ে সেই ব্যাংক থেকে কাটে; পুরোনো ব্যাংক ভাউচার খুলে ব্যাংক বদলানোও যায়।", "Select Account নির্বাচন করুন।", "Select Project (Optional) ও Select Building নির্বাচন করুন।", "Enter Remarks ও Amount (Tk.) দিন; Voucher Note লিখুন।", "Add New দিয়ে লাইন যোগ করুন, তারপর Save/Update চাপুন।"] },
       { "heading": "সম্পাদনা", "steps": ["Search Voucher দিয়ে পুরনো ভাউচার খুলুন।", "ক্যাশ ছাড়া অন্য হিসাব থেকে হলে উপরে লেখা থাকে — Save করলে সেটিই থাকবে।"] },
       { "heading": "সতর্কতা", "warning": "Project না বাছলে খরচ বা আয় কোনো প্রকল্পের হিসাবে ধরা হবে না; রিপোর্টে আলাদা দেখাবে।" }
     ]

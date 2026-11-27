@@ -239,7 +239,8 @@
 | real_estate_installment_create | Real Estate → Installment Create | `/real-estate/installment-create` | `realestate-installment` | done |
 | real_estate_project_activities | Real Estate → Project → New Project | `/real-estate/project-activities` | `realestate-project` | done |
 | real_estate_project_cost_report | Real Estate → Project Cost | `/real-estate/project-cost-report` | `realestate-project-cost-report` | done |
-| real_estate_project_expense | Real Estate → Project Expense | `/real-estate/project-expense` | `realestate-project-expense-income` | done |
+| real_estate_project_expense | Real Estate → Project Entry → Cash Expense | `/real-estate/project-expense` | `realestate-project-expense-income` | done |
+| real_estate_project_bank_expense | Real Estate → Project Entry → Bank Expense | `/real-estate/project-bank-expense` | `realestate-project-expense-income` | done |
 | real_estate_project_income | Real Estate → Project Income | `/real-estate/project-income` | `realestate-project-expense-income` | done |
 | real_estate_project_income_report | Real Estate → Project Income Report | `/real-estate/project-income-report` | `realestate-project-income-report` | done |
 | real_estate_project_labour | Real Estate → Project Labour | `/real-estate/project-labour` | `realestate-project-purchase-labour` | done |

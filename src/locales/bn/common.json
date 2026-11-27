@@ -1930,5 +1930,9 @@
     "advanceHint": "হস্তান্তর হয়নি এমন ফ্ল্যাটের ক্রেতাদের টাকা",
     "handedOver": "হস্তান্তরিত",
     "handedHint": "আয় {{revenue}} · লাভ {{profit}} · জমির মালিক {{landowner}}"
+  },
+  "projectExpense": {
+    "paidFrom": "ব্যাংক পেমেন্ট অ্যাকাউন্ট",
+    "pickBank": "ব্যাংক অ্যাকাউন্ট নির্বাচন করুন"
   }
 }

@@ -175,6 +175,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.real_estate_unit_handover,
     routes.real_estate_buyer_dues,
     routes.real_estate_project_expense,
+    routes.real_estate_project_bank_expense,
     routes.real_estate_project_income,
     routes.real_estate_project_purchase,
     routes.real_estate_project_labour,

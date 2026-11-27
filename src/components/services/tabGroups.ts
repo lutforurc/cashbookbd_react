@@ -294,7 +294,8 @@ export const RE_SALES_TABS: RouteTab[] = [
 ];
 
 export const RE_PROJECT_ENTRY_TABS: RouteTab[] = [
-  { label: 'Project Expense', path: routes.real_estate_project_expense, permission: 'real.estate.project.expense.view' },
+  { label: 'Cash Expense', path: routes.real_estate_project_expense, permission: 'real.estate.project.expense.view' },
+  { label: 'Bank Expense', path: routes.real_estate_project_bank_expense, permission: 'real.estate.project.expense.view' },
   { label: 'Project Income', path: routes.real_estate_project_income, permission: 'real.estate.project.income.view' },
   { label: 'Project Purchase', path: routes.real_estate_project_purchase, permission: 'real.estate.project.purchase.view' },
   { label: 'Project Labour', path: routes.real_estate_project_labour, permission: 'real.estate.project.labour.view' },

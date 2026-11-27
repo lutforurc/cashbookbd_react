@@ -408,6 +408,7 @@ const ROUTES = {
   real_estate_unit_handover: '/real-estate/unit-handover',
   real_estate_buyer_dues: '/real-estate/buyer-dues',
   real_estate_project_expense: '/real-estate/project-expense',
+  real_estate_project_bank_expense: '/real-estate/project-bank-expense',
   real_estate_project_income: '/real-estate/project-income',
   real_estate_project_purchase: '/real-estate/project-purchase',
   real_estate_project_labour: '/real-estate/project-labour',

@@ -1725,6 +1725,7 @@ function App() {
               <Route element={<RouteTabs tabs={RE_PROJECT_ENTRY_TABS} />}>
                 <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.expense.view']} loading={permissionsLoading} />}>
                   <Route path={routes.real_estate_project_expense} element={<ProjectExpense />} />
+                  <Route path={routes.real_estate_project_bank_expense} element={<ProjectExpense key="bank" bank />} />
                 </Route>
                 <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.project.income.view']} loading={permissionsLoading} />}>
                   <Route path={routes.real_estate_project_income} element={<ProjectIncome />} />
