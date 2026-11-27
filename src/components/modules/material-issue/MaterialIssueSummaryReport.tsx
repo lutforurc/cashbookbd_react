@@ -97,8 +97,7 @@ const MaterialIssueSummaryReport = () => {
   const totals = report?.totals || {};
   // Kilos and pieces do not add up: a grand total only when every row shares one unit.
   const oneUnit = new Set(rows.map((r: any) => r?.unit_name || '')).size <= 1;
-  const qty = (value: any) =>
-    Number(value || 0) === 0 ? '0' : thousandSeparator(Number(value || 0));
+  const qty = (value: any) => thousandSeparator(Number(value || 0));
 
   const columns = [
     {

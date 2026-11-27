@@ -104,8 +104,7 @@ const MaterialIssueProductWiseReport = () => {
   const totals = report?.totals || {};
   const formatDate = (value?: string | null) =>
     value && dayjs(value).isValid() ? dayjs(value).format('DD/MM/YYYY') : '';
-  const qty = (value: any) =>
-    Number(value || 0) === 0 ? '0' : thousandSeparator(Number(value || 0));
+  const qty = (value: any) => thousandSeparator(Number(value || 0));
 
   const columns = [
     {

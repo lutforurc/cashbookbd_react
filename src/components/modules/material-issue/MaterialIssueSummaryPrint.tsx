@@ -25,7 +25,7 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return pages.length ? pages : [[]];
 };
 
-const qty = (value: any) => (Number(value || 0) === 0 ? '0' : thousandSeparator(Number(value || 0)));
+const qty = (value: any) => thousandSeparator(Number(value || 0));
 
 const HEAD = ['sn', 'materialsName', 'unit', 'totalQty', 'issueQty', 'remaining'];
 

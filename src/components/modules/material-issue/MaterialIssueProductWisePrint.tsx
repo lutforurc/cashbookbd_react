@@ -27,9 +27,9 @@ const chunkRows = <T,>(data: T[], size: number): T[][] => {
   return pages.length ? pages : [[]];
 };
 
-// thousandSeparator reads 0 as a dash (right for money, wrong for a quantity
-// that is genuinely nil), so a real zero stays a zero on this sheet.
-const qty = (value: any) => (Number(value || 0) === 0 ? '0' : thousandSeparator(Number(value || 0)));
+// thousandSeparator prints a genuine zero as a dash, which is what the owner
+// asked for on this sheet too.
+const qty = (value: any) => thousandSeparator(Number(value || 0));
 const dateText = (value?: string | null) =>
   value && dayjs(value).isValid() ? dayjs(value).format('DD/MM/YYYY') : '';
 
