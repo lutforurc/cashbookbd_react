@@ -10,6 +10,8 @@ import InputDatePicker from '../../../utils/fields/DatePicker';
 import InputOnly from '../../../utils/fields/InputOnly';
 import DdlMultiline from '../../../utils/utils-functions/DdlMultiline';
 import ProductDropdown from '../../../utils/utils-functions/ProductDropdown';
+import OrderDropdown from '../../../utils/utils-functions/OrderDropdown';
+import SalesBalanceSummary, { usePreviousBalance } from '../../../utils/components/SalesBalanceSummary';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
 import thousandSeparator from '../../../utils/utils-functions/thousandSeparator';
 import httpService from '../../../services/httpService';
@@ -80,8 +82,14 @@ const ProjectPurchase = () => {
   const [invoiceDateOn, setInvoiceDateOn] = useState<Date | null>(null);
   const [vehicleNo, setVehicleNo] = useState('');
   const [notes, setNotes] = useState('');
-  const [discount, setDiscount] = useState('0');
-  const [paid, setPaid] = useState('0');
+  const [discount, setDiscount] = useState('');
+  const [paid, setPaid] = useState('');
+  // As on Purchase Invoice: the purchase order the bill answers, and the three
+  // charges a bill can carry. Here all three are the building's cost.
+  const [order, setOrder] = useState<{ value: any; label: string } | null>(null);
+  const [transportation, setTransportation] = useState('');
+  const [tds, setTds] = useState('');
+  const [serviceCharge, setServiceCharge] = useState('');
 
   // The row being typed, and the rows already added.
   const [draft, setDraft] = useState<Omit<ProductRow, 'key'>>({
@@ -110,7 +118,10 @@ const ProjectPurchase = () => {
   );
 
   const isCashSupplier = Number(supplier.id) === CASH_COA4_ID;
-  const due = Math.max(0, Number((total - Number(discount || 0)).toFixed(2)));
+  const charges = Number(transportation || 0) + Number(tds || 0) + Number(serviceCharge || 0);
+  const due = Math.max(0, Number((total + charges - Number(discount || 0)).toFixed(2)));
+
+  const previousBalance = usePreviousBalance(supplier.id, editing?.mtmId ?? '', editing?.vrNo);
 
   // A cash supplier is paid in full by definition, so the box says so and stops
   // taking input rather than letting the two disagree.
@@ -293,8 +304,12 @@ const ProjectPurchase = () => {
     setInvoiceDateOn(null);
     setVehicleNo('');
     setNotes('');
-    setDiscount('0');
-    setPaid('0');
+    setDiscount('');
+    setPaid('');
+    setOrder(null);
+    setTransportation('');
+    setTds('');
+    setServiceCharge('');
     setRows([]);
     setEditing(null);
     setEditingRowKey(null);
@@ -318,6 +333,10 @@ const ProjectPurchase = () => {
     notes: notes || null,
     discount: Number(discount || 0),
     paid: Number(paid || 0),
+    order_no: order?.value ? String(order.value) : null,
+    transportation: Number(transportation || 0),
+    tds: Number(tds || 0),
+    service_charge: Number(serviceCharge || 0),
     products: rows.map((row) => ({
       product: row.product,
       qty: row.qty,
@@ -402,6 +421,10 @@ const ProjectPurchase = () => {
       setNotes(data.notes || '');
       setDiscount(String(data.discount ?? 0));
       setPaid(String(data.paid ?? 0));
+      setOrder(data.order_no ? { value: data.order_no, label: data.order_text || String(data.order_no) } : null);
+      setTransportation(Number(data.transportation) ? String(data.transportation) : '');
+      setTds(Number(data.tds) ? String(data.tds) : '');
+      setServiceCharge(Number(data.service_charge) ? String(data.service_charge) : '');
 
       const loaded = data.products || [];
 
@@ -454,97 +477,160 @@ const ProjectPurchase = () => {
           as nothing at all. */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* ---------------------------------------------------- the invoice */}
-        <div className="grid grid-cols-1 content-start gap-2 sm:grid-cols-3">
-          <div className="sm:col-span-2">
+        {/* Laid out as Purchase Invoice: supplier and purchase order, then the
+            bill's number, date and vehicle, the three charges, and discount,
+            payment and notes; the running balance below. */}
+        <div className="grid grid-cols-1 content-start gap-2 sm:grid-cols-6">
+          <div className="sm:col-span-3">
             <label htmlFor="supplier">Select Supplier</label>
             <DdlMultiline
- id="supplier"
- name="supplier"
- acType="3"
- className=""
- value={supplier.id ? { value: supplier.id, label: supplier.name } : null}
- onSelect={(option: any) =>
+              id="supplier"
+              name="supplier"
+              acType="3"
+              className=""
+              value={supplier.id ? { value: supplier.id, label: supplier.name } : null}
+              onSelect={(option: any) =>
                 setSupplier({ id: Number(option?.value) || '', name: option?.label || '' })
               }
             />
           </div>
 
-          {/* Notes finishes the supplier's row, as on Project Labour. The
-              invoice's own number and date then start the next one together,
-              which is the order they are read off the supplier's bill in. */}
-          <InputElement
- id="notes"
- name="notes"
- label="Notes"
- placeholder="Notes"
- className=""
- value={notes}
- onChange={(e) => setNotes(e.target.value)}
-          />
+          <div className="sm:col-span-3">
+            <label htmlFor="purchaseOrderNumber">Select Purchase Order</label>
+            <OrderDropdown
+              id="purchaseOrderNumber"
+              name="purchaseOrderNumber"
+              orderType="1"
+              value={order}
+              onSelect={(option: any) => setOrder(option?.value ? { value: option.value, label: option.label } : null)}
+            />
+          </div>
 
-          <InputElement
- id="invoice_no"
- name="invoice_no"
- label="Invoice Number"
- placeholder="Invoice Number"
- className=""
- value={invoiceNo}
- onChange={(e) => setInvoiceNo(e.target.value)}
-          />
+          <div className="sm:col-span-2">
+            <InputElement
+              id="invoice_no"
+              name="invoice_no"
+              label="Invoice Number"
+              placeholder="Enter Invoice Number"
+              className=""
+              value={invoiceNo}
+              onChange={(e) => setInvoiceNo(e.target.value)}
+            />
+          </div>
 
-          <div className="text-left flex flex-col">
+          <div className="text-left flex flex-col sm:col-span-2">
             <label htmlFor="invoice_date" className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
               Invoice Date
             </label>
             <InputDatePicker
- id="invoice_date"
- name="invoice_date"
- className="w-full px-3 py-1 "
- selectedDate={invoiceDateOn}
- setSelectedDate={setInvoiceDateOn}
- setCurrentDate={handleInvoiceDate}
+              id="invoice_date"
+              name="invoice_date"
+              className="w-full px-3 py-1 "
+              selectedDate={invoiceDateOn}
+              setSelectedDate={setInvoiceDateOn}
+              setCurrentDate={handleInvoiceDate}
             />
           </div>
 
-          <InputElement
- id="vehicle_no"
- name="vehicle_no"
- label="Vehicle Number"
- placeholder="Vehicle Number"
- className=""
- value={vehicleNo}
- onChange={(e) => setVehicleNo(e.target.value)}
-          />
+          <div className="sm:col-span-2">
+            <InputElement
+              id="vehicle_no"
+              name="vehicle_no"
+              label="Vehicle Number"
+              placeholder="Vehicle Number"
+              className=""
+              value={vehicleNo}
+              onChange={(e) => setVehicleNo(e.target.value)}
+            />
+          </div>
 
-          <InputElement
- id="discount"
- name="discount"
- type="number"
- label="Discount Amount"
- placeholder="0"
- className=""
- value={discount}
- onChange={(e) => setDiscount(e.target.value)}
-          />
+          <div className="sm:col-span-2">
+            <InputElement
+              id="service_charge"
+              name="service_charge"
+              type="number"
+              label="Service Charge"
+              placeholder="Service Charge"
+              className="text-right"
+              value={serviceCharge}
+              onChange={(e) => setServiceCharge(e.target.value)}
+            />
+          </div>
 
-          <InputElement
- id="paid"
- name="paid"
- type="number"
- label="Payment Amount"
- placeholder="0"
- className=""
- disabled={isCashSupplier}
- value={paid}
- onChange={(e) => setPaid(e.target.value)}
-            description={isCashSupplier ? 'A cash purchase is paid in full.' : undefined}
-          />
+          <div className="sm:col-span-2">
+            <InputElement
+              id="transportation"
+              name="transportation"
+              type="number"
+              label="Transportation"
+              placeholder="Transportation"
+              className="text-right"
+              value={transportation}
+              onChange={(e) => setTransportation(e.target.value)}
+            />
+          </div>
 
-          <div className="flex flex-col justify-end">
-            <span className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Total Tk.</span>
-            <span className="py-1 text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
-              {thousandSeparator(total)}
-            </span>
+          <div className="sm:col-span-2">
+            <InputElement
+              id="tds"
+              name="tds"
+              type="number"
+              label="TDS / VAT"
+              placeholder="TDS / VAT"
+              className="text-right"
+              value={tds}
+              onChange={(e) => setTds(e.target.value)}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <InputElement
+              id="discount"
+              name="discount"
+              type="number"
+              label="Discount Amount"
+              placeholder="Discount Amount"
+              className="text-right"
+              value={discount}
+              onChange={(e) => setDiscount(e.target.value)}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <InputElement
+              id="paid"
+              name="paid"
+              type="number"
+              label="Payment Amount"
+              placeholder="Payment Amount"
+              className="text-right"
+              disabled={isCashSupplier}
+              value={paid}
+              onChange={(e) => setPaid(e.target.value)}
+              description={isCashSupplier ? 'A cash purchase is paid in full.' : undefined}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <InputElement
+              id="notes"
+              name="notes"
+              label="Notes"
+              placeholder="Notes"
+              className=""
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <SalesBalanceSummary
+              kind="purchase"
+              previousBalance={previousBalance}
+              billAmount={total + charges}
+              discount={Number(discount) || 0}
+              received={Number(paid) || 0}
+            />
           </div>
 
           {/* Looking an old invoice up belongs with the invoice, not with the
@@ -554,7 +640,8 @@ const ProjectPurchase = () => {
               add its own line, and this row sits across from the buttons,
               which have none -- the two columns would stop level no longer.
               The placeholder and the magnifier say the same thing to the eye. */}
-          <div className="sm:col-span-2">
+          {/* Beside the balance: the summary already gives the total due. */}
+          <div className="sm:col-span-4">
             <label htmlFor="search" className="sr-only">
               Search Invoice
             </label>
@@ -583,21 +670,6 @@ const ProjectPurchase = () => {
             </div>
           </div>
 
-          {/* A figure of its own rather than small print under the total. It
-              follows the search box so that it lands in the same column as the
-              total, directly beneath it -- this form carries one field more
-              than Project Labour, so the two cannot sit side by side without
-              pushing the column past the buttons opposite.
-
-              Label and figure share one line here, unlike the total above:
-              this is the last row of the column, so every line it saves is a
-              line the form does not grow by. */}
-          <div className="flex items-baseline justify-start gap-2">
-            <span className="text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">Due Tk.</span>
-            <span className="text-lg font-semibold text-[rgb(var(--c-text))] dark:text-[rgb(var(--c-text))]">
-              {thousandSeparator(due)}
-            </span>
-          </div>
         </div>
 
         {/* ------------------------------------------------- the product row */}

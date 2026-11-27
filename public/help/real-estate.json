@@ -174,7 +174,7 @@
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["Project Purchase মেনু দেখা যায় শুধু Roles-এ real.estate.project.purchase.view permission থাকলে।", "Project Labour মেনু দেখা যায় শুধু Roles-এ real.estate.project.labour.view permission থাকলে।"] },
       { "heading": "বিল লেখা", "menu": "Real Estate → Project Entry → Project Purchase / Project Labour", "steps": ["Select Supplier ও Notes দিন।", "Invoice/Bill Number, Invoice Date, Vehicle Number, Discount Amount ও Payment Amount দিন।", "Select Project ও Select Building নির্বাচন করুন।", "Select Product বা Select Labour Item, Quantity ও Price/Rate দিয়ে Add New চাপুন।", "Save/Update চাপুন।"] },
-      { "heading": "ফল পড়া", "steps": ["Payment Amount এখনই দেওয়া টাকা; বাকিটা Due Tk.-এ থাকে।", "Search Invoice দিয়ে পুরনো বিল খোলা যায়।"] },
+      { "heading": "ফল পড়া", "steps": ["Project Purchase-এ Purchase Invoice-এর মতো Select Purchase Order, Service Charge, Transportation ও TDS / VAT ঘর আছে। তিনটি চার্জই বিল্ডিংয়ের খরচ — মালের দামের অনুপাতে বিল্ডিং ধরে ভাগ হয় (Transportation → Carrying Inward, TDS / VAT → Construction VAT / TDS, Service Charge → Construction Service Charge) এবং সুইচ চালু থাকলে WIP-এ যায়; সরবরাহকারীর পাওনা সেই অঙ্কে বাড়ে।", "Payment Amount এখনই দেওয়া টাকা; নিচের হিসাবে Previous Balance, Current Invoice, Discount, Payment ও Total Tk. দেখায়।", "Search Invoice দিয়ে পুরনো বিল খোলা যায়।"] },
       { "heading": "সতর্কতা", "warning": "Payment Amount ভুল দিলে সরবরাহকারী বা শ্রমিকের বাকি ভুল হবে।" }
     ]
   },
