@@ -54,7 +54,11 @@ const dateTimeText = (value?: string) => {
   return String(value).replace('T', ' ').slice(0, 16);
 };
 
-const ApprovalAudit = ({ user }: any) => {
+/**
+ * [embedded] is the same screen shown inside a panel over the Approval Center:
+ * no page title of its own, and no "back" link, because it never left.
+ */
+const ApprovalAudit = ({ user, embedded = false }: any) => {
   const dispatch = useDispatch<any>();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const branches = branchDdlData?.protectedData?.data || [];
@@ -191,7 +195,7 @@ const ApprovalAudit = ({ user }: any) => {
 
   return (
     <div>
-      <HelmetTitle title="Approval Audit" />
+      {embedded ? null : <HelmetTitle title="Approval Audit" />}
       {(loading || exporting) && <Loader />}
 
       <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
@@ -284,13 +288,15 @@ const ApprovalAudit = ({ user }: any) => {
             <FiDownload className="mr-2" />
             Excel
           </Button>
-          <Link
-            to={routes.approval_center}
-            className="ml-auto inline-flex h-10 items-center gap-2 px-4 text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-200"
-          >
-            <FiArrowLeft />
-            Back to Approval Center
-          </Link>
+          {embedded ? null : (
+            <Link
+              to={routes.approval_center}
+              className="ml-auto inline-flex h-10 items-center gap-2 px-4 text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-200"
+            >
+              <FiArrowLeft />
+              Back to Approval Center
+            </Link>
+          )}
         </div>
       </div>
 

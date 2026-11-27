@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FIELD_CHECKBOX, FIELD_SELECT } from '../../../theme/fieldStyles';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { FiCheck, FiClock, FiRefreshCcw, FiRotateCcw, FiTrash2, FiX } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
@@ -18,9 +19,9 @@ import InputElement from '../../utils/fields/InputElement';
 import { getDdlProtectedBranch } from '../branch/ddlBranchSlider';
 import { useDispatch, useSelector } from 'react-redux';
 import { chartDate } from '../../utils/utils-functions/formatDate';
-import routes from '../../services/appRoutes';
 import { hasPermission } from '../../utils/permissionChecker';
 import { Input, Select, Textarea } from '../../utils/fields/FormControls';
+import ApprovalAudit from './ApprovalAudit';
 
 const dateFromString = (value?: string | null) => {
   if (!value) return null;
@@ -58,6 +59,20 @@ const ApprovalCenter = ({ user }: any) => {
   const initialTab = searchParams.get('tab') === 'voucher' ? 'voucher' : 'attendance';
 
   const [activeTab, setActiveTab] = useState<'attendance' | 'voucher'>(initialTab);
+  // The audit opens over this screen rather than navigating to another page:
+  // leaving the centre to read the log loses the filters and the selection
+  // behind it.
+  const [auditOpen, setAuditOpen] = useState(false);
+
+  // Escape closes the audit panel, the way every other overlay on this app does.
+  useEffect(() => {
+    if (!auditOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setAuditOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [auditOpen]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [data, setData] = useState<any>({ counts: {}, attendance: [], vouchers: [] });
@@ -353,13 +368,14 @@ const ApprovalCenter = ({ user }: any) => {
             <Button type="button" onClick={() => setActiveTab('voucher')} className={`px-4 text-sm font-semibold ${activeTab ==='voucher'?'bg-primary text-white':'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
               Vouchers ({data?.counts?.voucher || 0})
             </Button>
-            <Link
-              to={routes.approval_center_audit}
+            <Button
+              type="button"
+              onClick={() => setAuditOpen(true)}
               className="flex h-9 items-center gap-2 px-4 text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-200"
             >
               <FiClock />
               Audit History
-            </Link>
+            </Button>
             {activeTab === 'voucher' ? (
               <div className="flex items-center overflow-hidden rounded-sm border border-[rgb(var(--c-border))]">
                 <Button
@@ -469,6 +485,42 @@ const ApprovalCenter = ({ user }: any) => {
         cancelLabel="Cancel"
         className="bg-red-600 hover:bg-red-700"
       />
+
+      {/* The audit trail, over the centre rather than on a page of its own.
+          Portaled to <body> at z-10000 so the sidebar (9999) cannot paint over
+          its left edge -- the same rule SideDrawer follows. */}
+      {auditOpen
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto bg-black/60 px-4 py-6"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) setAuditOpen(false);
+              }}
+            >
+              <div
+                role="dialog"
+                aria-modal="true"
+                className="w-full max-w-[1400px] rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default"
+              >
+                <div className="flex items-center justify-between gap-3 border-b border-[rgb(var(--c-border))] px-4 py-3">
+                  <h3 className="text-lg font-semibold text-[rgb(var(--c-text))]">Audit History</h3>
+                  <Button
+                    type="button"
+                    onClick={() => setAuditOpen(false)}
+                    aria-label="Close"
+                    className="rounded px-2 py-1 text-slate-500 hover:bg-slate-100 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-strokedark"
+                  >
+                    <FiX />
+                  </Button>
+                </div>
+                <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto p-3">
+                  <ApprovalAudit user={user} embedded />
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 };
