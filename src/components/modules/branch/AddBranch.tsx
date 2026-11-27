@@ -733,8 +733,8 @@ const AddBranch = () => {
   // right for everyone who does not see the extra one.
   // Language Settings: the company's Bangla switch and this branch's default
   // screen/print language and digits. Only for whoever holds the key its API
-  // asks for. It sits mid-list, never last, because it saves with its own
-  // button -- the last step is where the branch's Update button appears.
+  // asks for. Saved by the branch's Update (it calls the step's own save
+  // before leaving), so it has no button of its own.
   const canManageLanguage = hasPermission(settings?.data?.permissions || [], 'language.settings');
   // Owner-level: which salary engine this branch's Salary Generate uses.
   const canManageSalaryEngine = hasPermission(settings?.data?.permissions || [], 'salary.engine.manage');
@@ -1314,6 +1314,8 @@ const AddBranch = () => {
   }, [branchEditData?.editData?.branch]);
 
   const [formData, setFormData] = useState<branchItem>(initialBranch);
+  // The Language Settings step's save, called by Update (see LanguageSettings).
+  const languageSave = useRef<(() => Promise<boolean>) | null>(null);
 
   /**
    * "Salary from pay heads": the branch's payroll_engine row. Saved on its own
@@ -1692,12 +1694,17 @@ const AddBranch = () => {
         setButtonLoading(false);
         if (res?.success) {
           toast.success(res?.message || 'Branch updated successfully');
-          // Several of these switches (multi-product orders, voucher image, …)
-          // are read from the session settings, which are otherwise only loaded
-          // at login. Refetch them so a saved switch takes effect at once
-          // instead of after the next sign-in.
-          dispatch(getSettings(undefined) as any);
-          navigate('/branch/branch-list');
+          // The language settings have their own endpoint; they save here, with
+          // the branch, before the screen is left. A refusal shows its own toast.
+          const saveLanguage = languageSave.current;
+          (saveLanguage ? saveLanguage() : Promise.resolve(true)).finally(() => {
+            // Several of these switches (multi-product orders, voucher image, …)
+            // are read from the session settings, which are otherwise only loaded
+            // at login. Refetch them so a saved switch takes effect at once
+            // instead of after the next sign-in.
+            dispatch(getSettings(undefined) as any);
+            navigate('/branch/branch-list');
+          });
           return;
         }
 
@@ -3780,17 +3787,24 @@ const AddBranch = () => {
                   </>
                 )}
 
-                {currentStep === stepIndex('Language Settings') && (
-                  <>
-                    {!formData?.id ? (
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        Save the branch first. The language defaults are kept per branch, so there is nothing to set
-                        until this one exists.
-                      </p>
-                    ) : (
-                      <LanguageSettings branchId={Number(formData.id)} />
-                    )}
-                  </>
+                {/* Kept mounted (hidden off its step) so what was chosen there is
+                    still in hand when Update saves it from another step. */}
+                {canManageLanguage && formData?.id ? (
+                  <div className={currentStep === stepIndex('Language Settings') ? '' : 'hidden'}>
+                    <LanguageSettings
+                      branchId={Number(formData.id)}
+                      registerSave={(save) => {
+                        languageSave.current = save;
+                      }}
+                    />
+                  </div>
+                ) : (
+                  currentStep === stepIndex('Language Settings') && (
+                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                      Save the branch first. The language defaults are kept per branch, so there is nothing to set
+                      until this one exists.
+                    </p>
+                  )
                 )}
 
                 {currentStep === faceAttendanceStep && (

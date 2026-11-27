@@ -46,6 +46,9 @@ const iso = (date: Date | null) =>
     : '';
 
 const money = (value: any) => (value === null || value === undefined ? '-' : thousandSeparator(Number(value), 2));
+/** yyyy-mm-dd from the server, shown as dd/mm/yyyy. */
+const dmy = (value?: string | null) => (value ? String(value).slice(0, 10).split('-').reverse().join('/') : '');
+
 
 type UnitState = 'handed' | 'sold' | 'landowner' | 'unsold';
 
@@ -324,7 +327,7 @@ const UnitHandover = () => {
                 {completedOn ? (
                   <span className="flex items-center gap-2 text-lg font-semibold text-emerald-900 dark:text-emerald-100">
                     <FiCheckCircle className="shrink-0" />
-                    {t('handover.completedOn', { date: completedOn })}
+                    {t('handover.completedOn', { date: dmy(completedOn) })}
                   </span>
                 ) : (
                   <span className="max-w-xl text-sm text-amber-900 dark:text-amber-50">{t('handover.notComplete')}</span>
@@ -435,7 +438,7 @@ const UnitHandover = () => {
                         </span>
                         {row.handover && (
                           <div className="mt-1 text-xs text-gray-500">
-                            {row.handover.date}
+                            {dmy(row.handover.date)}
                             {row.handover.vr_no ? `, ${row.handover.vr_no}` : ''}
                           </div>
                         )}
@@ -544,7 +547,7 @@ const UnitHandover = () => {
                   <p>
                     {t('handover.reverseExplain', {
                       unit: reversing.unit_no,
-                      date: iso(date),
+                      date: dmy(iso(date)),
                     })}
                   </p>
                   {reversing.handover?.vr_no && (
@@ -581,7 +584,7 @@ const UnitHandover = () => {
               })()}
               labels={{
                 title: t('handover.printTitle'),
-                completedOn: t('handover.completedOn', { date: completedOn }),
+                completedOn: t('handover.completedOn', { date: dmy(completedOn) }),
                 notCompleteShort: t('handover.notCompleteShort'),
                 buildingCost: t('handover.buildingCost'),
                 costSplit: t('handover.costSplit', { direct: money(data.cost?.direct), common: money(data.cost?.common_share) }),

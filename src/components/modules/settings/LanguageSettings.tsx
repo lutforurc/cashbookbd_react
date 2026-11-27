@@ -72,7 +72,19 @@ const RadioOption = ({
  * The panel's own labels are translated (t()) -- the first real screen whose
  * words change with the switch it controls.
  */
-const LanguageSettings = ({ branchId }: { branchId: number }) => {
+/**
+ * `registerSave`, when given, hands the parent a function that saves these
+ * settings, and the own Save button is not drawn: the branch form calls it from
+ * its Update, so the language settings save with everything else (owner,
+ * 2026-11-28). Without it the component keeps its own button.
+ */
+const LanguageSettings = ({
+  branchId,
+  registerSave,
+}: {
+  branchId: number;
+  registerSave?: (save: (() => Promise<boolean>) | null) => void;
+}) => {
   const { t } = useTranslation('common');
   const dispatch = useDispatch();
 
@@ -165,7 +177,7 @@ const LanguageSettings = ({ branchId }: { branchId: number }) => {
    * Write to the language endpoint, then fetch the session again: the header
    * button appears or disappears from that payload, without a page reload.
    */
-  const post = async (body: Record<string, unknown>, onDone?: () => void) => {
+  const post = async (body: Record<string, unknown>, onDone?: () => void, quiet = false): Promise<boolean> => {
     setSaving(true);
 
     try {
@@ -174,12 +186,13 @@ const LanguageSettings = ({ branchId }: { branchId: number }) => {
 
       if (data?.success) {
         onDone?.();
-        toast.success(data?.message || t('language.settings.saved'));
+        // Quiet when the branch Update saves it: that screen shows its own toast.
+        if (!quiet) toast.success(data?.message || t('language.settings.saved'));
         dispatch(getSettings() as any);
         load(branchId);
-      } else {
-        toast.error(data?.message || data?.error?.message || t('language.settings.saveFailed'));
+        return true;
       }
+      toast.error(data?.message || data?.error?.message || t('language.settings.saveFailed'));
     } catch (error: any) {
       if (!error?.toastReported) {
         toast.error(error?.message || t('language.settings.saveFailed'));
@@ -187,9 +200,10 @@ const LanguageSettings = ({ branchId }: { branchId: number }) => {
     } finally {
       setSaving(false);
     }
+    return false;
   };
 
-  const save = () =>
+  const save = (quiet = false) =>
     post({
       local_language: localLanguage || null,
       branch_id: branchId,
@@ -206,7 +220,14 @@ const LanguageSettings = ({ branchId }: { branchId: number }) => {
       // Kept here as well: the session refetch may not yet carry the value back.
       cacheFontScale(branchId, fontScale);
       savedScale.current = fontScale;
-    });
+    }, quiet);
+
+  // The parent always holds the latest save (it closes over the current values).
+  useEffect(() => {
+    if (!registerSave) return undefined;
+    registerSave(loaded ? () => save(true) : null);
+    return () => registerSave(null);
+  });
 
   /** Confirmed "turn it off": only the company switch is written. */
   const turnOff = () =>
@@ -358,10 +379,12 @@ const LanguageSettings = ({ branchId }: { branchId: number }) => {
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-[rgb(var(--c-border))] pt-4">
-        <p className="text-xs text-[rgb(var(--c-text-muted))]">{t('language.settings.savesItself')}</p>
-        <ButtonLoading onClick={save} buttonLoading={saving} label={t('language.settings.save')} />
-      </div>
+      {!registerSave && (
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-[rgb(var(--c-border))] pt-4">
+          <p className="text-xs text-[rgb(var(--c-text-muted))]">{t('language.settings.savesItself')}</p>
+          <ButtonLoading onClick={() => save()} buttonLoading={saving} label={t('language.settings.save')} />
+        </div>
+      )}
 
       <ConfirmModal
         show={confirmOff}

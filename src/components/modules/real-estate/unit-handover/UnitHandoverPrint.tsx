@@ -25,6 +25,9 @@ const stateOf = (row: any): State =>
   row.handover ? 'handed' : row.sale_id ? 'sold' : row.is_landowner_share ? 'landowner' : 'unsold';
 
 const money = (value: any) => (value === null || value === undefined ? '-' : thousandSeparator(Number(value), 2));
+/** yyyy-mm-dd from the server, shown as dd/mm/yyyy. */
+const dmy = (value?: string | null) => (value ? String(value).slice(0, 10).split('-').reverse().join('/') : '');
+
 
 type Props = {
   data: any;
@@ -139,7 +142,7 @@ const UnitHandoverPrint = React.forwardRef<HTMLDivElement, Props>(({ data, label
                     <span className="inline-flex items-center gap-1 whitespace-nowrap">
                       <span style={{ background: DOT[state], width: 6, height: 6, borderRadius: 9999, display: 'inline-block' }} />
                       {stateLabel[state]}
-                      {row.handover ? ` ${row.handover.date}${row.handover.vr_no ? `, ${row.handover.vr_no}` : ''}` : ''}
+                      {row.handover ? ` ${dmy(row.handover.date)}${row.handover.vr_no ? `, ${row.handover.vr_no}` : ''}` : ''}
                     </span>
                   </td>
                 </tr>
