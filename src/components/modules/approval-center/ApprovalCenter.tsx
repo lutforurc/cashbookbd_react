@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { FIELD_CHECKBOX, FIELD_SELECT } from '../../../theme/fieldStyles';
 import { useSearchParams } from 'react-router-dom';
 import { FiCheck, FiClock, FiRefreshCcw, FiRotateCcw, FiTrash2, FiX } from 'react-icons/fi';
@@ -362,21 +361,21 @@ const ApprovalCenter = ({ user }: any) => {
       <div className="border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[rgb(var(--c-border))] px-4 py-3">
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" onClick={() => setActiveTab('attendance')} className={`px-4 text-sm font-semibold ${activeTab ==='attendance'?'bg-primary text-white':'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
+            <Button type="button" onClick={() => { setActiveTab('attendance'); setAuditOpen(false); }} className={`px-4 text-sm font-semibold ${!auditOpen && activeTab ==='attendance'?'bg-primary text-white':'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
               Attendance ({data?.counts?.attendance || 0})
             </Button>
-            <Button type="button" onClick={() => setActiveTab('voucher')} className={`px-4 text-sm font-semibold ${activeTab ==='voucher'?'bg-primary text-white':'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
+            <Button type="button" onClick={() => { setActiveTab('voucher'); setAuditOpen(false); }} className={`px-4 text-sm font-semibold ${!auditOpen && activeTab ==='voucher'?'bg-primary text-white':'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
               Vouchers ({data?.counts?.voucher || 0})
             </Button>
             <Button
               type="button"
               onClick={() => setAuditOpen(true)}
-              className="flex h-9 items-center gap-2 px-4 text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-200"
+              className={`flex h-9 items-center gap-2 px-4 text-sm font-semibold ${auditOpen ? 'bg-primary text-white' : 'text-slate-700 hover:text-primary dark:text-slate-200'}`}
             >
               <FiClock />
               Audit History
             </Button>
-            {activeTab === 'voucher' ? (
+            {!auditOpen && activeTab === 'voucher' ? (
               <div className="flex items-center overflow-hidden rounded-sm border border-[rgb(var(--c-border))]">
                 <Button
                   type="button"
@@ -396,7 +395,7 @@ const ApprovalCenter = ({ user }: any) => {
             ) : null}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className={`flex flex-wrap items-center gap-2 ${auditOpen ? 'hidden' : ''}`}>
             <ButtonLoading
               type="button"
               label="Approve"
@@ -435,6 +434,11 @@ const ApprovalCenter = ({ user }: any) => {
           </div>
         </div>
 
+        {auditOpen ? (
+          <div className="p-3">
+            <ApprovalAudit user={user} embedded />
+          </div>
+        ) : (<>
         <Table
           columns={activeTab === 'attendance' ? attendanceColumns : voucherColumns}
           data={activeTab === 'attendance' ? attendanceRows : voucherRows}
@@ -450,6 +454,7 @@ const ApprovalCenter = ({ user }: any) => {
             handlePageChange={changePage}
           />
         </div>
+        </>)}
       </div>
 
       <ConfirmModal
@@ -486,41 +491,6 @@ const ApprovalCenter = ({ user }: any) => {
         className="bg-red-600 hover:bg-red-700"
       />
 
-      {/* The audit trail, over the centre rather than on a page of its own.
-          Portaled to <body> at z-10000 so the sidebar (9999) cannot paint over
-          its left edge -- the same rule SideDrawer follows. */}
-      {auditOpen
-        ? createPortal(
-            <div
-              className="fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto bg-black/60 px-4 py-6"
-              onMouseDown={(event) => {
-                if (event.target === event.currentTarget) setAuditOpen(false);
-              }}
-            >
-              <div
-                role="dialog"
-                aria-modal="true"
-                className="w-full max-w-[1400px] rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] shadow-default"
-              >
-                <div className="flex items-center justify-between gap-3 border-b border-[rgb(var(--c-border))] px-4 py-3">
-                  <h3 className="text-lg font-semibold text-[rgb(var(--c-text))]">Audit History</h3>
-                  <Button
-                    type="button"
-                    onClick={() => setAuditOpen(false)}
-                    aria-label="Close"
-                    className="rounded px-2 py-1 text-slate-500 hover:bg-slate-100 dark:text-[rgb(var(--c-text-muted))] dark:hover:bg-strokedark"
-                  >
-                    <FiX />
-                  </Button>
-                </div>
-                <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto p-3">
-                  <ApprovalAudit user={user} embedded />
-                </div>
-              </div>
-            </div>,
-            document.body,
-          )
-        : null}
     </div>
   );
 };
