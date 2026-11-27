@@ -96,7 +96,7 @@
     "intro": "শাখার ধরন অনুযায়ী নিজের ব্যবসার সারসংক্ষেপ — বিক্রি, ক্রয়, নগদ, স্টক ও বকেয়া।",
     "sections": [
       { "heading": "সারসংক্ষেপ", "menu": "Dashboard", "steps": ["This month, Last month বা Custom বেছে From ও To দিন।", "শীর্ষ কার্ডে All Branches, Today Sales, Today Purchase, New Customers, Today Vouchers ও Balance Summary দেখা যায়।", "Cash Book (Range), Inter-Branch Transfers, Receivable/Payable Ageing, Low Stock, Stock on Hand, Installments Due, Top Sales/Purchase Products ও চার্টগুলো দেখুন।"] },
-      { "heading": "অন্য ধরনের ব্যবসা", "steps": ["Trading শাখায় Stock value, Quantity on hand, Lines in stock, Money Asleep, Sales, Cost of goods, Purchase variance, Gross profit, Margin ও Net position দেখা যায়।", "Hotel শাখায় In the building, Arriving, Leaving, Free tonight, Occupancy, ADR ও RevPAR।", "Real Estate শাখায় Booked value, Received, Outstanding, Units left/sold, Parking ও Installments দেখা যায়।"] },
+      { "heading": "অন্য ধরনের ব্যবসা", "steps": ["Trading শাখায় Stock value, Quantity on hand, Lines in stock, Money Asleep, Sales, Cost of goods, Purchase variance, Gross profit, Margin ও Net position দেখা যায়।", "Hotel শাখায় In the building, Arriving, Leaving, Free tonight, Occupancy, ADR ও RevPAR।", "Real Estate শাখায় Booked value, Received, Outstanding, Units left/sold, Parking ও Installments দেখা যায়। হস্তান্তর পদ্ধতির খাত থাকলে আরও তিনটি: নির্মাণাধীন খরচ (WIP), অগ্রিম এখনো আয় নয়, আর হস্তান্তরিত ফ্ল্যাটের সংখ্যা (আয়, লাভ ও জমির মালিকের হস্তান্তরসহ)।"] },
       { "heading": "সতর্কতা", "warning": "কার্ডের সংখ্যা চলতি তথ্য অনুযায়ী বদলায়; তারিখ-সীমা বদলালে আগের সংখ্যার সাথে মিলবে না।" }
     ]
   },

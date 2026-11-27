@@ -1914,5 +1914,13 @@
     "allPaid": "All paid",
     "empty": "No live sale in this branch.",
     "failed": "Could not load the report."
+  },
+  "reDashboard": {
+    "wip": "Construction WIP",
+    "wipHint": "building cost held until handover",
+    "advance": "Advance, not yet income",
+    "advanceHint": "buyers' money for flats not handed over",
+    "handedOver": "Handed over",
+    "handedHint": "income {{revenue}} · profit {{profit}} · landowner {{landowner}}"
   }
 }

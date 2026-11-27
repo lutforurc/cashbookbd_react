@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   FaBuilding,
   FaCar,
   FaExclamationTriangle,
   FaHourglassHalf,
+  FaKey,
   FaRegCalendarAlt,
   FaRegClock,
   FaUsers,
@@ -89,6 +91,11 @@ const REAL_ESTATE_DASHBOARD_WIDGETS: DashboardWidget[] = [
   { id: 'sales-received', title: 'Received' },
   { id: 'sales-outstanding', title: 'Outstanding' },
   { id: 'sales-buyers', title: 'Buyers' },
+  // The handover method's books (real estate steps 1-5); shown only where the
+  // company has the RE_* heads, which the API reports as books = null otherwise.
+  { id: 'books-wip', title: 'Construction WIP' },
+  { id: 'books-advance', title: 'Advance, Not Yet Income' },
+  { id: 'books-handover', title: 'Handed Over' },
   { id: 'inventory-units-left', title: 'Units Left' },
   { id: 'inventory-units-sold', title: 'Units Sold' },
   { id: 'inventory-parking-left', title: 'Parking Left' },
@@ -110,6 +117,7 @@ const RealEstateDashboard = () => {
   const settings = useSelector((state: any) => state.settings);
   const dashboard = useSelector((state: any) => state.dashboard);
   const me = useSelector((state: any) => state.auth?.me);
+  const { t } = useTranslation('common');
 
   // The branch on the page: the user's own, or the one a head office picked.
   const view = useViewBranch();
@@ -205,6 +213,7 @@ const RealEstateDashboard = () => {
   const sales = payload?.sales;
   const collection = payload?.collection;
   const installments = payload?.installments;
+  const books = payload?.books;
   const projects: any[] = Array.isArray(payload?.by_project)
     ? payload.by_project
     : [];
@@ -283,6 +292,49 @@ const RealEstateDashboard = () => {
                   : '')
               }
               icon={<FaUsers className="text-[11px] text-indigo-500" />}
+            />
+          ) : null)
+        );
+      case 'books-wip':
+        return (
+          books &&
+          (isWidgetVisible('books-wip') ? (
+            <Tile
+              label={t('reDashboard.wip')}
+              value={money(books.wip)}
+              working={t('reDashboard.wipHint')}
+              icon={<FaBuilding className="text-[11px] text-sky-500" />}
+              tone="text-sky-600 dark:text-sky-400"
+            />
+          ) : null)
+        );
+      case 'books-advance':
+        return (
+          books &&
+          (isWidgetVisible('books-advance') ? (
+            <Tile
+              label={t('reDashboard.advance')}
+              value={money(books.advance)}
+              working={t('reDashboard.advanceHint')}
+              icon={<FaWallet className="text-[11px] text-amber-500" />}
+              tone="text-amber-600 dark:text-amber-400"
+            />
+          ) : null)
+        );
+      case 'books-handover':
+        return (
+          books &&
+          (isWidgetVisible('books-handover') ? (
+            <Tile
+              label={t('reDashboard.handedOver')}
+              value={count(books.handed_count)}
+              working={t('reDashboard.handedHint', {
+                revenue: money(books.revenue),
+                profit: money(books.profit),
+                landowner: count(books.landowner_count),
+              })}
+              icon={<FaKey className="text-[11px] text-indigo-500" />}
+              tone="text-indigo-600 dark:text-indigo-400"
             />
           ) : null)
         );
