@@ -1876,6 +1876,7 @@
     "loadFailed": "Failed to load the report",
     "pickMaterial": "Pick a material and press Apply",
     "nothingInPeriod": "Nothing to summarise in this period",
+    "pressApply": "Press Apply to load the summary.",
     "noData": "No data",
     "mixedUnits": "Materials use different units, so there is no grand total.",
     "kind_opening": "Opening Balance",

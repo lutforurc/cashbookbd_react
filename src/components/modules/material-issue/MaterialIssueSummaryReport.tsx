@@ -14,7 +14,7 @@ import PrintFontInput from '../../utils/fields/PrintFontInput';
 import Table from '../../utils/others/Table';
 import thousandSeparator from '../../utils/utils-functions/thousandSeparator';
 import { getDdlWarehouse } from '../warehouse/ddlWarehouseSlider';
-import { getMaterialIssueSummaryReport } from './materialIssueSlice';
+import { clearMaterialIssueReports, getMaterialIssueSummaryReport } from './materialIssueSlice';
 import MaterialIssueSummaryPrint from './MaterialIssueSummaryPrint';
 
 /**
@@ -80,7 +80,12 @@ const MaterialIssueSummaryReport = () => {
     setFrom(start.format('YYYY-MM-DD'));
     setTo(end.format('YYYY-MM-DD'));
     setWarehouseId('');
-    runReport({ from: start.format('YYYY-MM-DD'), to: end.format('YYYY-MM-DD'), warehouseId: '' });
+    // Reset puts the filters back to their defaults AND takes the result off
+    // the screen, so the click has something to show for itself. It must not
+    // run the report: Apply is the only thing that loads (running it here lit
+    // Apply's spinner and re-queried, which is what "Reset is not working"
+    // looked like).
+    dispatch(clearMaterialIssueReports());
   };
 
   useEffect(() => {
@@ -236,7 +241,7 @@ const MaterialIssueSummaryReport = () => {
         columns={columns}
         data={rows}
         perPage={perPage}
-        noDataMessage={t('materialIssueReport.nothingInPeriod')}
+        noDataMessage={report ? t('materialIssueReport.nothingInPeriod') : t('materialIssueReport.pressApply')}
       />
 
       {rows.length > 0 && !oneUnit && (
