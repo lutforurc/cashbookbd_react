@@ -173,6 +173,7 @@ export const MENU_ROUTES: Record<string, string[]> = {
     routes.report_sales_summary,
     routes.real_estate_installment_create,
     routes.real_estate_unit_handover,
+    routes.real_estate_buyer_dues,
     routes.real_estate_project_expense,
     routes.real_estate_project_income,
     routes.real_estate_project_purchase,

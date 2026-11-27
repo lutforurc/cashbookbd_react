@@ -228,6 +228,7 @@ import ProjectIncome from './components/modules/real-estate/project-income/Proje
 import ProjectPurchase from './components/modules/real-estate/project-purchase/ProjectPurchase';
 import ProjectLabour from './components/modules/real-estate/project-labour/ProjectLabour';
 import UnitHandover from './components/modules/real-estate/unit-handover/UnitHandover';
+import BuyerDuesReport from './components/modules/real-estate/buyer-dues/BuyerDuesReport';
 import ProjectCostReport from './components/modules/reports/project-cost/ProjectCostReport';
 import ProjectIncomeReport from './components/modules/reports/project-income/ProjectIncomeReport';
 import ProjectSummaryReport from './components/modules/reports/project-summary/ProjectSummaryReport';
@@ -1701,6 +1702,9 @@ function App() {
               <Route element={<RouteTabs tabs={RE_SALES_TABS} />}>
                 <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.unit.handover.view']} loading={permissionsLoading} />}>
                   <Route path={routes.real_estate_unit_handover} element={<UnitHandover />} />
+                </Route>
+                <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.sold.unit.view']} loading={permissionsLoading} />}>
+                  <Route path={routes.real_estate_buyer_dues} element={<BuyerDuesReport />} />
                 </Route>
                 <Route element={<RequirePermission permissions={userPermissions} anyOf={['real.estate.unit.sale.view']} loading={permissionsLoading} />}>
                   <Route path={routes.real_estate_unit_sales} element={<UnitSalePage />} />

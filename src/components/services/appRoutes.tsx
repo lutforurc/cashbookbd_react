@@ -406,6 +406,7 @@ const ROUTES = {
   real_estate_sold_units: '/real-estate/sold-units',
   real_estate_installment_create: '/real-estate/installment-create',
   real_estate_unit_handover: '/real-estate/unit-handover',
+  real_estate_buyer_dues: '/real-estate/buyer-dues',
   real_estate_project_expense: '/real-estate/project-expense',
   real_estate_project_income: '/real-estate/project-income',
   real_estate_project_purchase: '/real-estate/project-purchase',

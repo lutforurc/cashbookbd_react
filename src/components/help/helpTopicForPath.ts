@@ -306,6 +306,7 @@ export const HELP_ROUTE_TOPICS: Record<string, string> = {
   '/real-estate/project-purchase': 'realestate-project-purchase-labour',
   '/real-estate/project-labour': 'realestate-project-purchase-labour',
   '/real-estate/unit-handover': 'realestate-unit-handover',
+  '/real-estate/buyer-dues': 'realestate-buyer-dues',
   '/real-estate/project-cost-report': 'realestate-project-cost-report',
   '/real-estate/project-income-report': 'realestate-project-income-report',
   '/real-estate/project-summary-report': 'realestate-project-summary-report',

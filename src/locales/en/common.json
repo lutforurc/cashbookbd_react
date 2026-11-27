@@ -1897,5 +1897,22 @@
     "cost": "Cost",
     "profit": "Profit",
     "margin": "Margin"
+  },
+  "buyerDues": {
+    "title": "Buyer Dues & Installments",
+    "asOf": "As of",
+    "total": "Sale Value",
+    "received": "Received",
+    "due": "Due",
+    "overdue": "Overdue",
+    "noSchedule": "No installment schedule",
+    "noScheduleShort": "No schedule",
+    "unit": "Unit",
+    "customer": "Customer",
+    "installments": "Paid / Installments",
+    "next": "Next Installment",
+    "allPaid": "All paid",
+    "empty": "No live sale in this branch.",
+    "failed": "Could not load the report."
   }
 }
