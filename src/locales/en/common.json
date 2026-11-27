@@ -1811,6 +1811,8 @@
     "total": "Total",
     "slNo": "#",
     "print": "Print",
+    "dateHint": "The date above ({{date}}) is used for Mark complete, Hand Over and Reverse.",
+    "onDate": "Hand over on {{date}}",
     "letter": "Handover Letter",
     "noLetter": "The handover letter is not available.",
     "reverse": "Reverse",

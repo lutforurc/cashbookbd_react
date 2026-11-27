@@ -292,6 +292,13 @@ const UnitHandover = () => {
         )}
       </div>
 
+      {/* One date serves three actions; said once, under the row. */}
+      {data && (
+        <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+          {t('handover.dateHint', { date: dmy(iso(date)) || '-' })}
+        </p>
+      )}
+
       {!data && (
         <p className="mt-6 rounded-lg border border-dashed border-[rgb(var(--c-border))] p-6 text-center text-sm text-gray-500 dark:text-gray-400">
           {t('handover.emptyHint')}
@@ -450,6 +457,7 @@ const UnitHandover = () => {
                               type="button"
                               onClick={() => handOver(row)}
                               disabled={busy === `h${row.unit_id}`}
+                              title={t('handover.onDate', { date: dmy(iso(date)) || '-' })}
                               className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:opacity-50"
                             >
                               <FiKey />
