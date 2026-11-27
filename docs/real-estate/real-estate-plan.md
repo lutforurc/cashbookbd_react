@@ -273,7 +273,7 @@ php artisan realestate:move-old-data --branch=<id> --building=<id> [--dry-run] [
 
 ## ৯. commit তালিকা
 
-সব commit push হয়েছে (২৭/১১/২০২৬)। লাইভে এখনো যায়নি — `main` / `react-main`-এ merge বাকি (§৬)।
+সব commit push হয়েছে (২৮/১১/২০২৬)। ২৭/১১ পর্যন্ত কাজ `main` / `react-main`-এ পৌঁছেছে; ২৮/১১-এর তিনটি commit `Reseller` / `Reseller-ui`-তে — লাইভে নিতে merge বাকি (§৬)।
 
 | রিপো / branch | commit | কী | push |
 |---|---|---|---|
@@ -291,3 +291,7 @@ php artisan realestate:move-old-data --branch=<id> --building=<id> [--dry-run] [
 | UI | d4aeff96 | হস্তান্তর বাতিলের বোতাম | ✅ |
 | UI | ebb462dc | Handover Letter বোতাম, নিজস্ব dialog, plan | ✅ |
 | UI | c6a8d84b | Project Income কলাম ও ব্যাখ্যা, plan | ✅ |
+| UI | 47c08f2e | plan: ধাপ ৬, সব push | ✅ |
+| API `Reseller` | aaec8bd3 | খরচের ভাগ বর্গফুট অনুপাতে (সিদ্ধান্ত ট, ২৮/১১) | ✅ |
+| UI `Reseller-ui` | c05497bf | help ও plan: বর্গফুটের নিয়ম | ✅ |
+| UI `Reseller-ui` | 63e2b48e | Unit Handover-এ তারিখ dd/mm/yyyy (আর Branch-এর Language Settings Update-এ সেভ — আলাদা কাজ) | ✅ |
