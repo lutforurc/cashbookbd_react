@@ -1740,7 +1740,20 @@
     "sendToDevice": "Send to Device",
     "sendAll": "Send All to Device",
     "sendTitle": "Create this user on the terminal with ID, name and card — then take the face on the terminal",
-    "sendAllTitle": "Create every mapped employee on the terminal — faces are still taken on the terminal"
+    "sendAllTitle": "Create every mapped employee on the terminal — faces are still taken on the terminal",
+    "usersOnDevice": "Users on the Device",
+    "fetchUsers": "Fetch Users",
+    "fetchUsersTitle": "Ask the terminal for its user list — it answers on its next call, then press Refresh",
+    "fetchQueued": "Queued. The terminal sends its user list on its next call — press Refresh after a minute.",
+    "refresh": "Refresh",
+    "deviceCode": "Device Code",
+    "nameOnDevice": "Name on Device",
+    "card": "Card",
+    "mappedTo": "Mapped To",
+    "notMapped": "Not mapped",
+    "useCode": "Map",
+    "useCodeTitle": "Put this code in the Device Code box above, then choose the employee",
+    "noUsers": "No user list yet — press Fetch Users"
   },
   "department": {
     "listTitle": "Department List",

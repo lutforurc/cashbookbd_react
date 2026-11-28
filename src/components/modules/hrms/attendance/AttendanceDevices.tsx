@@ -142,6 +142,7 @@ const AttendanceDevices = ({ user }: any) => {
   // added to it.
   const [mappingDevice, setMappingDevice] = useState<any>(null);
   const [mappings, setMappings] = useState<any[]>([]);
+  const [deviceUsers, setDeviceUsers] = useState<any[]>([]);
   const [mappingLoading, setMappingLoading] = useState(false);
   const [mappingCode, setMappingCode] = useState('');
   const [mappingEmployee, setMappingEmployee] = useState<any>(null);
@@ -291,6 +292,17 @@ const AttendanceDevices = ({ user }: any) => {
     setMappingEmployee(null);
     setEditingMapping(null);
     await loadMappings(device.id);
+    await loadDeviceUsers(device.id);
+  };
+
+  // The terminal's own user list, as it last reported it.
+  const loadDeviceUsers = async (deviceId: number | string) => {
+    try {
+      const response = await httpService.get(`${API_HRMS_ATTENDANCE_DEVICE_EMPLOYEES_URL}${deviceId}/users`);
+      setDeviceUsers(listFrom(response));
+    } catch {
+      setDeviceUsers([]);
+    }
   };
 
   const loadMappings = async (deviceId: number | string) => {
@@ -496,7 +508,7 @@ const AttendanceDevices = ({ user }: any) => {
   };
 
   const queueCommand = async (
-    action: 'sync_clock' | 'pull' | 'check' | 'delete_user' | 'send_user' | 'send_all',
+    action: 'sync_clock' | 'pull' | 'check' | 'delete_user' | 'send_user' | 'send_all' | 'pull_users',
     deviceEmployeeCode?: string,
   ) => {
     // Either panel can raise a command: the punch panel, or the employee list
@@ -521,6 +533,8 @@ const AttendanceDevices = ({ user }: any) => {
       toast.success(
         action === 'send_user' || action === 'send_all'
           ? response?.data?.message
+          : action === 'pull_users'
+            ? t('attendanceDevice.fetchQueued')
           : action === 'pull'
           ? 'Queued. The terminal will send its records the next time it calls in.'
           : action === 'sync_clock'
@@ -1118,6 +1132,63 @@ const AttendanceDevices = ({ user }: any) => {
             data={mappings}
             perPage={20}
             noDataMessage="Nobody is mapped on this device yet"
+          />
+
+          <div className="mb-2 mt-4 flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-sm font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
+              {t('attendanceDevice.usersOnDevice')} ({deviceUsers.length})
+            </h4>
+            <div className="flex gap-2">
+              <ButtonLoading
+                onClick={() => queueCommand('pull_users')}
+                buttonLoading={commandSaving === 'pull_users'}
+                disabled={commandSaving === 'pull_users'}
+                label={t('attendanceDevice.fetchUsers')}
+                icon={<FiDownload />}
+                className="px-4"
+                title={t('attendanceDevice.fetchUsersTitle')}
+              />
+              <Button
+                type="button"
+                onClick={() => loadDeviceUsers(mappingDevice.id)}
+                className="inline-flex items-center justify-center bg-slate-700 px-4 text-sm font-medium text-white hover:bg-slate-600"
+              >
+                <FiRefreshCcw className="mr-2" /> {t('attendanceDevice.refresh')}
+              </Button>
+            </div>
+          </div>
+          <Table
+            columns={[
+              { key: 'device_employee_code', header: t('attendanceDevice.deviceCode') },
+              { key: 'name', header: t('attendanceDevice.nameOnDevice') },
+              { key: 'card_no', header: t('attendanceDevice.card') },
+              {
+                key: 'employee_name',
+                header: t('attendanceDevice.mappedTo'),
+                render: (row: any) =>
+                  row.employee_name || <span className="text-warning">{t('attendanceDevice.notMapped')}</span>,
+              },
+              {
+                key: 'actions',
+                header: '',
+                headerClass: 'text-center',
+                cellClass: 'text-center',
+                render: (row: any) =>
+                  !row.employee_name && (
+                    <button
+                      type="button"
+                      onClick={() => setMappingCode(row.device_employee_code)}
+                      className="inline-flex items-center rounded bg-primary px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90"
+                      title={t('attendanceDevice.useCodeTitle')}
+                    >
+                      {t('attendanceDevice.useCode')}
+                    </button>
+                  ),
+              },
+            ]}
+            data={deviceUsers}
+            perPage={20}
+            noDataMessage={t('attendanceDevice.noUsers')}
           />
         </div>
       )}
