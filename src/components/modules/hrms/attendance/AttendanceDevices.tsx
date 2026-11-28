@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import { FIELD_HEIGHT } from '../../../../theme/fieldStyles';
 import { useTranslation } from 'react-i18next';
 
 import Loader from '../../../../common/Loader';
@@ -1176,6 +1177,42 @@ const AttendanceDevices = ({ user }: any) => {
                 Cancel
               </Button>
             )}
+            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap md:ml-auto">
+              <ButtonLoading
+                onClick={autoMapAll}
+                buttonLoading={commandSaving === 'auto_map'}
+                disabled={commandSaving === 'auto_map' || memberCounts.nocode === 0}
+                label={`${t('attendanceDevice.autoCode')} (${memberCounts.nocode})`}
+                icon={<FiUserPlus />}
+                className="px-4"
+                title={t('attendanceDevice.autoCodeTitle')}
+              />
+              <ButtonLoading
+                onClick={() => queueCommand('pull_users')}
+                buttonLoading={commandSaving === 'pull_users'}
+                disabled={commandSaving === 'pull_users'}
+                label={t('attendanceDevice.fetchUsers')}
+                icon={<FiDownload />}
+                className="px-4"
+                title={t('attendanceDevice.fetchUsersTitle')}
+              />
+              <Button
+                type="button"
+                onClick={() => loadDeviceUsers(mappingDevice.id)}
+                className="inline-flex items-center justify-center bg-slate-700 px-4 text-sm font-medium text-white hover:bg-slate-600"
+              >
+                <FiRefreshCcw className="mr-2" /> {t('attendanceDevice.refresh')}
+              </Button>
+              <ButtonLoading
+                onClick={() => queueCommand('send_missing')}
+                buttonLoading={commandSaving === 'send_missing'}
+                disabled={commandSaving === 'send_missing' || memberCounts.software === 0}
+                label={`${t('attendanceDevice.sendMissing')} (${memberCounts.software})`}
+                icon={<FiUpload />}
+                className="px-4"
+                title={t('attendanceDevice.sendMissingTitle')}
+              />
+              </div>
           </div>
 
           {editingMapping && (
@@ -1187,7 +1224,8 @@ const AttendanceDevices = ({ user }: any) => {
 
           {mappingLoading && <Loader />}
 
-          <div className="mb-2 flex flex-wrap items-end gap-2">
+          {/* Search on the left, status tabs filling the rest of the row. */}
+          <div className="mb-3 flex flex-col gap-2 lg:flex-row lg:items-end">
             <InputElement
               id="member_search"
               name="member_search"
@@ -1195,59 +1233,34 @@ const AttendanceDevices = ({ user }: any) => {
               value={memberSearch}
               onChange={(event: any) => setMemberSearch(event.target.value)}
               placeholder={t('attendanceDevice.searchPlaceholder')}
-              className="w-full md:w-72"
+              className="w-full lg:w-80 lg:shrink-0"
             />
-            <div className="grid w-full grid-cols-2 gap-1 sm:flex sm:w-auto sm:flex-wrap">
-              {(['all', 'nocode', 'software', 'both', 'device'] as const).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setMemberFilter(key)}
-                  className={`border px-3 py-1.5 text-xs font-semibold ${
-                    memberFilter === key
-                      ? 'border-blue-600 bg-blue-600 text-white'
-                      : 'border-[rgb(var(--c-border))] text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700/40'
-                  }`}
-                >
-                  {t(`attendanceDevice.filter_${key}`)} ({memberCounts[key]})
-                </button>
-              ))}
-            </div>
-            <div className="flex w-full flex-wrap gap-2 md:ml-auto md:w-auto">
-              <ButtonLoading
-                onClick={autoMapAll}
-                buttonLoading={commandSaving === 'auto_map'}
-                disabled={commandSaving === 'auto_map' || memberCounts.nocode === 0}
-                label={`${t('attendanceDevice.autoCode')} (${memberCounts.nocode})`}
-                icon={<FiUserPlus />}
-                className="flex-1 px-4 md:flex-none"
-                title={t('attendanceDevice.autoCodeTitle')}
-              />
-              <ButtonLoading
-                onClick={() => queueCommand('pull_users')}
-                buttonLoading={commandSaving === 'pull_users'}
-                disabled={commandSaving === 'pull_users'}
-                label={t('attendanceDevice.fetchUsers')}
-                icon={<FiDownload />}
-                className="flex-1 px-4 md:flex-none"
-                title={t('attendanceDevice.fetchUsersTitle')}
-              />
-              <Button
-                type="button"
-                onClick={() => loadDeviceUsers(mappingDevice.id)}
-                className="inline-flex flex-1 items-center md:flex-none justify-center bg-slate-700 px-4 text-sm font-medium text-white hover:bg-slate-600"
-              >
-                <FiRefreshCcw className="mr-2" /> {t('attendanceDevice.refresh')}
-              </Button>
-              <ButtonLoading
-                onClick={() => queueCommand('send_missing')}
-                buttonLoading={commandSaving === 'send_missing'}
-                disabled={commandSaving === 'send_missing' || memberCounts.software === 0}
-                label={`${t('attendanceDevice.sendMissing')} (${memberCounts.software})`}
-                icon={<FiUpload />}
-                className="flex-1 px-4 md:flex-none"
-                title={t('attendanceDevice.sendMissingTitle')}
-              />
+            {/* One strip of equal cells, same height as the fields; wraps instead of scrolling. */}
+            <div className="flex min-w-0 flex-1 flex-wrap gap-px border border-[rgb(var(--c-border))] bg-[rgb(var(--c-border))]">
+              {(['all', 'nocode', 'software', 'both', 'device'] as const).map((key) => {
+                const active = memberFilter === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setMemberFilter(key)}
+                    className={`${FIELD_HEIGHT} inline-flex flex-1 basis-[45%] items-center justify-center gap-2 whitespace-nowrap px-3 text-sm font-medium transition sm:basis-[30%] lg:basis-0 ${
+                      active
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-[rgb(var(--c-surface))] text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700/40'
+                    }`}
+                  >
+                    {t(`attendanceDevice.filter_${key}`)}
+                    <span
+                      className={`min-w-[1.5rem] rounded-full px-1.5 text-center text-xs font-semibold leading-5 ${
+                        active ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
+                      }`}
+                    >
+                      {memberCounts[key]}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
