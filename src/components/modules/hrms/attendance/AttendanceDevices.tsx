@@ -143,7 +143,10 @@ const AttendanceDevices = ({ user }: any) => {
   const [mappingDevice, setMappingDevice] = useState<any>(null);
   const [mappings, setMappings] = useState<any[]>([]);
   const [deviceUsers, setDeviceUsers] = useState<any[]>([]);
-  const [memberSearch, setMemberSearch] = useState('');  const [memberFilter, setMemberFilter] = useState<'all' | 'both' | 'software' | 'device'>('all');
+  const [unmapped, setUnmapped] = useState<any[]>([]);
+  const [rowCodes, setRowCodes] = useState<Record<string, string>>({});
+  const [memberSearch, setMemberSearch] = useState('');
+  const [memberFilter, setMemberFilter] = useState<'all' | 'both' | 'software' | 'device' | 'nocode'>('all');
 
   /**
    * ONE ROW PER DEVICE CODE: the software's mapping and the terminal's own
@@ -158,10 +161,13 @@ const AttendanceDevices = ({ user }: any) => {
       const code = String(u.device_employee_code);
       byCode.set(code, { ...(byCode.get(code) || { code }), user: u });
     }
-    return Array.from(byCode.values())
+    const coded = Array.from(byCode.values())
       .map((r) => ({ ...r, status: r.mapping && r.user ? 'both' : r.mapping ? 'software' : 'device' }))
       .sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
-  }, [mappings, deviceUsers]);
+    // Branch employees without a code on this device yet, after the coded ones.
+    const noCode = unmapped.map((e) => ({ code: String(e.suggested_code ?? ''), pending: e, status: 'nocode' }));
+    return [...coded, ...noCode];
+  }, [mappings, deviceUsers, unmapped]);
 
   const memberCounts = useMemo(
     () => ({
@@ -169,6 +175,7 @@ const AttendanceDevices = ({ user }: any) => {
       both: members.filter((r) => r.status === 'both').length,
       software: members.filter((r) => r.status === 'software').length,
       device: members.filter((r) => r.status === 'device').length,
+      nocode: members.filter((r) => r.status === 'nocode').length,
     }),
     [members],
   );
@@ -179,7 +186,7 @@ const AttendanceDevices = ({ user }: any) => {
       (r) =>
         (memberFilter === 'all' || r.status === memberFilter) &&
         (!q ||
-          [r.code, r.mapping?.employee_name, r.user?.name, r.mapping?.employee_serial]
+          [r.code, r.mapping?.employee_name, r.user?.name, r.mapping?.employee_serial, r.pending?.employee_name, r.pending?.employee_serial]
             .some((v) => String(v ?? '').toLowerCase().includes(q))),
     );
   }, [members, memberSearch, memberFilter]);
@@ -357,10 +364,62 @@ const AttendanceDevices = ({ user }: any) => {
     try {
       const response = await httpService.get(`${API_HRMS_ATTENDANCE_DEVICE_EMPLOYEES_URL}${deviceId}/employees`);
       setMappings(listFrom(response));
+      // Branch employees with no code here yet, each with Auto Code's suggestion.
+      const unmappedResponse = await httpService.get(`${API_HRMS_ATTENDANCE_DEVICE_EMPLOYEES_URL}${deviceId}/unmapped`);
+      setUnmapped(listFrom(unmappedResponse));
+      setRowCodes({});
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Could not load the employees on this device');
     } finally {
       setMappingLoading(false);
+    }
+  };
+
+  /** Map one "No code" row with the code typed (or suggested) on that row. */
+  const mapRow = async (row: any) => {
+    if (!mappingDevice) return;
+    const code = String(rowCodes[row.employee_id] ?? row.suggested_code ?? '').trim();
+    if (!code) {
+      toast.error('The device code for this employee is required');
+      return;
+    }
+    setCommandSaving(`map_${row.employee_id}`);
+    try {
+      const response = await httpService.post(`${API_HRMS_ATTENDANCE_MAPPING_URL}${mappingDevice.id}/map`, {
+        device_employee_code: code,
+        employee_id: row.employee_id,
+      });
+      if (response?.data?.success === false) {
+        toast.error(response.data.message || 'The code could not be mapped');
+        return;
+      }
+      toast.success('Mapped');
+      await loadMappings(mappingDevice.id);
+      loadDevices();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'The code could not be mapped');
+    } finally {
+      setCommandSaving('');
+    }
+  };
+
+  /** Give every "No code" employee a code at once (own code, else next free number). */
+  const autoMapAll = async () => {
+    if (!mappingDevice) return;
+    setCommandSaving('auto_map');
+    try {
+      const response = await httpService.post(`${API_HRMS_ATTENDANCE_DEVICE_EMPLOYEES_URL}${mappingDevice.id}/auto-map`);
+      if (response?.data?.success === false) {
+        toast.error(response.data.message || 'Could not map');
+        return;
+      }
+      toast.success(response?.data?.message);
+      await loadMappings(mappingDevice.id);
+      loadDevices();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Could not map');
+    } finally {
+      setCommandSaving('');
     }
   };
 
@@ -1139,7 +1198,7 @@ const AttendanceDevices = ({ user }: any) => {
               className="w-full md:w-72"
             />
             <div className="grid w-full grid-cols-2 gap-1 sm:flex sm:w-auto sm:flex-wrap">
-              {(['all', 'both', 'software', 'device'] as const).map((key) => (
+              {(['all', 'nocode', 'software', 'both', 'device'] as const).map((key) => (
                 <button
                   key={key}
                   type="button"
@@ -1155,6 +1214,15 @@ const AttendanceDevices = ({ user }: any) => {
               ))}
             </div>
             <div className="flex w-full flex-wrap gap-2 md:ml-auto md:w-auto">
+              <ButtonLoading
+                onClick={autoMapAll}
+                buttonLoading={commandSaving === 'auto_map'}
+                disabled={commandSaving === 'auto_map' || memberCounts.nocode === 0}
+                label={`${t('attendanceDevice.autoCode')} (${memberCounts.nocode})`}
+                icon={<FiUserPlus />}
+                className="flex-1 px-4 md:flex-none"
+                title={t('attendanceDevice.autoCodeTitle')}
+              />
               <ButtonLoading
                 onClick={() => queueCommand('pull_users')}
                 buttonLoading={commandSaving === 'pull_users'}
@@ -1185,8 +1253,26 @@ const AttendanceDevices = ({ user }: any) => {
 
           <Table
             columns={[
-              { key: 'code', header: t('attendanceDevice.deviceCode') },
-              { key: 'employee', header: t('attendanceDevice.employee'), render: (r: any) => r.mapping?.employee_name || '—' },
+              {
+                key: 'code',
+                header: t('attendanceDevice.deviceCode'),
+                render: (r: any) =>
+                  r.status === 'nocode' ? (
+                    <input
+                      value={rowCodes[r.pending.employee_id] ?? r.code}
+                      onChange={(e) => setRowCodes((prev) => ({ ...prev, [r.pending.employee_id]: e.target.value }))}
+                      className="w-24 border border-[rgb(var(--c-border))] bg-transparent px-2 py-1 text-sm"
+                      title={t('attendanceDevice.suggestedCodeTitle')}
+                    />
+                  ) : (
+                    r.code
+                  ),
+              },
+              {
+                key: 'employee',
+                header: t('attendanceDevice.employee'),
+                render: (r: any) => r.mapping?.employee_name || r.pending?.employee_name || '—',
+              },
               { key: 'device_name', header: t('attendanceDevice.nameOnDevice'), headerClass: 'hidden md:table-cell', cellClass: 'hidden md:table-cell', render: (r: any) => r.user?.name || '—' },
               { key: 'card', header: t('attendanceDevice.card'), headerClass: 'hidden lg:table-cell', cellClass: 'hidden lg:table-cell', render: (r: any) => r.user?.card_no || '' },
               {
@@ -1195,7 +1281,13 @@ const AttendanceDevices = ({ user }: any) => {
                 render: (r: any) => (
                   <span
                     className={`text-xs font-semibold ${
-                      r.status === 'both' ? 'text-success' : r.status === 'software' ? 'text-warning' : 'text-danger'
+                      r.status === 'both'
+                        ? 'text-success'
+                        : r.status === 'software'
+                          ? 'text-warning'
+                          : r.status === 'nocode'
+                            ? 'text-slate-500 dark:text-slate-400'
+                            : 'text-danger'
                     }`}
                   >
                     {t(`attendanceDevice.filter_${r.status}`)}
@@ -1245,6 +1337,16 @@ const AttendanceDevices = ({ user }: any) => {
                           {t('attendanceDevice.sendToDevice')}
                         </button>
                       </>
+                    ) : r.status === 'nocode' ? (
+                      <button
+                        type="button"
+                        onClick={() => mapRow(r.pending)}
+                        disabled={commandSaving === `map_${r.pending.employee_id}`}
+                        className="inline-flex items-center rounded bg-primary px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                        title={t('attendanceDevice.mapRowTitle')}
+                      >
+                        {t('attendanceDevice.useCode')}
+                      </button>
                     ) : (
                       <button
                         type="button"
@@ -1255,7 +1357,7 @@ const AttendanceDevices = ({ user }: any) => {
                         {t('attendanceDevice.useCode')}
                       </button>
                     )}
-                    {r.status !== 'software' && (
+                    {(r.status === 'both' || r.status === 'device') && (
                       <button
                         type="button"
                         onClick={() => queueCommand('delete_user', r.code)}

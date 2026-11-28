@@ -1758,7 +1758,12 @@
     "filter_device": "Not mapped",
     "sendMissing": "Send Missing",
     "sendMissingTitle": "Send every mapped employee the device does not have yet — press Fetch Users first so the list is current",
-    "noMembers": "Nothing matches"
+    "noMembers": "Nothing matches",
+    "filter_nocode": "No code",
+    "autoCode": "Auto Code",
+    "autoCodeTitle": "Give every employee without a code one at once — their own device code if set, otherwise the next free number. Then press Send Missing.",
+    "suggestedCodeTitle": "Suggested code — change it if needed, then press Map",
+    "mapRowTitle": "Map this employee with the code on this row"
   },
   "department": {
     "listTitle": "Department List",
