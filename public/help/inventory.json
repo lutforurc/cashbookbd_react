@@ -108,7 +108,7 @@
     "intro": "গুদামের স্টক কোনো প্রকল্প বা সাইটে, কোন ভবন/ফ্লোরে, কোন কাজে দেওয়া হলো — তা লেখা হয়।",
     "sections": [
       { "heading": "কে দেখতে পায়", "steps": ["মেনুটি দেখা যায় শুধু Roles-এ material.issue.create permission থাকলে।"] },
-      { "heading": "ইস্যু", "menu": "Branch Transfer → Product Out → Material Issue", "steps": ["Issue Date, From Warehouse, Project / Site ও Received By দিন।", "Select Product, Quantity, Building / Floor, Work Item ও Line Note দিয়ে Add Item করুন।", "Save চাপুন; Issue List-এ Issue No, Date, Project, Warehouse, Received By ও Total Qty দেখা যায়।"] },
+      { "heading": "ইস্যু", "menu": "Branch Transfer → Product Out → Material Issue", "steps": ["Issue Date, From Warehouse, Project / Site ও Received By দিন।", "Select Product, Quantity, Building / Floor, Work Item ও Line Note দিয়ে Add Item করুন।", "Save চাপুন; Issue List-এ Issue No, Date, Project, Warehouse, Received By ও Total Qty দেখা যায়।", "নতুন চালানের ভাউচার নম্বর 7- (Issue Challan) দিয়ে শুরু হয়; আগের চালানগুলো 4- নম্বরেই থাকে।", "Real Estate শাখায় (Real Estate Setup-এর হিসাব সুইচ চালু থাকলে) প্রকল্পে ইস্যু করলে মালের ক্রয়মূল্য সেই বিল্ডিংয়ের খরচ হয়ে Construction WIP-এ যায়। Building / Floor ঘরে বিল্ডিংয়ের নাম লিখুন; প্রকল্পে একটিই বিল্ডিং থাকলে নাম না মিললেও সেটাই ধরা হয়।"] },
       { "heading": "সতর্কতা", "warning": "ছাপার চালান Material Issue Challan; প্রকল্প না বাছলে সেভ হবে না। কাজ শেষে Received By-এর নাম রাখুন, নাহলে দায় মেলানো কঠিন।" }
     ]
   },

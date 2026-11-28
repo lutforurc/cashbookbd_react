@@ -288,6 +288,13 @@ export const VoucherPrintRegistry = forwardRef(
         };
 
         switch (voucherType) {
+          /* ================= ISSUE CHALLAN (MATERIAL ISSUE) ================= */
+          // New challans are numbered 7- (acc_vr_type 7, Issue Challan). Same
+          // answer as the MI- number above: the challan prints from its screen.
+          case '7':
+            toast(`${row.vr_no} is a material issue. Open Inventory → Material Issue to print its challan.`);
+            break;
+
           /* ================= CASH RECEIVED ================= */
           case '1':
             printAs(cashReceivedRef);
