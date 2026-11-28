@@ -211,7 +211,7 @@ const VoucherRegister = ({ user }: any) => {
     {
       key: 'sl',
       header: 'Sl No.',
-      cellClass: 'w-20 whitespace-nowrap',
+      cellClass: 'w-10 whitespace-nowrap',
       render: (row: any) => row.sl,
     },
     {
