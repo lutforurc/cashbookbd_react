@@ -1736,6 +1736,12 @@
     "split": "Split",
     "grossTooSmall": "The gross is smaller than the fixed allowances."
   },
+  "attendanceDevice": {
+    "sendToDevice": "Send to Device",
+    "sendAll": "Send All to Device",
+    "sendTitle": "Create this user on the terminal with ID, name and card — then take the face on the terminal",
+    "sendAllTitle": "Create every mapped employee on the terminal — faces are still taken on the terminal"
+  },
   "department": {
     "listTitle": "Department List",
     "addTitle": "Add Department",

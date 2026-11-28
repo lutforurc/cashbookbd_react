@@ -7,6 +7,7 @@ import {
   FiPlus,
   FiRefreshCcw,
   FiSave,
+  FiUpload,
   FiUserPlus,
   FiUsers,
   FiWifi,
@@ -14,6 +15,7 @@ import {
 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 import Loader from '../../../../common/Loader';
 import { Button, ButtonLoading } from '../../../../pages/UiElements/CustomButtons';
@@ -123,6 +125,7 @@ const formatDateTime = (value?: string | null) => {
 };
 
 const AttendanceDevices = ({ user }: any) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch<any>();
   const branchDdlData = useSelector((state: any) => state.branchDdl);
   const branches = branchDdlData?.protectedData?.data || [];
@@ -493,7 +496,7 @@ const AttendanceDevices = ({ user }: any) => {
   };
 
   const queueCommand = async (
-    action: 'sync_clock' | 'pull' | 'check' | 'delete_user',
+    action: 'sync_clock' | 'pull' | 'check' | 'delete_user' | 'send_user' | 'send_all',
     deviceEmployeeCode?: string,
   ) => {
     // Either panel can raise a command: the punch panel, or the employee list
@@ -507,7 +510,7 @@ const AttendanceDevices = ({ user }: any) => {
         action,
         date_from: action === 'pull' ? punchFrom : undefined,
         date_to: action === 'pull' ? punchTo : undefined,
-        device_employee_code: action === 'delete_user' ? deviceEmployeeCode : undefined,
+        device_employee_code: action === 'delete_user' || action === 'send_user' ? deviceEmployeeCode : undefined,
       });
 
       if (response?.data?.success === false) {
@@ -516,7 +519,9 @@ const AttendanceDevices = ({ user }: any) => {
       }
 
       toast.success(
-        action === 'pull'
+        action === 'send_user' || action === 'send_all'
+          ? response?.data?.message
+          : action === 'pull'
           ? 'Queued. The terminal will send its records the next time it calls in.'
           : action === 'sync_clock'
             ? 'Queued. The clock is set the next time the terminal calls in.'
@@ -1032,6 +1037,15 @@ const AttendanceDevices = ({ user }: any) => {
                 Cancel
               </Button>
             )}
+            <ButtonLoading
+              onClick={() => queueCommand('send_all')}
+              buttonLoading={commandSaving === 'send_all'}
+              disabled={commandSaving === 'send_all' || mappings.length === 0}
+              label={t('attendanceDevice.sendAll')}
+              icon={<FiUpload />}
+              className="px-4"
+              title={t('attendanceDevice.sendAllTitle')}
+            />
           </div>
 
           {editingMapping && (
@@ -1078,6 +1092,15 @@ const AttendanceDevices = ({ user }: any) => {
                       title="Remove the mapping in the software; the device keeps the face"
                     >
                       Unmap
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => queueCommand('send_user', row.device_employee_code)}
+                      disabled={commandSaving === 'send_user'}
+                      className="inline-flex items-center rounded bg-success px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                      title={t('attendanceDevice.sendTitle')}
+                    >
+                      {t('attendanceDevice.sendToDevice')}
                     </button>
                     <button
                       type="button"
