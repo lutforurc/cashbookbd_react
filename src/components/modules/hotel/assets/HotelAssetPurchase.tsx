@@ -462,12 +462,8 @@ const HotelAssetPurchase = () => {
   return (
     <div>
       <HelmetTitle title="Asset & Inventory Purchase" />
-
       <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-black dark:text-white">
-            Asset & Inventory Purchase
-          </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Asset &amp; Inventory
           </p>
