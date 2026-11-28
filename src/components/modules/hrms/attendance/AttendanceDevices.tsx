@@ -143,6 +143,46 @@ const AttendanceDevices = ({ user }: any) => {
   const [mappingDevice, setMappingDevice] = useState<any>(null);
   const [mappings, setMappings] = useState<any[]>([]);
   const [deviceUsers, setDeviceUsers] = useState<any[]>([]);
+  const [memberSearch, setMemberSearch] = useState('');  const [memberFilter, setMemberFilter] = useState<'all' | 'both' | 'software' | 'device'>('all');
+
+  /**
+   * ONE ROW PER DEVICE CODE: the software's mapping and the terminal's own
+   * user side by side. With thousands of staff, two separate lists cannot be
+   * compared by eye; this one says per row whether the code is on both, only
+   * in the software (not yet sent), or only on the device (not yet mapped).
+   */
+  const members = useMemo(() => {
+    const byCode = new Map<string, any>();
+    for (const m of mappings) byCode.set(String(m.device_employee_code), { code: String(m.device_employee_code), mapping: m });
+    for (const u of deviceUsers) {
+      const code = String(u.device_employee_code);
+      byCode.set(code, { ...(byCode.get(code) || { code }), user: u });
+    }
+    return Array.from(byCode.values())
+      .map((r) => ({ ...r, status: r.mapping && r.user ? 'both' : r.mapping ? 'software' : 'device' }))
+      .sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
+  }, [mappings, deviceUsers]);
+
+  const memberCounts = useMemo(
+    () => ({
+      all: members.length,
+      both: members.filter((r) => r.status === 'both').length,
+      software: members.filter((r) => r.status === 'software').length,
+      device: members.filter((r) => r.status === 'device').length,
+    }),
+    [members],
+  );
+
+  const visibleMembers = useMemo(() => {
+    const q = memberSearch.trim().toLowerCase();
+    return members.filter(
+      (r) =>
+        (memberFilter === 'all' || r.status === memberFilter) &&
+        (!q ||
+          [r.code, r.mapping?.employee_name, r.user?.name, r.mapping?.employee_serial]
+            .some((v) => String(v ?? '').toLowerCase().includes(q))),
+    );
+  }, [members, memberSearch, memberFilter]);
   const [mappingLoading, setMappingLoading] = useState(false);
   const [mappingCode, setMappingCode] = useState('');
   const [mappingEmployee, setMappingEmployee] = useState<any>(null);
@@ -172,6 +212,13 @@ const AttendanceDevices = ({ user }: any) => {
    * a lost record from a code nobody owns.
    */
   const [punchDevice, setPunchDevice] = useState<any>(null);
+
+  // The panel opens below the device list; bring it into view.
+  useEffect(() => {
+    if (mappingDevice || punchDevice) {
+      setTimeout(() => document.getElementById('device-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+  }, [mappingDevice?.id, punchDevice?.id]);
   const [punches, setPunches] = useState<any[]>([]);
   const [punchLoading, setPunchLoading] = useState(false);
   const [punchFrom, setPunchFrom] = useState(() => {
@@ -508,7 +555,7 @@ const AttendanceDevices = ({ user }: any) => {
   };
 
   const queueCommand = async (
-    action: 'sync_clock' | 'pull' | 'check' | 'delete_user' | 'send_user' | 'send_all' | 'pull_users',
+    action: 'sync_clock' | 'pull' | 'check' | 'delete_user' | 'send_user' | 'send_all' | 'send_missing' | 'pull_users',
     deviceEmployeeCode?: string,
   ) => {
     // Either panel can raise a command: the punch panel, or the employee list
@@ -531,7 +578,7 @@ const AttendanceDevices = ({ user }: any) => {
       }
 
       toast.success(
-        action === 'send_user' || action === 'send_all'
+        action === 'send_user' || action === 'send_all' || action === 'send_missing'
           ? response?.data?.message
           : action === 'pull_users'
             ? t('attendanceDevice.fetchQueued')
@@ -1003,8 +1050,27 @@ const AttendanceDevices = ({ user }: any) => {
         </div>
       )}
 
+      {/* The device list first: it is short, and it is where a device is chosen. */}
+      <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
+        <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
+          <h3 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">Attendance Devices</h3>
+          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            {rows.length} devices
+          </span>
+        </div>
+        <Table
+          columns={columns}
+          data={rows}
+          perPage={20}
+          noDataMessage="No attendance device is registered yet"
+          rowClassName={(row: any) =>
+            Number(row.id) === Number((mappingDevice ?? punchDevice)?.id) ? 'bg-blue-50 dark:bg-slate-700/60' : ''
+          }
+        />
+      </div>
+
       {mappingDevice && (
-        <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
+        <div id="device-panel" className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
               Employees on {mappingDevice.device_name}
@@ -1051,15 +1117,6 @@ const AttendanceDevices = ({ user }: any) => {
                 Cancel
               </Button>
             )}
-            <ButtonLoading
-              onClick={() => queueCommand('send_all')}
-              buttonLoading={commandSaving === 'send_all'}
-              disabled={commandSaving === 'send_all' || mappings.length === 0}
-              label={t('attendanceDevice.sendAll')}
-              icon={<FiUpload />}
-              className="px-4"
-              title={t('attendanceDevice.sendAllTitle')}
-            />
           </div>
 
           {editingMapping && (
@@ -1071,130 +1128,157 @@ const AttendanceDevices = ({ user }: any) => {
 
           {mappingLoading && <Loader />}
 
-          <Table
-            columns={[
-              { key: 'device_employee_code', header: 'Device Code' },
-              { key: 'employee_name', header: 'Employee' },
-              { key: 'employee_serial', header: 'Employee Serial', headerClass: 'text-center', cellClass: 'text-center' },
-              {
-                key: 'actions',
-                header: 'Action',
-                headerClass: 'text-center',
-                cellClass: 'text-center',
-                render: (row: any) => (
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => startEditMapping(row)}
-                      className="inline-flex items-center rounded bg-slate-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-slate-600"
-                      title="Correct this mapping — code or employee"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => copyMapping(row)}
-                      className="inline-flex items-center rounded bg-primary px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90"
-                      title="Copy this code and employee to the branch's other devices — each still enrols the face itself"
-                    >
-                      Copy
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeMapping(row)}
-                      className="inline-flex items-center rounded bg-danger px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90"
-                      title="Remove the mapping in the software; the device keeps the face"
-                    >
-                      Unmap
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => queueCommand('send_user', row.device_employee_code)}
-                      disabled={commandSaving === 'send_user'}
-                      className="inline-flex items-center rounded bg-success px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
-                      title={t('attendanceDevice.sendTitle')}
-                    >
-                      {t('attendanceDevice.sendToDevice')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => queueCommand('delete_user', row.device_employee_code)}
-                      disabled={commandSaving === 'delete_user'}
-                      className="inline-flex items-center rounded bg-slate-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-slate-600 disabled:opacity-50"
-                      title="Delete the face from the terminal itself — attendance already recorded stays"
-                    >
-                      Delete on Device
-                    </button>
-                  </div>
-                ),
-              },
-            ]}
-            data={mappings}
-            perPage={20}
-            noDataMessage="Nobody is mapped on this device yet"
-          />
-
-          <div className="mb-2 mt-4 flex flex-wrap items-center justify-between gap-2">
-            <h4 className="text-sm font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
-              {t('attendanceDevice.usersOnDevice')} ({deviceUsers.length})
-            </h4>
-            <div className="flex gap-2">
+          <div className="mb-2 flex flex-wrap items-end gap-2">
+            <InputElement
+              id="member_search"
+              name="member_search"
+              label={t('attendanceDevice.search')}
+              value={memberSearch}
+              onChange={(event: any) => setMemberSearch(event.target.value)}
+              placeholder={t('attendanceDevice.searchPlaceholder')}
+              className="w-full md:w-72"
+            />
+            <div className="grid w-full grid-cols-2 gap-1 sm:flex sm:w-auto sm:flex-wrap">
+              {(['all', 'both', 'software', 'device'] as const).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setMemberFilter(key)}
+                  className={`border px-3 py-1.5 text-xs font-semibold ${
+                    memberFilter === key
+                      ? 'border-blue-600 bg-blue-600 text-white'
+                      : 'border-[rgb(var(--c-border))] text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700/40'
+                  }`}
+                >
+                  {t(`attendanceDevice.filter_${key}`)} ({memberCounts[key]})
+                </button>
+              ))}
+            </div>
+            <div className="flex w-full flex-wrap gap-2 md:ml-auto md:w-auto">
               <ButtonLoading
                 onClick={() => queueCommand('pull_users')}
                 buttonLoading={commandSaving === 'pull_users'}
                 disabled={commandSaving === 'pull_users'}
                 label={t('attendanceDevice.fetchUsers')}
                 icon={<FiDownload />}
-                className="px-4"
+                className="flex-1 px-4 md:flex-none"
                 title={t('attendanceDevice.fetchUsersTitle')}
               />
               <Button
                 type="button"
                 onClick={() => loadDeviceUsers(mappingDevice.id)}
-                className="inline-flex items-center justify-center bg-slate-700 px-4 text-sm font-medium text-white hover:bg-slate-600"
+                className="inline-flex flex-1 items-center md:flex-none justify-center bg-slate-700 px-4 text-sm font-medium text-white hover:bg-slate-600"
               >
                 <FiRefreshCcw className="mr-2" /> {t('attendanceDevice.refresh')}
               </Button>
+              <ButtonLoading
+                onClick={() => queueCommand('send_missing')}
+                buttonLoading={commandSaving === 'send_missing'}
+                disabled={commandSaving === 'send_missing' || memberCounts.software === 0}
+                label={`${t('attendanceDevice.sendMissing')} (${memberCounts.software})`}
+                icon={<FiUpload />}
+                className="flex-1 px-4 md:flex-none"
+                title={t('attendanceDevice.sendMissingTitle')}
+              />
             </div>
           </div>
+
           <Table
             columns={[
-              { key: 'device_employee_code', header: t('attendanceDevice.deviceCode') },
-              { key: 'name', header: t('attendanceDevice.nameOnDevice') },
-              { key: 'card_no', header: t('attendanceDevice.card') },
+              { key: 'code', header: t('attendanceDevice.deviceCode') },
+              { key: 'employee', header: t('attendanceDevice.employee'), render: (r: any) => r.mapping?.employee_name || '—' },
+              { key: 'device_name', header: t('attendanceDevice.nameOnDevice'), headerClass: 'hidden md:table-cell', cellClass: 'hidden md:table-cell', render: (r: any) => r.user?.name || '—' },
+              { key: 'card', header: t('attendanceDevice.card'), headerClass: 'hidden lg:table-cell', cellClass: 'hidden lg:table-cell', render: (r: any) => r.user?.card_no || '' },
               {
-                key: 'employee_name',
-                header: t('attendanceDevice.mappedTo'),
-                render: (row: any) =>
-                  row.employee_name || <span className="text-warning">{t('attendanceDevice.notMapped')}</span>,
+                key: 'status',
+                header: t('attendanceDevice.status'),
+                render: (r: any) => (
+                  <span
+                    className={`text-xs font-semibold ${
+                      r.status === 'both' ? 'text-success' : r.status === 'software' ? 'text-warning' : 'text-danger'
+                    }`}
+                  >
+                    {t(`attendanceDevice.filter_${r.status}`)}
+                  </span>
+                ),
               },
               {
                 key: 'actions',
-                header: '',
+                header: 'Action',
                 headerClass: 'text-center',
                 cellClass: 'text-center',
-                render: (row: any) =>
-                  !row.employee_name && (
-                    <button
-                      type="button"
-                      onClick={() => setMappingCode(row.device_employee_code)}
-                      className="inline-flex items-center rounded bg-primary px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90"
-                      title={t('attendanceDevice.useCodeTitle')}
-                    >
-                      {t('attendanceDevice.useCode')}
-                    </button>
-                  ),
+                render: (r: any) => (
+                  <div className="flex flex-wrap items-center justify-center gap-1">
+                    {r.mapping ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => startEditMapping(r.mapping)}
+                          className="inline-flex items-center rounded bg-slate-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-slate-600"
+                          title="Correct this mapping — code or employee"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => copyMapping(r.mapping)}
+                          className="inline-flex items-center rounded bg-primary px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90"
+                          title="Copy this code and employee to the branch's other devices — each still enrols the face itself"
+                        >
+                          Copy
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeMapping(r.mapping)}
+                          className="inline-flex items-center rounded bg-danger px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90"
+                          title="Remove the mapping in the software; the device keeps the face"
+                        >
+                          Unmap
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => queueCommand('send_user', r.code)}
+                          disabled={commandSaving === 'send_user'}
+                          className="inline-flex items-center rounded bg-success px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                          title={t('attendanceDevice.sendTitle')}
+                        >
+                          {t('attendanceDevice.sendToDevice')}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setMappingCode(r.code)}
+                        className="inline-flex items-center rounded bg-primary px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90"
+                        title={t('attendanceDevice.useCodeTitle')}
+                      >
+                        {t('attendanceDevice.useCode')}
+                      </button>
+                    )}
+                    {r.status !== 'software' && (
+                      <button
+                        type="button"
+                        onClick={() => queueCommand('delete_user', r.code)}
+                        disabled={commandSaving === 'delete_user'}
+                        className="inline-flex items-center rounded bg-slate-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-slate-600 disabled:opacity-50"
+                        title="Delete the face from the terminal itself — attendance already recorded stays"
+                      >
+                        Delete on Device
+                      </button>
+                    )}
+                  </div>
+                ),
               },
             ]}
-            data={deviceUsers}
+            data={visibleMembers}
             perPage={20}
-            noDataMessage={t('attendanceDevice.noUsers')}
+            noDataMessage={t('attendanceDevice.noMembers')}
           />
         </div>
       )}
 
       {punchDevice && (
-        <div className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
+        <div id="device-panel" className="mb-3 border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-3">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">
               Punches — {punchDevice.device_name}
@@ -1331,15 +1415,6 @@ const AttendanceDevices = ({ user }: any) => {
         </div>
       )}
 
-      <div className="border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))]">
-        <div className="flex items-center justify-between border-b border-[rgb(var(--c-border))] px-4 py-3">
-          <h3 className="text-base font-semibold text-slate-900 dark:text-[rgb(var(--c-text))]">Attendance Devices</h3>
-          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-            {rows.length} devices
-          </span>
-        </div>
-        <Table columns={columns} data={rows} perPage={20} noDataMessage="No attendance device is registered yet" />
-      </div>
       </div>
     </div>
   );
