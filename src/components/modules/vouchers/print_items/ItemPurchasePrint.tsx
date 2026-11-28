@@ -11,7 +11,7 @@ type Props = {
 };
 
 /**
- * The hotel Accounts Transaction bill -- chairs, meat, soap -- as a paper.
+ * The Asset & Inventory Purchase bill -- chairs, meat, soap -- as a paper.
  *
  * ⚠️ NOT THE PURCHASE INVOICE. That paper reads `purchase_master`, which this
  * screen never writes; its lines are `item_purchase_lines`, sent beside the

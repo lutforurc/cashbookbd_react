@@ -61,7 +61,7 @@ export const SIDEBAR_SUBMENUS: Record<string, { id: string; title: string }[]> =
     // ⚠️ MOVED HERE from Assets (2026-11-14), which had it from Hotel. The id
     // and permission keep their `hotel_` spelling: saved arrangements and
     // granted permissions refer to them by name.
-    { id: 'hotel_asset_purchase', title: "Accounts Transaction" },
+    { id: 'hotel_asset_purchase', title: "Asset & Inventory Purchase" },
     { id: 'accounts/year-closing', title: "Year Closing" },
     { id: 'accounts/budget', title: "Budget" },
     { id: 'installment_list', title: "Installments" },
@@ -1019,7 +1019,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
                           {hasPermission(permissions, 'hotel.accounts.transaction.create') && (
                             <li style={subSlot('transaction', 'hotel_asset_purchase')}>
                               <NavLink to={routes.hotel_asset_purchase} className={subMenuLinkClass}>
-                                {ml("Accounts Transaction")}
+                                {ml("Asset & Inventory Purchase")}
                               </NavLink>
                             </li>
                           )}
@@ -2338,7 +2338,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, mode = 'sidebar' }: SidebarProps
 
                           {/* What the housekeeper and the kitchen take out of the
                               store, and what is left -- the Stock Balance of the
-                              expense items bought on Accounts Transaction. Its
+                              expense items bought on Asset & Inventory Purchase. Its
                               issue quantities come from the amenity kits set up
                               on the setup screen below. */}
                           {hasPermission(permissions, 'hotel.amenity.issue.view') && (

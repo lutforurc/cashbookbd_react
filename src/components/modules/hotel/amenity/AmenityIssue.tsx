@@ -27,7 +27,7 @@ import routes from '../../../services/appRoutes';
  *                  each item's own ledger a click away
  *
  * ⚠️ THE ITEMS ARE ASSETS → ITEMS OF KIND EXPENSE (meat, soap, shampoo), bought
- * on the Accounts Transaction screen. They were charged to their expense head
+ * on the Asset & Inventory Purchase screen. They were charged to their expense head
  * the day they were bought; everything here is QUANTITY, and the value column is
  * information -- closing quantity at the average price paid -- never a Balance
  * Sheet figure.

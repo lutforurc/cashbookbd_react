@@ -22,7 +22,7 @@ export const MENU_PERMISSIONS = {
     // The unified Received / Payment Entry, on keys of their own.
     'received.entry.create',
     'payment.entry.create',
-    // Accounts Transaction (moved from Assets 2026-11-14); keeps its hotel. key.
+    // Asset & Inventory Purchase (moved from Assets 2026-11-14); keeps its hotel. key.
     'hotel.accounts.transaction.create',
     'year.closing.run',
     'budget.view',

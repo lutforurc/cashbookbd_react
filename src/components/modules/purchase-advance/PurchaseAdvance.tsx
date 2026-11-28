@@ -26,7 +26,7 @@ import PurchaseAdvanceLedger from './PurchaseAdvanceLedger';
  * Three things happen to an advance, and only two of them here:
  *
  *   given     here -- "Give advance"
- *   spent     on the purchase screen (Hotel -> Accounts Transaction,
+ *   spent     on the purchase screen (Transaction -> Asset & Inventory Purchase,
  *             "Advance"), where the goods are entered as a purchase
  *   squared   here -- "Settle": what is left comes back, or, where the bills
  *             ran past the advance, the difference is paid to the employee
@@ -402,7 +402,7 @@ const PurchaseAdvance = () => {
       </div>
 
       <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-        অগ্রিমের টাকায় কেনা পণ্য এখানে নয়, ক্রয়ের স্ক্রিনে এন্ট্রি হয় (Hotel → Accounts Transaction, Payment-এ "Advance")।
+        অগ্রিমের টাকায় কেনা পণ্য এখানে নয়, ক্রয়ের স্ক্রিনে এন্ট্রি হয় (Transaction → Asset & Inventory Purchase, Payment-এ "Advance")।
         এটা বেতনের লোন নয়; বেতন থেকে কাটা হয় না।
       </p>
     </div>
